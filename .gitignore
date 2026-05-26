@@ -1,0 +1,37 @@
+# 민감 정보
+src/config/config.secrets.json
+*.secrets.json
+.env
+.env.*
+
+# 모델 가중치 (용량)
+external/RestoreFormerPlusPlus/weights/
+external/CodeFormer/weights/
+*.ckpt
+*.pth
+
+# 외부 모델 디렉토리
+external/
+
+# 런타임 생성
+runtime/
+__pycache__/
+*.pyc
+*.db
+gui_debug.log
+execution_history.db
+
+# 정리된 디렉토리 (하위 호환성)
+data/
+logs/
+temp/
+backup/
+results/
+weights/
+*.xlsx
+
+# Python 패키지
+*.egg-info/
+dist/
+build/
+.venv/

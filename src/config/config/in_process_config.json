@@ -1,0 +1,24 @@
+{
+  "in_process_execution": {
+    "enabled": true,
+    "codeformer": {
+      "enabled": true,
+      "fallback_on_error": true,
+      "device": "auto",
+      "default_fidelity": 1.0,
+      "default_upscale": 2,
+      "default_bg_upsampler": "none"
+    },
+    "restoreformer": {
+      "enabled": false,
+      "fallback_on_error": true,
+      "device": "auto",
+      "default_scale": 2
+    },
+    "gpu_memory": {
+      "threshold": 0.9,
+      "enable_monitoring": true,
+      "auto_unload": true
+    }
+  }
+}

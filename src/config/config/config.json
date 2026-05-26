@@ -1,0 +1,1023 @@
+{
+  "project": {
+    "name": "SkinLens",
+    "version": "1.0.0",
+    "description": "AI-powered skin analysis engine"
+  },
+  "config_version": "3.6",
+  "description": "피부 점수 측정 런타임 설정 파일 (메타데이터는 llm_prompt_template.md에서 관리)",
+  "_note": "이 파일은 런타임 설정만 포함합니다. 측정항목 메타데이터(가중치, 디스플레이 이름, 카테고리, 실측 범위)는 docs/llm_prompt_template.md를 참조하세요.",
+  "logging": {
+    "level": "DEBUG",
+    "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    "datefmt": "%H:%M:%S",
+    "_note": "로그 레벨: DEBUG, INFO, WARNING, ERROR",
+    "db_logging": {
+      "enabled": false,
+      "retention_days": 7,
+      "_note": "로그 DB 보관 기간 (일). 로그 저장 시 자동으로 오래된 로그 삭제 (롤링 방식). 0이면 보관하지 않음."
+    }
+  },
+  "server": {
+    "url": "http://localhost:8000",
+    "host": "0.0.0.0",
+    "port": 8000,
+    "max_upload_bytes": 20971520,
+    "max_concurrent_jobs": 2,
+    "allowed_origins": "*",
+    "allowed_extensions": [".jpg", ".jpeg", ".png", ".webp"],
+    "_note": "서버 관련 설정. 환경 변수로 오버라이드 가능."
+  },
+  "database": {
+    "sqlite": {
+      "path": "execution_history.db",
+      "_note": "로컬 SQLite DB 경로 (실행 이력, 로그, 통계). 환경 변수 EXECUTION_HISTORY_DB로 오버라이드 가능."
+    },
+    "supabase": {
+      "enabled": true,
+      "url": null,
+      "key": null,
+      "bucket": "skin-images",
+      "_note": "Supabase 클라우드 DB/Storage 동기화 설정. enabled=true이면 로컬 SQLite 저장 후 Supabase에도 자동 동기화. url/key는 환경 변수(SUPABASE_URL, SUPABASE_KEY) 또는 config.secrets.json에서 로드."
+    }
+  },
+  "jwt": {
+    "secret_key_env": "JWT_SECRET_KEY",
+    "algorithm": "HS256",
+    "access_token_expire_minutes": 30,
+    "_note": "JWT 토큰 설정. secret_key는 환경 변수에서 로드."
+  },
+  "environment": "development",
+  "_environment_note": "environment: development, staging, production. 환경별 설정 구분용.",
+  "paths": {
+    "input_dir": "images",
+    "output_dir": "results",
+    "restoreformer_root": null,
+    "codeformer_root": null,
+    "config_dir": "config",
+    "_note": "기본 파일 및 디렉토리 경로. null이면 프로젝트 내 기본 경로(models/RestoreFormerPlusPlus, models/CodeFormer) 자동 탐색."
+  },
+  "llm": {
+    "default_model": "models/gemini-2.5-pro",
+    "provider": "gemini",
+    "api_key_env": "GEMINI_API_KEY",
+    "timeout_sec": 300,
+    "max_retries": 3,
+    "temperature": 0.3,
+    "max_output_tokens_single": 8192,
+    "max_output_tokens_dual": 65536,
+    "score_correction": {
+      "enabled": false,
+      "mode": "hybrid",
+      "analyzer_weight": 0.7,
+      "llm_weight": 0.3,
+      "dynamic_weighting": {
+        "enabled": true,
+        "score_difference_threshold": 15.0,
+        "_note": "동적 가중치 조정. score_correction과 독립적으로 작동. enabled=true이면 점수 차이가 score_difference_threshold 이상일 때 5:5 비율로 종합 점수 산출. 미만일 때는 기존 가중치(analyzer_weight, llm_weight) 사용. score_correction 비활성화 시에도 기본 5:5 비율로 작동."
+      },
+      "monitoring": {
+        "warning_threshold": 20.0,
+        "critical_threshold": 40.0,
+        "_note": "점수 차이 모니터링 임계값. warning_threshold 이상이면 경고, critical_threshold 이상이면 에러 로그."
+      },
+      "_note": "점수 보정 설정. enabled=true이면 활성화. mode: 'analyzer'(자체 분석기만), 'llm'(LLM만), 'hybrid'(하이브리드). 가중치 합계는 1.0이어야 함."
+    },
+    "_note": "LLM 관련 설정. max_output_tokens_dual은 듀얼 이미지 모드에서 더 많은 토큰이 필요하므로 증가. provider 필드 추가 (2026-05-24). score_correction 추가 (2026-05-24)."
+  },
+  "analyzers": {
+    "pigmentation": "pigmentation_v1",
+    "redness": "redness_v1",
+    "pore": "pore_v1",
+    "wrinkle": "wrinkle_v1",
+    "tone_elasticity": "tone_elasticity_v1",
+    "acne": "acne_v1",
+    "_note": "[REFACTOR PHASE 1] 분석기 알고리즘 선택. 레지스트리에 등록된 이름 사용."
+  },
+  "restorers": {
+    "default": "codeformer_v1",
+    "codeformer_v1": {
+      "repo": null,
+      "fidelity": 0.7,
+      "upscale": 1,
+      "bg_upsampler": "none"
+    },
+    "restoreformer_v1": {
+      "repo": null,
+      "device": null
+    },
+    "_note": "[REFACTOR] 복원 백엔드 선택. 레지스트리에 등록된 이름 사용."
+  },
+  "llms": {
+    "default": "gemini_v1",
+    "gemini_v1": {
+      "model": "models/gemini-2.5-pro",
+      "provider": "gemini",
+      "timeout_sec": 300,
+      "max_retries": 3
+    },
+    "_note": "[REFACTOR] LLM 선택. 레지스트리에 등록된 이름 사용. provider 필드 추가 (2026-05-24)."
+  },
+  "display_range": [
+    10.0,
+    90.0
+  ],
+  "score_safety_net": {
+    "enabled": true,
+    "acne_weight": 0.1,
+    "target_score_increase_min": 14.0,
+    "target_score_increase_max": 16.0,
+    "max_score_limit": 90.0,
+    "min_score_increase_when_lower": 1.0
+  },
+  "score_offset": {
+    "enabled": false,
+    "offset": 0.0,
+    "_note": "[FIX P3] 기본값을 enabled=false, offset=0.0으로 변경. 피부 상태와 무관한 점수 인플레이션 방지. 운영 환경에서 명시적으로 enabled=true로 설정하고 offset 값을 조정하세요. [DESIGN-7] per-category offset 또는 조건부 적용 개선 예정."
+  },
+  "restoration": {
+    "codeformer_fidelity": 0.7,
+    "codeformer_fidelity_min": 0.0,
+    "codeformer_fidelity_max": 1.0,
+    "codeformer_upscale": 1,
+    "codeformer_additional": true,
+    "input_resize": null,
+    "codeformer_bg_upsampler": "none"
+  },
+  "weights": {
+    "pigmentation_cov": 0.120,
+    "spot_density": 0.100,
+    "diffuse_redness": 0.120,
+    "focal_lesion": 0.140,
+    "pore_score": 0.120,
+    "wrinkle_score": 0.130,
+    "roughness_score": 0.080,
+    "tone_score": 0.100,
+    "elasticity_score": 0.050,
+    "skin_type_score": 0.040,
+    "_note": "[레이어A] 10개 직교 데이터 가중치 (합계 1.000). 고객 종합 점수 산출용.",
+    "_purpose": "내부 직교 키 기반 종합 점수 계산용. 레이어A 측정된 10개 직교 신호(pigmentation_cov, spot_density 등)의 가중치.",
+    "_relation": "measurement_weights(레이어B 21개 사용자 표현용 항목)와는 별개 체계. 레이어A는 내부 신호, 레이어B는 사용자 표현용 점수.",
+    "_weight_system_note": "[FIX P3-25] 가중치 체계 이원화 명시적 문서화. SkinLens는 두 가지 가중치 체계를 사용합니다:",
+    "_layer_a": "레이어A (weights): 10개 내부 직교 키 (pigmentation_cov, spot_density 등). 합계 1.000. 고객 종합 점수 산출용. 사용자에게 표시되는 최종 점수.",
+    "_layer_b": "레이어B (measurement_weights): 21개 사용자 표현용 항목 (melasma_score, freckle_score 등). 합계 1.199. Safety Net 및 LLM 보고서용. 복원품질 항목(noise_score, detail_score, color_balance_score) 포함."
+  },
+  "image_processing": {
+    "clahe": {
+      "clip_limit": 2.0,
+      "clip_limit_pore": 2.2,
+      "tile_grid_size": [8, 8],
+      "_note": "CLAHE 파라미터. clip_limit_pore는 모공 분석용 특별 값. [REFACTOR MAGIC] 하드코딩된 매직넘버를 config로 이동."
+    },
+    "blob_detection": {
+      "thresholds": [0.055, 0.042, 0.030, 0.022],
+      "min_sigma": 1.12,
+      "max_sigma": 6.5,
+      "overlap": 0.35,
+      "num_sigma": 6,
+      "_note": "Blob detection 파라미터. [REFACTOR MAGIC] 하드코딩된 매직넘버를 config로 이동."
+    },
+    "freckle_detection": {
+      "threshold": 0.08,
+      "min_sigma": 1.0,
+      "max_sigma": 5.0,
+      "overlap": 0.4,
+      "_note": "주근깨 탐지 파라미터. [REFACTOR MAGIC] 하드코딩된 매직넘버를 config로 이동."
+    }
+  },
+  "breakpoints": {
+    "area_default": [[0.0, 100.0], [0.01, 80.0], [0.03, 60.0], [0.07, 40.0], [0.15, 20.0], [0.20, 0.0]],
+    "count_default": [[0, 100.0], [5, 80.0], [15, 60.0], [30, 40.0], [60, 20.0], [100, 0.0]],
+    "melasma_score": [[0.000, 100.0], [0.001, 95.0], [0.003, 85.0], [0.005, 72.0], [0.008, 52.0], [0.015, 30.0], [0.030, 10.0], [0.050, 0.0]],
+    "freckle_score": [[0.0, 100.0], [0.8, 90.0], [1.8, 76.0], [3.0, 60.0], [4.8, 42.0], [7.0, 24.0], [10.5, 8.0], [15.0, 0.0]],
+    "freckle_score_count": [[0, 100], [8, 92], [30, 78], [100, 58], [300, 35], [600, 15], [1000, 5], [1500, 0]],
+    "redness_score": [[0.000, 100.0], [0.015, 85.0], [0.050, 65.0], [0.150, 45.0], [0.300, 25.0], [0.500, 0.0]],
+    "post_inflammatory_erythema_score": [[0.000, 100.0], [0.005, 85.0], [0.015, 65.0], [0.040, 45.0], [0.080, 25.0], [0.150, 0.0]],
+    "acne_score": [[0, 100], [0.0008, 88], [0.003, 72], [0.010, 52], [0.025, 30], [0.055, 8], [0.10, 0]],
+    "post_acne_pigment_score": [[0, 100], [0.001, 90], [0.004, 72], [0.010, 52], [0.022, 32], [0.045, 10], [0.080, 0]],
+    "pore_size_score": [[0.0, 100.0], [5.0, 95.0], [12.0, 85.0], [20.0, 72.0], [35.0, 55.0], [60.0, 35.0], [100.0, 15.0], [150.0, 0.0]],
+    "pore_sagging_score": [[0.0, 100.0], [1.5, 90.0], [3.0, 76.0], [5.0, 58.0], [7.5, 38.0], [11.0, 18.0], [15.0, 0.0]],
+    "eye_wrinkle_score": [[0.0, 100.0], [0.03, 88.0], [0.10, 72.0], [0.22, 52.0], [0.40, 30.0], [0.60, 0.0]],
+    "nasolabial_wrinkle_score": [[0.0, 100.0], [0.06, 90.0], [0.18, 74.0], [0.35, 55.0], [0.55, 32.0], [0.78, 0.0]],
+    "fine_deep_wrinkle_score": [[0.0, 100.0], [12.0, 90.0], [38.0, 75.0], [85.0, 55.0], [165.0, 35.0], [310.0, 12.0], [500.0, 0.0]],
+    "roughness_score": [[0.0, 100.0], [12.0, 90.0], [38.0, 75.0], [85.0, 55.0], [165.0, 35.0], [310.0, 12.0], [500.0, 0.0]],
+    "skin_type_score": [[0.0, 100.0], [0.003, 90.0], [0.010, 72.0], [0.025, 52.0], [0.045, 30.0], [0.070, 10.0], [0.090, 0.0]],
+    "jawline_blur_score": [[0.0, 0], [4.0, 10], [10.0, 28], [18.0, 48], [28.0, 68], [40.0, 85], [55.0, 100]],
+    "_note": "점수 매핑 브레이크포인트. [REFACTOR MAGIC] 하드코딩된 매직넘버를 config로 이동."
+  },
+  "raw_preserve_keys": ["dullness_score"],
+  "_note_raw_preserve": "레이어 B 직접 복원용 raw 값 보존 항목. [FIX P2-4] 설정 기반 관리로 개선.",
+  "_skin_only_weights_note": "피부 항목만의 종합점수 계산용. 합계 1.000 (measurement_weights에서 복원품질 3개 제외 후 정규화). [FIX BUG-9] v3.6까지 0.786으로 정규화 누락 → 수정됨.",
+  "bp_optimizer": {
+    "min_samples": 30,
+    "_note": "[FIX DESIGN-6] BPOptimizer.MIN_SAMPLES 기본값. 항목당 GT 샘플 수 임계. 50~100 권장 (데이터 충분 시)."
+  },
+  "cli_defaults": {
+    "do_restore": true,
+    "include_base64": false,
+    "score_safety_net": true,
+    "analyzer_score_tune": true,
+    "llm_report": true,
+    "llm_scores": false,
+    "_note": "CLI 기본값."
+  },
+  "gui_defaults": {
+    "restore": true,
+    "score_safety_net": true,
+    "analyzer_score_tune": true,
+    "llm_scores": false,
+    "_note": "GUI 기본값."
+  },
+  "timeouts": {
+    "job_semaphore_timeout_sec": 300,
+    "llm_timeout_sec": 300,
+    "analysis_timeout_sec": 600,
+    "restore_timeout_sec": 300,
+    "_note": "각 작업별 타임아웃 설정."
+  },
+  "device": {
+    "restoreformer_device": "auto",
+    "codeformer_device": "auto",
+    "_note": "복원기 디바이스 설정. auto/cuda/cpu."
+  },
+  "measurement_analyzers": {
+    "melasma_score": "pigmentation_v1",
+    "freckle_score": "pigmentation_v1",
+    "redness_score": "redness_v1",
+    "post_inflammatory_erythema_score": "redness_v1",
+    "acne_score": "acne_v1",
+    "post_acne_pigment_score": "acne_v1",
+    "pore_size_score": "pore_v1",
+    "pore_sagging_score": "pore_v1",
+    "eye_wrinkle_score": "wrinkle_v1",
+    "nasolabial_wrinkle_score": "wrinkle_v1",
+    "fine_deep_wrinkle_score": "wrinkle_v1",
+    "skin_tone_score": "tone_elasticity_v1",
+    "dullness_score": "tone_elasticity_v1",
+    "uneven_tone_score": "tone_elasticity_v1",
+    "jawline_blur_score": "tone_elasticity_v1",
+    "cheek_sagging_score": "tone_elasticity_v1",
+    "skin_type_score": "tone_elasticity_v1",
+    "_note": "18개 측정항목 → 분석기 버전 매핑. [REFACTOR 2026-05-23] 유연한 버전 관리를 위한 매핑 설정. roughness_score는 analyze_texture() 순수 함수로 계산 (레지스트리 없음)."
+  },
+  "category_count": 9,
+  "_category_count_note": "카테고리 개수. [REFACTOR 2026-05-24] 카테고리 추가/삭제 시 이 값만 수정하면 전체 시스템에 반영됨.",
+  "measurement_count": 18,
+  "_measurement_count_note": "측정항목 개수. [REFACTOR 2026-05-24] 측정항목 추가/삭제 시 이 값만 수정하면 전체 시스템에 반영됨.",
+  "orthogonal_count": 10,
+  "_orthogonal_count_note": "직교 항목 개수. [REFACTOR 2026-05-24] 직교 항목 추가/삭제 시 이 값만 수정하면 전체 시스템에 반영됨.",
+  "_structure_guide": {
+    "new_measurement": {
+      "steps": [
+        "1. breakpoints 섹션에 새로운 측정항목 브레이크포인트 추가",
+        "2. categories 섹션의 해당 카테고리 measurements 배열에 추가",
+        "3. measurement_to_analyzer_mapping에 분석기 매핑 추가",
+        "4. measurement_to_mix_code_mapping에 믹스 코드 매핑 추가",
+        "5. measurement_count 값 증가"
+      ],
+      "example": {
+        "breakpoints": {"new_measurement_score": [[0.0, 100.0], [10.0, 80.0], [50.0, 0.0]]},
+        "categories": {"category_name": {"measurements": ["new_measurement_score"]}},
+        "measurement_to_analyzer_mapping": {"new_measurement_score": "analyzer_v1"},
+        "measurement_to_mix_code_mapping": {"new_measurement_score": "M15"}
+      }
+    },
+    "new_orthogonal": {
+      "steps": [
+        "1. orthogonal_categories 섹션에 새로운 직교 항목 메타데이터 추가",
+        "2. composition_functions 섹션에 새로운 합성 함수 등록",
+        "3. src/skin/compose/score_composition.py에 합성 함수 구현",
+        "4. orthogonal_count 값 증가",
+        "5. weight 합계가 1.0이 되도록 기존 가중치 조정"
+      ],
+      "example": {
+        "orthogonal_categories": {
+          "new_orthogonal_score": {
+            "name_ko": "새 직교 항목",
+            "name_en": "New Orthogonal Score",
+            "weight": 0.050,
+            "source_measurements": ["measurement1", "measurement2"],
+            "composition_function": "_compose_new_orthogonal_score"
+          }
+        },
+        "composition_functions": {
+          "_compose_new_orthogonal_score": {
+            "module": "src.skin.compose.score_composition",
+            "description": "새 직교 항목 합성"
+          }
+        }
+      }
+    },
+    "new_category": {
+      "steps": [
+        "1. categories 섹션에 새로운 카테고리 추가",
+        "2. category_count 값 증가",
+        "3. 필요한 경우 mix_codes 섹션에 새로운 믹스 코드 추가"
+      ],
+      "example": {
+        "categories": {
+          "new_category": {
+            "name_ko": "새 카테고리",
+            "name_en": "New Category",
+            "description": "새 카테고리 설명",
+            "measurements": ["measurement1", "measurement2"],
+            "mix_codes": ["M15"],
+            "orthogonal_categories": ["orthogonal1"]
+          }
+        }
+      }
+    }
+  },
+  "safety_net_details": {
+    "weight_categories": {
+      "acne": 0.1,
+      "post_acne_pigment": 0.1,
+      "_note": "안전장치 적용 시 가중치가 높은 카테고리."
+    },
+    "min_score_increase": 1.0,
+    "target_increase_min": 14.0,
+    "target_increase_max": 16.0,
+    "_note": "안전장치 세부 파라미터."
+  },
+  "product_recommendation": {
+    "enabled": false,
+    "min_match_score": 0.70,
+    "max_products": 5,
+    "categories": ["세안제", "토너", "세럼", "크림", "선크림"],
+    "_note": "맞춤형 화장품 추천 설정. [REFACTOR 2026-05-22] 화장품 매칭 로직 파라미터화.",
+    "_purpose": "GUI에서 화장품 매칭 시 사용하는 파라미터입니다.",
+    "_min_match_score": "매칭 점수 임계값 (0.0 ~ 1.0). 이상인 제품만 추천.",
+    "_max_products": "최대 추천 제품 수.",
+    "_categories": "추천할 제품 카테고리 목록."
+  },
+  "prescription": {
+    "enabled": false,
+    "skin_assessment": {
+      "good_threshold": 76,
+      "critical_threshold": 40,
+      "max_percentage": 3.0,
+      "min_percentage": 0.5,
+      "_note": "피부 평가 점수 기반 처방 설정. [REFACTOR 2026-05-23] min_percentage를 0.5로 변경."
+    },
+    "age_group_mapping": [
+      {"min_age": 0, "max_age": 9, "group": 0},
+      {"min_age": 10, "max_age": 19, "group": 10},
+      {"min_age": 20, "max_age": 25, "group": 20},
+      {"min_age": 26, "max_age": 30, "group": 26},
+      {"min_age": 31, "max_age": 35, "group": 31},
+      {"min_age": 36, "max_age": 40, "group": 36},
+      {"min_age": 41, "max_age": 45, "group": 41},
+      {"min_age": 46, "max_age": 50, "group": 46},
+      {"min_age": 51, "max_age": 55, "group": 51},
+      {"min_age": 56, "max_age": 60, "group": 56},
+      {"min_age": 61, "max_age": 65, "group": 61},
+      {"min_age": 66, "max_age": 70, "group": 66},
+      {"min_age": 71, "max_age": 75, "group": 71},
+      {"min_age": 76, "max_age": 80, "group": 76},
+      {"min_age": 81, "max_age": 999, "group": 81}
+    ],
+    "_note": "[FIX P3-26] AGE_GROUP_MAPPING을 config.json으로 이전. 나이대 매핑 설정.",
+    "measurements": {
+      "dullness_score": {
+        "name_ko": "톤",
+        "name_en": "Tone",
+        "category": "tone",
+        "description": "피부 톤 및 밝기",
+        "breakpoints": "area_default"
+      },
+      "eye_wrinkle_score": {
+        "name_ko": "눈가 주름",
+        "name_en": "Eye Wrinkle",
+        "category": "wrinkle",
+        "description": "눈가 주름",
+        "breakpoints": [[0.0, 100.0], [0.03, 88.0], [0.10, 72.0], [0.22, 52.0], [0.40, 30.0], [0.60, 0.0]]
+      },
+      "nasolabial_wrinkle_score": {
+        "name_ko": "팔자 주름",
+        "name_en": "Nasolabial Wrinkle",
+        "category": "wrinkle",
+        "description": "팔자 주름",
+        "breakpoints": [[0.0, 100.0], [0.06, 90.0], [0.18, 74.0], [0.35, 55.0], [0.55, 32.0], [0.78, 0.0]]
+      },
+      "fine_deep_wrinkle_score": {
+        "name_ko": "미세/깊은 주름",
+        "name_en": "Fine/Deep Wrinkle",
+        "category": "wrinkle",
+        "description": "미세 및 깊은 주름",
+        "breakpoints": [[0.0, 100.0], [12.0, 90.0], [38.0, 75.0], [85.0, 55.0], [165.0, 35.0], [310.0, 12.0], [500.0, 0.0]]
+      },
+      "jawline_blur_score": {
+        "name_ko": "턱선 블러",
+        "name_en": "Jawline Blur",
+        "category": "elasticity",
+        "description": "턱선 블러 (탄력)",
+        "breakpoints": [[0.0, 0], [4.0, 10], [10.0, 28], [18.0, 48], [28.0, 68], [40.0, 85], [55.0, 100]]
+      },
+      "melasma_score": {
+        "name_ko": "기미",
+        "name_en": "Melasma",
+        "category": "pigmentation",
+        "description": "기미",
+        "breakpoints": [[0.000, 100.0], [0.001, 95.0], [0.003, 85.0], [0.005, 72.0], [0.008, 52.0], [0.015, 30.0], [0.030, 10.0], [0.050, 0.0]]
+      },
+      "freckle_score": {
+        "name_ko": "주근깨",
+        "name_en": "Freckle",
+        "category": "pigmentation",
+        "description": "주근깨",
+        "breakpoints": [[0.0, 100.0], [0.8, 90.0], [1.8, 76.0], [3.0, 60.0], [4.8, 42.0], [7.0, 24.0], [10.5, 8.0], [15.0, 0.0]]
+      },
+      "post_acne_pigment_score": {
+        "name_ko": "여드름 후 색소",
+        "name_en": "Post-Acne Pigment",
+        "category": "pigmentation",
+        "description": "여드름 후 색소 침착",
+        "breakpoints": [[0, 100], [0.001, 90], [0.004, 72], [0.010, 52], [0.022, 32], [0.045, 10], [0.080, 0]]
+      },
+      "redness_score": {
+        "name_ko": "홍조",
+        "name_en": "Redness",
+        "category": "redness",
+        "description": "홍조",
+        "breakpoints": [[0.000, 100.0], [0.015, 85.0], [0.050, 65.0], [0.150, 45.0], [0.300, 25.0], [0.500, 0.0]]
+      },
+      "post_inflammatory_erythema_score": {
+        "name_ko": "염증후 홍반",
+        "name_en": "Post-Inflammatory Erythema",
+        "category": "redness",
+        "description": "염증 후 홍반",
+        "breakpoints": [[0.000, 100.0], [0.005, 85.0], [0.015, 65.0], [0.040, 45.0], [0.080, 25.0], [0.150, 0.0]]
+      },
+      "pore_size_score": {
+        "name_ko": "모공 크기",
+        "name_en": "Pore Size",
+        "category": "pore",
+        "description": "모공 크기",
+        "breakpoints": [[0.0, 100.0], [5.0, 95.0], [12.0, 85.0], [20.0, 72.0], [35.0, 55.0], [60.0, 35.0], [100.0, 15.0], [150.0, 0.0]]
+      },
+      "pore_sagging_score": {
+        "name_ko": "모공 처짐",
+        "name_en": "Pore Sagging",
+        "category": "pore",
+        "description": "모공 처짐",
+        "breakpoints": [[0.0, 100.0], [1.5, 90.0], [3.0, 76.0], [5.0, 58.0], [7.5, 38.0], [11.0, 18.0], [15.0, 0.0]]
+      },
+      "roughness_score": {
+        "name_ko": "피부결",
+        "name_en": "Roughness",
+        "category": "texture",
+        "description": "피부결 거칠기",
+        "breakpoints": [[0.0, 100.0], [12.0, 90.0], [38.0, 75.0], [85.0, 55.0], [165.0, 35.0], [310.0, 12.0], [500.0, 0.0]]
+      },
+      "skin_tone_score": {
+        "name_ko": "피부 톤",
+        "name_en": "Skin Tone",
+        "category": "tone",
+        "description": "피부 톤",
+        "breakpoints": "area_default"
+      },
+      "uneven_tone_score": {
+        "name_ko": "불균일 톤",
+        "name_en": "Uneven Tone",
+        "category": "tone",
+        "description": "피부 톤 불균일",
+        "breakpoints": "area_default"
+      },
+      "cheek_sagging_score": {
+        "name_ko": "볼 처짐",
+        "name_en": "Cheek Sagging",
+        "category": "elasticity",
+        "description": "볼 처짐 (탄력)",
+        "breakpoints": "area_default"
+      },
+      "acne_score": {
+        "name_ko": "여드름",
+        "name_en": "Acne",
+        "category": "acne",
+        "description": "여드름",
+        "breakpoints": [[0, 100], [0.0008, 88], [0.003, 72], [0.010, 52], [0.025, 30], [0.055, 8], [0.10, 0]]
+      },
+      "skin_type_score": {
+        "name_ko": "피부 타입",
+        "name_en": "Skin Type",
+        "category": "skin_type",
+        "description": "피부 타입 (지성/건성/중성)",
+        "breakpoints": [[0.0, 100.0], [0.003, 90.0], [0.010, 72.0], [0.025, 52.0], [0.045, 30.0], [0.070, 10.0], [0.090, 0.0]]
+      },
+      "_note": "18개 측정항목 메타데이터. [REFACTOR 2026-05-24] 측정항목 추가/변경/삭제 시 이 섹션만 수정하면 됨. breakpoints 필드는 직접 값 또는 'area_default'/'count_default' 참조 가능."
+    },
+    "orthogonal_categories": {
+      "_note_weight_system": "가중치 체계 삼원화: 레이어 A(직교 10개, 합계 1.000)는 사용자 표시용, 레이어 B(보고서 21개, 합계 1.199)는 Safety Net/LLM용. 복원품질(noise, detail, color_balance)은 레이어 B에만 포함. 상세: docs/weight_system_documentation.md",
+      "pigmentation_cov": {
+        "name_ko": "색소침착 커버리지",
+        "name_en": "Pigmentation Coverage",
+        "weight": 0.120,
+        "source_measurements": ["melasma_score", "freckle_score", "post_acne_pigment_score"],
+        "composition_function": "_compose_pigmentation_scores"
+      },
+      "spot_density": {
+        "name_ko": "반점 밀도",
+        "name_en": "Spot Density",
+        "weight": 0.100,
+        "source_measurements": [],
+        "composition_function": null
+      },
+      "diffuse_redness": {
+        "name_ko": "확산성 홍조",
+        "name_en": "Diffuse Redness",
+        "weight": 0.120,
+        "source_measurements": ["redness_score"],
+        "composition_function": "_compose_redness_lesion_scores",
+        "_note": "[FIX ORTHOGONAL-A] PIE 제거 - redness_score 단독 사용"
+      },
+      "focal_lesion": {
+        "name_ko": "국소 병변",
+        "name_en": "Focal Lesion",
+        "weight": 0.140,
+        "source_measurements": ["acne_score", "post_acne_pigment_score"],
+        "composition_function": "_compose_redness_lesion_scores",
+        "_note": "[FIX ORTHOGONAL-A] PIE 제거 - acne 0.65 + post_acne_pigment 0.35"
+      },
+      "pore_score": {
+        "name_ko": "모공 점수",
+        "name_en": "Pore Score",
+        "weight": 0.120,
+        "source_measurements": ["pore_size_score", "pore_sagging_score"],
+        "composition_function": "_compose_pore_score"
+      },
+      "wrinkle_score": {
+        "name_ko": "주름 점수",
+        "name_en": "Wrinkle Score",
+        "weight": 0.160,
+        "source_measurements": ["eye_wrinkle_score", "nasolabial_wrinkle_score", "fine_deep_wrinkle_score"],
+        "composition_function": "_compose_wrinkle_score",
+        "_note": "[FIX ORTHOGONAL-C] 가중치 증가 (0.130 → 0.160) - roughness 감소분 보상"
+      },
+      "roughness_score": {
+        "name_ko": "거칠기 점수",
+        "name_en": "Roughness Score",
+        "weight": 0.050,
+        "source_measurements": ["roughness_score"],
+        "composition_function": "_compose_roughness_score",
+        "_note": "[FIX ORTHOGONAL-C] 가중치 감소 (0.080 → 0.050) - fine_deep와의 중복 보정"
+      },
+      "tone_score": {
+        "name_ko": "톤 점수",
+        "name_en": "Tone Score",
+        "weight": 0.100,
+        "source_measurements": ["skin_tone_score", "dullness_score", "uneven_tone_score"],
+        "composition_function": "_compose_tone_score"
+      },
+      "elasticity_score": {
+        "name_ko": "탄력 점수",
+        "name_en": "Elasticity Score",
+        "weight": 0.050,
+        "source_measurements": ["jawline_blur_score", "cheek_sagging_score"],
+        "composition_function": "_compose_elasticity_score"
+      },
+      "skin_type_score": {
+        "name_ko": "피부 타입 점수",
+        "name_en": "Skin Type Score",
+        "weight": 0.040,
+        "source_measurements": ["skin_type_score"],
+        "composition_function": "_compose_skin_type_score"
+      },
+      "_note": "10개 직교 항목 메타데이터. [REFACTOR 2026-05-24] 직교 항목 추가/변경/삭제 시 이 섹션만 수정하면 됨. weight 합계는 1.0이어야 함."
+    },
+    "composition_functions": {
+      "_compose_pigmentation_scores": {
+        "module": "src.skin.compose.score_composition",
+        "description": "색소 점수 합성 (melasma, freckle → pigmentation_cov, spot_density)"
+      },
+      "_compose_redness_lesion_scores": {
+        "module": "src.skin.compose.score_composition",
+        "description": "홍조·병변 점수 합성 (redness → diffuse_redness, acne → focal_lesion)"
+      },
+      "_compose_pore_score": {
+        "module": "src.skin.compose.score_composition",
+        "description": "모공 점수 합성 (pore_size, pore_sagging → pore_score)"
+      },
+      "_compose_wrinkle_score": {
+        "module": "src.skin.compose.score_composition",
+        "description": "주름 점수 합성 (eye, nasolabial, fine_deep → wrinkle_score)"
+      },
+      "_compose_roughness_score": {
+        "module": "src.skin.compose.score_composition",
+        "description": "거칠기 점수 합성 (roughness → roughness_score)"
+      },
+      "_compose_tone_score": {
+        "module": "src.skin.compose.score_composition",
+        "description": "톤 점수 합성 (skin_tone, dullness, uneven_tone → tone_score)"
+      },
+      "_compose_elasticity_score": {
+        "module": "src.skin.compose.score_composition",
+        "description": "탄력 점수 합성 (jawline_blur, cheek_sagging → elasticity_score)"
+      },
+      "_compose_skin_type_score": {
+        "module": "src.skin.compose.score_composition",
+        "description": "피부 타입 점수 합성 (skin_type → skin_type_score)"
+      },
+      "_note": "합성 함수 레지스트리. [REFACTOR 2026-05-24] 새로운 합성 함수 추가 시 이 섹션에 등록 필요. 함수명 → 모듈 경로 매핑."
+    },
+    "categories": {
+      "pigmentation": {
+        "name_ko": "색소",
+        "name_en": "Pigmentation",
+        "description": "색소침착 관련 측정항목",
+        "measurements": ["melasma_score", "freckle_score", "post_acne_pigment_score"],
+        "mix_codes": ["M06"],
+        "orthogonal_categories": ["pigmentation_cov"]
+      },
+      "wrinkle": {
+        "name_ko": "주름",
+        "name_en": "Wrinkle",
+        "description": "주름 관련 측정항목",
+        "measurements": ["eye_wrinkle_score", "nasolabial_wrinkle_score", "fine_deep_wrinkle_score"],
+        "mix_codes": ["M02"],
+        "orthogonal_categories": ["wrinkle_score"]
+      },
+      "redness": {
+        "name_ko": "홍조",
+        "name_en": "Redness",
+        "description": "홍조 관련 측정항목",
+        "measurements": ["redness_score"],
+        "mix_codes": ["M07"],
+        "orthogonal_categories": ["diffuse_redness"],
+        "_note": "[FIX ORTHOGONAL-A] PIE 제거 - redness_score 단독 사용"
+      },
+      "pore": {
+        "name_ko": "모공",
+        "name_en": "Pore",
+        "description": "모공 관련 측정항목",
+        "measurements": ["pore_size_score", "pore_sagging_score"],
+        "mix_codes": ["M09"],
+        "orthogonal_categories": ["pore_score"]
+      },
+      "texture": {
+        "name_ko": "피부결",
+        "name_en": "Texture",
+        "description": "피부결 관련 측정항목",
+        "measurements": ["roughness_score"],
+        "mix_codes": ["M10"],
+        "orthogonal_categories": ["roughness_score"]
+      },
+      "tone": {
+        "name_ko": "톤",
+        "name_en": "Tone",
+        "description": "피부 톤 관련 측정항목",
+        "measurements": ["skin_tone_score", "dullness_score", "uneven_tone_score"],
+        "mix_codes": ["M01"],
+        "orthogonal_categories": ["tone_score"]
+      },
+      "elasticity": {
+        "name_ko": "탄력",
+        "name_en": "Elasticity",
+        "description": "탄력 관련 측정항목",
+        "measurements": ["jawline_blur_score", "cheek_sagging_score"],
+        "mix_codes": ["M05"],
+        "orthogonal_categories": ["elasticity_score"]
+      },
+      "acne": {
+        "name_ko": "여드름",
+        "name_en": "Acne",
+        "description": "여드름 관련 측정항목",
+        "measurements": ["acne_score"],
+        "mix_codes": ["M14"],
+        "orthogonal_categories": []
+      },
+      "skin_type": {
+        "name_ko": "피부 타입",
+        "name_en": "Skin Type",
+        "description": "피부 타입 관련 측정항목",
+        "measurements": ["skin_type_score"],
+        "mix_codes": [],
+        "orthogonal_categories": ["skin_type_score"]
+      },
+      "_note": "카테고리별 그룹핑. [REFACTOR 2026-05-24] 카테고리 추가/변경/삭제 시 이 섹션만 수정하면 됨. 보고서/필터링에 활용."
+    },
+    "analyzers": {
+      "pigmentation_v1": {
+        "class": "PigmentationAnalyzerV1",
+        "module": "src.skin.analyzers.strategies.pigmentation_analyzer",
+        "aliases": ["pigmentation", "pig_v1"],
+        "enabled": true
+      },
+      "pigmentation_v2": {
+        "class": "PigmentationAnalyzerV2",
+        "module": "src.skin.analyzers.strategies.pigmentation_analyzer",
+        "aliases": ["pig_v2"],
+        "enabled": true
+      },
+      "redness_v1": {
+        "class": "RednessAnalyzerV1",
+        "module": "src.skin.analyzers.strategies.redness_analyzer",
+        "aliases": ["redness", "red_v1"],
+        "enabled": true
+      },
+      "pore_v1": {
+        "class": "PoreAnalyzerV1",
+        "module": "src.skin.analyzers.strategies.pore_analyzer",
+        "aliases": ["pore", "pore_v1"],
+        "enabled": true
+      },
+      "wrinkle_v1": {
+        "class": "WrinkleAnalyzerV1",
+        "module": "src.skin.analyzers.strategies.wrinkle_analyzer",
+        "aliases": ["wrinkle", "wrinkle_v1"],
+        "enabled": true
+      },
+      "tone_elasticity_v1": {
+        "class": "ToneElasticityAnalyzerV1",
+        "module": "src.skin.analyzers.strategies.tone_elasticity_analyzer",
+        "aliases": ["tone_elasticity", "tone_v1"],
+        "enabled": true
+      },
+      "acne_v1": {
+        "class": "AcneAnalyzerV1",
+        "module": "src.skin.analyzers.strategies.acne_analyzer",
+        "aliases": ["acne", "acne_v1"],
+        "enabled": true
+      },
+      "_note": "Analyzer 레지스트리. [REFACTOR 2026-05-24] Analyzer 추가/변경/삭제 시 이 섹션만 수정하면 됨. enabled=false로 비활성화 가능."
+    },
+    "measurement_to_mix_code_mapping": {
+      "dullness_score": "M01",
+      "eye_wrinkle_score": "M02",
+      "nasolabial_wrinkle_score": "M02",
+      "fine_deep_wrinkle_score": "M02",
+      "jawline_blur_score": "M05",
+      "melasma_score": "M06",
+      "freckle_score": "M06",
+      "post_acne_pigment_score": "M06",
+      "redness_score": "M07",
+      "post_inflammatory_erythema_score": "M07",
+      "pore_size_score": "M09",
+      "pore_sagging_score": "M09",
+      "roughness_score": "M10",
+      "acne_score": "M14",
+      "_note": "17개 측정항목 → 믹스 코드(M01-M14) 직접 매핑. [REFACTOR 2026-05-23] A01~A14 → M01~M14 변경. 향후 믹스 코드 추가/변경/删除 시 이 설정만 수정하면 됨."
+    },
+    "mix_codes": {
+      "M01": {
+        "name": "광채",
+        "category": "radiance",
+        "description": "톤 & 밝기 관리",
+        "ingredients": ["비타민C", "나이아신아마이드"],
+        "status": "active"
+      },
+      "M02": {
+        "name": "주름",
+        "category": "wrinkle",
+        "description": "주름 관리",
+        "ingredients": ["레티놀", "펩타이드", "아데노신"],
+        "status": "active"
+      },
+      "M03": {
+        "name": "다크서클",
+        "category": "dark_circle",
+        "description": "다크서클 관리",
+        "ingredients": [],
+        "status": "reserved"
+      },
+      "M04": {
+        "name": "유분",
+        "category": "oiliness",
+        "description": "유분 관리",
+        "ingredients": [],
+        "status": "reserved"
+      },
+      "M05": {
+        "name": "탄력",
+        "category": "firmness",
+        "description": "탄력 & 처짐 관리",
+        "ingredients": ["콜라겐", "엘라스틴"],
+        "status": "active"
+      },
+      "M06": {
+        "name": "색소침착",
+        "category": "age_spot",
+        "description": "색소침착 관리",
+        "ingredients": ["비타민C", "나이아신아마이드", "알부틴", "트라넥삼산"],
+        "status": "active"
+      },
+      "M07": {
+        "name": "홍조",
+        "category": "redness",
+        "description": "홍조·혈관 관리",
+        "ingredients": ["시카", "판테놀", "알란토인"],
+        "status": "active"
+      },
+      "M08": {
+        "name": "하안검 처짐",
+        "category": "droopy_lower_eyelid",
+        "description": "하안검 처짐 관리",
+        "ingredients": [],
+        "status": "reserved"
+      },
+      "M09": {
+        "name": "모공",
+        "category": "pore",
+        "description": "모공 관리",
+        "ingredients": ["살리실산", "BHA", "PHA"],
+        "status": "active"
+      },
+      "M10": {
+        "name": "피부결",
+        "category": "texture",
+        "description": "피부결 관리",
+        "ingredients": ["AHA", "효소", "각질 제거 성분"],
+        "status": "active"
+      },
+      "M11": {
+        "name": "눈밑 지방",
+        "category": "eye_bag",
+        "description": "눈밑 지방 관리",
+        "ingredients": [],
+        "status": "reserved"
+      },
+      "M12": {
+        "name": "상안검 처짐",
+        "category": "droopy_upper_eyelid",
+        "description": "상안검 처짐 관리",
+        "ingredients": [],
+        "status": "reserved"
+      },
+      "M13": {
+        "name": "수분",
+        "category": "moisture",
+        "description": "수분 관리",
+        "ingredients": [],
+        "status": "reserved"
+      },
+      "M14": {
+        "name": "여드름",
+        "category": "acne",
+        "description": "여드름 & 흔적 관리",
+        "ingredients": ["살리실산", "티트리 오일", "나이아신아마이드"],
+        "status": "active"
+      },
+      "_note": "믹스 코드 정의. [REFACTOR 2026-05-23] 믹스 코드 추가/변경/삭제 시 이 설정만 수정하면 됨. status: active(사용중), reserved(향후 확장용)."
+    },
+    "pcr": {
+      "total_rules": [
+        {"rv_min": 0, "rv_max": 999, "mix_code": null, "percentage": 0.0},
+        {"rv_min": -10, "rv_max": 0, "mix_code": "M14", "percentage": 1.5},
+        {"rv_min": -20, "rv_max": -10, "mix_code": "M14", "percentage": 2.0},
+        {"rv_min": -30, "rv_max": -20, "mix_code": "M18", "percentage": 2.5},
+        {"rv_min": -999, "rv_max": -30, "mix_code": "M18", "percentage": 3.0}
+      ],
+      "beneficial_rules": [
+        {"rv_min": 0, "rv_max": 999, "mix_code": null, "percentage": 0.0},
+        {"rv_min": -10, "rv_max": 0, "mix_code": "M15", "percentage": 1.5},
+        {"rv_min": -20, "rv_max": -10, "mix_code": "M15", "percentage": 2.0},
+        {"rv_min": -30, "rv_max": -20, "mix_code": "M19", "percentage": 2.5},
+        {"rv_min": -999, "rv_max": -30, "mix_code": "M19", "percentage": 3.0}
+      ],
+      "trouble_rules": [
+        {"rv_min": -999, "rv_max": 0, "mix_code": null, "percentage": 0.0},
+        {"rv_min": 0, "rv_max": 10, "mix_code": "M16", "percentage": 1.5},
+        {"rv_min": 10, "rv_max": 20, "mix_code": "M16", "percentage": 2.0},
+        {"rv_min": 20, "rv_max": 30, "mix_code": "M20", "percentage": 2.5},
+        {"rv_min": 30, "rv_max": 999, "mix_code": "M20", "percentage": 3.0}
+      ],
+      "harmful_rules": [
+        {"rv_min": -999, "rv_max": 0, "mix_code": null, "percentage": 0.0},
+        {"rv_min": 0, "rv_max": 10, "mix_code": "M17", "percentage": 1.5},
+        {"rv_min": 10, "rv_max": 20, "mix_code": "M17", "percentage": 2.0},
+        {"rv_min": 20, "rv_max": 30, "mix_code": "M21", "percentage": 2.5},
+        {"rv_min": 30, "rv_max": 999, "mix_code": "M21", "percentage": 3.0}
+      ],
+      "_note": "PCR 결과 기반 처방 설정. [REFACTOR 2026-05-22] 처방전 로직 파라미터화.",
+      "_purpose": "prescription_calculator.py에서 처방전 계산 시 사용하는 파라미터입니다."
+    }
+  },
+  "measurement_weights": {
+    "_note": "[레이어B] 18개 사용자 표현용 항목 가중치 (합계 1.0). Safety Net 및 LLM 전달용 보고서.",
+    "_purpose": "레이어B 보고서용 가중치. 18개 사용자 표현용 항목(melasma_score, freckle_score 등)의 가중치.",
+    "_relation": "weights(레이어A 10개 내부 직교 키)와는 별개 체계. 레이어A는 고객 종합 점수 산출용(합계 1.0), 레이어B는 보고서 표현용(합계 1.0).",
+    "_fix": "2026-05-24: 18개 측정항목 합계를 0.985 → 1.0으로 정규화 (원래 설정 오류 수정)",
+    "18개 측정항목": {
+        "melasma_score": 0.051,
+        "freckle_score": 0.066,
+        "redness_score": 0.051,
+        "post_inflammatory_erythema_score": 0.066,
+        "acne_score": 0.283,
+        "post_acne_pigment_score": 0.046,
+        "pore_size_score": 0.086,
+        "pore_sagging_score": 0.046,
+        "eye_wrinkle_score": 0.046,
+        "nasolabial_wrinkle_score": 0.039,
+        "fine_deep_wrinkle_score": 0.036,
+        "roughness_score": 0.049,
+        "skin_tone_score": 0.036,
+        "dullness_score": 0.030,
+        "uneven_tone_score": 0.020,
+        "jawline_blur_score": 0.025,
+        "cheek_sagging_score": 0.020,
+        "skin_type_score": 0.005
+      }
+  },
+  "restoration_quality_weights": {
+    "_note": "[레이어B] 복원품질 관련 항목 가중치 (합계 0.214). 별도 체계.",
+    "_purpose": "복원품질 평가용 가중치. noise_score, color_balance_score, detail_score의 가중치.",
+    "_relation": "measurement_weights와 별개 체계. 복원품질은 18개 측정항목과 합산하지 않음.",
+    "복원품질 관련 항목": {
+      "noise_score": 0.130,
+      "color_balance_score": 0.014,
+      "detail_score": 0.070
+    }
+  },
+  "actual_ranges": {
+    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 측정 항목 실측 범위 파라미터.",
+    "_purpose": "측정 알고리즘 내부 계산에 사용되는 범위 파라미터.",
+    "카테고리별 커버리지 범위": {
+      "pigmentation_coverage": [40.0, 85.0],
+      "redness_coverage": [45.0, 85.0],
+      "acne_coverage": [50.0, 90.0],
+      "pore_coverage": [40.0, 85.0],
+      "wrinkle_coverage": [45.0, 85.0],
+      "roughness_coverage": [40.0, 85.0],
+      "tone_coverage": [40.0, 85.0],
+      "elasticity_coverage": [45.0, 85.0],
+      "skin_type_coverage": [40.0, 100.0]
+    },
+    "18개 측정항목 실측 범위": {
+      "melasma_score": [55.0, 95.0],
+      "freckle_score": [40.0, 90.0],
+      "redness_score": [55.0, 88.0],
+      "post_inflammatory_erythema_score": [65.0, 90.0],
+      "acne_score": [28.0, 90.0],
+      "post_acne_pigment_score": [55.0, 90.0],
+      "pore_size_score": [55.0, 85.0],
+      "pore_sagging_score": [52.0, 82.0],
+      "eye_wrinkle_score": [58.0, 85.0],
+      "nasolabial_wrinkle_score": [55.0, 85.0],
+      "fine_deep_wrinkle_score": [55.0, 88.0],
+      "roughness_score": [45.0, 90.0],
+      "skin_tone_score": [40.0, 80.0],
+      "dullness_score": [45.0, 82.0],
+      "uneven_tone_score": [50.0, 85.0],
+      "jawline_blur_score": [55.0, 85.0],
+      "cheek_sagging_score": [55.0, 85.0],
+      "skin_type_score": [40.0, 100.0]
+    }
+  },
+  "score_mapping": {
+      "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 내부 원시 점수에서 최종 점수 매핑.",
+      "_purpose": "18개 사용자 표현용 항목을 10개 내부 직교 키에 매핑. ReportLayer._fallback_from_v3()에서 사용.",
+      "원시 점수 소스 매핑 및 보정 계수": {
+        "melasma_score": {"source": "pigmentation_cov", "coefficient": 1.0},
+        "freckle_score": {"source": "spot_density", "coefficient": 1.0},
+        "redness_score": {"source": "diffuse_redness", "coefficient": 1.0},
+        "post_inflammatory_erythema_score": {"source": "diffuse_redness", "coefficient": 0.85},
+        "acne_score": {"source": "focal_lesion", "coefficient": 1.0},
+        "post_acne_pigment_score": {"source": "focal_lesion", "coefficient": 0.90},
+        "pore_size_score": {"source": "pore_score", "coefficient": 1.0},
+        "pore_sagging_score": {"source": "pore_score", "coefficient": 0.92},
+        "eye_wrinkle_score": {"source": "wrinkle_score", "coefficient": 1.0},
+        "nasolabial_wrinkle_score": {"source": "wrinkle_score", "coefficient": 0.92},
+        "fine_deep_wrinkle_score": {"source": "wrinkle_score", "coefficient": 0.88},
+        "roughness_score": {"source": "roughness_score", "coefficient": 1.0},
+        "skin_tone_score": {"source": "tone_score", "coefficient": 1.0},
+        "dullness_score": {"source": "tone_score", "coefficient": 0.88},
+        "uneven_tone_score": {"source": "tone_score", "coefficient": 0.92},
+        "jawline_blur_score": {"source": "elasticity_score", "coefficient": 1.0},
+        "cheek_sagging_score": {"source": "elasticity_score", "coefficient": 1.0},
+        "skin_type_score": {"source": "skin_type_score", "coefficient": 1.0}
+      }
+  },
+  "score_criteria": {
+    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 점수 기준 설정.",
+    "_purpose": "점수 스케일 및 등급 라벨 정의.",
+    "점수 스케일": {
+      "매우 우수": {"min": 90, "max": 100},
+      "우수": {"min": 80, "max": 90},
+      "양호": {"min": 70, "max": 80},
+      "집중케어 추천": {"min": 60, "max": 70},
+      "개선 필요": {"min": 0, "max": 60}
+    },
+    "등급 라벨": {
+      "매우 우수": "90점 이상",
+      "우수": "80~90점",
+      "양호": "70~80점",
+      "집중케어 추천": "60~70점",
+      "개선 필요": "60점 미만"
+    }
+  },
+  "recommendation_guidelines": {
+    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 관리 권고사항 가이드라인.",
+    "_purpose": "LLM이 생성하는 관리 권고사항의 형식과 내용 가이드라인.",
+    "형식 요구사항": {
+      "항목 수": {"min": 3, "max": 5},
+      "형식": "번호 목록 (1. ~ 5.)",
+      "각 항목": "구체적 케어 방법 제시 (1~2문장)"
+    },
+    "내용 가이드라인": [
+      "측정된 피부 상태 기반 우선순위별 케어 방법",
+      "점수가 낮은 항목(개선 필요)에 대한 집중 케어 권고",
+      "일상 관리 루틴 포함 (세안, 보습, 자외선 차단 등)",
+      "제품 사용법 및 주의사항 포함 가능",
+      "의학적 진단이 아닌 피부 관리 관점으로 작성"
+    ]
+  }
+}

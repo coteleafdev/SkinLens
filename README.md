@@ -1,0 +1,586 @@
+# SkinLens v1.0
+
+AI 기반 피부 분석 및 복원 파이프라인 프로젝트입니다. RestoreFormer++, CodeFormer를 활용한 이미지 복원과 SkinAnalyzerV3를 통한 피부 상태 분석을 제공합니다.
+
+[REFACTOR 2026-05-16] Stable Diffusion 기능 제거 (사용하지 않음)
+[REFACTOR 2026-05-24] 프로젝트명 변경: CÔTELEAF Skin Analysis v3 → SkinLens v1.0
+
+## 📋 목차
+
+- [프로젝트 개요](#프로젝트-개요)
+- [프로젝트 전체 개요](#프로젝트-전체-개요)
+- [아키텍처](#아키텍처)
+- [디렉토리 구조](#디렉토리-구조)
+- [빠른 시작](#빠른-시작)
+- [사용법](#사용법)
+- [API 서버](#api-서버)
+- [DB 관리](#db-관리)
+- [테스트](#테스트)
+- [문서](#문서)
+- [환경변수](#환경변수)
+- [코드 리뷰 반영](#코드-리뷰-반영)
+
+## 프로젝트 개요
+
+### 주요 기능
+
+- **이미지 복원**: RestoreFormer++, CodeFormer를 활용한 고품질 이미지 복원
+- **피부 분석**: 18개 측정항목 기반 피부 상태 분석 (색소, 홍조, 모공, 주름 등)
+- **Gemini AI 소견**: Google Gemini를 활용한 AI 기반 피부 소견 생성
+- **맞춤형 화장품 추천**: 설문 응답과 측정 점수를 기반으로 당사 맞춤형 화장품 자동 추천 (ProductTable 기반)
+- **CLI 모드**: 서버 환경에서 GUI 없이 동작하는 명령줄 인터페이스
+- **GUI 모드**: PySide6 기반 그래픽 사용자 인터페이스
+- **API 서버**: FastAPI 기반 REST API 서버
+- **실행 이력**: SQLite 기반 실행 이력 추적 및 리소스 모니터링
+- **로그 DB**: 애플리케이션 로그 DB 저장 및 다운로드 API (롤링 방식 자동 정리)
+- **텔레그램 알림**: 분석 결과 및 시스템 상태 텔레그램 알림
+- **보안 기능**: JWT 인증 (시크릿 키 검증), 역할 기반 접근 제어, 감사 로그, 속도 제한 (분석 엔드포인트 3/분)
+- **DB 관리**: Health Check, 자동 백업, 마이그레이션, 아카이빙, 연결 풀링, 트랜잭션 관리
+
+### 기술 스택
+
+- **Deep Learning**: PyTorch, Transformers
+- **이미지 처리**: OpenCV, PIL, scikit-image
+- **GUI**: PySide6
+- **Web API**: FastAPI, Uvicorn
+- **AI**: Google Generative AI (Gemini)
+- **데이터베이스**: SQLite, Supabase (PostgreSQL)
+- **보안**: python-jose (JWT), passlib, slowapi
+- **DB 관리**: tenacity (재시도), click (CLI)
+
+## 프로젝트 전체 개요
+
+프로젝트의 전체적인 개요, 비전, 기술 스택 상세, 아키텍처, 로드맵 등을 포괄적으로 설명하는 문서는 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)를 참조하세요.
+
+이 문서는 다음 내용을 포함합니다:
+- 프로젝트 비전 및 목표
+- 상세 기술 스택
+- 17개 측정항목 상세 설명
+- 전체 디렉토리 구조
+- 주요 기능 상세 설명
+- 코드 리뷰 반영 이력
+- 단기/중기/장기 로드맵
+
+## 아키텍처
+
+### 시스템 구성도
+
+```mermaid
+graph TB
+    subgraph "사용자 인터페이스"
+        GUI[GUI 모드<br/>PySide6]
+        CLI[CLI 모드<br/>argparse]
+        API[API 서버<br/>FastAPI]
+        TG[텔레그램<br/>Bot]
+    end
+
+    subgraph "파이프라인 코어"
+        PC[파이프라인 코어<br/>pipeline_core.py]
+    end
+
+    subgraph "복원 모델"
+        RF[RestoreFormer++]
+        CF[CodeFormer]
+    end
+
+    subgraph "피부 분석"
+        SA[SkinAnalyzerV3<br/>17개 측정항목]
+    end
+
+    subgraph "Gemini AI"
+        GM[Gemini AI<br/>소견 생성]
+        PT[ProductTable<br/>맞춤형 화장품<br/>성분 정보]
+    end
+
+    subgraph "실행 이력"
+        EH[SQLite<br/>execution_history.py<br/>실행 이력 + 로그]
+    end
+
+    GUI --> PC
+    CLI --> PC
+    API --> PC
+    TG --> PC
+
+    PC --> RF
+    PC --> CF
+    PC --> SA
+
+    RF --> SA
+    CF --> SA
+
+    SA --> GM
+    PC --> EH
+    SA --> EH
+```
+
+### 데이터 흐름
+
+```mermaid
+flowchart LR
+    IN[입력 이미지<br/>파일/URL] --> RF[복원<br/>RestoreFormer++<br/>CodeFormer]
+    RF --> SA[피부 분석<br/>SkinAnalyzerV3]
+    SA --> GM{Gemini 활성화?}
+    GM -->|예| GM_RUN[Gemini AI<br/>소견 생성]
+    GM -->|아니오| RES[결과 저장]
+    GM_RUN --> RES
+    RES --> EH[실행 이력<br/>SQLite 저장<br/>+ 로그 DB]
+    EH --> OUT[출력<br/>JSON/이미지]
+```
+
+## 디렉토리 구조
+
+```
+SkinLens v1.0/
+├── src/                        # 소스 코드
+│   ├── cli/                    # CLI 모듈
+│   │   └── skin_analysis_cli.py    # CLI 진입점
+│   ├── config/                 # 설정 모듈
+│   │   ├── config_manager.py       # 설정 관리자
+│   │   └── roi_manager.py          # ROI 관리자
+│   ├── gui/                    # GUI 모듈
+│   │   ├── image_enhancer.py        # 메인 GUI
+│   │   ├── analyzer_compare_gui.py  # 비교 GUI
+│   │   └── compare_dialog.py        # 비교 다이얼로그
+│   ├── server/                 # FastAPI 서버
+│   │   ├── server.py               # API 서버
+│   │   └── deps.py                 # 서버 의존성
+│   ├── telegram/               # 텔레그램 모듈
+│   │   ├── bridge.py               # 통합 브리지
+│   │   ├── commands.py             # 명령 핸들러
+│   │   ├── monitors.py             # 모니터링 믹스인
+│   │   ├── notifier.py             # 알림 발송
+│   │   └── formatters.py           # 메시지 포맷터
+│   ├── skin/                   # 피부 분석 코어
+│   │   ├── core/                    # 핵심 분석 로직
+│   │   │   ├── face_detector.py      # 얼굴 감지
+│   │   │   └── image_utils.py        # 이미지 유틸리티
+│   │   ├── analyzers/              # 분석기 전략
+│   │   │   ├── pigmentation.py      # 색소 분석
+│   │   │   ├── redness.py           # 홍조 분석
+│   │   │   ├── pore.py              # 모공 분석
+│   │   │   ├── wrinkle_texture.py   # 주름/결 분석
+│   │   │   ├── tone_elasticity.py   # 톤/탄력 분석
+│   │   │   └── acne.py              # 여드름 분석
+│   │   ├── compose/                # 점수 조합
+│   │   │   └── score_composition.py # 점수 조합 로직
+│   │   └── strategies/             # 분석기 전략 패턴
+│   ├── pipeline/               # 파이프라인
+│   │   └── pipeline_core.py        # 복원 파이프라인
+│   ├── scoring/                # 점수 계산
+│   │   ├── skin_scoring.py         # 피부 점수 계산
+│   │   ├── _core.py                # 핵심 분석 로직
+│   │   └── _multi_view.py          # 다중 뷰 분석
+│   ├── llm/                    # LLM 모듈
+│   │   ├── llm_reporter.py         # LLM 소견 생성
+│   │   ├── llm_prompt_builder.py   # 프롬프트 빌더
+│   │   └── llm_providers.py        # LLM 제공자
+│   ├── db/                     # 데이터베이스
+│   │   ├── db_cli.py               # DB CLI
+│   │   └── repositories.py         # DB 리포지토리
+│   ├── restoration/             # 복원 모듈
+│   │   └── restoration_manager.py  # 복원 관리자
+│   ├── prescription/           # 처방전 모듈
+│   │   └── prescription_manager.py # 처방전 관리자
+│   └── utils/                  # 공통 유틸리티
+│       └── ...
+├── external/                   # 외부 모델 (git 제외)
+│   ├── CodeFormer/              # CodeFormer 모델
+│   └── RestoreFormerPlusPlus/  # RestoreFormer++ 모델
+├── docs/                       # 문서
+│   ├── *.md                    # 마크다운 문서
+│   ├── html/                   # HTML 문서
+│   └── db/                     # DB 문서
+├── runtime/                    # 런타임 파일 (git 제외)
+│   ├── data/                   # 데이터 파일
+│   │   └── db/                 # 데이터베이스 파일
+│   │       ├── execution_history.db
+│   │       ├── skin_analysis.db
+│   │       └── backup/          # 백업 DB
+│   ├── logs/                   # 로그 파일
+│   ├── temp/                   # 임시 파일
+│   ├── results/                # 결과 파일
+│   └── weights/                # 모델 가중치
+├── scripts/                    # 유틸리티 스크립트
+│   ├── batch_report.py         # 배치 리포트
+│   ├── bp_optimizer.py         # 백포인트 최적화
+│   ├── score_bias_monitor.py   # 점수 편향 모니터링
+│   ├── check_llm_models.py    # LLM 모델 확인
+│   ├── monitors.py             # 시스템 모니터링
+│   └── deploy/                # 배포 스크립트
+│       ├── deploy.ps1
+│       └── deploy.sh
+├── tests/                      # 테스트
+│   ├── test_*.py               # 단위/통합 테스트
+│   └── README.md               # 테스트 가이드
+├── main.py                     # 메인 진입점
+├── pyproject.toml              # 프로젝트 설정
+├── requirements.txt            # 전체 의존성
+├── requirements-core.txt       # 코어 의존성 (서버/CLI)
+├── requirements-dev.txt        # 개발 의존성
+├── requirements-gui.txt        # GUI 의존성
+├── pytest.ini                  # pytest 설정
+└── README.md                   # 이 파일
+```
+
+## 빠른 시작
+
+### 사전 요구사항
+
+- Python 3.8+
+- CUDA 11.8+ (GPU 사용 시)
+- 16GB+ RAM (GPU 사용 권장)
+
+### 설치
+
+```bash
+# 코어 의존성 설치 (서버/CLI)
+pip install -r requirements-core.txt
+
+# GUI 의존성 설치 (GUI 모드 사용 시)
+pip install -r requirements-gui.txt
+```
+
+### 환경변수 설정
+
+```bash
+# 실행 이력 데이터베이스 경로
+set EXECUTION_HISTORY_DB=data/db/execution_history.db
+
+# API 서버 설정
+set SKIN_API_JOBS_DIR=./results/api_jobs
+set SKIN_API_MAX_WORKERS=2
+```
+
+## 사용법
+
+### GUI 모드
+
+```bash
+python main.py
+```
+
+### CLI 모드
+
+```bash
+# 기본 사용 (Gemini 소견 활성)
+python main.py --cli -i input.jpg -o output_dir
+
+# Gemini 소견 비활성화
+python main.py --cli -i input.jpg -o output_dir --no-gemini-report
+
+# 비동기 모드
+python main.py --cli -i input.jpg -o output_dir --async
+```
+
+### CLI 파라미터
+
+- `-i, --input`: 입력 이미지 경로 (필수)
+- `-o, --output`: 출력 디렉토리 경로 (필수)
+- `--no-restore`: 복원 생략
+- `--llm-report`: LLM 소견 생성 (기본: True, 비활성화하려면 `--no-llm-report` 사용)
+- `--llm-api-key`: LLM API 키 (지정하지 않으면 config.secrets.json에서 자동 로드)
+- `--customer-id`: 고객 ID
+- `--gender`: 성별
+- `--age`: 연령
+- `--race`: 인종
+- `--region`: 지역
+- `--debug`: 디버그 모드
+
+**참고:**
+- LLM 소견 생성은 기본적으로 활성화되어 있습니다
+- LLM API 키는 지정하지 않으면 `config/config.secrets.json`에서 자동 로드됩니다
+
+## API 서버
+
+### 실행
+
+```bash
+python main.py  # 또는
+uvicorn src.server.server:app --host 0.0.0.0 --port 8000
+```
+
+### API 엔드포인트
+
+- `GET /health`: 헬스 체크
+- `POST /v3/analysis/jobs`: 분석 Job 생성
+- `GET /v3/analysis/jobs/{job_id}`: Job 상태 조회
+- `GET /v3/analysis/jobs/{job_id}/result`: Job 결과 조회
+- `GET /v3/analysis/jobs/{job_id}/artifacts/{name}`: 아티팩트 다운로드
+- `WS /v3/ws/analyze/{job_id}`: WebSocket 진행률 트래킹
+
+### WebSocket 진행률 트래킹
+
+WebSocket을 사용하여 실시간 진행률을 수신할 수 있습니다.
+
+**클라이언트 연결 예시 (JavaScript):**
+```javascript
+const jobId = "your-job-id";
+const ws = new WebSocket(`ws://localhost:8000/v3/ws/analyze/${jobId}`);
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'progress') {
+        console.log(`${data.percent}% - ${data.message}`);
+    } else if (data.type === 'complete') {
+        console.log('완료:', data.result);
+    } else if (data.type === 'error') {
+        console.error('오류:', data.error);
+    }
+};
+```
+
+**메시지 형식:**
+- 진행률: `{"type": "progress", "stage": "restore", "percent": 30, "message": "복원 중..."}`
+- 완료: `{"type": "complete", "result": {...}}`
+- 에러: `{"type": "error", "error": "에러 메시지"}`
+
+**클라이언트 예제:** [docs/websocket_client_example.html](docs/websocket_client_example.html)
+
+### API 문서
+
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+자세한 내용은 [docs/API_GUIDE.md](docs/API_GUIDE.md)를 참조하세요.
+
+## 테스트
+
+### 테스트 실행
+
+```bash
+# 모든 테스트
+pytest tests/ -v
+
+# CLI 테스트
+pytest tests/test_cli.py -v
+
+# 서버 테스트
+pytest tests/test_server.py -v
+```
+
+### 테스트 커버리지
+
+- `test_cli.py`: CLI 파이프라인 및 파라미터 테스트
+- `test_server.py`: FastAPI API 엔드포인트 테스트
+
+자세한 내용은 [tests/README.md](tests/README.md)를 참조하세요.
+
+## 문서
+
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md): 프로젝트 전체 개요 (비전, 아키텍처, 로드맵)
+- [ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md): 아키텍처 가이드 (Strategy Pattern, DB 구조)
+- [API 가이드](docs/API_GUIDE.md): FastAPI 서버 사용 가이드
+- [데이터 처리 흐름](docs/data_process_flow.md): 데이터 처리 전체 흐름 (입력→분석→출력)
+- [데이터베이스 아키텍처](docs/DATABASE_ARCHITECTURE.md): DB 구조 및 관리 가이드
+- [피부 분석 문서](docs/skin_analysis_README.md): 피부 분석 상세 문서
+- [복원 엔진 추가 가이드](docs/RESTORATION_ENGINE_GUIDE.md): 새로운 복원 엔진 추가 방법
+- [코드 리뷰 이력](docs/CODE_REVIEW_HISTORY.md): 코드 리뷰 및 변경 이력
+- [테스트 가이드](tests/README.md): 테스트 실행 가이드
+
+## DB 관리
+
+### CLI 명령어
+
+```bash
+# DB 백업
+python src/db/db_cli.py backup
+
+# DB 상태 확인
+python src/db/db_cli.py status
+
+# DB 마이그레이션
+python src/db/db_cli.py migrate
+
+# 데이터 아카이빙
+python src/db/db_cli.py archive --days=90
+
+# 읽기 전용 복제본 생성
+python src/db/db_cli.py replica --output=readonly.db
+```
+
+### DB Health Check API
+
+```bash
+# DB 상태 확인
+curl http://localhost:8000/v3/health/db
+
+# DB 메트릭 (관리자 전용)
+curl http://localhost:8000/v3/admin/db/metrics \
+  -H "Authorization: Bearer <admin_token>"
+
+# 감사 로그 요약 (관리자 전용)
+curl http://localhost:8000/v3/admin/audit/summary?days=30 \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+## 환경변수
+
+### 실행 이력
+
+- `EXECUTION_HISTORY_DB`: 실행 이력 데이터베이스 경로 (기본: data/db/execution_history.db)
+
+### API 서버
+
+- `SKIN_API_JOBS_DIR`: Job 저장 루트 디렉토리 (기본: ./results/api_jobs)
+- `SKIN_API_MAX_WORKERS`: 백그라운드 워커 스레드 수 (기본: 2)
+- `SKIN_API_URL_TIMEOUT`: URL 다운로드 타임아웃 (초, 기본: 10)
+- `SKIN_API_URL_MAX_BYTES`: URL 다운로드 최대 크기 (바이트, 기본: 10MB)
+
+### 텔레그램
+
+- `TELEGRAM_BOT_TOKEN`: 텔레그램 봇 토큰
+- `TELEGRAM_CHAT_ID`: 텔레그램 채트 ID
+
+### Gemini AI
+
+- `GEMINI_API_KEY`: Google Gemini API 키
+
+### 보안
+
+- `JWT_SECRET_KEY`: JWT 토큰 시크릿 키 (프로덕션에서 반드시 변경)
+- `ALLOWED_ORIGINS`: CORS 허용 오리진 (콤마로 구분)
+
+### DB 백업
+
+- `SKIN_API_BACKUP_INTERVAL_H`: 자동 백업 간격 (시간, 기본: 24)
+- `SKIN_API_BACKUP_DIR`: 백업 디렉토리 (기본: backup)
+
+## 코드 리뷰 반영
+
+### 보안 강화
+
+- **JWT 시크릿 키 검증**: 서버 시작 시 기본값 사용 시 거부
+- **분석 엔드포인트 Rate Limit**: 3회/분 제한 적용
+- **DB 테이블 중복 생성 제거**: 암호화 클래스에서 테이블 초기화 제거
+
+### 코드 구조 개선
+
+- **DB 초기화 함수 분리**: 260줄 단일 함수를 4개 서브 함수로 분리
+- **트랜잭션 추가**: DB 초기화 시 트랜잭션으로 원자성 보장
+
+### 의존성 관리
+
+- **requirements.txt 포워드 참조**: opencv 중복 제거
+
+### 리팩토링 (AI_Skin_v3_refactor_review.md)
+
+#### Phase 1 - 즉시 수정 (완료)
+
+- **P0-1**: skin_measurement_chart_dialog.py `src.gemini` → `src.llm` 경로 수정 (런타임 크래시 방지)
+- **P1-1**: utils.py analyzer_compare_gui lazy import 처리 (이미 구현됨)
+- **P2-2**: server.py `datetime.utcnow()` → `datetime.now(timezone.utc)` (Python 3.12 deprecated)
+
+#### Phase 2 - 안정성 (완료)
+
+- **P1-2**: skin_scoring.py 전역 가변 상태 threading.Lock 추가 (race condition 방지)
+- **P1-3**: skin_scoring.py `_MEASUREMENT_ACTUAL_RANGES` lazy 초기화 (import 시 파일 I/O 방지)
+- **P2-1**: pipeline_core.py print() → log 교체 (31개, 서버 환경 stdout 오염 방지)
+
+#### 복원 엔진 전처리/후처리 확장 (2026-05-16)
+
+- **pipeline_core.py**: 복원 엔진 입력/출력 단에 전처리/후처리 함수 추가
+  - _preprocess_image(): 스마트폰 이미지 리사이징 기능 포함 (config.json에서 리사이즈 크기 로드)
+  - _postprocess_image(): 이미지 후처리 더미 (현재는 입력 그대로 반환)
+  - _stage_pipeline_input_rgb(): 리사이징 로직 제거, 단순 RGB 변환만 담당
+  - run_restoreformer(), run_codeformer()에 전처리/후처리 호출 추가
+- **구조 개선**: 리사이징 로직이 전처리 단으로 이동하여 파이프라인 구조 개선
+- **확장성**: 향후 노이즈 제거, 색상 보정, 대비 조정, 아티팩트 제거 등 로직 추가 예정
+
+#### 코드 품질 개선 (AI_Skin_v3_deep_review.md 기반) (2026-05-16)
+
+- **P0-1**: src.gemini → src.llm import 경로 수정 (이미 해결됨)
+- **P1-5**: datetime.utcnow() → datetime.now(timezone.utc) 수정 (이미 해결됨)
+- **P1-1**: utils.py GUI 직접 의존 → lazy import 수정 (이미 해결됨)
+- **P1-4**: server.py asyncio 패턴 수정 (BackgroundTasks 사용, _run_job_sync 래퍼 추가)
+- **P2-1**: pipeline_core.py print() → log 수정 (이미 해결됨)
+- **안정성**: 런타임 크래시 방지, Python 3.12+ 호환성 확보
+- **아키텍처**: 계층 위반 해결, 이벤트 루프 중첩 제거
+
+#### Phase 2 안정성 개선 (2026-05-16)
+
+- **Phase 2.2**: strip-norm 루프 3중 복제 제거 (_strip_normalize_L 공통 함수 추가)
+- **Phase 2.3**: pig_mask 생성 로직 2중 복제 제거 (_make_pigment_mask 헬퍼 메서드 추가)
+- **Phase 2.4**: safety_net.py print() → log (8개)
+- **Phase 2.5**: _clamp() 중복 정의 통합 (skin_scoring.py / v3_compose.py)
+- **Phase 2.6**: 상수 클래스 추출 (score_constants.py 신규, RednessConst)
+- **코드 품질**: 중복 제거, 유지보수성 향상
+- **로깅**: 서버 환경 로깅 표준화
+
+#### Phase 3 로깅 개선 (2026-05-16)
+
+- **Phase 3.4**: llm_skin_report.py print() → log (60개 DEBUG 메시지)
+- **Phase 3.1-3.3**: 대규모 리팩토링 항목은 별도 작업으로 진행 예정
+  - execution_history.py → 패키지 분리
+  - server.py → routers 분리
+  - _SkinAnalyzerV2 Mixin 분리
+
+#### 매직넘버 외부 주입 (2026-05-16)
+
+- **V3_WEIGHTS**: v3.0 종합점수 가중치를 config.json으로 이동 (10개 항목)
+- **이미지 처리 파라미터**: CLAHE, blob_detection, freckle_detection 파라미터를 config.json으로 이동
+- **Breakpoints**: 점수 매핑 브레이크포인트 14개를 config.json으로 이동
+  - melasma_score, freckle_score, freckle_score_count, redness_score
+  - post_inflammatory_erythema_score, acne_score, post_acne_pigment_score
+  - pore_size_score, pore_sagging_score, eye_wrinkle_score, nasolabial_wrinkle_score
+  - roughness_score, jawline_blur_score
+- **코드 수정**: skin_scoring.py에 helper 함수 추가
+  - _get_image_processing_params(), _get_clahe_params(), _get_blob_detection_params(), _get_freckle_detection_params()
+  - _get_default_breakpoints(), _get_metric_bp(), _get_metric_bp_count()
+- **유지보수성**: 하드코딩된 매직넘버를 외부 설정으로 분리하여 점수 조정 용이화
+
+#### 맞춤형 화장품 추천 (2026-05-21)
+
+- **ProductTable DB 테이블**: 맞춤형 화장품 성분 정보 저장 (products 테이블)
+- **ProductRepository**: 제품 조회 및 매칭 로직 구현
+  - 고민사항 기반 매칭 (+0.5 점)
+  - 피부 타입 기반 매칭 (+0.3 점)
+  - 측정 점수 기반 매칭 (+0.2 점)
+  - match_score 계산 및 정렬
+- **LLM 프롬프트 템플릿**: 성분 정보 포함 섹션 추가
+- **llm_skin_report.py**: product_recommendations 필드 추가
+- **image_enhancer.py**: 제품 매칭 로직 및 JSON 출력 추가
+- **조건부 동작**: ProductTable 데이터가 없을 때는 에러 없이 진행, 데이터 추가 시 자동 동작
+- **결과 JSON**: llm_analysis.product_recommendations 포함
+
+자세한 내용은 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#32-데이터-처리-흐름) 및 [data_process_flow.md](docs/data_process_flow.md)를 참조하세요.
+
+자세한 내용은 [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#16-sd-기능-제거-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#17-복원-엔진-전처리후처리-확장-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#18-모공-완화-기능-제거-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#19-코드-품질-개선-ai_skin_v3_deep_reviewmd-기반-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#20-phase-2-안정성-개선-완료-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#21-phase-3-로깅-개선-완료-2026-05-16), 및 [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#22-매직넘버-외부-주입-완료-2026-05-16)를 참조하세요.
+
+## 배포
+
+### 배포 패키지 생성
+
+민감 정보(비밀 키, 환경 변수 등)를 제외한 배포용 ZIP 패키지를 생성합니다.
+
+#### Linux/macOS
+
+```bash
+chmod +x scripts/deploy/deploy.sh
+./scripts/deploy/deploy.sh
+```
+
+#### Windows (PowerShell)
+
+```powershell
+.\scripts\deploy\deploy.ps1
+```
+
+### 제외되는 파일/디렉토리
+
+- **민감 정보**: `config/config.secrets.json`, `*.secrets.json`, `.env`, `.env.*`
+- **모델 가중치**: `RestoreFormerPlusPlus/weights/`, `CodeFormer/weights/`, `*.ckpt`, `*.pth`
+- **외부 모델**: `models/`
+- **런타임 생성**: `results/`, `data/db/`, `logs/`, `temp/`, `backup/`, `*.db`, `*.xlsx`, `__pycache__/`, `*.pyc`
+- **Python 패키지**: `*.egg-info/`, `dist/`, `build/`, `.venv/`
+
+### 배포 후 설정
+
+배포된 패키지를 받은 후 다음 설정이 필요합니다:
+
+1. **비밀 설정 파일 생성**: `config/config.secrets.json` 복사 및 실제 값 입력
+2. **환경 변수 설정**: `.env` 파일 생성 또는 시스템 환경 변수 설정
+3. **모델 가중치 다운로드**: `models/` 디렉토리에 필요한 가중치 파일 배치
+
+## 라이선스
+
+이 프로젝트는 상업적 목적으로 사용됩니다.

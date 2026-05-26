@@ -1,0 +1,22 @@
+# 개발 및 테스트 의존성
+
+# 테스트 프레임워크
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+
+# HTTP 클라이언트 (테스트용)
+httpx>=0.24.0
+
+# 코드 품질 도구
+mypy>=1.0.0
+pylint>=2.17.0
+flake8>=6.0.0
+
+# 보안 스캔
+bandit>=1.7.0
+pip-audit>=2.5.0
+
+# 문서화
+sphinx>=5.0.0
+sphinx-rtd-theme>=1.2.0

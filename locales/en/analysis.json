@@ -1,0 +1,20 @@
+{
+  "analysis_result": "Analysis Result",
+  "overall_score": "Overall Score",
+  "skin_type": "Skin Type",
+  "recommendations": "Recommendations",
+  "oily": "Oily",
+  "dry": "Dry",
+  "combination": "Combination",
+  "sensitive": "Sensitive",
+  "unknown": "Unknown",
+  "hydration": "Hydration",
+  "oiliness": "Oiliness",
+  "pore_size": "Pore Size",
+  "redness": "Redness",
+  "inflammation": "Inflammation",
+  "wrinkles": "Wrinkles",
+  "elasticity": "Elasticity",
+  "texture": "Texture",
+  "tone": "Skin Tone"
+}

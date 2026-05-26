@@ -1,0 +1,66 @@
+# .coveragerc for SkinLens v1.0
+# Coverage configuration
+
+[run]
+# Source code directory
+source = src
+
+# Omit files from coverage
+omit =
+    # Test files
+    tests/*
+    
+    # Version file (trivial)
+    src/version.py
+    
+    # External models
+    models/*
+    
+    # GUI entry points (optional)
+    src/gui/image_enhancer.py
+    src/gui/skin_analysis_gui.py
+    
+    # CLI entry points (optional)
+    src/cli/skin_analysis_cli.py
+    
+    # Server entry point (optional)
+    src/server/server.py
+
+# Branch coverage
+branch = True
+
+# Dynamic analysis
+dynamic = True
+
+[report]
+# Precision for coverage reports
+precision = 2
+
+# Show missing lines
+show_missing = True
+
+# Skip covered files
+skip_covered = False
+
+# Exclude patterns
+exclude_lines =
+    # pragma: no cover
+    pragma: no cover
+    
+    # Debugging code
+    def __repr__
+    def __str__
+    
+    # Abstract methods
+    @abstractmethod
+    
+    # Type checking
+    if TYPE_CHECKING:
+    
+    # Raise NotImplementedError
+    raise NotImplementedError
+
+[html]
+# HTML report directory
+directory = htmlcov
+

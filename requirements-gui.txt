@@ -1,0 +1,16 @@
+# AI Skin v3 — GUI 환경 추가 의존성
+# 설치: pip install -r requirements-core.txt -r requirements-gui.txt
+#
+# [FIX] opencv-python 과 opencv-python-headless 는 동일 네임스페이스(cv2)를 공유하므로
+#       동시 설치 시 pip 환경에서 충돌이 발생합니다.
+#       GUI 환경에서는 opencv-python-headless 대신 opencv-python 을 사용해야 합니다.
+#
+# 서버/CLI: requirements-core.txt 만 설치 (headless)
+# 데스크톱 GUI: requirements-core.txt 에서 opencv-python-headless 를 제거하고
+#               이 파일로 opencv-python + PySide6 추가
+
+# GUI 전용: opencv-python-headless 를 대체
+opencv-python>=4.8.0
+
+# PySide6 GUI 프레임워크
+PySide6>=6.5.0

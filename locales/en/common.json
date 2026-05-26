@@ -1,0 +1,20 @@
+{
+  "app_name": "SkinLens",
+  "welcome": "Welcome",
+  "skin_analysis": "Skin Analysis",
+  "prescription": "Prescription",
+  "product_recommendation": "Product Recommendation",
+  "settings": "Settings",
+  "language": "Language",
+  "health": "Health",
+  "status": "Status",
+  "healthy": "Healthy",
+  "unhealthy": "Unhealthy",
+  "warning": "Warning",
+  "critical": "Critical",
+  "incident_detected": "Incident Detected",
+  "incident_resolved": "Incident Resolved",
+  "recovery_started": "Recovery Started",
+  "recovery_completed": "Recovery Completed",
+  "recovery_failed": "Recovery Failed"
+}

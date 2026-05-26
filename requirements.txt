@@ -1,0 +1,7 @@
+# AI Skin v3 Dependencies
+# 참고: 이 파일은 레거시 호환성을 위해 유지됩니다.
+# 새로운 설치는 requirements-core.txt (서버/CLI) 또는 requirements-gui.txt (GUI)를 사용하세요.
+
+-r requirements-core.txt
+-r requirements-gui.txt
+

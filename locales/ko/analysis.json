@@ -1,0 +1,20 @@
+{
+  "analysis_result": "분석 결과",
+  "overall_score": "전체 점수",
+  "skin_type": "피부 타입",
+  "recommendations": "추천 사항",
+  "oily": "지성",
+  "dry": "건성",
+  "combination": "복합성",
+  "sensitive": "민감성",
+  "unknown": "알 수 없음",
+  "hydration": "수분",
+  "oiliness": "유분",
+  "pore_size": "모공 크기",
+  "redness": "홍조",
+  "inflammation": "염증",
+  "wrinkles": "주름",
+  "elasticity": "탄력",
+  "texture": "피부결",
+  "tone": "피부톤"
+}
