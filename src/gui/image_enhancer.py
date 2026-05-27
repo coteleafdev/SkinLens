@@ -435,6 +435,10 @@ def _cli() -> int:
 
     args = p.parse_args()
 
+    # 전체 처리 시간 측정 시작
+    import time
+    total_start_time = time.time()
+
     # 상호 배타 검증
     if args.restore_only and args.text2img:
         p.error("--restore-only 와 --text2img 은 함께 쓸 수 없습니다.")
@@ -902,6 +906,10 @@ def _cli() -> int:
             else:
                 print(json_output, flush=True)
             return 1
+
+    # 전체 처리 시간 출력
+    total_elapsed = time.time() - total_start_time
+    print(f"[전체 처리 시간] {format_duration(total_elapsed)}", flush=True)
 
     return 0
 
