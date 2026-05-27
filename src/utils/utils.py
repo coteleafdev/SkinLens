@@ -142,8 +142,8 @@ def _load_logging_level(config_path: Optional[Path] = None) -> str:
     if config_path:
         target = config_path
     else:
-        # 프로젝트 루트의 src/config/config.json
-        target = P(__file__).parent.parent / "config" / "config.json"
+        # 프로젝트 루트의 config/config.json
+        target = P(__file__).parent.parent.parent / "config" / "config.json"
     
     try:
         if target.exists():

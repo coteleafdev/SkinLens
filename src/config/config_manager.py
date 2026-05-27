@@ -51,16 +51,31 @@ class ConfigManager:
         self._project_root = Path(__file__).resolve().parents[2]
         self._config_path = self._project_root / "config" / "config.json"
         self._template_path = self._project_root / "docs" / "llm_prompt_template.md"
+        self._secrets_path = self._project_root / "config" / "config.secrets.json"
+        
+        # 하위 호환성: src/config/config/ 디렉토리도 확인
+        legacy_config_path = self._project_root / "src" / "config" / "config" / "config.json"
+        if legacy_config_path.exists() and not self._config_path.exists():
+            self._config_path = legacy_config_path
+        
+        legacy_secrets_path = self._project_root / "src" / "config" / "config" / "config.secrets.json"
+        if legacy_secrets_path.exists() and not self._secrets_path.exists():
+            self._secrets_path = legacy_secrets_path
         
         # 캐시
         self._config_cache: Dict[str, Any] = {}
         self._template_cache: str = ""
+        self._secrets_cache: Dict[str, Any] = {}
         self._config_mtime: Optional[float] = None
         self._template_mtime: Optional[float] = None
+        self._secrets_mtime: Optional[float] = None
         self._cache_lock = threading.Lock()
         
         # 필수 버전
         self._required_config_version = "3.6"
+        
+        # secrets 파일 로드 (환경 변수 설정)
+        self._load_secrets()
     
     def _load_config(self) -> Dict[str, Any]:
         """config.json을 로드합니다 (mtime 기반 캐싱)."""
@@ -118,6 +133,39 @@ class ConfigManager:
             except IOError as e:
                 log.warning("프롬프트 템플릿 로드 실패: %s", e)
                 return ""
+    
+    def _load_secrets(self) -> None:
+        """config.secrets.json을 로드하여 환경 변수로 설정합니다."""
+        import os
+        if not self._secrets_path.exists():
+            log.debug("config.secrets.json 파일을 찾을 수 없습니다: %s", self._secrets_path)
+            return
+        
+        try:
+            with open(self._secrets_path, encoding="utf-8") as f:
+                secrets = json.load(f)
+            
+            # API 키를 환경 변수로 설정
+            if "gemini_api_key" in secrets:
+                os.environ["GEMINI_API_KEY"] = secrets["gemini_api_key"]
+            if "telegram_bot_token" in secrets:
+                os.environ["TELEGRAM_BOT_TOKEN"] = secrets["telegram_bot_token"]
+            if "telegram_chat_id" in secrets:
+                os.environ["TELEGRAM_CHAT_ID"] = secrets["telegram_chat_id"]
+            
+            # Supabase 설정
+            if "supabase" in secrets:
+                supabase = secrets["supabase"]
+                if supabase.get("url"):
+                    os.environ["SUPABASE_URL"] = supabase["url"]
+                if supabase.get("key"):
+                    os.environ["SUPABASE_KEY"] = supabase["key"]
+                if supabase.get("enabled") is not None:
+                    os.environ["SUPABASE_ENABLED"] = str(supabase["enabled"])
+            
+            log.debug("config.secrets.json 로드 완료: 환경 변수 설정됨")
+        except Exception as e:
+            log.warning("config.secrets.json 로드 실패: %s", e)
     
     def reload(self) -> None:
         """모든 캐시를 비우고 설정을 다시 로드합니다."""

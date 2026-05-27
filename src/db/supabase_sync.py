@@ -134,7 +134,7 @@ class SupabaseConfig:
         )
     
     @classmethod
-    def from_config(cls, config_path: str = "src/config/config.json") -> "SupabaseConfig":
+    def from_config(cls, config_path: str = "config/config.json") -> "SupabaseConfig":
         """config.json에서 설정을 읽어 인스턴스 생성.
 
         환경 변수가 있으면 환경 변수를 우선 사용합니다.

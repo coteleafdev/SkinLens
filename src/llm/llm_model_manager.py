@@ -41,13 +41,20 @@ def _load_llm_api_key(provider: str = "gemini") -> str:
 
     # 2. config.secrets.json에서 로드
     config = _load_config()
+    # 기본 경로: 루트 config/config.secrets.json
     secrets_path = config.get("secrets_file", "config/config.secrets.json")
+    
+    # 하위 호환성: src/config/config/config.secrets.json도 확인
+    from pathlib import Path
+    secrets_file = Path(secrets_path)
+    if not secrets_file.exists():
+        legacy_path = Path("src/config/config/config.secrets.json")
+        if legacy_path.exists():
+            secrets_file = legacy_path
 
     try:
         import json
-        from pathlib import Path
 
-        secrets_file = Path(secrets_path)
         if secrets_file.exists():
             with open(secrets_file, "r", encoding="utf-8") as f:
                 secrets = json.load(f)

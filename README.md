@@ -183,6 +183,9 @@ SkinLens v1.0/
 │   │   └── prescription_manager.py # 처방전 관리자
 │   └── utils/                  # 공통 유틸리티
 │       └── ...
+├── config/                     # 설정 파일
+│   ├── config.json             # 메인 설정
+│   └── config.secrets.json     # 비밀 설정 (API 키 등)
 ├── external/                   # 외부 모델 (git 제외)
 │   ├── CodeFormer/              # CodeFormer 모델
 │   └── RestoreFormerPlusPlus/  # RestoreFormer++ 모델

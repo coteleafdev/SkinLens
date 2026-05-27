@@ -693,7 +693,15 @@ def _load_config_json() -> Dict[str, Any]:
     Returns:
         config.json 내용. 파일이 없으면 빈 dict.
     """
+    # 기본 경로: 루트 config/config.json
     config_path = Path(__file__).parent.parent.parent.parent / "config" / "config.json"
+    
+    # 하위 호환성: src/config/config/config.json도 확인
+    if not config_path.exists():
+        legacy_path = Path(__file__).parent.parent.parent / "config" / "config" / "config.json"
+        if legacy_path.exists():
+            config_path = legacy_path
+    
     if not config_path.exists():
         log.warning("config.json 파일을 찾을 수 없습니다: %s", config_path)
         return {}

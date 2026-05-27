@@ -32,7 +32,13 @@ def _load_scoring_config(config_path: Optional["Path"] = None) -> Dict[str, Any]
         import json
         from pathlib import Path
         _PROJECT_ROOT = Path(__file__).resolve().parents[3]
+        # 기본 경로: 루트 config/config.json
         _DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config" / "config.json"
+        # 하위 호환성: src/config/config/config.json도 확인
+        if not _DEFAULT_CONFIG_PATH.exists():
+            legacy_path = _PROJECT_ROOT / "src" / "config" / "config" / "config.json"
+            if legacy_path.exists():
+                _DEFAULT_CONFIG_PATH = legacy_path
         if config_path is None:
             config_path = _DEFAULT_CONFIG_PATH
         try:
