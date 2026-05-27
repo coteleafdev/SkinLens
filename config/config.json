@@ -379,8 +379,8 @@
     "_note": "[FIX P3-26] AGE_GROUP_MAPPING을 config.json으로 이전. 나이대 매핑 설정.",
     "measurements": {
       "dullness_score": {
-        "name_ko": "톤",
-        "name_en": "Tone",
+        "name_ko": "칙칙함",
+        "name_en": "Dullness",
         "category": "tone",
         "description": "피부 톤 및 밝기",
         "breakpoints": "area_default"
