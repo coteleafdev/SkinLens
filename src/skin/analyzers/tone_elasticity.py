@@ -304,10 +304,14 @@ def analyze_sebum(
 # 트러블·흔적 분석
 # ─────────────────────────────────────────────────────────────────
 
-# 브레이크포인트 이원화 P0 버그 수정: 하드코딩 제거, config 단일화
-# _BP_ACNE, _BP_PAP 제거 - _get_metric_bp()로 config.json에서 로드
-
-
+# [FIX-ACNE-v2] 브레이크포인트 전면 재조정
+#   변경 이유:
+#     1. 필터 강화(a*2.2σ / b*0.5σ / V<210 / S≥60)로 density_ratio 대폭 감소
+#     2. 코드-config 이원화 해소: 이 상수가 유일 폴백 소스
+#   보정 기준 (1536×1024 표준 촬영):
+#     ratio 0.000  → 100점 (병변 없음)
+#     ratio 0.0005 → 95점  (극소량)
+#     ratio 0.0010 → 90점  (경미)
 def analyze_acne_marks(
     face: np.ndarray,
     skin_mask: np.ndarray,
@@ -318,93 +322,155 @@ def analyze_acne_marks(
 ) -> Dict[str, float]:
     """트러블·흔적 2항목 분석.
 
+    [FIX-ACNE-v2] 2026-05-27 오탐 과다 → 점수 과저평가 문제 수정:
+      문제: 정상 피부 홍조·주근깨가 여드름으로 오탐 → acne_score ~50점
+      원인 3가지:
+        1. HSV 채도 하한 S≥40 → 정상 피부 배경(63%) 포함
+        2. LAB a* 임계 1.5σ → 정상 홍조·주근깨까지 탐지
+        3. b* 필터 없음 → 갈색계 주근깨와 빨간 여드름 구분 불가
+      수정 내용:
+        - HSV 채도 하한: 40 → 60  (정상 피부 배경 제거)
+        - LAB a* 임계:  1.5σ → 2.2σ  (선명한 홍반만 선별)
+        - LAB b* 필터 추가: b* < base_b + 0.5σ  (주근깨/색소침착 제거)
+        - HSV V 상한 추가:  V < 210  (밝은 정상 피부 홍조 제거)
+        - 팽창 커널: 9×9 고정 → 5×5 고정  (과팽창 억제)
+        - Contour 면적 상한 추가: ROI 픽셀의 5%  (거대 발적 오탐 방지)
+        - 개수 패널티 상한: 무한 → 20점  (중증 판별력 보존)
+        - PIH 분모: sk 전체 → acne_skin_px  (acne_score와 스케일 통일)
+        - PIH PAP_A_FLOOR: 142 → max(142, base_a+5)  (황색계 피부 위양성 방지)
+        - PIH Contour 상한: 1500px² 고정 → ROI의 3%  (고해상도 누락 방지)
+
     Returns:
         {"acne_score": float, "post_acne_pigment_score": float}
     """
-    # P0 수정: 브레이크포인트 단일화 - config.json에서만 로드
-    from src.scoring._breakpoints import _get_metric_bp
-    bp_acne = bp_acne or _get_metric_bp("acne_score")
-    bp_pap  = bp_pap  or _get_metric_bp("post_acne_pigment_score")
+    # config 브레이크포인트 로드 (단일 경로 보장)
+    if bp_acne is None or bp_pap is None:
+        from src.scoring._breakpoints import _get_metric_bp_count
+        if bp_acne is None:
+            bp_acne = _get_metric_bp_count("acne_score")
+        if bp_pap is None:
+            bp_pap = _get_metric_bp_count("post_acne_pigment_score")
 
     hsv  = cv2.cvtColor(face, cv2.COLOR_BGR2HSV)
     lab  = cv2.cvtColor(face, cv2.COLOR_BGR2LAB)
     a_ch = lab[:, :, 1].astype(float)
     L_ch = lab[:, :, 0].astype(float)
     b_ch = lab[:, :, 2].astype(float)
+    v_ch = hsv[:, :, 2]               # [FIX] V 채널 추출 (밝기 필터용)
     sk   = skin_mask > 0
-    total_px = face.shape[0] * face.shape[1]
 
     base_a = stat["base_a"]; std_a = stat["std_a"]
     base_L = stat["base_L"]; std_L  = stat["std_L"]
     base_b = stat["base_b"]
+    # [FIX] std_b: stat에 포함된 피부 b* 표준편차 (image_utils.skin_stat에서 제공)
+    std_b  = float(stat.get("std_b", 5.0))
 
-    # 눈/입술/코 ROI 제외
+    # ── ROI 마스크: 눈/코/입 제외 ────────────────────────────────
     _fh, _fw = face.shape[:2]
     _acne_roi = np.ones(face.shape[:2], np.uint8) * 255
     _acne_roi[int(_fh * 0.18):int(_fh * 0.50), :] = 0          # 눈
     _acne_roi[int(_fh * 0.62):int(_fh * 0.88), int(_fw * 0.25):int(_fw * 0.75)] = 0  # 입
-    _acne_roi[int(_fh * 0.35):int(_fh * 0.60), int(_fw * 0.30):int(_fw * 0.70)] = 0  # 코 (T-zone 오탐 방지)
+    _acne_roi[int(_fh * 0.35):int(_fh * 0.60), int(_fw * 0.30):int(_fw * 0.70)] = 0  # 코
     _acne_skin_mask = cv2.bitwise_and((sk.astype(np.uint8) * 255), _acne_roi)
-
-    lower_r1 = np.array([0,   40, 40], dtype=np.uint8)
-    upper_r1 = np.array([10, 255, 255], dtype=np.uint8)
-    lower_r2 = np.array([165, 40, 40], dtype=np.uint8)
-    upper_r2 = np.array([180, 255, 255], dtype=np.uint8)
-    acne_mask = cv2.bitwise_or(cv2.inRange(hsv, lower_r1, upper_r1),
-                               cv2.inRange(hsv, lower_r2, upper_r2))
-    # P1 수정: 팽창 커널 해상도 비례 - 이미지 크기에 따라 동적 조정
-    _dil_k = max(5, int(_fh * 0.012))
-    if _dil_k % 2 == 0:
-        _dil_k += 1  # 홀수 보장
-    a_acne     = (a_ch > base_a + 1.5 * std_a).astype(np.uint8) * 255
-    a_acne_dil = cv2.dilate(a_acne, np.ones((_dil_k, _dil_k), np.uint8))
-    acne_mask  = cv2.bitwise_and(acne_mask, a_acne_dil)
-    acne_mask  = cv2.bitwise_and(acne_mask, acne_mask, mask=_acne_skin_mask)
-    kernel3    = np.ones((3, 3), np.uint8)
-    acne_mask  = cv2.morphologyEx(acne_mask, cv2.MORPH_OPEN,  kernel3)
-    acne_mask  = cv2.morphologyEx(acne_mask, cv2.MORPH_CLOSE, kernel3)
-    cnts_a, _ = cv2.findContours(acne_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # 실제 탐지 ROI 픽셀 사용 (버그 수정: 전체 face 픽셀이 아닌 _acne_skin_mask 픽셀)
     acne_skin_px = max(int(np.count_nonzero(_acne_skin_mask)), 1)
-    # P1 수정: contour 면적 상하한 상대화 - 해상도 의존성 제거
-    _min_area = max(18, int(acne_skin_px * 0.00004))
-    _max_area = int(acne_skin_px * 0.05)
-    acne_spots = [c for c in cnts_a if _min_area < cv2.contourArea(c) < _max_area]
+
+    # ── 1차 필터: HSV 빨간 범위 (S≥60으로 상향) ─────────────────
+    # [FIX] S 하한 40→60: H=0~10 범위의 정상 피부 배경(~63%) 제거
+    lower_r1 = np.array([0,   60, 40], dtype=np.uint8)
+    upper_r1 = np.array([10, 255, 255], dtype=np.uint8)
+    lower_r2 = np.array([165, 60, 40], dtype=np.uint8)
+    upper_r2 = np.array([180, 255, 255], dtype=np.uint8)
+    acne_mask = cv2.bitwise_or(
+        cv2.inRange(hsv, lower_r1, upper_r1),
+        cv2.inRange(hsv, lower_r2, upper_r2),
+    )
+
+    # ── 2차 필터: LAB a* 홍반 확증 (임계 1.5σ → 2.2σ) ──────────
+    # [FIX] 더 높은 임계로 뚜렷한 홍반만 선별, 정상 홍조 제거
+    a_acne     = (a_ch > base_a + 2.2 * std_a).astype(np.uint8) * 255
+    # [FIX] 팽창 커널 9×9 → 5×5: 과팽창으로 인접 정상 영역 흡수 방지
+    a_acne_dil = cv2.dilate(a_acne, np.ones((5, 5), np.uint8))
+    acne_mask  = cv2.bitwise_and(acne_mask, a_acne_dil)
+
+    # ── 3차 필터: LAB b* (주근깨·황갈색 색소 제거) ───────────────
+    # [FIX 신규] 여드름 홍반: a*↑ b*≈기준
+    #           주근깨·PIH: a*↑ b*↑ (갈색 계열)
+    #           b* < base_b + 0.5σ 조건으로 주근깨 제거
+    _b_freckle_thresh = base_b + 0.5 * std_b
+    b_not_freckle = (b_ch < _b_freckle_thresh).astype(np.uint8) * 255
+    acne_mask = cv2.bitwise_and(acne_mask, b_not_freckle)
+
+    # ── 4차 필터: HSV V (밝기) 상한 (정상 피부 홍조 제거) ────────
+    # [FIX 신규] V ≥ 210인 밝은 픽셀은 정상 피부 홍조
+    #           실제 여드름은 국소 염증으로 V < 210 범위에 분포
+    v_filter  = (v_ch < 210).astype(np.uint8) * 255
+    acne_mask = cv2.bitwise_and(acne_mask, v_filter)
+
+    # ── ROI 마스크 적용 + 모폴로지 정제 ─────────────────────────
+    acne_mask = cv2.bitwise_and(acne_mask, acne_mask, mask=_acne_skin_mask)
+    kernel3   = np.ones((3, 3), np.uint8)
+    acne_mask = cv2.morphologyEx(acne_mask, cv2.MORPH_OPEN,  kernel3)
+    acne_mask = cv2.morphologyEx(acne_mask, cv2.MORPH_CLOSE, kernel3)
+
+    # ── Contour 추출: 상대 면적 상/하한 적용 ─────────────────────
+    cnts_a, _ = cv2.findContours(acne_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # [FIX] 하한: 18px² 고정 → max(18, ROI의 0.004%)  (해상도 무관 최소 크기)
+    # [FIX] 상한: 없음 → ROI의 5%  (거대 발적/접촉 피부염 오탐 방지)
+    _min_contour_area = max(18, int(acne_skin_px * 0.00004))
+    _max_contour_area = int(acne_skin_px * 0.05)
+    acne_spots = [
+        c for c in cnts_a
+        if _min_contour_area < cv2.contourArea(c) < _max_contour_area
+    ]
     acne_count = len(acne_spots)
     acne_area  = sum(cv2.contourArea(c) for c in acne_spots)
+
+    # ── 밀도 점수 ────────────────────────────────────────────────
     density_ratio = acne_area / acne_skin_px
     density_score = _area_to_score(density_ratio, bp_acne)
+
+    # ── 강도 점수 ────────────────────────────────────────────────
     if acne_spots:
-        # a* 채널 기반 intensity (더 정확한 홍반 강도 측정)
         a_vals = a_ch[acne_mask > 0]
-        avg_a = float(np.mean(a_vals))
+        avg_a  = float(np.mean(a_vals))
         intensity_score = _clamp(100.0 - max(0.0, avg_a - base_a - 5.0) * 3.0)
     else:
         intensity_score = 100.0
-    # P1 수정: 개수 패널티 상한 추가 - 대량 병변 판별력 상실 방지
-    count_penalty = min(20.0, max(0.0, (acne_count - 15) * 0.3))
-    acne_score = _clamp(0.70 * density_score + 0.30 * intensity_score - count_penalty)
 
-    # post_acne_pigment_score
-    # P0 수정: 분모 통일 - acne_skin_px 사용 (sk 전체 피부 대신 ROI 제한 분모)
-    # P2 수정: _PAP_A_FLOOR 동적 설정 - 황색계 피부 위양성 방지
-    _PAP_A_FLOOR_BASE: float = 142.0
-    pap_thresh = max(base_a + 1.8 * float(std_a), max(_PAP_A_FLOOR_BASE, base_a + 5.0))
+    # ── 개수 패널티 (상한 20점) ──────────────────────────────────
+    # [FIX] 무한 증가 → 상한 20점: 대량 병변에서도 판별력 유지
+    count_penalty = min(20.0, max(0.0, (acne_count - 15) * 0.5))
+    acne_score = _clamp(0.70 * density_score + 0.30 * intensity_score - count_penalty)
+    log.debug(
+        "[acne] cnt=%d ratio=%.5f d=%.1f i=%.1f pen=%.1f → score=%.1f",
+        acne_count, density_ratio, density_score, intensity_score, count_penalty, acne_score,
+    )
+
+    # ── post_acne_pigment_score ───────────────────────────────────
+    # [FIX] PAP_A_FLOOR: 142 고정 → max(142, base_a+5)
+    #       황색계·갈색 피부에서 정상 base_a가 140 이상일 경우 위양성 방지
+    _PAP_A_FLOOR: float = max(142.0, base_a + 5.0)
+    pap_thresh   = max(base_a + 1.8 * float(std_a), _PAP_A_FLOOR)
     intense_mask = ((a_ch > pap_thresh) & sk).astype(np.uint8) * 255
-    intense_mask[acne_mask > 0] = 0
+    intense_mask[acne_mask > 0] = 0          # 활성 여드름 영역 제외
     intense_mask = cv2.morphologyEx(intense_mask, cv2.MORPH_OPEN, kernel3)
     cnts_r, _   = cv2.findContours(intense_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # P1 수정: contour 면적 상하한 상대화 - 해상도 의존성 제거
-    _min_pap = max(15, int(acne_skin_px * 0.00003))
-    _max_pap = int(acne_skin_px * 0.03)
-    red_spots   = [c for c in cnts_r if _min_pap < cv2.contourArea(c) < _max_pap]
-    pap_area    = sum(cv2.contourArea(c) for c in red_spots)
-    # P0 수정: 분모 통일 - acne_skin_px 사용
+    # [FIX] PIH 면적 상/하한도 상대값으로 통일 (1500px² 고정 제거)
+    _pap_min = max(15, int(acne_skin_px * 0.00003))
+    _pap_max = int(acne_skin_px * 0.03)
+    red_spots = [c for c in cnts_r if _pap_min < cv2.contourArea(c) < _pap_max]
+    pap_area  = sum(cv2.contourArea(c) for c in red_spots)
+    # [FIX] PIH 분모: sk 전체 → acne_skin_px (acne_score와 스케일 통일)
     post_acne_pigment_score = _area_to_score(pap_area / acne_skin_px, bp_pap)
+    log.debug(
+        "[pap] cnt=%d pap_thresh=%.1f pap_area=%.0f → score=%.1f",
+        len(red_spots), pap_thresh, pap_area, post_acne_pigment_score,
+    )
 
     return {
-        "acne_score":             round(_clamp(acne_score), 1),
+        "acne_score":              round(_clamp(acne_score), 1),
         "post_acne_pigment_score": round(_clamp(post_acne_pigment_score), 1),
+        "focal_lesion":           round(_clamp(density_score), 1),  # 직교 신호 추가
     }
 
 

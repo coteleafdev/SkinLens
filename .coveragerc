@@ -32,6 +32,9 @@ branch = True
 # Dynamic analysis
 dynamic = True
 
+# Minimum coverage percentage
+fail_under = 70
+
 [report]
 # Precision for coverage reports
 precision = 2

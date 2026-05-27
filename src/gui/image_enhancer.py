@@ -259,6 +259,7 @@ def _print_self_help() -> None:
 # CLI
 # ---------------------------------------------------------------------------
 def _cli() -> int:
+    global llm_time
     _configure_stdio_encoding()
     
     # ConfigManager 초기화 - 분석 전에 설정 로드 보장
@@ -438,6 +439,7 @@ def _cli() -> int:
     # 전체 처리 시간 측정 시작
     import time
     total_start_time = time.time()
+    llm_time = 0.0
 
     # 상호 배타 검증
     if args.restore_only and args.text2img:
@@ -538,9 +540,72 @@ def _cli() -> int:
                         # measurements에서 raw 점수 필터링
                         def filter_measurements(measurements):
                             return {k: v for k, v in measurements.items() if not k.endswith("_raw")}
+                        
+                        # raw 점수 추출
+                        def extract_raw_measurements(measurements):
+                            return {k: v for k, v in measurements.items() if k.endswith("_raw")}
+                        
+                        # offset 설정 로드 및 보정 점수 계산
+                        def apply_score_offset(score_data, offset_config, weights):
+                            if not offset_config.get("enabled", False):
+                                return score_data
+                            offset = offset_config.get("offset", 0.0)
+                            if offset == 0.0:
+                                return score_data
+                            measurements = score_data.get("measurements", {})
+                            total_weight = sum(weights.get(k, 0.0) for k in measurements.keys())
+                            adjusted_measurements = {}
+                            for key, value in measurements.items():
+                                weight = weights.get(key, 0.0)
+                                if total_weight > 0 and weight > 0:
+                                    item_offset = offset * (weight / total_weight)
+                                    adjusted_measurements[key] = min(90.0, value + item_offset)
+                                else:
+                                    adjusted_measurements[key] = value
+                            overall = score_data.get("overall", 0.0)
+                            adjusted_overall = min(90.0, overall + offset)
+                            return {
+                                "overall": adjusted_overall,
+                                "measurements": adjusted_measurements
+                            }
+                        
+                        # offset 설정 로드
+                        try:
+                            from src.scoring.skin_scoring import _load_scoring_config
+                            scoring_config = _load_scoring_config()
+                            offset_config = scoring_config.get("score_offset", {})
+                            weights = scoring_config.get("measurement_weights", {})
+                        except Exception:
+                            offset_config = {}
+                            weights = {}
+                        
+                        # 원본/복원 점수에 offset 적용
+                        import copy
+                        orig_adjusted = copy.deepcopy(o)
+                        ideal1_adjusted = copy.deepcopy(i1)
+                        
+                        # 원본 점수 offset 적용
+                        orig_measurements = orig_adjusted.get("measurements_report") or orig_adjusted.get("measurements", {})
+                        orig_measurements_filtered = {k: v for k, v in orig_measurements.items() if not k.endswith("_raw")}
+                        orig_overall = float(orig_adjusted.get("overall_score_report", orig_adjusted.get("overall_score", 0)))
+                        orig_score_data = {
+                            "overall": orig_overall,
+                            "measurements": orig_measurements_filtered
+                        }
+                        orig_score_adjusted = apply_score_offset(orig_score_data, offset_config, weights)
+                        
+                        # 복원 점수 offset 적용
+                        ideal1_measurements = ideal1_adjusted.get("measurements_report") or ideal1_adjusted.get("measurements", {})
+                        ideal1_measurements_filtered = {k: v for k, v in ideal1_measurements.items() if not k.endswith("_raw")}
+                        ideal1_overall = float(ideal1_adjusted.get("overall_score_report", ideal1_adjusted.get("overall_score", 0)))
+                        ideal1_score_data = {
+                            "overall": ideal1_overall,
+                            "measurements": ideal1_measurements_filtered
+                        }
+                        ideal1_score_adjusted = apply_score_offset(ideal1_score_data, offset_config, weights)
 
-                        # score_offset 적용
-                        def apply_score_offset(score_data, offset_config, weights, max_score_limit=90.0):
+                        # score_offset 적용 (기존 코드 유지)
+                        def apply_score_offset_v2(score_data, offset_config, weights, max_score_limit=90.0):
                             if not offset_config.get("enabled", False):
                                 return score_data
 
@@ -594,8 +659,8 @@ def _cli() -> int:
                         }
 
                         # offset 적용
-                        original_score_adjusted = apply_score_offset(original_score_filtered, offset_config, weights, max_score_limit)
-                        restored_score_adjusted = apply_score_offset(restored_score_filtered, offset_config, weights, max_score_limit)
+                        original_score_adjusted = apply_score_offset_v2(original_score_filtered, offset_config, weights, max_score_limit)
+                        restored_score_adjusted = apply_score_offset_v2(restored_score_filtered, offset_config, weights, max_score_limit)
                         
                         # 인지 나이 추출
                         original_perceived_age = o.get("perceived_age", 0)
@@ -752,21 +817,36 @@ def _cli() -> int:
                             }
                         }
                         
+                        # 전체 처리 시간 계산
+                        total_elapsed = time.time() - total_start_time
+                        
                         result_json = {
                             "original_image": str(Path(init_resolved).resolve()),
                             "restored_image": str(final_p.resolve()),
                             "metadata": metadata,
+                            "timing": {
+                                "total_elapsed_seconds": round(total_elapsed, 2),
+                                "llm_elapsed_seconds": round(llm_time, 2) if llm_time > 0 else None
+                            },
                             # 내부 측정 점수 추가
                             "internal_analysis": {
                                 "original": {
                                     "overall_score": float(o.get("overall_score_report", o.get("overall_score", 0))),
+                                    "overall_score_raw": float(o.get("overall_score_report_raw", o.get("overall_score_raw", 0))),
                                     "perceived_age": o.get("perceived_age", 0),
-                                    "measurements": filter_measurements(o.get("measurements_report") or o.get("measurements", {}))
+                                    "measurements": filter_measurements(o.get("measurements_report") or o.get("measurements", {})),
+                                    "measurements_raw": extract_raw_measurements(o.get("measurements_report") or o.get("measurements", {})),
+                                    "overall_score_adjusted": orig_score_adjusted["overall"],
+                                    "measurements_adjusted": orig_score_adjusted["measurements"]
                                 },
                                 "restored": {
                                     "overall_score": float(i1.get("overall_score_report", i1.get("overall_score", 0))),
+                                    "overall_score_raw": float(i1.get("overall_score_report_raw", i1.get("overall_score_raw", 0))),
                                     "perceived_age": i1.get("perceived_age", 0),
-                                    "measurements": filter_measurements(i1.get("measurements_report") or i.get("measurements", {}))
+                                    "measurements": filter_measurements(i1.get("measurements_report") or i.get("measurements", {})),
+                                    "measurements_raw": extract_raw_measurements(i1.get("measurements_report") or i.get("measurements", {})),
+                                    "overall_score_adjusted": ideal1_score_adjusted["overall"],
+                                    "measurements_adjusted": ideal1_score_adjusted["measurements"]
                                 }
                             }
                         }
@@ -856,7 +936,7 @@ def _cli() -> int:
 
                         # 점수 팝업 표시 생략, 측정항목 비교는 GUI 모드에서만 실행
                         # CLI에서는 --no-restore-score-popup 옵션으로 건너뜀
-                        if not getattr(args, 'no_restore_score_popup', True):  # 기본값 True (건너뜀)
+                        if args.restore_score_popup:  # --restore-score-popup일 때만 실행
                             log.info("[진행] 측정항목 비교 다이얼로그 표시")
                             try:
                                 from PySide6.QtCore import QProcess
@@ -910,6 +990,8 @@ def _cli() -> int:
     # 전체 처리 시간 출력
     total_elapsed = time.time() - total_start_time
     print(f"[전체 처리 시간] {format_duration(total_elapsed)}", flush=True)
+    if llm_time > 0:
+        print(f"[LLM 처리 시간] {format_duration(llm_time)}", flush=True)
 
     return 0
 
@@ -1086,6 +1168,10 @@ def _run_analyze(image_path: Path) -> int:
 # main
 # ---------------------------------------------------------------------------
 def main() -> int:
+    # 브레이크포인트 캐시 초기화 - config.json 변경 반영
+    from src.scoring._breakpoints import _clear_breakpoints_cache
+    _clear_breakpoints_cache()
+
     argv = sys.argv[1:]
     if argv and argv[0] in ("-h", "--help"):
         _print_self_help()

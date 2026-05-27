@@ -146,25 +146,26 @@ from src.scoring.skin_type_detector import (
     get_skin_type_name,
 )
 
-# 보고서
+# 보고서 (레거시 ReportLayer B)
 from src.scoring._report import (
     ReportLayer,
     _compute_overall_score_report,
-    measurement_report_string as measurement_report_string_legacy,
+    measurement_report_string as measurement_report_string_legacy,  # 레거시 버전 (ReportLayer B)
     get_report_weights,
     get_report_keys,
     get_report_categories,
     get_report_display_names,
 )
 
-# 직교 분해
+# 직교 분해 (v3 Layer A)
 from src.skin.compose.score_composition import (
     WEIGHTS, OUTPUT_KEYS,
     _compose_pigmentation_scores, _compose_redness_lesion_scores,
     _compose_pore_score, _compose_wrinkle_score, _compose_tone_score,
     _compose_elasticity_score, _compose_hydration_score, _compose_skin_type_score,
     _compose_roughness_score,
-    _compute_overall_score, measurement_report_string,
+    _compute_overall_score,
+    measurement_report_string,  # v3 버전 (Layer A) - 공개 API로 사용
 )
 
 # config_parser re-export (하위 호환)
@@ -317,17 +318,21 @@ class SkinAnalyzer:
 
     def _legacy_to_current(self, legacy_result: Dict[str, Any], debug: bool = False) -> Dict[str, Any]:
         m2 = legacy_result.get("measurements", {})
-        m2_raw: Dict[str, float] = {
-            k: (_score_from_display_10_90_adjusted(k, float(v))
-                if isinstance(v, (int, float)) else 50.0)
-            for k, v in m2.items()
-        }
+        m2_raw: Dict[str, float] = {}
+        for k, v in m2.items():
+            # focal_lesion은 직교 신호이므로 역변환하지 않음
+            if k == "focal_lesion":
+                m2_raw[k] = float(v) if isinstance(v, (int, float)) else 50.0
+            elif isinstance(v, (int, float)):
+                m2_raw[k] = _score_from_display_10_90_adjusted(k, float(v))
+            else:
+                m2_raw[k] = 50.0
         if debug:
             log.debug("[legacy] core 서브점수 역변환 완료 (%d개)", len(m2_raw))
 
         pig  = {k: m2_raw.get(k, 50.0) for k in ("melasma_score", "freckle_score")}
         red  = {k: m2_raw.get(k, 50.0) for k in ("redness_score",)}
-        acne = {k: m2_raw.get(k, 50.0) for k in ("acne_score", "post_acne_pigment_score")}
+        acne = {k: m2_raw.get(k, 50.0) for k in ("acne_score", "post_acne_pigment_score", "focal_lesion")}
         pore = {k: m2_raw.get(k, 50.0) for k in ("pore_size_score", "pore_sagging_score")}
         wri  = {k: m2_raw.get(k, 50.0) for k in ("eye_wrinkle_score", "nasolabial_wrinkle_score", "fine_deep_wrinkle_score")}
         tone = {k: m2_raw.get(k, 50.0) for k in ("skin_tone_score", "dullness_score", "uneven_tone_score")}

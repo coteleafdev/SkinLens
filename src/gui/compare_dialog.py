@@ -258,7 +258,7 @@ class SkinMeasurementCompareDialog(QDialog):
         
         # LLM 결과가 이미 있으면 표시
         if self._last_llm_report_orig and self._last_llm_report_ideal:
-            self._on_llm_dual_finished(self._last_llm_report_orig, self._last_llm_report_ideal)
+            self._on_llm_dual_finished(self._last_llm_report_orig, self._last_llm_report_ideal, 0.0)
             self.btn_llm.setText("LLM 소견 재생성 (원본+복원 동시)")
         else:
             # 다이얼로그 표시 시 자동으로 LLM 소견 생성 실행
@@ -318,7 +318,7 @@ class SkinMeasurementCompareDialog(QDialog):
         self.llm_report_text.setText(f"LLM 소견 생성 중...\n{message}")
         QCoreApplication.processEvents()
 
-    def _on_llm_dual_finished(self, orig_report: object, ideal_report: object) -> None:
+    def _on_llm_dual_finished(self, orig_report: object, ideal_report: object, elapsed_time: float = 0.0) -> None:
         """듀얼 이미지 LLM 분석 완료"""
         # 스레드가 있는 경우에만 종료 처리
         if hasattr(self, 'thread') and self.thread is not None and isinstance(self.thread, QThread):
@@ -328,6 +328,10 @@ class SkinMeasurementCompareDialog(QDialog):
         elif hasattr(self, 'btn_llm'):
             # 스레드가 없는 경우 버튼만 활성화
             self.btn_llm.setEnabled(True)
+
+        # LLM 처리 시간 로그
+        if elapsed_time > 0:
+            log.info(f"[GUI] LLM 처리 시간: {elapsed_time:.2f}초")
 
         # 소견 텍스트 구성
         adjustment_note = ""

@@ -34,6 +34,7 @@ from src.llm.llm_prompt_builder import (
     _build_system_prompt,
     _build_user_prompt,
     _build_dual_image_prompt,
+    _build_reference_guided_prompt,
 )
 from src.llm.llm_providers import create_provider, LLMProvider
 from src.skin.core.config_parser import get_llm_api_config, get_measurement_count
@@ -431,6 +432,141 @@ class LlmSkinReporter:
             product_info,
         )
 
+    def generate_reference_guided_report(
+        self,
+        orig_image_path: str | Path,
+        ideal_image_path: str | Path,
+        orig_measurements_report: Dict[str, Any],
+        orig_overall_score: float,
+        orig_perceived_age: float,
+        ideal_measurements_report: Dict[str, Any],
+        provide_scores: bool = True,
+        product_info: Optional[str] = None,
+    ) -> SkinLLMReport:
+        """복원 이미지를 레퍼런스로 사용하여 원본 점수 정확도를 높인 보고서 반환.
+
+        기존 generate_dual_report()와의 차이:
+          - 기존: 두 이미지 각각 독립 분석 → 원본·복원 점수 2세트 반환
+          - 신규: 복원본을 기준선으로 원본을 역산 → 원본 점수 1세트 반환 (정확도 향상)
+
+        Gemini에게 전달하는 3단계 지시:
+          Step 1. 복원본 기준선 파악
+          Step 2. 원본 오탐 요인(조명·반사·초점·색온도·아티팩트) 역산
+          Step 3. 보정된 원본 점수 최종 산출
+
+        Args:
+            orig_image_path:           원본 이미지 경로
+            ideal_image_path:          복원 이미지 경로 (GAN 복원본)
+            orig_measurements_report:  원본 CV 분석기 측정값
+            orig_overall_score:        원본 CV 종합 점수
+            orig_perceived_age:        원본 CV 인지 나이
+            ideal_measurements_report: 복원 CV 측정값 (비교 참고용)
+            provide_scores:            CV 점수를 프롬프트에 포함할지 여부
+            product_info:              외부에서 주입하는 제품 정보 (없으면 DB 매칭)
+
+        Returns:
+            SkinLLMReport: 복원 기준선 보정이 적용된 원본 보고서 1개
+        """
+        orig_image_path  = Path(orig_image_path)
+        ideal_image_path = Path(ideal_image_path)
+        if not orig_image_path.exists():
+            raise FileNotFoundError(f"원본 이미지 없음: {orig_image_path}")
+        if not ideal_image_path.exists():
+            raise FileNotFoundError(f"복원 이미지 없음: {ideal_image_path}")
+
+        # ── 처방전 계산 ───────────────────────────────────────────
+        from src.prescription.prescription_calculator import create_prescription
+        full_prescription = create_prescription(
+            skin_assessment_scores=orig_measurements_report,
+            pcr_result=None,
+            age_group_statistics=None,
+            age=30,
+            gender="female",
+        )
+        prescription_info = json.dumps(full_prescription, ensure_ascii=False)
+
+        # ── 제품 매칭 ─────────────────────────────────────────────
+        assessment_recipe = full_prescription.get("assessment", {})
+        matched_products: List[Dict[str, Any]] = []
+        try:
+            if self._product_repository:
+                matched_products = self._product_repository.match_products_by_prescription(
+                    assessment_recipe, max_products=3
+                )
+            else:
+                from src.db.product_repository import ProductRepository
+                repo = ProductRepository()
+                matched_products = repo.match_products_by_prescription(
+                    assessment_recipe, max_products=3
+                )
+                repo.close()
+            product_info = product_info or json.dumps(matched_products, ensure_ascii=False)
+        except Exception as e:
+            log.warning("[RGP] 제품 매칭 실패: %s", e)
+            product_info = product_info or "[]"
+
+        # ── 프롬프트 조립 ─────────────────────────────────────────
+        system_prompt = _build_system_prompt()
+        user_prompt   = _build_reference_guided_prompt(
+            orig_measurements_report=orig_measurements_report,
+            orig_overall_score=orig_overall_score,
+            orig_perceived_age=orig_perceived_age,
+            ideal_measurements_report=ideal_measurements_report,
+            provide_scores=provide_scores,
+            product_info=product_info,
+            prescription_info=prescription_info,
+        )
+
+        # ── API 호출 (재시도 포함) ────────────────────────────────
+        # 이미지 순서: [원본, 복원] — 프롬프트에서 "이미지 1=원본, 이미지 2=복원"으로 명시
+        for attempt in range(self.max_retries + 1):
+            try:
+                if self.progress_callback:
+                    self.progress_callback(
+                        f"[복원 기반 분석] LLM 소견 생성 중... "
+                        f"(시도 {attempt + 1}/{self.max_retries + 1})"
+                    )
+                else:
+                    log.info(
+                        "[RGP] LLM 호출 시도 %d/%d",
+                        attempt + 1, self.max_retries + 1,
+                    )
+
+                response_text = self._call_llm(
+                    system_prompt,
+                    user_prompt,
+                    [orig_image_path, ideal_image_path],
+                    max_output_tokens=self.max_output_tokens_dual,
+                )
+
+                report = self._parse_reference_guided_response(
+                    response_text,
+                    orig_measurements_report,
+                    orig_overall_score,
+                    orig_perceived_age,
+                    matched_products,
+                )
+                report.model = self.model_name
+                return report
+
+            except (json.JSONDecodeError, ValueError) as e:
+                if attempt < self.max_retries:
+                    log.warning("[RGP] JSON 파싱 실패 (시도 %d): %s", attempt + 1, e)
+                    time.sleep(self.retry_delay)
+                else:
+                    log.error("[RGP] JSON 파싱 최종 실패: %s", e)
+                    raise
+            except PermissionError as e:
+                log.error("[RGP] API 인증 실패: %s", e)
+                raise
+            except ConnectionError as e:
+                if attempt < self.max_retries:
+                    log.warning("[RGP] API 호출 실패 (시도 %d): %s", attempt + 1, e)
+                    time.sleep(self.retry_delay)
+                else:
+                    log.error("[RGP] API 최종 실패: %s", e)
+                    raise
+
     def generate_dual_report(
         self,
         orig_image_path: str | Path,
@@ -500,6 +636,46 @@ class LlmSkinReporter:
             product_info = "[]"
         
         system_prompt = _build_system_prompt()
+
+        # ── scoring_mode 분기 ─────────────────────────────────────
+        # config.json llm.scoring_mode = "reference_guided" 이면
+        # 복원 기반 원본 점수 정확도 향상 모드를 사용한다.
+        # "independent"(기본) 이면 기존 독립 분석 방식을 유지한다.
+        try:
+            from src.skin.core.config_parser import get_llm_api_config as _gcfg
+            _scoring_mode = _gcfg().get("scoring_mode", "independent")
+        except Exception:
+            _scoring_mode = "independent"
+
+        log.info("[generate_dual_report] scoring_mode=%s (config.json llm.scoring_mode)", _scoring_mode)
+
+        if _scoring_mode == "reference_guided":
+            log.info("[generate_dual_report] scoring_mode=reference_guided → 복원 기반 모드로 라우팅")
+            orig_report = self.generate_reference_guided_report(
+                orig_image_path=orig_image_path,
+                ideal_image_path=ideal_image_path,
+                orig_measurements_report=orig_measurements_report,
+                orig_overall_score=orig_overall_score,
+                orig_perceived_age=orig_perceived_age,
+                ideal_measurements_report=ideal_measurements_report,
+                provide_scores=provide_scores,
+                product_info=product_info,
+            )
+            # 복원 보고서는 빈 보고서로 대체 (reference_guided는 원본 1세트만 반환)
+            from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
+            ideal_report = SkinLLMReport(
+                overall_score=ideal_overall_score,
+                perceived_age=ideal_perceived_age,
+                metric_opinions=[],
+                overall_opinion="[reference_guided 모드: 복원 보고서는 별도 생성하지 않음]",
+                recommendation="",
+                raw_response="",
+                matched_products=orig_report.matched_products,
+            )
+            return orig_report, ideal_report
+
+        log.info("[generate_dual_report] scoring_mode=independent → 기존 독립 분석 방식 사용")
+
         user_prompt = _build_dual_image_prompt(
             orig_measurements_report,
             orig_overall_score,
@@ -655,6 +831,7 @@ class LlmSkinReporter:
             
             # 점수 보정 적용 (단일 모드)
             final_overall_score = overall_score
+            llm_overall_score = None  # 초기화하여 UnboundLocalError 방지
             try:
                 api_config = get_llm_api_config()
                 score_correction_config = api_config.get("score_correction", {})
@@ -665,15 +842,15 @@ class LlmSkinReporter:
                 dynamic_weighting_enabled = dynamic_weighting_config.get("enabled", False)
                 score_difference_threshold = dynamic_weighting_config.get("score_difference_threshold", 15.0)
                 
-                # 점수 차이 모니터링
-                _monitor_score_difference(overall_score, llm_overall_score, "종합 점수 (단일 모드)")
-                
                 # 점수 보정 또는 동적 가중치 적용
                 if score_correction_enabled and "overall_score" in response_json:
                     llm_overall_score = response_json["overall_score"]
                     correction_mode = score_correction_config.get("mode", "hybrid")
                     analyzer_weight = score_correction_config.get("analyzer_weight", 0.7)
                     llm_weight = score_correction_config.get("llm_weight", 0.3)
+                    
+                    # 점수 차이 모니터링 (llm_overall_score 정의 후)
+                    _monitor_score_difference(overall_score, llm_overall_score, "종합 점수 (단일 모드)")
                     
                     log.info(f"[점수 보정] 단일 모드 활성화: mode={correction_mode}, analyzer_weight={analyzer_weight}, llm_weight={llm_weight}, dynamic_weighting={dynamic_weighting_enabled}")
                     final_overall_score = _apply_score_correction(
@@ -686,6 +863,10 @@ class LlmSkinReporter:
                     llm_overall_score = response_json["overall_score"]
                     analyzer_weight = score_correction_config.get("analyzer_weight", 0.7)
                     llm_weight = score_correction_config.get("llm_weight", 0.3)
+                    
+                    # 점수 차이 모니터링 (llm_overall_score 정의 후)
+                    _monitor_score_difference(overall_score, llm_overall_score, "종합 점수 (단일 모드)")
+                    
                     log.info(f"[동적 가중치] 단일 모드 독립 작동: score_difference_threshold={score_difference_threshold}, 기본 가중치=자체{analyzer_weight}:LLM{llm_weight}")
                     final_overall_score = _apply_score_correction(
                         overall_score, llm_overall_score,
@@ -709,6 +890,140 @@ class LlmSkinReporter:
         except json.JSONDecodeError as e:
             log.error(f"[LLM] JSON 파싱 실패: {e}")
             raise ValueError(f"LLM 응답 JSON 파싱 실패: {e}")
+
+    def _parse_reference_guided_response(
+        self,
+        response_text: str,
+        orig_measurements_report: Dict[str, Any],
+        orig_overall_score: float,
+        orig_perceived_age: float,
+        matched_products: List[Dict[str, Any]],
+    ) -> "SkinLLMReport":
+        """복원 기반 레퍼런스 프롬프트 응답 파싱.
+
+        응답 JSON 필드:
+          reference_baseline   — 복원본 기준선 서술 (카테고리별)
+          correction_reasons   — 항목별 보정 이유
+          orig_metric_scores   — 18개 항목 최종 점수
+          orig_metric_opinions — 18개 항목 소견
+          orig_overall_score   — 종합 점수
+          orig_perceived_age   — 인지 나이
+          orig_overall_opinion — 종합 소견
+          recommendation       — 관리 권고사항
+
+        reference_baseline 필드가 없으면 기존 독립 분석 방식으로 폴백한다.
+        """
+        if not response_text or not response_text.strip():
+            raise ValueError("[RGP] LLM 응답이 비어있습니다.")
+
+        # 마크다운 코드블록 제거
+        if response_text.startswith("```"):
+            lines = response_text.split("\n")
+            lines = lines[1:] if lines[0].startswith("```") else lines
+            lines = lines[:-1] if lines and lines[-1].startswith("```") else lines
+            response_text = "\n".join(lines).strip()
+
+        try:
+            rj = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            log.error("[RGP] JSON 파싱 실패: %s", e)
+            raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
+
+        # ── reference_baseline 존재 여부 확인 ────────────────────
+        has_baseline = bool(rj.get("reference_baseline"))
+        if not has_baseline:
+            log.warning(
+                "[RGP] reference_baseline 필드 없음. "
+                "Gemini가 3단계 절차를 따르지 않은 것으로 판단. "
+                "orig_metric_scores 직접 사용으로 폴백."
+            )
+
+        # ── 복원 기준선 로그 ──────────────────────────────────────
+        if has_baseline:
+            for cat, desc in rj["reference_baseline"].items():
+                log.debug("[RGP] 기준선[%s]: %s", cat, desc[:80])
+
+        # ── 항목 점수 파싱 ────────────────────────────────────────
+        llm_scores   = rj.get("orig_metric_scores",   {})
+        llm_opinions = rj.get("orig_metric_opinions",  {})
+        corrections  = rj.get("correction_reasons",    {})
+
+        # CV 분석기 점수 보정 설정 로드
+        try:
+            api_config             = get_llm_api_config()
+            sc_cfg                 = api_config.get("score_correction", {})
+            sc_enabled             = sc_cfg.get("enabled", False)
+            sc_mode                = sc_cfg.get("mode", "hybrid")
+            a_weight               = sc_cfg.get("analyzer_weight", 0.7)
+            l_weight               = sc_cfg.get("llm_weight", 0.3)
+            dw_cfg                 = sc_cfg.get("dynamic_weighting", {})
+            dw_enabled             = dw_cfg.get("enabled", False)
+            dw_threshold           = dw_cfg.get("score_difference_threshold", 15.0)
+        except Exception:
+            sc_enabled, sc_mode    = False, "hybrid"
+            a_weight, l_weight     = 0.7, 0.3
+            dw_enabled, dw_threshold = False, 15.0
+
+        metric_opinions = []
+        for key, display, category, _ in _METRIC_META:
+            cv_score  = float(orig_measurements_report.get(key, 0) or 0)
+            llm_score = float(llm_scores.get(key, cv_score))
+
+            # 보정 이유 로그
+            reason = corrections.get(key, "")
+            if reason:
+                log.debug("[RGP] 보정[%s]: %s", key, reason)
+            _monitor_score_difference(cv_score, llm_score, f"{display}(RGP)")
+
+            # 하이브리드 보정
+            if sc_enabled:
+                final_score = _apply_score_correction(
+                    cv_score, llm_score,
+                    sc_mode, a_weight, l_weight, dw_enabled, dw_threshold,
+                )
+            else:
+                # 보정 비활성화 → LLM(reference_guided) 점수 우선
+                final_score = llm_score
+
+            # 소견에 보정 근거 부기
+            base_opinion = llm_opinions.get(key, "")
+            if reason and base_opinion:
+                opinion_text = f"{base_opinion} [보정근거: {reason}]"
+            else:
+                opinion_text = base_opinion
+
+            metric_opinions.append(MetricOpinion(
+                key=key,
+                display_name=display,
+                category=category,
+                score=final_score,
+                grade=_grade_label(final_score),
+                opinion=opinion_text,
+            ))
+
+        # ── 종합 점수 ─────────────────────────────────────────────
+        llm_overall   = float(rj.get("orig_overall_score",   orig_overall_score))
+        llm_age       = float(rj.get("orig_perceived_age",   orig_perceived_age))
+        _monitor_score_difference(orig_overall_score, llm_overall, "종합점수(RGP)")
+
+        if sc_enabled:
+            final_overall = _apply_score_correction(
+                orig_overall_score, llm_overall,
+                sc_mode, a_weight, l_weight, dw_enabled, dw_threshold,
+            )
+        else:
+            final_overall = llm_overall
+
+        return SkinLLMReport(
+            overall_score=final_overall,
+            perceived_age=llm_age,
+            metric_opinions=metric_opinions,
+            overall_opinion=rj.get("orig_overall_opinion", ""),
+            recommendation=rj.get("recommendation", ""),
+            raw_response=response_text,
+            scores_adjusted=has_baseline,
+            matched_products=matched_products,
+        )
 
     def _parse_dual_response(
         self,
