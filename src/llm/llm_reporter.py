@@ -927,7 +927,19 @@ class LlmSkinReporter:
             rj = json.loads(response_text)
         except json.JSONDecodeError as e:
             log.error("[RGP] JSON 파싱 실패: %s", e)
-            raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
+            # JSON 복구 시도: 마지막 불완전한 부분 제거
+            try:
+                # 마지막 중괄호 찾기
+                last_brace = response_text.rfind('}')
+                if last_brace > 0:
+                    recovered_text = response_text[:last_brace + 1]
+                    rj = json.loads(recovered_text)
+                    log.warning("[RGP] JSON 복구 성공: 마지막 불완전 부분 제거됨")
+                else:
+                    raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
+            except Exception as recovery_error:
+                log.error("[RGP] JSON 복구 실패: %s", recovery_error)
+                raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
 
         # ── reference_baseline 존재 여부 확인 ────────────────────
         has_baseline = bool(rj.get("reference_baseline"))

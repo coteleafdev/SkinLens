@@ -258,9 +258,15 @@ def _print_self_help() -> None:
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
-def _cli() -> int:
+def _cli_body(args) -> int:
+    """CLI 파이프라인 실행 로직 (동기/비동기 공통)"""
     global llm_time
     _configure_stdio_encoding()
+    
+    # 전체 처리 시간 측정 시작
+    import time
+    total_start_time = time.time()
+    llm_time = 0.0
     
     # ConfigManager 초기화 - 분석 전에 설정 로드 보장
     try:
@@ -271,180 +277,16 @@ def _cli() -> int:
         log.warning("ConfigManager 초기화 실패: %s. 레거시 설정 로드 사용.", e)
     
     # config.json에서 복원 파라미터 기본값 로드
-    # fidelity는 1.0(원본충실)을 기본으로 사용하여 사용자 설정 존중
-    # upscale은 1(업스케일 없음)을 기본으로 사용
-    cf_fidelity_default = 1.0
-    cf_upscale_default = 1
-    cf_additional_default = _get_restoration_defaults()[2]
     cf_bg_upsampler_default = _get_restoration_defaults()[3]
     
-    p = argparse.ArgumentParser(
-        description=(
-            "원본 보정: RF++/CodeFormer 복원 (pipeline_core.py 사용)"
-        ),
-        epilog=(
-            "RF++ 만(기본): -i. 원본 복사·RF만: --restore-only."
-        ),
-    )
-    p.add_argument(
-        "--input", "-i",
-        type=Path, nargs="?", const=Path("images/origin.png"), default=None,
-        metavar="PATH",
-        help="img2img 초기 이미지. 플래그만 쓰면 images/origin.png.",
-    )
-    p.add_argument(
-        "--restore-only", action="store_true",
-        help="복원 전용 — 입력 원본을 복사한 뒤 복원 엔진만 실행",
-    )
-    p.add_argument(
-        "--text2img", action="store_true",
-        help="초기 이미지 없이 text2img 만",
-    )
-    p.add_argument(
-        "--sd-after-rf", action="store_true",
-        help="RF++ 이후에 추가 복원 실행(기본은 RF++ 결과만 사용)",
-    )
-    p.add_argument(
-        "--sd-strength", type=float, default=0.12, metavar="S",
-        help="추가 복원 강도 (0,1]. 기본 0.12",
-    )
-    p.add_argument(
-        "--sd-max-side", type=int, default=768, metavar="PX",
-        help="추가 복원 시 긴 변 상한(px). 입력 파일 해상도는 유지하고 산출만 맞춤",
-    )
-    p.add_argument(
-        "--sd-guidance", type=float, default=None, metavar="G",
-        help="guidance_scale (미지정 시 5.5)",
-    )
-    p.add_argument(
-        "--sd-steps", type=int, default=None, metavar="N",
-        help="추가 복원 추론 스텝 (미지정 시 40)",
-    )
-    p.add_argument(
-        "--sd-negative-prompt", type=str, default=None, metavar="TEXT",
-        help="negative prompt",
-    )
-    p.add_argument(
-        "--out-dir", type=Path, default=Path("results"),
-        help="산출물 폴더",
-    )
-    p.add_argument(
-        "--prompt", type=str, default=None,
-        help="프롬프트(영문 권장). 생략 시 기본 문구",
-    )
-    p.add_argument("--model-id", type=str, default=None, help="모델 ID")
-    # --skip-restore 제거: --no-restore 단일 플래그로 통일
-    p.add_argument(
-        "--restore", action=argparse.BooleanOptionalAction, default=True,
-        help="CodeFormer 실행 여부 (기본 켜짐). 끄려면 --no-restore",
-    )
-    # ── 복원 백엔드 선택 ──────────────────────────────────────────────────
-    p.add_argument(
-        "--restorer",
-        type=str,
-        choices=[r.value for r in Restorer],
-        default=Restorer.CODEFORMER.value,
-        metavar="{restoreformer,codeformer}",
-        help=(
-            "복원 백엔드 선택. "
-            "restoreformer: RestoreFormerPlusPlus 사용, "
-            "codeformer(기본): CodeFormer 사용"
-        ),
-    )
-    # ── RestoreFormer++ ─────────────────────────────────────────────────────
-    paths_config = get_paths_config()
-    rf_root_default = paths_config.get("restoreformer_root")
-    if rf_root_default:
-        rf_root_default = Path(rf_root_default)
-    p.add_argument(
-        "--restoreformer-root", type=Path, default=rf_root_default,
-        help="RestoreFormerPlusPlus 레포 루트 (기본: ./RestoreFormerPlusPlus)",
-    )
-    device_config = get_device_config()
-    rf_device_default = device_config.get("restoreformer_device")
-    p.add_argument(
-        "--restoreformer-device", type=str, default=rf_device_default,
-        choices=["auto", "cuda", "cpu"],
-        help="RestoreFormer++ 디바이스 (auto/cuda/cpu). 기본: 자동 감지",
-    )
-    # ── CodeFormer ────────────────────────────────────────────────────────
-    cf_root_default = paths_config.get("codeformer_root")
-    if cf_root_default:
-        cf_root_default = Path(cf_root_default)
-    p.add_argument(
-        "--codeformer-root", type=Path, default=cf_root_default,
-        help="CodeFormer 레포 루트 (기본: ./CodeFormer)",
-    )
-    p.add_argument(
-        "--cf-fidelity", type=float, default=cf_fidelity_default, metavar="F",
-        help=f"CodeFormer fidelity_weight 0(최대보정)~1(원본충실). 기본 {cf_fidelity_default} (config.json)",
-    )
-    p.add_argument(
-        "--cf-additional", action=argparse.BooleanOptionalAction, default=False,
-        help="RF++ 복원 후 CodeFormer 추가 복원 수행 (기본 끔)",
-    )
-    p.add_argument(
-        "--cf-upscale", type=int, default=cf_upscale_default, metavar="N",
-        help=f"CodeFormer 업스케일 배수. 기본 {cf_upscale_default}",
-    )
-    p.add_argument(
-        "--analyzer-score-tune",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help=(
-            "켜면 복원(RF++/CF) 후 분석 점수 경향에 맞춰 CodeFormer "
-            "fidelity·후처리(모공/톤/주름/트러블)를 가산. 기본 켬, 끄려면 --no-analyzer-score-tune"
-        ),
-    )
-    p.add_argument(
-        "--score-safety-net",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help=(
-            "켜면 복원이미지 점수가 원본보다 1점 미만일 때 가장 가중치가 높은 항목 점수를 조정하여 종합점수가 1점 오르도록 함. "
-            "기본 켬, 끄려면 --no-score-safety-net"
-        ),
-    )
-    p.add_argument(
-        "--restore-score-popup",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help=(
-            "파이프라인 끝나면 analyzer_compare_gui 와 동일한 ref_stat·측정항목 표를 "
-            "원본 vs 최종 산출(복원)로 팝업. "
-            "기본 끔, 켜기: --restore-score-popup"
-        ),
-    )
-    p.add_argument(
-        "--llm-scores",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help=(
-            "LLM에 내부 측정 점수를 제공. "
-            "LLM은 이미지만 보고 자체적으로 점수를 측정합니다. "
-            "기본: 내부 측정 점수 미제공 (켜기: --llm-scores)"
-        ),
-    )
-    p.add_argument(
-        "--output-json", type=Path, default=None,
-        help="결과 JSON 출력 파일 경로 (지정하지 않으면 stdout)",
-    )
-    p.add_argument(
-        "--debug", action="store_true",
-        help="디버그 모드 (오류 시 스택 트레이스 포함)",
-    )
-
-    args = p.parse_args()
-
-    # 전체 처리 시간 측정 시작
-    import time
-    total_start_time = time.time()
-    llm_time = 0.0
-
     # 상호 배타 검증
     if args.restore_only and args.text2img:
+        from argparse import ArgumentParser
+        p = ArgumentParser()
         p.error("--restore-only 와 --text2img 은 함께 쓸 수 없습니다.")
     if args.restore_only and args.sd_after_rf:
+        from argparse import ArgumentParser
+        p = ArgumentParser()
         p.error("--restore-only 와 --sd-after-rf 는 함께 쓸 수 없습니다.")
 
     # cfg 구성
@@ -994,6 +836,203 @@ def _cli() -> int:
         print(f"[LLM 처리 시간] {format_duration(llm_time)}", flush=True)
 
     return 0
+
+
+def _cli() -> int:
+    """CLI 진입점 (동기 모드)"""
+    # ConfigManager 초기화 - 분석 전에 설정 로드 보장
+    try:
+        from src.config.config_manager import ConfigManager
+        config_mgr = ConfigManager.get_instance()
+        log.info("ConfigManager 초기화 완료")
+    except Exception as e:
+        log.warning("ConfigManager 초기화 실패: %s. 레거시 설정 로드 사용.", e)
+    
+    # config.json에서 복원 파라미터 기본값 로드
+    cf_fidelity_default = 1.0
+    cf_upscale_default = 1
+    cf_additional_default = _get_restoration_defaults()[2]
+    cf_bg_upsampler_default = _get_restoration_defaults()[3]
+    
+    p = argparse.ArgumentParser(
+        description=(
+            "원본 보정: RF++/CodeFormer 복원 (pipeline_core.py 사용)"
+        ),
+        epilog=(
+            "RF++ 만(기본): -i. 원본 복사·RF만: --restore-only."
+        ),
+    )
+    p.add_argument(
+        "--input", "-i",
+        type=Path, nargs="?", const=Path("images/origin.png"), default=None,
+        metavar="PATH",
+        help="img2img 초기 이미지. 플래그만 쓰면 images/origin.png.",
+    )
+    p.add_argument(
+        "--restore-only", action="store_true",
+        help="복원 전용 — 입력 원본을 복사한 뒤 복원 엔진만 실행",
+    )
+    p.add_argument(
+        "--text2img", action="store_true",
+        help="초기 이미지 없이 text2img 만",
+    )
+    p.add_argument(
+        "--sd-after-rf", action="store_true",
+        help="RF++ 이후에 추가 복원 실행(기본은 RF++ 결과만 사용)",
+    )
+    p.add_argument(
+        "--sd-strength", type=float, default=0.12, metavar="S",
+        help="추가 복원 강도 (0,1]. 기본 0.12",
+    )
+    p.add_argument(
+        "--sd-max-side", type=int, default=768, metavar="PX",
+        help="추가 복원 시 긴 변 상한(px). 입력 파일 해상도는 유지하고 산출만 맞춤",
+    )
+    p.add_argument(
+        "--sd-guidance", type=float, default=None, metavar="G",
+        help="guidance_scale (미지정 시 5.5)",
+    )
+    p.add_argument(
+        "--sd-steps", type=int, default=None, metavar="N",
+        help="추가 복원 추론 스텝 (미지정 시 40)",
+    )
+    p.add_argument(
+        "--sd-negative-prompt", type=str, default=None, metavar="TEXT",
+        help="negative prompt",
+    )
+    p.add_argument(
+        "--out-dir", type=Path, default=Path("results"),
+        help="산출물 폴더",
+    )
+    p.add_argument(
+        "--prompt", type=str, default=None,
+        help="프롬프트(영문 권장). 생략 시 기본 문구",
+    )
+    p.add_argument("--model-id", type=str, default=None, help="모델 ID")
+    p.add_argument(
+        "--restore", action=argparse.BooleanOptionalAction, default=True,
+        help="CodeFormer 실행 여부 (기본 켜짐). 끄려면 --no-restore",
+    )
+    p.add_argument(
+        "--restorer",
+        type=str,
+        choices=[r.value for r in Restorer],
+        default=Restorer.CODEFORMER.value,
+        metavar="{restoreformer,codeformer}",
+        help=(
+            "복원 백엔드 선택. "
+            "restoreformer: RestoreFormerPlusPlus 사용, "
+            "codeformer(기본): CodeFormer 사용"
+        ),
+    )
+    paths_config = get_paths_config()
+    rf_root_default = paths_config.get("restoreformer_root")
+    if rf_root_default:
+        rf_root_default = Path(rf_root_default)
+    p.add_argument(
+        "--restoreformer-root", type=Path, default=rf_root_default,
+        metavar="PATH",
+        help="RestoreFormer++ 저장소 경로",
+    )
+    p.add_argument(
+        "--restoreformer-device",
+        type=str,
+        choices=["auto", "cuda", "cpu"],
+        default="auto",
+        metavar="{auto,cuda,cpu}",
+        help="RestoreFormer++ 장치 선택",
+    )
+    cf_root_default = paths_config.get("codeformer_root")
+    if cf_root_default:
+        cf_root_default = Path(cf_root_default)
+    p.add_argument(
+        "--codeformer-root", type=Path, default=cf_root_default,
+        metavar="PATH",
+        help="CodeFormer 저장소 경로",
+    )
+    p.add_argument(
+        "--cf-fidelity", type=float, default=cf_fidelity_default, metavar="F",
+        help=f"CodeFormer fidelity_weight 0(최대보정)~1(원본충실). 기본 {cf_fidelity_default} (config.json)",
+    )
+    p.add_argument(
+        "--cf-additional", action=argparse.BooleanOptionalAction, default=False,
+        help="RF++ 복원 후 CodeFormer 추가 복원 수행 (기본 끔)",
+    )
+    p.add_argument(
+        "--cf-upscale", type=int, default=cf_upscale_default, metavar="N",
+        help=f"CodeFormer 업스케일 배수. 기본 {cf_upscale_default} (config.json)",
+    )
+    p.add_argument(
+        "--analyzer-score-tune",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "켜면 복원(RF++/CF) 후 분석 점수 경향에 맞춰 CodeFormer "
+            "fidelity를 자동 조정하여 점수가 원본 대비 올라가기 쉽게 함. "
+            "기본 켜짐. 끄려면 --no-analyzer-score-tune"
+        ),
+    )
+    p.add_argument(
+        "--score-safety-net",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "켜면 복원이미지 점수가 원본보다 1점 미만일 때 가장 가중치가 높은 항목 점수를 조정하여 종합점수가 1점 오르도록 함. "
+            "기본 켜짐. 끄려면 --no-score-safety-net"
+        ),
+    )
+    p.add_argument(
+        "--restore-score-popup",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "파이프라인 끝나면 analyzer_compare_gui 와 동일한 ref_stat·측정항목 표를 "
+            "팝업으로 표시. 기본 끔. 켜려면 --restore-score-popup"
+        ),
+    )
+    p.add_argument(
+        "--llm-scores",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "LLM에 내부 측정 점수를 제공. "
+            "기본: 내부 측정 점수 미제공 (켜기: --llm-scores)"
+        ),
+    )
+    p.add_argument(
+        "--output-json", type=Path, default=None,
+        help="결과 JSON 출력 파일 경로 (지정하지 않으면 stdout)",
+    )
+    p.add_argument(
+        "--debug", action="store_true",
+        help="디버그 모드 (오류 시 스택 트레이스 포함)",
+    )
+    p.add_argument(
+        "--async", dest="async_mode", action="store_true",
+        help="비동기 모드 실행 (서버 환경용)",
+    )
+
+    args = p.parse_args()
+
+    # 비동기 모드인 경우 asyncio.run으로 실행
+    if args.async_mode:
+        import asyncio
+        asyncio.run(_cli_async(args))
+        return 0
+
+    return _cli_body(args)
+
+
+async def _cli_async(args) -> int:
+    """CLI 비동기 진입점"""
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+    
+    # ThreadPoolExecutor로 동기 함수를 비동기로 실행
+    loop = asyncio.get_event_loop()
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        result = await loop.run_in_executor(executor, _cli_body, args)
+    return result
 
 
 def _run_pipeline_cli(forwarded: list[str]) -> int:

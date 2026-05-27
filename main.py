@@ -13,6 +13,9 @@ GUI와 CLI 모드를 통합한 메인 진입점입니다.
 
     # CLI 모드 (비동기)
     python main.py --cli -i input.jpg -o output_dir --async
+
+    # GUI 모드 (비동기 파이프라인)
+    python main.py --gui-async
 """
 import argparse
 import sys
@@ -34,6 +37,9 @@ def main():
 
   # CLI 모드 (비동기)
   python main.py --cli -i input.jpg -o output_dir --async
+
+  # GUI 모드 (비동기 파이프라인)
+  python main.py --gui-async
         """
     )
     
@@ -41,6 +47,12 @@ def main():
         "--cli",
         action="store_true",
         help="CLI 모드로 실행 (GUI 없이 명령줄 기반 동작)"
+    )
+    
+    parser.add_argument(
+        "--gui-async",
+        action="store_true",
+        help="GUI 모드에서 내부 CLI 파이프라인을 비동기 모드로 실행"
     )
     
     # CLI 전용 인자들 (skin_analysis_cli.py와 동일)
@@ -71,6 +83,10 @@ def main():
             print("오류: CLI 모드에서는 -i/--input과 -o/--output이 필수입니다.")
             print("사용법: python main.py --cli -i input.jpg -o output_dir")
             sys.exit(1)
+        
+        # 실행 모드 로그
+        mode = "비동기" if args.async_mode else "동기"
+        print(f"[실행 모드] {mode} 모드")
         
         # skin_analysis_cli.py 임포트 및 실행
         try:
@@ -147,6 +163,11 @@ def main():
         # GUI 임포트 및 실행
         try:
             from src.gui.image_enhancer import main as gui_main
+            
+            # --gui-async 옵션을 환경 변수로 전달
+            if args.gui_async:
+                import os
+                os.environ["GUI_ASYNC_MODE"] = "1"
             
             gui_main()
         

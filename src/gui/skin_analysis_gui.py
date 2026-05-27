@@ -845,6 +845,15 @@ class SkinAnalysisWindow(QMainWindow):
         script = str(Path(__file__).resolve().parent / "image_enhancer.py")
         args: list[str] = [script, "--cli"]
 
+        # GUI 비동기 모드 확인 (환경 변수)
+        import os
+        gui_async = os.environ.get("GUI_ASYNC_MODE") == "1"
+        if gui_async:
+            args.append("--async")
+            self._append_log("[GUI 파이프라인] 비동기 모드로 실행")
+        else:
+            self._append_log("[GUI 파이프라인] 동기 모드로 실행")
+
         if self.chk_text2img.isChecked():
             args.append("--text2img")
         else:
@@ -856,8 +865,10 @@ class SkinAnalysisWindow(QMainWindow):
             args.append("--restore-only")
         if not self.chk_restore.isChecked():
             args.append("--no-restore")
-        if not self.chk_restore_score_popup.isChecked():
-            args.append("--no-restore-score-popup")
+        
+        # GUI 모드에서 비교창 열기 (비동기 모드 제외)
+        if not gui_async:
+            args.append("--restore-score-popup")
         if self.chk_llm_scores.isChecked():
             args.append("--llm-scores")  # 내부 측정 점수 제공
         if not self.chk_analyzer_score_tune.isChecked():
