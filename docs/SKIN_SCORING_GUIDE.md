@@ -6,6 +6,7 @@
 > **점수 척도:** 내부 0~100 → 표시 10~90 선형 변환  
 > **운영 점수 기준 (2026년 5월):** 90 이상(매우 우수) / 80~90(우수) / 70~80(양호) / 60~70(집중케어 추천) / 60 미만(개선 필요)
 > **설정 관리:** 모든 breakpoints는 `config.json`에서 단일 관리 (코드 하드코딩 제거)
+> **마지막 수정:** 2026-05-28
 
 ---
 
@@ -263,6 +264,20 @@ final_score = aggregate_weighted_signals(weighted_signals)
 - **70~80:** 양호
 - **60~70:** 집중케어 추천
 - **60 미만:** 개선 필요
+
+**[참고]** 점수 기준은 `config.json`의 `score_criteria` 섹션에서 관리됩니다. LLM 프롬프트에도 이 기준이 제공되어 독립적인 점수 산출을 유도합니다.
+
+---
+
+## 최신 변경 사항 (2026-05-28)
+
+### 점수 기준 섹션 추가
+- **변경**: CV 분석기 측정 점수 대신 점수 평가 기준 제공
+- **이유**: LLM이 CV 점수에 의존하지 않고 독립적으로 점수를 산출하도록 유도
+- **구현**:
+  - `config/config.json`에 `score_criteria` 섹션 추가 (점수 스케일, 등급 라벨)
+  - `llm_prompt_builder.py`에 `_build_score_criteria_section()` 함수 추가
+  - 프롬프트 템플릿에서 `{cv_scores_section}` → `{score_criteria_section}` 변경
 
 ---
 

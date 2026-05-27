@@ -103,7 +103,7 @@ _MAX_UPLOAD_BYTES = int(os.environ.get("SKIN_API_MAX_UPLOAD_BYTES", str(_server_
 _ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", _server_config_cache.get("allowed_origins", "*")).split(",")
 
 # ── Job 동시 실행 제어 ─────────────────────────────────────────────────────
-_MAX_CONCURRENT_JOBS = int(os.environ.get("SKIN_API_MAX_CONCURRENT", str(_server_config_cache.get("max_concurrent_jobs", 2))))
+_MAX_CONCURRENT_JOBS = int(os.environ.get("SKIN_API_MAX_CONCURRENT", str(_server_config_cache.get("max_concurrent_jobs", 4))))
 JOB_SEMAPHORE = threading.Semaphore(_MAX_CONCURRENT_JOBS)
 
 # ── 타임아웃 설정 ────────────────────────────────────────────────────────────
@@ -593,7 +593,9 @@ def get_shared_executor() -> ThreadPoolExecutor:
     global _shared_executor
     with _executor_lock:
         if _shared_executor is None:
-            _shared_executor = ThreadPoolExecutor(max_workers=1)
+            max_workers = int(os.environ.get("SKIN_API_MAX_WORKERS", "4"))
+            _shared_executor = ThreadPoolExecutor(max_workers=max(1, max_workers))
+            log.info(f"ThreadPoolExecutor 초기화: max_workers={max_workers}")
         return _shared_executor
 
 

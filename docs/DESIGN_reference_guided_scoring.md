@@ -1,8 +1,9 @@
 # 복원 이미지 기반 원본 점수 정확도 향상 — 설계 문서
 
 > 작성일: 2026-05-27  
+> 마지막 수정: 2026-05-28  
 > 대상 버전: SkinLens v1  
-> 관련 파일: `src/llm/llm_reporter.py`, `src/llm/llm_prompt_builder.py`, `docs/llm_prompt_template.md`
+> 관련 파일: `src/llm/llm_reporter.py`, `src/llm/llm_prompt_builder.py`, `docs/llm_prompt_template.md`, `config/config.json`
 
 ---
 
@@ -185,8 +186,14 @@ config.json:
 | `src/llm/llm_reporter.py` | 추가 | `_parse_reference_guided_response()` 신규 private 메서드 |
 | `src/llm/llm_reporter.py` | 수정 | `generate_dual_report()` — `scoring_mode` 분기 추가 |
 | `src/llm/llm_prompt_builder.py` | 추가 | `_build_reference_guided_prompt()` 신규 함수 |
+| `src/llm/llm_prompt_builder.py` | 추가 | `_build_score_criteria_section()` 신규 함수 (점수 기준 제공) |
 | `docs/llm_prompt_template.md` | 추가 | `REFERENCE_GUIDED_PROMPT` 섹션 추가 |
+| `docs/llm_prompt_template.md` | 수정 | "사용자" → "고객님" 표현 변경, 점수 기준 섹션 추가 |
 | `config/config.json` | 추가 | `llm.scoring_mode` 필드 추가 |
+| `config/config.json` | 추가 | `score_criteria` 섹션 추가 (점수 스케일, 등급 라벨) |
+| `src/gui/compare_dialog.py` | 수정 | "보정 점수" → "복원 점수" 용어 변경 |
+| `src/gui/compare_dialog.py` | 수정 | 복원 LLM 측정 없을 때 '-' 표시 로직 추가 |
+| `src/server/deps.py` | 수정 | 동시 요청 처리 개선 (max_workers, max_concurrent_jobs) |
 
 ---
 
@@ -229,3 +236,46 @@ config.json:
 - GAN 복원 품질이 낮으면(CodeFormer 신뢰도 < 0.5) 기준선 자체가 부정확해진다. 복원 신뢰도 점수를 프롬프트에 함께 전달하는 것이 권장된다.
 - Gemini의 Step 1 → Step 2 → Step 3 순서 준수는 프롬프트 강제에 의존하므로, 응답에 `reference_baseline` 필드가 없으면 기존 방식으로 폴백한다.
 - 처리 시간은 기존 대비 약 +8% 증가 (입력 토큰 동일, prefill 구조 변화만 발생).
+
+---
+
+## 8. 최신 변경 사항 (2026-05-28)
+
+### 8.1 점수 기준 섹션 추가
+- **변경**: CV 분석기 측정 점수 대신 점수 평가 기준 제공
+- **이유**: LLM이 CV 점수에 의존하지 않고 독립적으로 점수를 산출하도록 유도
+- **구현**:
+  - `config/config.json`에 `score_criteria` 섹션 추가 (점수 스케일, 등급 라벨)
+  - `llm_prompt_builder.py`에 `_build_score_criteria_section()` 함수 추가
+  - 프롬프트 템플릿에서 `{cv_scores_section}` → `{score_criteria_section}` 변경
+
+### 8.2 LLM 프롬프트 용어 정제
+- **변경**: "사용자" → "고객님" 표현 변경
+- **이유**: 고객 친화적 표현 사용
+- **구현**:
+  - 프롬프트 템플릿 내 "사용자" 표현을 "고객님"으로 변경
+  - 소견 작성 가이드라인에 "고객님" 표현 사용 지시 추가
+
+### 8.3 GUI 용어 정리
+- **변경**: "보정 점수" → "복원 점수" 용어 변경
+- **이유**: 용어 일관성 확보
+- **구현**:
+  - 18항목 비교창 테이블 헤더 변경
+  - 비교창 타이틀 및 레전드 텍스트 변경
+  - 엑셀 내보내기 메타데이터 텍스트 변경
+
+### 8.4 복원 LLM 측정 표시 로직
+- **변경**: `reference_guided` 모드에서 복원 LLM 측정 없을 때 '-' 표시
+- **이유**: 복원 LLM 측정이 없음을 명확히 표시
+- **구현**:
+  - GUI 비교창에서 복원 LLM 측정 여부 확인 후 조건부 표시
+  - 엑셀 내보내기에서 복원 LLM 측정 없을 때 '-' 표시
+  - 텍스트 소견의 "분석 메타데이터" 섹션에서도 '-' 표시
+
+### 8.5 동시 요청 처리 개선
+- **변경**: 서버 동시 요청 처리 용량 증가
+- **이유**: CLI 비동기 모드에서 다중 요청 처리 개선
+- **구현**:
+  - `ThreadPoolExecutor` `max_workers`를 환경변수 `SKIN_API_MAX_WORKERS`로 설정 가능 (기본값 4)
+  - `JOB_SEMAPHORE` 기본값을 2에서 4로 상향 조정
+  - `config.json` `max_concurrent_jobs`를 4로 변경

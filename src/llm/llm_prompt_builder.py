@@ -141,20 +141,14 @@ def _build_reference_guided_prompt(
     if not ref_template:
         ref_template = _REFERENCE_GUIDED_PROMPT_FALLBACK
 
-    # ── 3. 점수 섹션 조립 ─────────────────────────────────────────
-    if provide_scores:
-        scores_section = _build_cv_scores_section(
-            orig_measurements_report, orig_overall_score, orig_perceived_age,
-            ideal_measurements_report,
-        )
-    else:
-        scores_section = "(CV 점수 미제공 모드 — 이미지만으로 판단하십시오.)"
+    # ── 3. 점수 기준 섹션 조립 ─────────────────────────────────────
+    score_criteria_section = _build_score_criteria_section()
 
     # ── 4. 포맷팅 ─────────────────────────────────────────────────
     format_dict = {
         "orig_overall_score":  f"{orig_overall_score:.1f}",
         "orig_perceived_age":  f"{orig_perceived_age:.1f}",
-        "cv_scores_section":   scores_section,
+        "score_criteria_section": score_criteria_section,
         "product_info":        product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
         "prescription_info":   prescription_info or "{}",
     }
@@ -165,6 +159,38 @@ def _build_reference_guided_prompt(
     )
 
     return _safe_format(ref_template, format_dict)
+
+
+def _build_score_criteria_section() -> str:
+    """config.json의 score_criteria를 프롬프트 섹션 문자열로 변환."""
+    try:
+        from src.skin.core.config_parser import get_score_criteria
+        criteria = get_score_criteria()
+        
+        lines = [
+            "### 점수 스케일 (10~90)",
+            "",
+        ]
+        
+        score_scale = criteria.get("점수 스케일", {})
+        for label, range_info in score_scale.items():
+            min_score = range_info.get("min", 0)
+            max_score = range_info.get("max", 100)
+            lines.append(f"- **{label}**: {min_score}~{max_score}점")
+        
+        lines.append("")
+        lines.append("### 등급 라벨")
+        lines.append("")
+        
+        grade_labels = criteria.get("등급 라벨", {})
+        for label, description in grade_labels.items():
+            lines.append(f"- **{label}**: {description}")
+        
+        lines.append("")
+        return "\n".join(lines)
+    except Exception as e:
+        log.warning(f"점수 기준 섹션 생성 실패: {e}")
+        return "점수 기준 정보를 로드하지 못했습니다."
 
 
 def _build_cv_scores_section(
