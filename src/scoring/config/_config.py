@@ -25,39 +25,52 @@ def _load_scoring_config(config_path: Optional["Path"] = None) -> Dict[str, Any]
     """
     try:
         from src.config.config_manager import ConfigManager
-        return ConfigManager.get_instance().get_config()
-    except ImportError:
-        log.warning("ConfigManager import 실패. 폴백 로직 사용.")
-        # 폴백: 직접 로드 (하위 호환)
-        import json
-        from pathlib import Path
-        _PROJECT_ROOT = Path(__file__).resolve().parents[3]
-        # 기본 경로: 루트 config/config.json
-        _DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config" / "config.json"
-        # 하위 호환성: src/config/config/config.json도 확인
-        if not _DEFAULT_CONFIG_PATH.exists():
-            legacy_path = _PROJECT_ROOT / "src" / "config" / "config" / "config.json"
-            if legacy_path.exists():
-                _DEFAULT_CONFIG_PATH = legacy_path
-        if config_path is None:
-            config_path = _DEFAULT_CONFIG_PATH
-        try:
-            if not config_path.exists():
-                log.warning("점수 설정 파일 없음: %s. 기본값 사용.", config_path)
-                return {}
-            with open(config_path, "r", encoding="utf-8") as f:
-                loaded = json.load(f)
-            json_ver = str(loaded.get("config_version", "0"))
-            req = "3.6"
-            if (tuple(int(x) for x in json_ver.split("."))
-                    < tuple(int(x) for x in req.split("."))):
-                log.warning("config.json 버전(%s) < 요구(%s) — 기본값 사용.", json_ver, req)
-                return {}
-            log.info("점수 설정 로드: %s (v%s)", config_path, json_ver)
-            return loaded
-        except Exception as e:
-            log.error("점수 설정 로드 실패: %s", e)
+        config = ConfigManager.get_instance().get_config()
+        if config:
+            log.debug("ConfigManager에서 설정 로드 성공")
+            return config
+        else:
+            log.warning("ConfigManager에서 빈 설정 반환. 폴백 로직 사용.")
+    except ImportError as e:
+        log.warning("ConfigManager import 실패: %s. 폴백 로직 사용.", e)
+    except Exception as e:
+        log.warning("ConfigManager 로드 실패: %s. 폴백 로직 사용.", e)
+    
+    # 폴백: 직접 로드 (하위 호환)
+    import json
+    from pathlib import Path
+    _PROJECT_ROOT = Path(__file__).resolve().parents[3]
+    
+    # 기본 경로: 루트 config/config.json
+    _DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config" / "config.json"
+    
+    # 하위 호환성: src/config/config/config.json도 확인
+    if not _DEFAULT_CONFIG_PATH.exists():
+        legacy_path = _PROJECT_ROOT / "src" / "config" / "config" / "config.json"
+        if legacy_path.exists():
+            _DEFAULT_CONFIG_PATH = legacy_path
+            log.info("레거시 config.json 경로 사용: %s", legacy_path)
+    
+    if config_path is None:
+        config_path = _DEFAULT_CONFIG_PATH
+    
+    try:
+        if not config_path.exists():
+            log.error("점수 설정 파일 없음: %s. 기본값 사용.", config_path)
             return {}
+        with open(config_path, "r", encoding="utf-8") as f:
+            loaded = json.load(f)
+        json_ver = str(loaded.get("config_version", "0"))
+        req = "3.6"
+        if (tuple(int(x) for x in json_ver.split("."))
+                < tuple(int(x) for x in req.split("."))):
+            log.warning("config.json 버전(%s) < 요구(%s) — 기본값 사용.", json_ver, req)
+            return {}
+        log.info("점수 설정 로드: %s (v%s)", config_path, json_ver)
+        return loaded
+    except Exception as e:
+        log.error("점수 설정 로드 실패: %s", e)
+        return {}
 
 
 def reload_scoring_config() -> None:

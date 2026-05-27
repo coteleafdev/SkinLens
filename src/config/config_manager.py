@@ -57,10 +57,16 @@ class ConfigManager:
         legacy_config_path = self._project_root / "src" / "config" / "config" / "config.json"
         if legacy_config_path.exists() and not self._config_path.exists():
             self._config_path = legacy_config_path
+            log.info("레거시 config.json 경로 사용: %s", self._config_path)
         
         legacy_secrets_path = self._project_root / "src" / "config" / "config" / "config.secrets.json"
         if legacy_secrets_path.exists() and not self._secrets_path.exists():
             self._secrets_path = legacy_secrets_path
+            log.info("레거시 config.secrets.json 경로 사용: %s", self._secrets_path)
+        
+        # 설정 파일 존재 여부 로그
+        log.info("ConfigManager 초기화: config_path=%s (존재=%s)", 
+                 self._config_path, self._config_path.exists())
         
         # 캐시
         self._config_cache: Dict[str, Any] = {}
@@ -81,13 +87,21 @@ class ConfigManager:
         """config.json을 로드합니다 (mtime 기반 캐싱)."""
         with self._cache_lock:
             if not self._config_path.exists():
-                log.warning("config.json 파일을 찾을 수 없습니다: %s", self._config_path)
-                return {}
+                log.error("config.json 파일을 찾을 수 없습니다: %s", self._config_path)
+                # 폴백: 레거시 경로 시도
+                legacy_path = self._project_root / "src" / "config" / "config" / "config.json"
+                if legacy_path.exists():
+                    log.warning("레거시 경로에서 config.json 로드 시도: %s", legacy_path)
+                    self._config_path = legacy_path
+                else:
+                    log.error("레거시 경로에도 config.json 없음: %s", legacy_path)
+                    return {}
             
             current_mtime = self._config_path.stat().st_mtime
             if (self._config_cache 
                 and self._config_mtime is not None 
                 and current_mtime <= self._config_mtime):
+                log.debug("config.json 캐시 사용 (mtime 변경 없음)")
                 return self._config_cache
             
             try:
@@ -104,10 +118,10 @@ class ConfigManager:
                 
                 self._config_cache = loaded
                 self._config_mtime = current_mtime
-                log.info("설정 로드: %s (v%s)", self._config_path, json_ver)
+                log.info("config.json 로드 완료: %s (v%s)", self._config_path, json_ver)
                 return self._config_cache
             except (json.JSONDecodeError, IOError) as e:
-                log.warning("config.json 로드 실패: %s", e)
+                log.error("config.json 로드 실패: %s (경로: %s)", e, self._config_path)
                 return {}
     
     def _load_template(self) -> str:
