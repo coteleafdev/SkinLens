@@ -39,6 +39,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, cast
@@ -443,12 +444,17 @@ class MultiViewMergerV3(MultiViewMerger):
 # ── 싱글턴 ────────────────────────────────────────────────────────
 
 _DEFAULT_ANALYZER: Optional[SkinAnalyzer] = None
+_DEFAULT_ANALYZER_LOCK = threading.Lock()
 
 
 def _get_default_analyzer() -> SkinAnalyzer:
+    """Thread-safe singleton with Double-Checked Locking (DCL) pattern."""
     global _DEFAULT_ANALYZER
     if _DEFAULT_ANALYZER is None:
-        _DEFAULT_ANALYZER = SkinAnalyzer()
+        with _DEFAULT_ANALYZER_LOCK:
+            # Double-check: another thread might have initialized while we waited for lock
+            if _DEFAULT_ANALYZER is None:
+                _DEFAULT_ANALYZER = SkinAnalyzer()
     return _DEFAULT_ANALYZER
 
 

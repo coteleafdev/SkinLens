@@ -39,6 +39,9 @@ fastapi>=0.100.0
 uvicorn>=0.23.0
 python-multipart>=0.0.6
 
+# Database (Supabase sync)
+supabase>=2.0.0
+
 # Security & Authentication
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4

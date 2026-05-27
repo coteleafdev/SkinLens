@@ -88,7 +88,10 @@ async def _cleanup_expired_jobs() -> None:
 
 
 async def _auto_backup_task() -> None:
-    """DB 자동 백업 (BACKUP_INTERVAL_H 마다)."""
+    """DB 자동 백업 (BACKUP_INTERVAL_H 마다).
+    
+    SQLite WAL 모드에서는 .db, -wal, -shm 파일 모두 백업해야 완전한 백업이 됩니다.
+    """
     while True:
         await asyncio.sleep(BACKUP_INTERVAL_H * 3600)
         try:
@@ -96,8 +99,26 @@ async def _auto_backup_task() -> None:
             eh_db_path  = get_db_path_from_env()
             timestamp   = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_path = os.path.join(BACKUP_DIR, f"execution_history_{timestamp}.db")
-            shutil.copy(eh_db_path, backup_path)
+            
+            # WAL 파일 경로
+            wal_path = f"{eh_db_path}-wal"
+            shm_path = f"{eh_db_path}-shm"
+            
+            # 메인 DB 파일 백업
+            shutil.copy2(eh_db_path, backup_path)
             log.info("DB backup created: %s", backup_path)
+            
+            # WAL 파일 백업 (존재하는 경우)
+            if os.path.exists(wal_path):
+                wal_backup_path = f"{backup_path}-wal"
+                shutil.copy2(wal_path, wal_backup_path)
+                log.info("WAL file backup created: %s", wal_backup_path)
+            
+            # SHM 파일 백업 (존재하는 경우)
+            if os.path.exists(shm_path):
+                shm_backup_path = f"{backup_path}-shm"
+                shutil.copy2(shm_path, shm_backup_path)
+                log.info("SHM file backup created: %s", shm_backup_path)
 
             cutoff = datetime.now() - timedelta(days=7)
             for fname in os.listdir(BACKUP_DIR):

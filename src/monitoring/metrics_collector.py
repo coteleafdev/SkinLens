@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from collections import defaultdict
 from contextlib import contextmanager
@@ -27,16 +28,20 @@ log = logging.getLogger(__name__)
 
 
 class MetricsCollector:
-    """메트릭 수집자 (싱글톤).
+    """메트릭 수집자 (싱글톤 - Thread-safe with DCL pattern).
     
     성능 메트릭을 수집하고 집계하여 성능 최적화를 지원합니다.
     """
     
     _instance: Optional["MetricsCollector"] = None
+    _instance_lock = threading.Lock()
     
     def __new__(cls) -> "MetricsCollector":
+        # Double-Checked Locking pattern for thread-safe singleton
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            with cls._instance_lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
         return cls._instance
     
     def __init__(self) -> None:
