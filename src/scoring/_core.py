@@ -184,14 +184,22 @@ class _SkinAnalyzerCore:
     def _get_default_analyzers(self) -> Dict[str, Any]:
         try:
             from src.skin.analyzers import AnalyzerRegistry, register_analyzers_from_config
+            from src.scoring.config._config import _load_scoring_config
+            
             register_analyzers_from_config()
+            
+            # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+            config = _load_scoring_config()
+            prescription_config = config.get("prescription", {}) if config else {}
+            analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+            
             return {
-                "pigmentation":    AnalyzerRegistry.get("pigmentation_v1"),
-                "redness":         AnalyzerRegistry.get("redness_v1"),
-                "pore":            AnalyzerRegistry.get("pore_v1"),
-                "wrinkle":         AnalyzerRegistry.get("wrinkle_v1"),
-                "tone_elasticity": AnalyzerRegistry.get("tone_elasticity_v1"),
-                "acne":            AnalyzerRegistry.get("acne_v1"),
+                "pigmentation":    AnalyzerRegistry.get("pigmentation_v1", config=analyzer_config.get("pigmentation_v1", {})),
+                "redness":         AnalyzerRegistry.get("redness_v1", config=analyzer_config.get("redness_v1", {})),
+                "pore":            AnalyzerRegistry.get("pore_v1", config=analyzer_config.get("pore_v1", {})),
+                "wrinkle":         AnalyzerRegistry.get("wrinkle_v1", config=analyzer_config.get("wrinkle_v1", {})),
+                "tone_elasticity": AnalyzerRegistry.get("tone_elasticity_v1", config=analyzer_config.get("tone_elasticity_v1", {})),
+                "acne":            AnalyzerRegistry.get("acne_v1", config=analyzer_config.get("acne_v1", {})),
             }
         except Exception as e:
             log.warning("분석기 레지스트리 로드 실패: %s. 기본 순수 함수 사용.", e)
@@ -337,9 +345,15 @@ class _SkinAnalyzerCore:
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
             from src.skin.analyzers.registry import AnalyzerRegistry
+            from src.scoring.config._config import _load_scoring_config
             try:
+                # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+                config = _load_scoring_config()
+                prescription_config = config.get("prescription", {}) if config else {}
+                analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+                
                 # melasma_score에 매핑된 분석기 사용 (pigmentation_v1)
-                pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
+                pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score", config=analyzer_config.get("pigmentation_v1", {}))
                 pigmentation = pig_analyzer.analyze(
                     face, smask, regions, stat=stat,
                     bp_melasma=_get_metric_bp("melasma_score"),
@@ -366,9 +380,15 @@ class _SkinAnalyzerCore:
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
             from src.skin.analyzers.registry import AnalyzerRegistry
+            from src.scoring.config._config import _load_scoring_config
             try:
+                # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+                config = _load_scoring_config()
+                prescription_config = config.get("prescription", {}) if config else {}
+                analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+                
                 # redness_score에 매핑된 분석기 사용 (redness_v1)
-                red_analyzer = AnalyzerRegistry.get_for_measurement("redness_score")
+                red_analyzer = AnalyzerRegistry.get_for_measurement("redness_score", config=analyzer_config.get("redness_v1", {}))
                 redness = red_analyzer.analyze(
                     face, smask, regions, stat=stat,
                     clahe_clip=clip_limit, clahe_tile=tile_grid_size,
@@ -397,9 +417,15 @@ class _SkinAnalyzerCore:
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
             from src.skin.analyzers.registry import AnalyzerRegistry
+            from src.scoring.config._config import _load_scoring_config
             try:
+                # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+                config = _load_scoring_config()
+                prescription_config = config.get("prescription", {}) if config else {}
+                analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+                
                 # pore_size_score에 매핑된 분석기 사용 (pore_v1)
-                pore_analyzer = AnalyzerRegistry.get_for_measurement("pore_size_score")
+                pore_analyzer = AnalyzerRegistry.get_for_measurement("pore_size_score", config=analyzer_config.get("pore_v1", {}))
                 pores = pore_analyzer.analyze(
                     face, smask, regions,
                     blob_params=blob_params,
@@ -430,9 +456,15 @@ class _SkinAnalyzerCore:
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
             from src.skin.analyzers.registry import AnalyzerRegistry
+            from src.scoring.config._config import _load_scoring_config
             try:
+                # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+                config = _load_scoring_config()
+                prescription_config = config.get("prescription", {}) if config else {}
+                analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+                
                 # eye_wrinkle_score에 매핑된 분석기 사용 (wrinkle_v1)
-                wrinkle_analyzer = AnalyzerRegistry.get_for_measurement("eye_wrinkle_score")
+                wrinkle_analyzer = AnalyzerRegistry.get_for_measurement("eye_wrinkle_score", config=analyzer_config.get("wrinkle_v1", {}))
                 wrinkles = wrinkle_analyzer.analyze(
                     face, smask, regions,
                     clahe_preprocessed=clahe_preprocessed,
@@ -472,10 +504,16 @@ class _SkinAnalyzerCore:
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
             from src.skin.analyzers.registry import AnalyzerRegistry
+            from src.scoring.config._config import _load_scoring_config
             try:
+                # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+                config = _load_scoring_config()
+                prescription_config = config.get("prescription", {}) if config else {}
+                analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+                
                 # skin_tone_score에 매핑된 분석기 사용 (tone_elasticity_v1)
                 # [REFACTOR 2026-05-23] 완전 독립성 - 외부 wrinkle 의존성 제거
-                te_analyzer = AnalyzerRegistry.get_for_measurement("skin_tone_score")
+                te_analyzer = AnalyzerRegistry.get_for_measurement("skin_tone_score", config=analyzer_config.get("tone_elasticity_v1", {}))
                 te = te_analyzer.analyze(
                     face, smask, regions, stat=stat,
                     clahe_preprocessed=clahe_preprocessed,
@@ -506,9 +544,15 @@ class _SkinAnalyzerCore:
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
             from src.skin.analyzers.registry import AnalyzerRegistry
+            from src.scoring.config._config import _load_scoring_config
             try:
+                # config.json에서 분석기 설정 로드 (prescription.analyzers 섹션)
+                config = _load_scoring_config()
+                prescription_config = config.get("prescription", {}) if config else {}
+                analyzer_config = prescription_config.get("analyzers", {}) if prescription_config else {}
+                
                 # acne_score에 매핑된 분석기 사용 (acne_v1)
-                acne_analyzer = AnalyzerRegistry.get_for_measurement("acne_score")
+                acne_analyzer = AnalyzerRegistry.get_for_measurement("acne_score", config=analyzer_config.get("acne_v1", {}))
                 acne_marks = acne_analyzer.analyze(
                     face, smask, regions, stat=stat,
                     bp_acne=_get_metric_bp("acne_score"),

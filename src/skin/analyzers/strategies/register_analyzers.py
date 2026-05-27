@@ -37,6 +37,8 @@ def register_analyzers_from_config() -> None:
 
     [REFACTOR 2026-05-24] config.json의 analyzers 섹션에서 로드.
     [OPTIMIZE 2026-05-24] 이미 등록된 경우 중복 등록 방지.
+    [FIX 2026-05-27] 전체 config 로드로 수정 - _load_prescription_config는 prescription 섹션만 반환
+    [FIX 2026-05-27] prescription.analyzers 섹션 사용 - 최상위 analyzers는 문자열 매핑
     """
     global _analyzers_registered
     
@@ -46,10 +48,12 @@ def register_analyzers_from_config() -> None:
         return
     
     try:
-        from src.prescription.prescription_calculator import _load_prescription_config
+        from src.scoring.config._config import _load_scoring_config
 
-        config = _load_prescription_config()
-        analyzers_config = config.get("analyzers", {})
+        config = _load_scoring_config()
+        # prescription 섹션의 analyzers 사용 (최상위 analyzers는 문자열 매핑)
+        prescription_config = config.get("prescription", {}) if config else {}
+        analyzers_config = prescription_config.get("analyzers", {})
 
         for analyzer_name, analyzer_config in analyzers_config.items():
             if analyzer_name.startswith("_"):
