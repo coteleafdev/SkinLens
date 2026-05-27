@@ -1,9 +1,25 @@
 # Gemini AI 피부 분석 프롬프트 템플릿
 
+**버전**: v1.0  
+**마지막 수정**: 2026-05-27  
+**상태**: Production
+
 <!--
-[TODO 2026-05-24] 설정 데이터를 config.json으로 이전 필요
-현재 이 파일은 LLM 프롬프트와 설정 데이터(Measurement Weights, Actual Ranges 등)가 혼재되어 있습니다.
-단일 책임 원칙을 위해 설정 데이터를 config.json으로 이전하고, 이 파일은 순수 프롬프트 템플릿으로 유지해야 합니다.
+[REFACTOR 2026-05-24] 설정 데이터는 config.json으로 이전 완료.
+이 파일은 순수 프롬프트 템플릿으로 유지됩니다.
+
+설정 데이터 이전 내역:
+- MEASUREMENT_WEIGHTS → config.json measurement_weights
+- ACTUAL_RANGES → config.json actual_ranges
+- SCORE_MAPPING → config.json score_mapping
+- SCORE_CRITERIA → config.json score_criteria
+- RECOMMENDATION_GUIDELINES → config.json recommendation_guidelines
+- METRIC_META → config.json measurements 섹션
+- DISPLAY_NAMES → config.json measurements 섹션 (name_ko, name_en)
+
+[NOTE] 프롬프트 버전 관리:
+- 이 파일의 버전을 변경할 때는 docs/AB_TESTING_FRAMEWORK_DESIGN.md를 참조하여 A/B 테스트 절차를 따르십시오.
+- 버전 변경 시 src/llm/prompt_manager.py의 버전 매핑도 업데이트해야 합니다.
 -->
 
 <!-- METRIC_META_START -->
