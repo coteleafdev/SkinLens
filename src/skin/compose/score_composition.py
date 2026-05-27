@@ -287,6 +287,7 @@ def _compose_redness_lesion_scores(
     focal_lesion     ←  a* 국소 잔차 + blob 기반 (개별 병변)
                         = acne * 0.65 + post_acne_pigment * 0.35
                         PIE 제거 후 가중치 재조정
+                        [FIX] focal_lesion이 이미 계산된 경우 그 값 사용
 
     [FIX REVIEW-①] telangiectasia_score 는 _analyze_redness 내부에서
     redness_score 합성(local*0.40 + global*0.40 + tela*0.20)에 흡수됨.
@@ -299,9 +300,18 @@ def _compose_redness_lesion_scores(
     redness = float(red.get("redness_score",              0) or 0)
     acne_s  = float(acne.get("acne_score",                0) or 0)
     red_m   = float(acne.get("post_acne_pigment_score",            0) or 0)
+    
+    # [FIX] focal_lesion이 이미 계산된 경우 그 값 사용
+    # tone_elasticity.py에서 density_score를 focal_lesion으로 반환
+    focal_lesion = acne.get("focal_lesion")
+    if focal_lesion is not None:
+        focal_lesion = round(_clamp(float(focal_lesion)), 1)
+    else:
+        focal_lesion = round(_clamp(acne_s  * 0.65 + red_m  * 0.35), 1)
+    
     return {
         "diffuse_redness": round(_clamp(redness), 1),
-        "focal_lesion":    round(_clamp(acne_s  * 0.65 + red_m  * 0.35), 1),
+        "focal_lesion":    focal_lesion,
     }
 
 

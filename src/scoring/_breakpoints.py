@@ -120,3 +120,11 @@ def _get_blob_detection_params() -> Dict[str, Any]:
 
 def _get_freckle_detection_params() -> Dict[str, Any]:
     return _ensure_image_proc_params()["freckle_detection"]
+
+
+def _clear_breakpoints_cache() -> None:
+    """브레이크포인트 캐시를 초기화합니다 (config.json 변경 시 사용)."""
+    global _DEFAULT_BREAKPOINTS, _IMAGE_PROC_PARAMS
+    _DEFAULT_BREAKPOINTS.clear()
+    _IMAGE_PROC_PARAMS.clear()
+    log.info("브레이크포인트 캐시 초기화 완료")

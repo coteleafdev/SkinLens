@@ -476,6 +476,7 @@ def get_llm_api_config() -> Dict[str, Any]:
         "max_retries": llm_config.get("max_retries", 3),
         "retry_delay": 2,
         "score_correction": llm_config.get("score_correction", {}),
+        "scoring_mode": llm_config.get("scoring_mode", "independent"),
     }
 
 

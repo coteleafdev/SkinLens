@@ -61,13 +61,22 @@ class AcneAnalyzerV1(BaseAnalyzer):
         bp_pap = self.get_config("bp_pap")
         
         # 기존 함수 호출
-        return analyze_acne_marks(
+        result = analyze_acne_marks(
             face=face,
             skin_mask=skin_mask,
             stat=stat,
             bp_acne=bp_acne,
             bp_pap=bp_pap,
         )
+        
+        # focal_lesion 직교 신호 전달 (analyze_acne_marks에서 이미 계산됨)
+        # tone_elasticity.py에서 focal_lesion을 density_score로 반환하도록 수정함
+        # 여기서는 그 값을 그대로 전달
+        if "focal_lesion" not in result:
+            # fallback: acne_score를 사용 (이전 버전 호환성)
+            result["focal_lesion"] = result.get("acne_score", 50.0)
+        
+        return result
     
     @property
     def name(self) -> str:

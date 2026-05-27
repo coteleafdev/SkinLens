@@ -163,7 +163,7 @@ class _SkinAnalyzerCore:
     OUTPUT_KEYS: List[str] = [
         "melasma_score", "freckle_score", "pih_score",
         "redness_score", "post_inflammatory_erythema_score",
-        "acne_score", "post_acne_pigment_score",
+        "acne_score", "post_acne_pigment_score", "focal_lesion",
         "pore_size_score", "pore_sagging_score",
         "eye_wrinkle_score", "nasolabial_wrinkle_score", "fine_deep_wrinkle_score",
         "roughness_score",
@@ -584,7 +584,7 @@ class _SkinAnalyzerCore:
                 log.debug("누락 키 보완: %s", missing)
 
         for k, v in list(measurements.items()):
-            if not k.endswith("_score"):
+            if not k.endswith("_score") and k != "focal_lesion":
                 continue
             if isinstance(v, (int, float)):
                 measurements[k] = round(float(v), 1)

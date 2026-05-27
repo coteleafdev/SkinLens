@@ -155,14 +155,18 @@ class ReportLayer:
         if score_mapping:
             _MAP: Dict[str, float] = {}
             for k, (source_key, coefficient) in score_mapping.items():
-                _MAP[k] = _F(source_key, 50.0) * coefficient
+                # [FIX] acne_score는 focal_lesion 대신 직접 acne_score 사용
+                if k == "acne_score" and source_key == "focal_lesion":
+                    _MAP[k] = _F("acne_score", 50.0) * coefficient
+                else:
+                    _MAP[k] = _F(source_key, 50.0) * coefficient
         else:
             _MAP = {
                 "melasma_score":                    _F("pigmentation_cov", 50.0),
                 "freckle_score":                    _F("spot_density",     50.0),
                 "redness_score":                    _F("diffuse_redness",  50.0),
                 "post_inflammatory_erythema_score": _F("diffuse_redness",  50.0) * 0.85,
-                "acne_score":                       _F("focal_lesion",     50.0),
+                "acne_score":                       _F("acne_score",       50.0),  # [FIX] focal_lesion 대신 acne_score 직접 사용
                 "post_acne_pigment_score":          _F("focal_lesion",     50.0) * 0.90,
                 "pore_size_score":                  _F("pore_score",       50.0),
                 "pore_sagging_score":               _F("pore_score",       50.0) * 0.92,

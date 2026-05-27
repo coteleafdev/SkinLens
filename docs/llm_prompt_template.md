@@ -453,6 +453,151 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
 
 **설명**: 원본 이미지와 복원 이미지를 함께 사용하여 두 이미지의 피부 상태를 비교 분석하고 각각에 대한 소견을 작성합니다.
 
+<!-- REFERENCE_GUIDED_PROMPT_START -->
+## CÔTELEAF 피부 분석 요청 — 복원 기반 원본 점수 정확도 향상 모드
+
+첨부 이미지:
+- **이미지 1**: 원본 얼굴 사진 (분석 대상)
+- **이미지 2**: GAN 복원 얼굴 사진 (레퍼런스 — 조명·노이즈·압축 아티팩트 제거 상태)
+
+---
+
+## 분석 절차 (반드시 아래 순서대로 수행하십시오)
+
+### Step 1. 복원본 기준선 파악 (이미지 2 먼저 분석)
+
+복원 이미지에서 각 카테고리의 실제 피부 구조를 파악하고
+`reference_baseline` 필드에 서술하십시오.
+
+- **주름**: 눈가·팔자·이마 주름의 위치, 방향, 깊이
+- **모공**: 코·볼 영역의 분포, 크기 범위
+- **색소**: 기미·주근깨의 위치, 농도, 범위
+- **탄력**: 턱선 명확도, 볼 처짐 정도, 피부 탄력선
+- **홍조**: 홍조·발적 분포 부위와 강도
+
+### Step 2. 원본 오탐 요인 역산 (이미지 1 분석)
+
+원본 이미지에서 Step 1의 구조가 아래 요인에 의해
+가려지거나 과장된 정도를 판단하십시오.
+보정이 적용된 항목과 이유를 `correction_reasons` 필드에 기재하십시오.
+
+| 오탐 요인 | 설명 |
+|---|---|
+| 조명 불균일 | 그림자가 주름·음영처럼 보이는 영역 |
+| 광택·반사 | 피부 유분이 홍조·발적처럼 보이는 영역 |
+| 초점 흐림 | 모공 경계가 불명확한 영역 |
+| 색온도 편차 | 전반적 피부 톤 왜곡 (기미·톤 항목 영향) |
+| 압축 아티팩트 | 색소 경계 번짐 (주근깨·기미 항목 영향) |
+
+### Step 3. 최종 원본 점수 산출
+
+Step 1(기준선)과 Step 2(보정)를 통합하여
+원본 이미지의 18개 항목 점수(10~90 스케일)를 산출하십시오.
+
+---
+
+## CV 분석기 측정값 (참고)
+
+{cv_scores_section}
+
+---
+
+## 처방전 정보
+
+{prescription_info}
+
+---
+
+## 맞춤형 제품 정보
+
+{product_info}
+
+---
+
+## 소견 작성 가이드라인
+
+- 각 항목 소견은 2~3문장으로 작성하되, Step 2에서 적용한 보정 내용을 반영하십시오.
+- 종합 소견은 5~8문장으로 작성하고, 복원 기준선과 원본 상태의 차이를 서술하십시오.
+- 점수 기준: SCORE_CRITERIA 섹션 참조 (10~90 스케일).
+- JSON 출력 시 반드시 모든 문자열을 큰따옴표(")로 감싸고 모든 괄호를 닫으십시오.
+
+## 응답 형식 (순수 JSON — ```json 없이)
+
+{
+  "reference_baseline": {
+    "주름": "복원본에서 관찰된 주름 기준선 서술",
+    "모공": "복원본에서 관찰된 모공 기준선 서술",
+    "색소": "복원본에서 관찰된 색소 기준선 서술",
+    "탄력": "복원본에서 관찰된 탄력 기준선 서술",
+    "홍조": "복원본에서 관찰된 홍조 기준선 서술"
+  },
+  "correction_reasons": {
+    "melasma_score":                       "보정 이유 (없으면 빈 문자열)",
+    "freckle_score":                       "",
+    "redness_score":                       "",
+    "post_inflammatory_erythema_score":    "",
+    "acne_score":                          "",
+    "post_acne_pigment_score":             "",
+    "pore_size_score":                     "",
+    "pore_sagging_score":                  "",
+    "eye_wrinkle_score":                   "",
+    "nasolabial_wrinkle_score":            "",
+    "fine_deep_wrinkle_score":             "",
+    "roughness_score":                     "",
+    "skin_tone_score":                     "",
+    "dullness_score":                      "",
+    "uneven_tone_score":                   "",
+    "jawline_blur_score":                  "",
+    "cheek_sagging_score":                 "",
+    "skin_type_score":                     ""
+  },
+  "orig_metric_scores": {
+    "melasma_score": 70.0,
+    "freckle_score": 65.0,
+    "redness_score": 68.0,
+    "post_inflammatory_erythema_score": 72.0,
+    "acne_score": 85.0,
+    "post_acne_pigment_score": 75.0,
+    "pore_size_score": 66.0,
+    "pore_sagging_score": 64.0,
+    "eye_wrinkle_score": 72.0,
+    "nasolabial_wrinkle_score": 70.0,
+    "fine_deep_wrinkle_score": 74.0,
+    "roughness_score": 71.0,
+    "skin_tone_score": 68.0,
+    "dullness_score": 76.0,
+    "uneven_tone_score": 67.0,
+    "jawline_blur_score": 80.0,
+    "cheek_sagging_score": 75.0,
+    "skin_type_score": 78.0
+  },
+  "orig_metric_opinions": {
+    "melasma_score": "원본 소견 (Step 2 보정 내용 반영, 2~3문장)",
+    "freckle_score": "원본 소견",
+    "redness_score": "원본 소견",
+    "post_inflammatory_erythema_score": "원본 소견",
+    "acne_score": "원본 소견",
+    "post_acne_pigment_score": "원본 소견",
+    "pore_size_score": "원본 소견",
+    "pore_sagging_score": "원본 소견",
+    "eye_wrinkle_score": "원본 소견",
+    "nasolabial_wrinkle_score": "원본 소견",
+    "fine_deep_wrinkle_score": "원본 소견",
+    "roughness_score": "원본 소견",
+    "skin_tone_score": "원본 소견",
+    "dullness_score": "원본 소견",
+    "uneven_tone_score": "원본 소견",
+    "jawline_blur_score": "원본 소견",
+    "cheek_sagging_score": "원본 소견",
+    "skin_type_score": "원본 소견"
+  },
+  "orig_overall_score": 74.5,
+  "orig_perceived_age": 38.0,
+  "orig_overall_opinion": "종합 소견 5~8문장 (복원 기준선과 비교하여 원본 상태를 서술)",
+  "recommendation": "관리 권고사항 (번호 목록)"
+}
+<!-- REFERENCE_GUIDED_PROMPT_END -->
+
 <!-- DUAL_IMAGE_USER_PROMPT_START -->
 ## User Prompt Template
 
