@@ -364,14 +364,14 @@ def analyze_acne_marks(
     acne_mask  = cv2.morphologyEx(acne_mask, cv2.MORPH_OPEN,  kernel3)
     acne_mask  = cv2.morphologyEx(acne_mask, cv2.MORPH_CLOSE, kernel3)
     cnts_a, _ = cv2.findContours(acne_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # 실제 탐지 ROI 픽셀 사용 (버그 수정: 전체 face 픽셀이 아닌 _acne_skin_mask 픽셀)
+    acne_skin_px = max(int(np.count_nonzero(_acne_skin_mask)), 1)
     # P1 수정: contour 면적 상하한 상대화 - 해상도 의존성 제거
     _min_area = max(18, int(acne_skin_px * 0.00004))
     _max_area = int(acne_skin_px * 0.05)
     acne_spots = [c for c in cnts_a if _min_area < cv2.contourArea(c) < _max_area]
     acne_count = len(acne_spots)
     acne_area  = sum(cv2.contourArea(c) for c in acne_spots)
-    # 실제 탐지 ROI 픽셀 사용 (버그 수정: 전체 face 픽셀이 아닌 _acne_skin_mask 픽셀)
-    acne_skin_px = max(int(np.count_nonzero(_acne_skin_mask)), 1)
     density_ratio = acne_area / acne_skin_px
     density_score = _area_to_score(density_ratio, bp_acne)
     if acne_spots:
