@@ -149,7 +149,7 @@ from src.scoring.skin_type_detector import (
 from src.scoring._report import (
     ReportLayer,
     _compute_overall_score_report,
-    measurement_report_string,
+    measurement_report_string as measurement_report_string_legacy,
     get_report_weights,
     get_report_keys,
     get_report_categories,
@@ -415,7 +415,7 @@ class SkinAnalyzer:
         print(measurement_report_string(results), end="")
 
     def print_results_report(self, results: Dict[str, Any]) -> None:
-        print(measurement_report_string(results), end="")
+        print(measurement_report_string_legacy(results), end="")
 
 
 # ══════════════════════════════════════════════════════════════════
