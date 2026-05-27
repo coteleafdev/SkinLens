@@ -261,6 +261,14 @@ def _print_self_help() -> None:
 def _cli() -> int:
     _configure_stdio_encoding()
     
+    # ConfigManager 초기화 - 분석 전에 설정 로드 보장
+    try:
+        from src.config.config_manager import ConfigManager
+        config_mgr = ConfigManager.get_instance()
+        log.info("ConfigManager 초기화 완료")
+    except Exception as e:
+        log.warning("ConfigManager 초기화 실패: %s. 레거시 설정 로드 사용.", e)
+    
     # config.json에서 복원 파라미터 기본값 로드
     # fidelity는 1.0(원본충실)을 기본으로 사용하여 사용자 설정 존중
     # upscale은 1(업스케일 없음)을 기본으로 사용
