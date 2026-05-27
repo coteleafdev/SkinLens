@@ -351,7 +351,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 match_reason = product.get('match_reason', '')
 
                 product_text += f"\n{i}. {product_name} ({category})\n"
-                product_text += f"   매칭 점수: {match_score:.2f}\n"
+                product_text += f"   매칭 점수: {match_score:.1f}\n"
                 product_text += f"   주요 성분: {', '.join(key_ingredients)}\n"
                 product_text += f"   효능: {efficacy}\n"
                 product_text += f"   추천 이유: {match_reason}\n"
@@ -720,7 +720,7 @@ class SkinMeasurementCompareDialog(QDialog):
                             match_score_float = 0.0
 
                         append_with_font_local([f"{i}. {product_name} ({category})"], small_font)
-                        append_with_font_local([f"매칭 점수: {match_score_float:.2f}"], small_font)
+                        append_with_font_local([f"매칭 점수: {match_score_float:.1f}"], small_font)
                         append_with_font_local([f"주요 성분: {', '.join(key_ingredients)}"], small_font)
                         append_with_font_local([f"효능: {efficacy}"], small_font)
                         append_with_font_local([f"추천 이유: {match_reason}"], small_font)

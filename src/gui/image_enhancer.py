@@ -659,7 +659,7 @@ def _cli() -> int:
                                         product_info_lines.append(f"\n- {product['product_name']} ({product['category']})")
                                         product_info_lines.append(f"  주요 성분: {', '.join(product['key_ingredients'])}")
                                         product_info_lines.append(f"  효능: {product['efficacy']}")
-                                        product_info_lines.append(f"  매칭 점수: {product['match_score']:.2f}")
+                                        product_info_lines.append(f"  매칭 점수: {product['match_score']:.1f}")
                                     product_info = "\n".join(product_info_lines)
                                     
                                     # product_recommendations 구조 생성

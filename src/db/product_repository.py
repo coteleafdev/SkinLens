@@ -540,7 +540,7 @@ if __name__ == "__main__":
     
     print("\n=== 매칭된 제품 ===")
     for product in matched:
-        print(f"\n{product['product_name']} (매칭 점수: {product['match_score']:.2f})")
+        print(f"\n{product['product_name']} (매칭 점수: {product['match_score']:.1f})")
         print(f"  카테고리: {product['category']}")
         print(f"  주요 성분: {', '.join(product['key_ingredients'])}")
         print(f"  효능: {product['efficacy']}")
