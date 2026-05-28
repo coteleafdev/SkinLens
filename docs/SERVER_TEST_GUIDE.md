@@ -289,9 +289,164 @@ curl -X POST http://localhost:8000/v3/analysis/jobs \
 
 ---
 
-### 5. 동시 요청 테스트
+### 5. 주문 관리 테스트
 
-#### 5.1 여러 작업 동시 생성
+```mermaid
+sequenceDiagram
+    participant C as 클라이언트
+    participant S as 서버
+    
+    C->>S: POST /v3/orders (주문 생성)
+    S-->>C: order_id, payment_url
+    
+    C->>S: GET /v3/orders/{order_id} (상태 조회)
+    S-->>C: order status
+    
+    alt 주문 취소
+        C->>S: POST /v3/orders/{order_id}/cancel
+        S-->>C: cancelled, refund_status
+    end
+    
+    C->>S: GET /v3/orders/customers/{customer_id}/purchase-history
+    S-->>C: purchase history
+```
+
+#### 5.1 주문 생성 (POST /v3/orders)
+
+```bash
+curl -X POST http://localhost:8000/v3/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "user123",
+    "items": [
+      {
+        "product_id": "P001",
+        "quantity": 1,
+        "price": 45000
+      },
+      {
+        "product_id": "P002",
+        "quantity": 2,
+        "price": 35000
+      }
+    ],
+    "shipping_address": {
+      "recipient": "홍길동",
+      "phone": "010-1234-5678",
+      "address": "서울시 강남구...",
+      "zip_code": "12345"
+    },
+    "payment_method": "credit_card",
+    "recommendation_source": "skin_analysis",
+    "analysis_job_id": "job_abc123"
+  }'
+```
+
+**응답 예시**:
+```json
+{
+  "order_id": "ORD-20260528-001",
+  "status": "pending_payment",
+  "total_amount": 115000,
+  "created_at": "2026-05-28T10:00:00Z",
+  "payment_url": "https://payment.example.com/pay/ORD-20260528-001"
+}
+```
+
+#### 5.2 주문 상태 조회 (GET /v3/orders/{order_id})
+
+```bash
+curl http://localhost:8000/v3/orders/ORD-20260528-001
+```
+
+**응답 예시**:
+```json
+{
+  "order_id": "ORD-20260528-001",
+  "status": "paid",
+  "total_amount": 115000,
+  "items": [
+    {
+      "product_id": "P001",
+      "product_name": "Product P001",
+      "quantity": 1,
+      "price": 45000,
+      "subtotal": 45000
+    }
+  ],
+  "shipping_address": {
+    "recipient": "홍길동",
+    "phone": "010-1234-5678",
+    "address": "서울시 강남구...",
+    "zip_code": "12345"
+  },
+  "payment_status": "paid",
+  "shipping_status": "preparing",
+  "created_at": "2026-05-28T10:00:00Z",
+  "updated_at": "2026-05-28T10:05:00Z"
+}
+```
+
+#### 5.3 주문 취소 (POST /v3/orders/{order_id}/cancel)
+
+```bash
+curl -X POST http://localhost:8000/v3/orders/ORD-20260528-001/cancel \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "상품 변경"
+  }'
+```
+
+**응답 예시**:
+```json
+{
+  "order_id": "ORD-20260528-001",
+  "status": "cancelled",
+  "cancelled_at": "2026-05-28T11:00:00Z",
+  "refund_amount": 115000,
+  "refund_status": "processing"
+}
+```
+
+#### 5.4 고객 구매 이력 조회 (GET /v3/orders/customers/{customer_id}/purchase-history)
+
+```bash
+curl "http://localhost:8000/v3/orders/customers/user123/purchase-history?limit=10&offset=0"
+```
+
+**응답 예시**:
+```json
+{
+  "customer_id": "user123",
+  "total_orders": 5,
+  "total_spent": 575000,
+  "orders": [
+    {
+      "order_id": "ORD-20260528-001",
+      "status": "delivered",
+      "total_amount": 115000,
+      "items": [
+        {
+          "product_id": "P001",
+          "product_name": "Product P001",
+          "quantity": 1,
+          "price": 45000,
+          "subtotal": 45000
+        }
+      ],
+      "purchased_at": "2026-05-28T10:00:00Z",
+      "recommendation_source": "skin_analysis",
+      "analysis_job_id": "job_abc123"
+    }
+  ]
+}
+```
+
+---
+
+### 6. 동시 요청 테스트
+
+#### 6.1 여러 작업 동시 생성
 
 ```bash
 # Bash 스크립트로 여러 요청 동시 전송
@@ -303,7 +458,7 @@ done
 wait
 ```
 
-#### 5.2 동시성 제한 확인
+#### 6.2 동시성 제한 확인
 
 ```bash
 # 활성 작업 수 조회
@@ -320,16 +475,16 @@ curl http://localhost:8000/v3/stats/active-jobs
 
 ---
 
-### 6. 진행율 실시간 수신 (WebSocket)
+### 7. 진행율 실시간 수신 (WebSocket)
 
-#### 6.1 WebSocket 연결
+#### 7.1 WebSocket 연결
 
 ```bash
 # wscat 사용 (설치 필요: npm install -g wscat)
 wscat -c ws://localhost:8000/v3/ws/jobs/job_abc123
 ```
 
-#### 6.2 진행율 메시지 수신
+#### 7.2 진행율 메시지 수신
 
 **수신 메시지 예시**:
 ```json
@@ -355,7 +510,7 @@ wscat -c ws://localhost:8000/v3/ws/jobs/job_abc123
 }
 ```
 
-#### 6.3 Python WebSocket 클라이언트
+#### 7.3 Python WebSocket 클라이언트
 
 ```python
 import asyncio
@@ -376,7 +531,7 @@ async def listen_job_progress(job_id):
 asyncio.run(listen_job_progress("job_abc123"))
 ```
 
-#### 6.4 JavaScript WebSocket 클라이언트
+#### 7.4 JavaScript WebSocket 클라이언트
 
 ```javascript
 const ws = new WebSocket('ws://localhost:8000/v3/ws/jobs/job_abc123');
@@ -400,7 +555,7 @@ ws.onclose = () => {
 };
 ```
 
-#### 6.5 Flutter WebSocket 클라이언트
+#### 7.5 Flutter WebSocket 클라이언트
 
 ```dart
 import 'dart:async';
@@ -466,15 +621,15 @@ void main() async {
 
 ---
 
-### 7. 로그 및 통계 테스트
+### 8. 로그 및 통계 테스트
 
-#### 7.1 로그 조회 (GET /v3/logs)
+#### 8.1 로그 조회 (GET /v3/logs)
 
 ```bash
 curl http://localhost:8000/v3/logs?limit=10
 ```
 
-#### 7.2 통계 조회 (GET /v3/stats)
+#### 8.2 통계 조회 (GET /v3/stats)
 
 ```bash
 curl http://localhost:8000/v3/stats
