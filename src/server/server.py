@@ -12,6 +12,8 @@ server.py — Skin Analysis API (라우터 분리 버전)
             auth.py         ← POST /v3/auth/login, GET /v3/auth/me
             customer.py     ← GET/DELETE /v3/customer/my/*
             admin.py        ← GET /v3/admin/*, GET /v3/health/db
+            orders.py       ← POST/GET /v3/orders/* (주문 관리)
+            websocket.py    ← WebSocket 연결
 """
 from __future__ import annotations
 
@@ -52,7 +54,7 @@ from src.i18n import Translator
 from src.server.middleware import I18nMiddleware
 
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
-from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health
+from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders
 
 logging.basicConfig(
     level=logging.INFO,
@@ -217,6 +219,7 @@ app.include_router(stats.router)
 app.include_router(auth.router)
 app.include_router(customer.router)
 app.include_router(admin.router)
+app.include_router(orders.router)
 app.include_router(websocket.router)
 app.include_router(health.router)
 
