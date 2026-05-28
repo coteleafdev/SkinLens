@@ -680,10 +680,10 @@ def _calculate_skin_type_mix(skin_type: str) -> Dict[str, float]:
     """
     # 피부타입별 믹스 매핑
     skin_type_mapping = {
-        "oily": {"M04": 2.0},  # 지성: 유분 조절 믹스
-        "dry": {"M13": 2.0},  # 건성: 수분 케어 믹스
-        "combination": {"M04": 1.0, "M13": 1.0},  # 복합성: 유분 조절 + 수분 케어
-        "sensitive": {"M13": 2.0},  # 민감성: 수분 케어 믹스
+        "oily": {"M03": 2.0},  # 지성: 유분 조절 믹스
+        "dry": {"M09": 2.0},  # 건성: 수분 케어 믹스
+        "combination": {"M03": 1.0, "M09": 1.0},  # 복합성: 유분 조절 + 수분 케어
+        "sensitive": {"M09": 2.0},  # 민감성: 수분 케어 믹스
     }
     
     return skin_type_mapping.get(skin_type, {})

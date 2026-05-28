@@ -1795,7 +1795,7 @@
           "acne_score"
         ],
         "mix_codes": [
-          "M14"
+          "M10"
         ],
         "orthogonal_categories": []
       },
@@ -1883,17 +1883,19 @@
       "eye_wrinkle_score": "M02",
       "nasolabial_wrinkle_score": "M02",
       "fine_deep_wrinkle_score": "M02",
-      "jawline_blur_score": "M05",
-      "melasma_score": "M06",
-      "freckle_score": "M06",
-      "post_acne_pigment_score": "M06",
-      "redness_score": "M07",
-      "post_inflammatory_erythema_score": "M07",
-      "pore_size_score": "M09",
-      "pore_sagging_score": "M09",
-      "roughness_score": "M10",
-      "acne_score": "M14",
-      "_note": "17개 측정항목 → 믹스 코드(M01-M14) 직접 매핑. [REFACTOR 2026-05-23] A01~A14 → M01~M14 변경. 향후 믹스 코드 추가/변경/删除 시 이 설정만 수정하면 됨."
+      "skin_type_score": "M03",
+      "jawline_blur_score": "M04",
+      "cheek_sagging_score": "M04",
+      "melasma_score": "M05",
+      "freckle_score": "M05",
+      "post_acne_pigment_score": "M05",
+      "redness_score": "M06",
+      "post_inflammatory_erythema_score": "M06",
+      "pore_size_score": "M07",
+      "pore_sagging_score": "M07",
+      "roughness_score": "M08",
+      "acne_score": "M10",
+      "_note": "17개 측정항목 → 믹스 코드(M01-M10) 직접 매핑. [REFACTOR 2026-05-28] M01~M14 → M01~M10으로 재정렬. M03(유분 조절), M09(수분 케어)는 피부 타입 기반 처방."
     },
     "mix_codes": {
       "M01": {
@@ -1918,20 +1920,17 @@
         "status": "active"
       },
       "M03": {
-        "name": "다크서클",
-        "category": "dark_circle",
-        "description": "다크서클 관리",
-        "ingredients": [],
-        "status": "reserved"
+        "name": "유분 조절",
+        "category": "oiliness",
+        "description": "유분 관리 (피부 타입 기반)",
+        "ingredients": [
+          "니아신아마이드",
+          "레스베라트롤",
+          "티트리 오일"
+        ],
+        "status": "active"
       },
       "M04": {
-        "name": "유분",
-        "category": "oiliness",
-        "description": "유분 관리",
-        "ingredients": [],
-        "status": "reserved"
-      },
-      "M05": {
         "name": "탄력",
         "category": "firmness",
         "description": "탄력 & 처짐 관리",
@@ -1941,7 +1940,7 @@
         ],
         "status": "active"
       },
-      "M06": {
+      "M05": {
         "name": "색소침착",
         "category": "age_spot",
         "description": "색소침착 관리",
@@ -1953,7 +1952,7 @@
         ],
         "status": "active"
       },
-      "M07": {
+      "M06": {
         "name": "홍조",
         "category": "redness",
         "description": "홍조·혈관 관리",
@@ -1964,14 +1963,7 @@
         ],
         "status": "active"
       },
-      "M08": {
-        "name": "하안검 처짐",
-        "category": "droopy_lower_eyelid",
-        "description": "하안검 처짐 관리",
-        "ingredients": [],
-        "status": "reserved"
-      },
-      "M09": {
+      "M07": {
         "name": "모공",
         "category": "pore",
         "description": "모공 관리",
@@ -1982,7 +1974,7 @@
         ],
         "status": "active"
       },
-      "M10": {
+      "M08": {
         "name": "피부결",
         "category": "texture",
         "description": "피부결 관리",
@@ -1993,39 +1985,29 @@
         ],
         "status": "active"
       },
-      "M11": {
-        "name": "눈밑 지방",
-        "category": "eye_bag",
-        "description": "눈밑 지방 관리",
-        "ingredients": [],
-        "status": "reserved"
-      },
-      "M12": {
-        "name": "상안검 처짐",
-        "category": "droopy_upper_eyelid",
-        "description": "상안검 처짐 관리",
-        "ingredients": [],
-        "status": "reserved"
-      },
-      "M13": {
-        "name": "수분",
+      "M09": {
+        "name": "수분 케어",
         "category": "moisture",
-        "description": "수분 관리",
-        "ingredients": [],
-        "status": "reserved"
+        "description": "수분 관리 (피부 타입 기반)",
+        "ingredients": [
+          "히알루론산",
+          "세라마이드",
+          "스쿠알란"
+        ],
+        "status": "active"
       },
-      "M14": {
+      "M10": {
         "name": "여드름",
         "category": "acne",
         "description": "여드름 & 흔적 관리",
         "ingredients": [
           "살리실산",
           "티트리 오일",
-          "나이아신아마이드"
+          "과산화벤조일"
         ],
         "status": "active"
       },
-      "_note": "믹스 코드 정의. [REFACTOR 2026-05-23] 믹스 코드 추가/변경/삭제 시 이 설정만 수정하면 됨. status: active(사용중), reserved(향후 확장용)."
+      "_note": "활성 믹스 10종 (M01-M10). [REFACTOR 2026-05-28] M01~M14 → M01~M10으로 재정렬. M03(유분 조절), M09(수분 케어)는 피부 타입 기반 처방."
     },
     "pcr": {
       "total_rules": [
@@ -2038,13 +2020,13 @@
         {
           "rv_min": -10,
           "rv_max": 0,
-          "mix_code": "M14",
+          "mix_code": "M10",
           "percentage": 1.5
         },
         {
           "rv_min": -20,
           "rv_max": -10,
-          "mix_code": "M14",
+          "mix_code": "M10",
           "percentage": 2.0
         },
         {
