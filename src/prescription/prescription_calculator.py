@@ -670,7 +670,7 @@ def create_prescription(
 
 
 def _calculate_skin_type_mix(skin_type: str) -> Dict[str, float]:
-    """피부타입별 믹스 계산 (향후 구현 예정)
+    """피부타입별 믹스 계산
 
     Args:
         skin_type: "oily", "dry", "combination", "sensitive" 중 하나
@@ -678,9 +678,15 @@ def _calculate_skin_type_mix(skin_type: str) -> Dict[str, float]:
     Returns:
         {mix_code: percentage} 딕셔너리
     """
-    # 향후 config.json의 measurement_to_mix_code_mapping 참조하여 구현
-    # 현재는 빈 딕셔너리 반환
-    return {}
+    # 피부타입별 믹스 매핑
+    skin_type_mapping = {
+        "oily": {"M04": 2.0},  # 지성: 유분 조절 믹스
+        "dry": {"M13": 2.0},  # 건성: 수분 케어 믹스
+        "combination": {"M04": 1.0, "M13": 1.0},  # 복합성: 유분 조절 + 수분 케어
+        "sensitive": {"M13": 2.0},  # 민감성: 수분 케어 믹스
+    }
+    
+    return skin_type_mapping.get(skin_type, {})
 
 
 def _calculate_concern_mix(concerns: List[str]) -> Dict[str, float]:
