@@ -119,8 +119,8 @@ flowchart TD
 | 색소 | melasma_score, freckle_score, post_acne_pigment_score | M06 | 색소침착 |
 | 홍조 | redness_score, post_inflammatory_erythema_score | M07 | 홍조 |
 | 모공 | pore_size_score, pore_sagging_score | M09 | 모공 |
-| 텍스처 | roughness_score | M10 | 피부결 |
-| 트러블 | acne_score | M14 | 여드름 |
+| 텍스처 | roughness_score | M08 | 피부결 |
+| 트러블 | acne_score | M10 | 여드름 |
 
 ### 처방 비율 계산
 
