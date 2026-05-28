@@ -417,6 +417,9 @@ class LlmSkinReporter:
         provide_scores: bool = True,
         product_info: Optional[str] = None,
         product_recommendations: Optional[str] = None,  # 하위 호환성을 위한 추가 파라미터
+        product_repository: Optional[Any] = None,  # ProductRepository 의존성 주입
+        concerns: Optional[List[str]] = None,  # 설문 응답: 고민사항
+        skin_type: Optional[str] = None,  # 설문 응답: 피부 타입
     ) -> tuple[SkinLLMReport, SkinLLMReport]:
         """하위 호환성을 위한 별칭 메서드. generate_dual_report()를 호출합니다."""
         return self.generate_dual_report(
@@ -430,6 +433,9 @@ class LlmSkinReporter:
             ideal_perceived_age,
             provide_scores,
             product_info,
+            product_repository,
+            concerns,
+            skin_type,
         )
 
     def generate_reference_guided_report(
@@ -579,6 +585,9 @@ class LlmSkinReporter:
         ideal_perceived_age: float,
         provide_scores: bool = True,
         product_info: Optional[str] = None,
+        product_repository: Optional[Any] = None,  # ProductRepository 의존성 주입
+        concerns: Optional[List[str]] = None,  # 설문 응답: 고민사항
+        skin_type: Optional[str] = None,  # 설문 응답: 피부 타입
     ) -> tuple[SkinLLMReport, SkinLLMReport]:
         """듀얼 이미지 분석 (원본 + 복원)
         
@@ -618,14 +627,23 @@ class LlmSkinReporter:
         
         # 처방전 기반 제품 매칭
         try:
-            if self._product_repository:
+            if product_repository:
                 # 의존성 주입된 ProductRepository 사용
-                matched_products = self._product_repository.match_products_by_prescription(assessment_recipe, max_products=3)
+                matched_products = product_repository.match_products_by_prescription(
+                    assessment_recipe, max_products=3, concerns=concerns, skin_type=skin_type
+                )
+            elif self._product_repository:
+                # 인스턴스 변수의 ProductRepository 사용
+                matched_products = self._product_repository.match_products_by_prescription(
+                    assessment_recipe, max_products=3, concerns=concerns, skin_type=skin_type
+                )
             else:
                 # 하위 호환성: 의존성 주입이 없으면 기존 방식대로 생성
                 from src.db.product_repository import ProductRepository
                 repo = ProductRepository()
-                matched_products = repo.match_products_by_prescription(assessment_recipe, max_products=3)
+                matched_products = repo.match_products_by_prescription(
+                    assessment_recipe, max_products=3, concerns=concerns, skin_type=skin_type
+                )
                 repo.close()
 
             # 제품 정보를 JSON 문자열로 변환
