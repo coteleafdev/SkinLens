@@ -705,7 +705,603 @@ if __name__ == "__main__":
 
 ---
 
-## 문제 해결
+## 9. 성능 테스트
+
+### 9.1 부하 테스트 (Apache Bench)
+
+```bash
+# Apache Bench 설치
+# Ubuntu/Debian: sudo apt-get install apache2-utils
+# macOS: brew install httpd
+
+# 100개 요청, 동시 10개
+ab -n 100 -c 10 http://localhost:8000/v3/health/db
+
+# POST 요청 테스트 (JSON 파일 사용)
+ab -n 50 -c 5 -p request.json -T application/json http://localhost:8000/v3/analysis/jobs
+```
+
+### 9.2 부하 테스트 (k6)
+
+```javascript
+// load_test.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+export let options = {
+  stages: [
+    { duration: '30s', target: 10 },  // 30초 동안 10명까지 증가
+    { duration: '1m', target: 10 },   // 1분 동안 10명 유지
+    { duration: '30s', target: 0 },   // 30초 동안 0명으로 감소
+  ],
+};
+
+export default function () {
+  let response = http.get('http://localhost:8000/v3/health/db');
+  check(response, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
+  });
+  sleep(1);
+}
+```
+
+```bash
+# k6 설치
+# macOS: brew install k6
+# Ubuntu: https://k6.io/docs/getting-started/installation
+
+# 테스트 실행
+k6 run load_test.js
+```
+
+### 9.3 부하 테스트 (Locust)
+
+```python
+# locustfile.py
+from locust import HttpUser, task, between
+
+class SkinAnalysisUser(HttpUser):
+    wait_time = between(1, 3)
+    
+    @task
+    def health_check(self):
+        self.client.get("/v3/health/db")
+    
+    @task(3)
+    def create_job(self):
+        self.client.post("/v3/analysis/jobs", json={
+            "input_image": "test.jpg",
+            "llm_scores": True
+        })
+```
+
+```bash
+# Locust 설치
+pip install locust
+
+# 테스트 실행 (웹 UI)
+locust -f locustfile.py --host=http://localhost:8000
+```
+
+### 9.4 응답 시간 측정
+
+```bash
+# curl로 응답 시간 측정
+curl -w "@curl-format.txt" -o /dev/null -s http://localhost:8000/v3/health/db
+
+# curl-format.txt
+time_namelookup:  %{time_namelookup}\n
+time_connect:     %{time_connect}\n
+time_appconnect:  %{time_appconnect}\n
+time_pretransfer: %{time_pretransfer}\n
+time_starttransfer: %{time_starttransfer}\n
+time_total:       %{time_total}\n
+```
+
+### 9.5 메모리/CPU 사용량 모니터링
+
+```bash
+# htop 설치
+# Ubuntu/Debian: sudo apt-get install htop
+# macOS: brew install htop
+
+# htop 실행
+htop
+
+# 또는 psutil 사용
+pip install psutil
+
+# Python 스크립트로 모니터링
+import psutil
+import time
+
+while True:
+    cpu = psutil.cpu_percent(interval=1)
+    memory = psutil.virtual_memory().percent
+    print(f"CPU: {cpu}%, Memory: {memory}%")
+    time.sleep(1)
+```
+
+---
+
+## 10. 보안 테스트
+
+### 10.1 인증/인가 테스트
+
+```bash
+# 1. 로그인 후 토큰 받기
+TOKEN=$(curl -X POST http://localhost:8000/v3/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "password"}' \
+  | jq -r '.access_token')
+
+# 2. 토큰 없이 요청 (401 예상)
+curl http://localhost:8000/v3/auth/me
+
+# 3. 토큰으로 요청 (200 예상)
+curl http://localhost:8000/v3/auth/me \
+  -H "Authorization: Bearer $TOKEN"
+
+# 4. 만료된 토큰으로 요청 (401 예상)
+curl http://localhost:8000/v3/auth/me \
+  -H "Authorization: Bearer invalid_token"
+```
+
+### 10.2 권한 테스트
+
+```bash
+# 관리자 전용 엔드포인트 테스트
+curl http://localhost:8000/v3/admin/users \
+  -H "Authorization: Bearer $USER_TOKEN"  # 403 예상
+
+curl http://localhost:8000/v3/admin/users \
+  -H "Authorization: Bearer $ADMIN_TOKEN"  # 200 예상
+```
+
+### 10.3 SQL 인젝션 방지 테스트
+
+```bash
+# SQL 인젝션 시도
+curl -X POST http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_image": "test.jpg",
+    "customer_id": "admin'; DROP TABLE users; --"
+  }'
+```
+
+### 10.4 XSS 방지 테스트
+
+```bash
+# XSS 시도
+curl -X POST http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_image": "test.jpg",
+    "customer_id": "<script>alert(1)</script>"
+  }'
+```
+
+### 10.5 Rate Limiting 테스트
+
+```bash
+# Rate Limit 테스트 (3회/분 제한)
+for i in {1..5}; do
+  curl -X POST http://localhost:8000/v3/analysis/jobs \
+    -H "Content-Type: application/json" \
+    -d '{"input_image": "test.jpg"}'
+  echo "---"
+done
+```
+
+---
+
+## 11. 에러 핸들링 테스트
+
+### 11.1 잘못된 입력 데이터 테스트
+
+```bash
+# 1. 필수 필드 누락
+curl -X POST http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{}'  # 422 예상
+
+# 2. 잘못된 데이터 타입
+curl -X POST http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"input_image": 123}'  # 422 예상
+
+# 3. 유효하지 않은 이미지 파일
+curl -X POST http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"input_image": "nonexistent.jpg"}'  # 404 예상
+```
+
+### 11.2 네트워크 오류 시나리오
+
+```bash
+# 1. 타임아웃 테스트
+curl --max-time 1 http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"input_image": "large_image.jpg"}'
+
+# 2. 연결 끊김 시뮬레이션
+# iptables 사용 (Linux)
+sudo iptables -A INPUT -p tcp --dport 8000 -j DROP
+# 테스트 후 복구
+sudo iptables -D INPUT -p tcp --dport 8000 -j DROP
+```
+
+### 11.3 DB 연결 실패 테스트
+
+```bash
+# DB 파일 삭제 후 테스트
+rm execution_history.db
+curl http://localhost:8000/v3/health/db  # 500 예상
+
+# DB 복구 후 테스트
+# DB 파일이 자동 생성되어야 함
+```
+
+### 11.4 외부 API 실패 테스트
+
+```bash
+# LLM API 키 없이 테스트
+unset GEMINI_API_KEY
+curl -X POST http://localhost:8000/v3/analysis/jobs \
+  -H "Content-Type: application/json" \
+  -d '{"input_image": "test.jpg", "llm_report": true}'  # 500 예상
+```
+
+---
+
+## 12. 통합 테스트
+
+### 12.1 전체 흐름 테스트
+
+```mermaid
+graph LR
+    A[피부 분석] --> B[제품 추천]
+    B --> C[주문 생성]
+    C --> D[결제]
+    D --> E[배송]
+```
+
+```python
+# integration_test.py
+import requests
+import json
+import asyncio
+import websockets
+
+BASE_URL = "http://localhost:8000"
+
+async def test_full_flow():
+    # 1. 피부 분석
+    job_response = requests.post(f"{BASE_URL}/v3/analysis/jobs", json={
+        "input_image": "test.jpg",
+        "llm_scores": True,
+        "input_json": {
+            "survey": {
+                "skin_concerns": ["여드름"],
+                "skin_types": ["oily"]
+            }
+        }
+    })
+    job_id = job_response.json()["job_id"]
+    
+    # 2. 진행율 수신
+    uri = f"ws://localhost:8000/v3/ws/jobs/{job_id}"
+    async with websockets.connect(uri) as ws:
+        while True:
+            msg = await ws.recv()
+            data = json.loads(msg)
+            if data['status'] == 'completed':
+                break
+    
+    # 3. 결과 확인
+    result_response = requests.get(f"{BASE_URL}/v3/analysis/jobs/{job_id}")
+    result = result_response.json()
+    matched_products = result.get("result", {}).get("llm_analysis", {}).get("matched_products", [])
+    
+    # 4. 주문 생성
+    if matched_products:
+        order_response = requests.post(f"{BASE_URL}/v3/orders", json={
+            "customer_id": "user123",
+            "items": [
+                {
+                    "product_id": matched_products[0]["product_id"],
+                    "quantity": 1,
+                    "price": 45000
+                }
+            ],
+            "shipping_address": {
+                "recipient": "홍길동",
+                "phone": "010-1234-5678",
+                "address": "서울시 강남구...",
+                "zip_code": "12345"
+            },
+            "payment_method": "credit_card",
+            "recommendation_source": "skin_analysis",
+            "analysis_job_id": job_id
+        })
+        order_id = order_response.json()["order_id"]
+        print(f"Order created: {order_id}")
+
+if __name__ == "__main__":
+    asyncio.run(test_full_flow())
+```
+
+### 12.2 WebSocket 연결 유지 테스트
+
+```python
+# websocket_keepalive_test.py
+import asyncio
+import websockets
+import json
+
+async def test_websocket_keepalive():
+    uri = "ws://localhost:8000/v3/ws/jobs/test_job"
+    try:
+        async with websockets.connect(uri) as ws:
+            # 5분 동안 연결 유지
+            for i in range(300):
+                msg = await asyncio.wait_for(ws.recv(), timeout=10.0)
+                data = json.loads(msg)
+                print(f"Message {i}: {data['status']}")
+                if data['status'] in ['completed', 'failed']:
+                    break
+    except asyncio.TimeoutError:
+        print("WebSocket connection timeout")
+
+if __name__ == "__main__":
+    asyncio.run(test_websocket_keepalive())
+```
+
+---
+
+## 13. 데이터 백업 및 복구 테스트
+
+### 13.1 DB 백업 테스트
+
+```bash
+# SQLite 백업
+cp execution_history.db execution_history.db.backup
+cp results/skin_analysis.db results/skin_analysis.db.backup
+
+# 백업 파일 확인
+ls -lh *.backup
+```
+
+### 13.2 데이터 복구 테스트
+
+```bash
+# DB 삭제
+rm execution_history.db
+
+# 백업 복구
+cp execution_history.db.backup execution_history.db
+
+# 데이터 확인
+curl http://localhost:8000/v3/stats
+```
+
+### 13.3 장애 복구 시나리오
+
+```bash
+# 1. DB 손상 시뮬레이션
+echo "corrupted data" > execution_history.db
+
+# 2. 서버 재시작
+# 서버가 자동으로 복구 시도
+
+# 3. 백업 복구
+cp execution_history.db.backup execution_history.db
+```
+
+---
+
+## 14. 모니터링 및 로깅 테스트
+
+### 14.1 로그 레벨 테스트
+
+```bash
+# DEBUG 레벨 로그 확인
+curl http://localhost:8000/v3/logs?level=DEBUG&limit=10
+
+# ERROR 레벨 로그 확인
+curl http://localhost:8000/v3/logs?level=ERROR&limit=10
+```
+
+### 14.2 메트릭 수집 테스트
+
+```bash
+# 활성 작업 수 확인
+curl http://localhost:8000/v3/stats/active-jobs
+
+# 시스템 헬스 확인
+curl http://localhost:8000/v3/health/db
+```
+
+### 14.3 알림 시스템 테스트
+
+```python
+# alert_test.py
+import requests
+
+# 알림 테스트 엔드포인트 (실제 구현 필요)
+response = requests.post("http://localhost:8000/v3/admin/test-alert", json={
+    "type": "error",
+    "message": "테스트 알림"
+})
+print(response.json())
+```
+
+---
+
+## 15. 배포 테스트
+
+### 15.1 Docker 컨테이너 테스트
+
+```dockerfile
+# Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+COPY . .
+
+RUN pip install -r requirements.txt
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.server.server:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+```bash
+# Docker 이미지 빌드
+docker build -t skinlens-server .
+
+# 컨테이너 실행
+docker run -p 8000:8000 -e GEMINI_API_KEY=your_key skinlens-server
+
+# 컨테이너 테스트
+curl http://localhost:8000/v3/health/db
+```
+
+### 15.2 Kubernetes 배포 테스트
+
+```yaml
+# k8s-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skinlens-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: skinlens
+  template:
+    metadata:
+      labels:
+        app: skinlens
+    spec:
+      containers:
+      - name: server
+        image: skinlens-server:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: gemini-api-key
+```
+
+```bash
+# Kubernetes 배포
+kubectl apply -f k8s-deployment.yaml
+
+# 배포 확인
+kubectl get pods
+
+# 서비스 테스트
+kubectl port-forward svc/skinlens-server 8000:8000
+curl http://localhost:8000/v3/health/db
+```
+
+### 15.3 CI/CD 파이프라인 테스트
+
+```yaml
+# .github/workflows/ci.yml
+name: CI/CD
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.12
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+    - name: Run tests
+      run: |
+        pytest tests/
+    - name: Build Docker image
+      run: |
+        docker build -t skinlens-server .
+```
+
+---
+
+## 16. 클라이언트별 테스트
+
+### 16.1 Flutter 앱 통합 테스트
+
+```dart
+// integration_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  testWidgets('Flutter 앱 통합 테스트', (WidgetTester tester) async {
+    // 앱 시작
+    await tester.pumpWidget(MyApp());
+    
+    // 이미지 선택
+    await tester.tap(find.text('이미지 선택'));
+    await tester.pumpAndSettle();
+    
+    // 분석 시작
+    await tester.tap(find.text('분석 시작'));
+    await tester.pumpAndSettle();
+    
+    // 결과 확인
+    expect(find.text('분석 완료'), findsOneWidget);
+  });
+}
+```
+
+### 16.2 웹 브라우저 테스트
+
+```javascript
+// browser_test.js (Playwright)
+const { test, expect } = require('@playwright/test');
+
+test('웹 브라우저 테스트', async ({ page }) => {
+  await page.goto('http://localhost:8000/docs');
+  
+  // API 문서 로드 확인
+  await expect(page.locator('h1')).toContainText('Skin Analysis API');
+  
+  // 헬스체크 테스트
+  const response = await page.request.get('http://localhost:8000/v3/health/db');
+  expect(response.status()).toBe(200);
+});
+```
+
+### 16.3 CLI 도구 테스트
+
+```bash
+# CLI 테스트
+python src/gui/image_enhancer.py --cli -i test.jpg --out-dir ./test_output
+
+# 결과 확인
+ls -lh ./test_output
+cat ./test_output/results.json
+```
+
+---
+
+## 17. 문제 해결
 
 ### 서버 시작 실패
 
