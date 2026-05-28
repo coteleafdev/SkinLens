@@ -429,7 +429,7 @@ class ProductRepository:
                 "efficacy": "여드름 억제, 모공 관리, 피부 진정",
                 "target_skin_types": ["oily", "combination", "acne_prone"],
                 "target_concerns": ["여드름", "모공", "트러블"],
-                "target_prescription_items": ["M14"],  # 여드름
+                "target_prescription_items": ["M10"],  # 여드름
             },
             {
                 "product_id": "P002",
@@ -469,7 +469,7 @@ class ProductRepository:
                 "efficacy": "모공 축소, 각질 제거, 피부결 개선",
                 "target_skin_types": ["oily", "combination"],
                 "target_concerns": ["모공", "거칠기", "블랙헤드"],
-                "target_prescription_items": ["M09", "M10"],  # 모공, 피부결
+                "target_prescription_items": ["M08", "M09"],  # 피부결, 모공
             },
         ]
 
@@ -514,7 +514,7 @@ def load_sample_products(repo: ProductRepository) -> None:
             "efficacy": "여드름 억제, 모공 관리, 피부 진정",
             "target_skin_types": ["oily", "combination", "acne_prone"],
             "target_concerns": ["여드름", "모공", "트러블"],
-            "target_prescription_items": ["M14"],  # 여드름
+            "target_prescription_items": ["M10"],  # 여드름
         },
         {
             "product_id": "P002",
@@ -554,7 +554,7 @@ def load_sample_products(repo: ProductRepository) -> None:
             "efficacy": "모공 축소, 각질 제거, 피부결 개선",
             "target_skin_types": ["oily", "combination"],
             "target_concerns": ["모공", "거칠기", "블랙헤드"],
-            "target_prescription_items": ["M09", "M10"],  # 모공, 피부결
+            "target_prescription_items": ["M08", "M09"],  # 피부결, 모공
         },
     ]
     
