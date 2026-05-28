@@ -268,8 +268,26 @@ def match_products_by_prescription(
     concerns: Optional[List[str]] = None,  # 설문 응답: 고민사항
     skin_type: Optional[str] = None,  # 설문 응답: 피부 타입
 ) -> List[Dict[str, Any]]:
+    # config.json에서 가중치 로드
     # 고민사항이 있는 경우: 처방 항목 0.5 + 고민사항 0.3 + 피부타입 0.2 = 최대 1.0
     # 고민사항이 없는 경우: 처방 항목 0.7 + 피부타입 0.3 = 최대 1.0
+```
+
+**config.json 설정**:
+```json
+"product_recommendation": {
+  "matching_weights": {
+    "with_concerns": {
+      "prescription": 0.5,
+      "concerns": 0.3,
+      "skin_type": 0.2
+    },
+    "without_concerns": {
+      "prescription": 0.7,
+      "skin_type": 0.3
+    }
+  }
+}
 ```
 
 ---

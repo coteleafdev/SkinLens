@@ -903,11 +903,23 @@
       "크림",
       "선크림"
     ],
+    "matching_weights": {
+      "with_concerns": {
+        "prescription": 0.5,
+        "concerns": 0.3,
+        "skin_type": 0.2
+      },
+      "without_concerns": {
+        "prescription": 0.7,
+        "skin_type": 0.3
+      }
+    },
     "_note": "맞춤형 화장품 추천 설정. [REFACTOR 2026-05-22] 화장품 매칭 로직 파라미터화.",
     "_purpose": "GUI에서 화장품 매칭 시 사용하는 파라미터입니다.",
     "_min_match_score": "매칭 점수 임계값 (0.0 ~ 1.0). 이상인 제품만 추천.",
     "_max_products": "최대 추천 제품 수.",
-    "_categories": "추천할 제품 카테고리 목록."
+    "_categories": "추천할 제품 카테고리 목록.",
+    "_matching_weights": "제품 매칭 가중치 설정. with_concerns: 고민사항 있음, without_concerns: 고민사항 없음."
   },
   "prescription": {
     "enabled": false,

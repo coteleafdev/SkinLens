@@ -358,6 +358,19 @@ class ProductRepository:
         List[Dict[str, Any]]
             매칭된 제품 목록 (match_score 포함)
         """
+        # config.json에서 가중치 로드
+        try:
+            from src.scoring.skin_scoring import _load_scoring_config
+            config = _load_scoring_config()
+            product_config = config.get("product_recommendation", {})
+            matching_weights = product_config.get("matching_weights", {})
+            weights_with_concerns = matching_weights.get("with_concerns", {"prescription": 0.5, "concerns": 0.3, "skin_type": 0.2})
+            weights_without_concerns = matching_weights.get("without_concerns", {"prescription": 0.7, "skin_type": 0.3})
+        except Exception as e:
+            log.warning(f"[경고] config.json 로드 실패, 기본 가중치 사용: {e}")
+            weights_with_concerns = {"prescription": 0.5, "concerns": 0.3, "skin_type": 0.2}
+            weights_without_concerns = {"prescription": 0.7, "skin_type": 0.3}
+        
         all_products = self.get_all_products()
         matched_products = []
         
@@ -365,32 +378,33 @@ class ProductRepository:
             match_score = 0.0
             match_reasons = []
             
-            # 설문 응답 여부에 따른 가중치 조정
-            has_survey = concerns or skin_type
+            # 설문 응답 여부에 따른 가중치 선택
+            if concerns:
+                weights = weights_with_concerns
+            else:
+                weights = weights_without_concerns
             
-            # 처방 항목 매칭 (고민사항이 없으면 가중치 0.7, 있으면 0.5)
-            prescription_weight = 0.7 if not concerns else 0.5
+            # 처방 항목 매칭
             product_prescription_items = product.get("target_prescription_items", [])
             for mix_code, percentage in prescription_recipe.items():
                 if mix_code in product_prescription_items:
                     # 처방 비율이 높을수록 매칭 점수 증가
-                    match_score += (percentage / 3.0) * prescription_weight
+                    match_score += (percentage / 3.0) * weights["prescription"]
                     match_reasons.append(f"처방 항목 매칭: {mix_code} ({percentage}%)")
             
-            # 설문 응답: 고민사항 매칭 (가중치 0.3)
-            if concerns:
+            # 설문 응답: 고민사항 매칭
+            if concerns and "concerns" in weights:
                 product_concerns = product.get("target_concerns", [])
                 for concern in concerns:
                     if concern in product_concerns:
-                        match_score += 0.3
+                        match_score += weights["concerns"]
                         match_reasons.append(f"고민사항 매칭: {concern}")
             
-            # 설문 응답: 피부 타입 매칭 (고민사항이 없으면 가중치 0.3, 있으면 0.2)
-            skin_type_weight = 0.3 if not concerns else 0.2
-            if skin_type:
+            # 설문 응답: 피부 타입 매칭
+            if skin_type and "skin_type" in weights:
                 product_skin_types = product.get("target_skin_types", [])
                 if skin_type in product_skin_types:
-                    match_score += skin_type_weight
+                    match_score += weights["skin_type"]
                     match_reasons.append(f"피부 타입 매칭: {skin_type}")
             
             if match_score > 0:
