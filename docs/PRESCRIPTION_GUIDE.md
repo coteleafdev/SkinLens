@@ -3,6 +3,7 @@
 > **프로젝트:** SkinLens v1.0
 > **처방 시스템:** PCR 기반 처방 + 피부 평가 점수 기반 처방  
 > **처방 구성:** 베이스 + 활성 믹스 14종 (M01-M14) + PCR 믹스 3종
+> **마지막 수정:** 2026-05-28
 
 ---
 
@@ -222,6 +223,54 @@ async function calculatePrescription(pcrResultData, pcrResult, bacteriaList)
 | 유익균 (Beneficial) | 피부 건강에 도움 | 프로바이오틱 믹스 |
 | 중성균 (Trouble) | 과다 증식 시 문제 | 프리바이오틱 믹스 |
 | 유해균 (Harmful) | 피부 문제 유발 | 리밸런스케어 믹스 |
+
+---
+
+## CLI/GUI에서의 처방전 활용
+
+### CLI (Command Line Interface)
+
+CLI에서는 처방전 기반 제품 매칭을 수행합니다:
+
+1. **처방전 계산**: `prescription_calculator.create_prescription()`로 피부 평가 점수 기반 처방전 생성
+2. **설문 응답 추출**: `input_json`에서 `skin_concerns`, `skin_types` 추출
+3. **제품 매칭**: `ProductRepository.match_products_by_prescription()`로 처방전 + 설문 응답 기반 제품 매칭
+4. **매칭 가중치**:
+   - 처방 항목 매칭: 0.5
+   - 고민사항 매칭: 0.3
+   - 피부 타입 매칭: 0.2
+
+**관련 파일**:
+- `src/gui/image_enhancer.py` - CLI 진입점, LLM Reporter 호출
+- `src/llm/llm_reporter.py` - 처방전 계산 및 제품 매칭
+- `src/db/product_repository.py` - 제품 매칭 로직
+
+### GUI (Graphical User Interface)
+
+GUI에서도 CLI와 동일하게 처방전 기반 제품 매칭을 수행합니다:
+
+1. **처방전 계산**: LLM Reporter 내부에서 `prescription_calculator.create_prescription()` 호출
+2. **제품 매칭**: `ProductRepository.match_products_by_prescription()`로 처방전 기반 제품 매칭
+3. **결과 표시**: 비교창의 LLM 소견 섹션에 맞춤형 제품 추천 표시
+
+**관련 파일**:
+- `src/gui/compare_dialog.py` - GUI 비교창, LLM 소견 표시
+- `src/llm/llm_reporter.py` - 처방전 계산 및 제품 매칭
+- `src/db/product_repository.py` - 제품 매칭 로직
+
+### 제품 매칭 로직
+
+```python
+# product_repository.py
+def match_products_by_prescription(
+    prescription_recipe: Dict[str, float],  # 처방전 (예: {"M01": 2.5, "M06": 3.0})
+    max_products: int = 5,
+    concerns: Optional[List[str]] = None,  # 설문 응답: 고민사항
+    skin_type: Optional[str] = None,  # 설문 응답: 피부 타입
+) -> List[Dict[str, Any]]:
+    # 고민사항이 있는 경우: 처방 항목 0.5 + 고민사항 0.3 + 피부타입 0.2 = 최대 1.0
+    # 고민사항이 없는 경우: 처방 항목 0.7 + 피부타입 0.3 = 최대 1.0
+```
 
 ---
 

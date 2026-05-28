@@ -335,10 +335,12 @@ class ProductRepository:
     def match_products_by_prescription(
         self,
         prescription_recipe: Dict[str, float],
-        max_products: int = 5
+        max_products: int = 5,
+        concerns: Optional[List[str]] = None,
+        skin_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-        처방전 기반 제품 매칭.
+        처방전 기반 제품 매칭 (설문 응답도 참조).
 
         Parameters
         ----------
@@ -346,6 +348,10 @@ class ProductRepository:
             처방전 (예: {"A01": 2.5, "A06": 3.0})
         max_products : int, optional
             최대 반환 제품 수 (기본값: 5)
+        concerns : List[str], optional
+            피부 고민사항 목록 (설문 응답)
+        skin_type : str, optional
+            피부 타입 (설문 응답)
 
         Returns
         -------
@@ -359,13 +365,33 @@ class ProductRepository:
             match_score = 0.0
             match_reasons = []
             
-            # 처방 항목 매칭
+            # 설문 응답 여부에 따른 가중치 조정
+            has_survey = concerns or skin_type
+            
+            # 처방 항목 매칭 (고민사항이 없으면 가중치 0.7, 있으면 0.5)
+            prescription_weight = 0.7 if not concerns else 0.5
             product_prescription_items = product.get("target_prescription_items", [])
             for mix_code, percentage in prescription_recipe.items():
                 if mix_code in product_prescription_items:
                     # 처방 비율이 높을수록 매칭 점수 증가
-                    match_score += (percentage / 3.0) * 0.5  # 최대 3.0% 기준
+                    match_score += (percentage / 3.0) * prescription_weight
                     match_reasons.append(f"처방 항목 매칭: {mix_code} ({percentage}%)")
+            
+            # 설문 응답: 고민사항 매칭 (가중치 0.3)
+            if concerns:
+                product_concerns = product.get("target_concerns", [])
+                for concern in concerns:
+                    if concern in product_concerns:
+                        match_score += 0.3
+                        match_reasons.append(f"고민사항 매칭: {concern}")
+            
+            # 설문 응답: 피부 타입 매칭 (고민사항이 없으면 가중치 0.3, 있으면 0.2)
+            skin_type_weight = 0.3 if not concerns else 0.2
+            if skin_type:
+                product_skin_types = product.get("target_skin_types", [])
+                if skin_type in product_skin_types:
+                    match_score += skin_type_weight
+                    match_reasons.append(f"피부 타입 매칭: {skin_type}")
             
             if match_score > 0:
                 product["match_score"] = min(match_score, 1.0)

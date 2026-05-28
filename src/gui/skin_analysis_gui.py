@@ -431,6 +431,12 @@ class SkinAnalysisWindow(QMainWindow):
         btn_in.clicked.connect(self._pick_input_file)
         fl.addRow("입력 이미지:", self._hbox(self.edit_input, btn_in))
 
+        self.edit_input_json = QLineEdit()
+        self.edit_input_json.setPlaceholderText("설문 JSON 파일 경로… (선택사항)")
+        btn_in_json = QPushButton("파일 선택…")
+        btn_in_json.clicked.connect(self._pick_input_json_file)
+        fl.addRow("설문 JSON:", self._hbox(self.edit_input_json, btn_in_json))
+
         self.lbl_io_input_px = QLabel("—")
         self.lbl_io_input_px.setStyleSheet("color: #444;")
         fl.addRow("입력 해상도 (px):", self.lbl_io_input_px)
@@ -757,6 +763,15 @@ class SkinAnalysisWindow(QMainWindow):
             self.edit_input.setText(path)
             self._refresh_original_preview_only()
 
+    def _pick_input_json_file(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self, "설문 JSON 파일 선택",
+            str(self._root),
+            "JSON (*.json);;모든 파일 (*.*)",
+        )
+        if path:
+            self.edit_input_json.setText(path)
+
     def _pick_out_dir(self) -> None:
         path = QFileDialog.getExistingDirectory(self, "산출 폴더", self.edit_out.text() or str(self._root))
         if path:
@@ -858,6 +873,11 @@ class SkinAnalysisWindow(QMainWindow):
             args.append("--text2img")
         else:
             args.extend(["-i", self.edit_input.text().strip()])
+
+        # 설문 JSON 파일 추가
+        input_json_path = self.edit_input_json.text().strip()
+        if input_json_path:
+            args.extend(["--input-json", input_json_path])
 
         args.extend(["--out-dir", self.edit_out.text().strip()])
 

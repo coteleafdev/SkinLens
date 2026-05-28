@@ -540,63 +540,39 @@ def _cli_body(args) -> int:
                             ideal_measurements = {} if not args.llm_scores else restored_score_filtered
                             provide_scores = args.llm_scores  # --llm-scores true면 점수 제공
                             
-                            # 맞춤형 화장품 성분 정보 조회
-                            product_info = None
-                            product_recommendations = None
+                            # ProductRepository 생성 (LLM Reporter에 전달)
+                            product_repo = None
+                            concerns = []
+                            skin_type = None
                             try:
                                 from src.db.product_repository import ProductRepository
                                 product_repo = ProductRepository(db_path=str(args.out_dir / "skin_analysis.db"))
+                                log.info("[정보] ProductRepository 초기화 완료")
                                 
                                 # 설문에서 고민사항 추출 (input_json이 있는 경우)
-                                concerns = []
-                                skin_type = None
                                 if hasattr(args, 'input_json') and args.input_json:
                                     survey = args.input_json.get("survey", {})
                                     concerns = survey.get("skin_concerns", [])
                                     skin_types = survey.get("skin_types", [])
                                     skin_type = skin_types[0] if skin_types else None
-                                
-                                # 제품 매칭
-                                matched_products = product_repo.match_products(
-                                    concerns=concerns,
-                                    skin_type=skin_type,
-                                    scores=original_score_filtered if args.llm_scores else {}
-                                )
-                                
-                                if matched_products:
-                                    # 성분 정보 문자열 생성
-                                    product_info_lines = ["## 추천 맞춤형 화장품"]
-                                    for product in matched_products[:3]:  # 상위 3개만 표시
-                                        product_info_lines.append(f"\n- {product['product_name']} ({product['category']})")
-                                        product_info_lines.append(f"  주요 성분: {', '.join(product['key_ingredients'])}")
-                                        product_info_lines.append(f"  효능: {product['efficacy']}")
-                                        product_info_lines.append(f"  매칭 점수: {product['match_score']:.1f}")
-                                    product_info = "\n".join(product_info_lines)
-                                    
-                                    # product_recommendations 구조 생성
-                                    product_recommendations = {
-                                        "matched_products": [
-                                            {
-                                                "product_id": p["product_id"],
-                                                "product_name": p["product_name"],
-                                                "category": p["category"],
-                                                "key_ingredients": p["key_ingredients"],
-                                                "efficacy": p["efficacy"],
-                                                "match_score": p["match_score"],
-                                                "match_reason": p.get("match_reason", "")
-                                            }
-                                            for p in matched_products
-                                        ],
-                                        "recommendation_summary": f"측정된 피부 상태와 설문 응답을 기반으로 {len(matched_products)}종의 맞춤형 화장품을 추천합니다."
-                                    }
-                                
-                                log.info(f"[정보] 맞춤형 화장품 매칭 완료: {len(matched_products)}종")
+                                    log.info(f"[정보] 설문 응답: concerns={concerns}, skin_type={skin_type}")
+                                else:
+                                    # 설문이 없는 경우 분석 결과에서 피부타입 추출
+                                    # skin_type_score 기반 피부타입 추정
+                                    skin_type_score = original_score_filtered.get("skin_type_score", 0)
+                                    if skin_type_score < 40:
+                                        skin_type = "oily"  # 지성
+                                    elif skin_type_score < 60:
+                                        skin_type = "combination"  # 복합성
+                                    elif skin_type_score < 80:
+                                        skin_type = "dry"  # 건성
+                                    else:
+                                        skin_type = "sensitive"  # 민감성
+                                    log.info(f"[정보] 분석 결과 기반 피부타입 추정: skin_type_score={skin_type_score}, skin_type={skin_type}")
                             except Exception as e:
-                                log.warning(f"[경고] 맞춤형 화장품 조회 실패: {e}")
-                                import traceback
-                                traceback.print_exc()
+                                log.warning(f"[경고] ProductRepository 초기화 실패: {e}")
                             
-                            # 듀얼 이미지 분석
+                            # 듀얼 이미지 분석 (product_repository 전달)
                             llm_orig_result, llm_ideal_result = reporter.generate_report_from_dual_images(
                                 str(init_resolved),  # orig_image_path
                                 str(final_p),  # ideal_image_path
@@ -607,8 +583,10 @@ def _cli_body(args) -> int:
                                 restored_score_adjusted.get("overall", 0),  # ideal_overall_score
                                 restored_perceived_age,  # ideal_perceived_age
                                 provide_scores=provide_scores,  # --llm-scores true면 True
-                                product_info=product_info,
-                                product_recommendations=product_recommendations
+                                product_info=None,  # LLM Reporter가 내부적으로 생성
+                                product_repository=product_repo,  # ProductRepository 전달
+                                concerns=concerns,  # 설문 응답 전달
+                                skin_type=skin_type,  # 설문 응답 전달
                             )
 
                             llm_time = time.time() - llm_start
