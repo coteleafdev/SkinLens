@@ -976,9 +976,164 @@ curl http://localhost:8000/v3/logs/download?hours=24&format=json -o recent.json
 
 ---
 
-## 13) 통계 조회 API
+## 14) WebSocket 진행율 실시간 수신
 
-### 13.1 분석 통계 조회
+### 14.1 WebSocket 연결
+`WS /v3/ws/jobs/{job_id}`
+
+**설명**
+- Job 진행율을 실시간으로 수신하기 위한 WebSocket 엔드포인트
+- 연결 후 진행율 메시지를 서버에서 클라이언트로 푸시
+
+**메시지 형식**
+```json
+{
+  "job_id": "7c45d7d5-2f9e-4e64-bc2a-8d2b1d3b2f91",
+  "status": "processing",
+  "progress": 45,
+  "message": "이미지 복원 중..."
+}
+```
+
+**status 값**
+- `queued`: 대기 중
+- `processing`: 처리 중
+- `completed`: 완료
+- `failed`: 실패
+
+### 14.2 Flutter WebSocket 클라이언트
+
+```dart
+import 'dart:async';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+class JobProgressListener {
+  final String jobId;
+  final String baseUrl = 'ws://localhost:8000';
+  late WebSocketChannel _channel;
+  final StreamController<Map<String, dynamic>> _progressController = StreamController.broadcast();
+
+  JobProgressListener({required this.jobId});
+
+  Stream<Map<String, dynamic>> get progressStream => _progressController.stream;
+
+  void connect() {
+    final uri = Uri.parse('$baseUrl/v3/ws/jobs/$jobId');
+    _channel = WebSocketChannel.connect(uri);
+
+    _channel.stream.listen(
+      (message) {
+        final data = Map<String, dynamic>.from(
+          jsonDecode(message as String)
+        );
+        print('Progress: ${data['progress']}% - ${data['message']}');
+        _progressController.add(data);
+
+        if (data['status'] == 'completed' || data['status'] == 'failed') {
+          disconnect();
+        }
+      },
+      onError: (error) {
+        print('WebSocket error: $error');
+      },
+      onDone: () {
+        print('WebSocket connection closed');
+      },
+    );
+  }
+
+  void disconnect() {
+    _channel.sink.close();
+    _progressController.close();
+  }
+}
+```
+
+### 14.3 JavaScript WebSocket 클라이언트
+
+```javascript
+const ws = new WebSocket('ws://localhost:8000/v3/ws/jobs/job_abc123');
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log(`Progress: ${data.progress}% - ${data.message}`);
+  
+  if (data.status === 'completed') {
+    console.log('Result:', data.result);
+    ws.close();
+  }
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+
+ws.onclose = () => {
+  console.log('WebSocket connection closed');
+};
+```
+
+---
+
+## 15) 제품 매칭 가중치 설정
+
+### 15.1 config.json 설정
+
+```json
+{
+  "product_recommendation": {
+    "matching_weights": {
+      "with_concerns": {
+        "prescription": 0.5,
+        "concerns": 0.3,
+        "skin_type": 0.2
+      },
+      "without_concerns": {
+        "prescription": 0.7,
+        "skin_type": 0.3
+      }
+    }
+  }
+}
+```
+
+### 15.2 매칭 로직
+
+**고민사항이 있는 경우**:
+- 처방 항목 매칭: 50%
+- 고민사항 매칭: 30%
+- 피부 타입 매칭: 20%
+- 최대 점수: 1.0
+
+**고민사항이 없는 경우**:
+- 처방 항목 매칭: 70%
+- 피부 타입 매칭: 30%
+- 최대 점수: 1.0
+
+### 15.3 피부 타입 추정 (설문 없는 경우)
+
+설문 응답이 없는 경우 분석 결과에서 피부타입을 추정합니다:
+
+- `skin_type_score < 40`: 지성 (oily)
+- `40 <= skin_type_score < 60`: 복합성 (combination)
+- `60 <= skin_type_score < 80`: 건성 (dry)
+- `skin_type_score >= 80`: 민감성 (sensitive)
+
+---
+
+## 16) 참고 문서
+
+- `config/config.json` - 서버 설정
+- `src/server/server.py` - 서버 메인 파일
+- `src/server/routers/` - 라우터 구현
+- `docs/SERVER_TEST_GUIDE.md` - 서버 테스트 가이드
+- `docs/PRESCRIPTION_GUIDE.md` - 처방전 가이드
+
+---
+
+## 17) 통계 조회 API
+
+### 17.1 분석 통계 조회
 `GET /v3/stats/analysis`
 
 **Query Parameters**
@@ -1014,7 +1169,7 @@ curl http://localhost:8000/v3/stats/analysis?days=7
 curl http://localhost:8000/v3/stats/analysis?customer_id=user123&days=30
 ```
 
-### 13.2 모델 성능 조회
+### 17.2 모델 성능 조회
 `GET /v3/stats/model-performance`
 
 **Query Parameters**
