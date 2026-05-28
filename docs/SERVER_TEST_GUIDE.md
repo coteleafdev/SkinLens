@@ -13,17 +13,29 @@ SkinLens 서버는 CLI 기반으로 작동하며, FastAPI를 통해 REST API를 
 
 ### 구조
 
-```
-src/server/
-    deps.py             ← 공유 상태·의존성·유틸 (app 미포함)
-    server.py           ← app 생성·미들웨어·라우터 등록
-    routers/
-        jobs.py         ← POST/GET /v3/analysis/jobs/*
-        logs.py         ← GET /v3/logs/*
-        stats.py        ← GET/POST /v3/stats/*
-        auth.py         ← POST /v3/auth/login, GET /v3/auth/me
-        customer.py     ← GET/DELETE /v3/customer/my/*
-        admin.py        ← GET /v3/admin/*, GET /v3/health/db
+```mermaid
+graph TB
+    subgraph "src/server/"
+        Deps[deps.py<br/>공유 상태·의존성·유틸]
+        Server[server.py<br/>app 생성·미들웨어·라우터 등록]
+        
+        subgraph "routers/"
+            Jobs[jobs.py<br/>POST/GET /v3/analysis/jobs/*]
+            Logs[logs.py<br/>GET /v3/logs/*]
+            Stats[stats.py<br/>GET/POST /v3/stats/*]
+            Auth[auth.py<br/>POST /v3/auth/login<br/>GET /v3/auth/me]
+            Customer[customer.py<br/>GET/DELETE /v3/customer/my/*]
+            Admin[admin.py<br/>GET /v3/admin/*<br/>GET /v3/health/db]
+        end
+    end
+    
+    Server --> Deps
+    Server --> Jobs
+    Server --> Logs
+    Server --> Stats
+    Server --> Auth
+    Server --> Customer
+    Server --> Admin
 ```
 
 ### 주요 라우터
@@ -42,6 +54,17 @@ src/server/
 ## 테스트 절차
 
 ### 1. 서버 시작
+
+```mermaid
+graph LR
+    Start[시작] --> Env[환경 설정]
+    Env --> Server[서버 실행]
+    Server --> Health[헬스체크]
+    Health --> Success[성공]
+    Health --> Fail[실패]
+    Fail --> Error[에러 확인]
+    Error --> Server
+```
 
 #### 1.1 환경 설정
 
@@ -78,6 +101,29 @@ curl http://localhost:8000/v3/health/db
 ---
 
 ### 2. 분석 작업 테스트
+
+```mermaid
+sequenceDiagram
+    participant C as 클라이언트
+    participant S as 서버
+    
+    C->>S: POST /v3/analysis/jobs
+    S-->>C: job_id, status
+    
+    C->>S: GET /v3/analysis/jobs/{job_id}
+    S-->>C: status, progress
+    
+    loop 진행율 확인
+        C->>S: GET /v3/analysis/jobs/{job_id}
+        S-->>C: status, progress
+    end
+    
+    S-->>C: status: completed
+    C->>S: GET /v3/analysis/jobs/{job_id}
+    S-->>C: result
+    
+    Note over C,S: WebSocket으로 진행율 실시간 수신 가능
+```
 
 #### 2.1 작업 생성 (POST /v3/analysis/jobs)
 
@@ -135,6 +181,18 @@ curl -X DELETE http://localhost:8000/v3/analysis/jobs/job_abc123
 
 ### 3. 인증 테스트
 
+```mermaid
+sequenceDiagram
+    participant C as 클라이언트
+    participant S as 서버
+    
+    C->>S: POST /v3/auth/login<br/>{username, password}
+    S-->>C: access_token, token_type
+    
+    C->>S: GET /v3/auth/me<br/>Authorization: Bearer {token}
+    S-->>C: user_info
+```
+
 #### 3.1 로그인 (POST /v3/auth/login)
 
 ```bash
@@ -164,6 +222,23 @@ curl http://localhost:8000/v3/auth/me \
 ---
 
 ### 4. 제품 매칭 테스트
+
+```mermaid
+graph LR
+    Input[설문 JSON 준비] --> Upload[작업 생성 시 포함]
+    Upload --> Match[제품 매칭]
+    Match --> Result[매칭된 제품 확인]
+    
+    subgraph "매칭 로직"
+        Prescription[처방 항목 50%]
+        Concerns[고민사항 30%]
+        SkinType[피부 타입 20%]
+    end
+    
+    Match --> Prescription
+    Match --> Concerns
+    Match --> SkinType
+```
 
 #### 4.1 설문 JSON 파일 준비
 
