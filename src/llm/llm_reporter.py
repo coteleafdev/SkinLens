@@ -711,6 +711,13 @@ class LlmSkinReporter:
                 response_json = json.loads(orig_report.raw_response)
                 ref_metric_scores = response_json.get("ref_metric_scores", {})
                 ref_metric_reasons = response_json.get("ref_metric_reasons", {})
+                # LLM 응답에서 ref_overall_score 추출 (provide_scores=False일 때 필요)
+                if "ref_overall_score" in response_json:
+                    ideal_overall_score = response_json["ref_overall_score"]
+                    log.info(f"[RGP] LLM 응답에서 ref_overall_score 추출: {ideal_overall_score}")
+                if "ref_perceived_age" in response_json:
+                    ideal_perceived_age = response_json["ref_perceived_age"]
+                    log.info(f"[RGP] LLM 응답에서 ref_perceived_age 추출: {ideal_perceived_age}")
                 
                 for key, display, category, _ in _METRIC_META:
                     if key in ref_metric_scores:
