@@ -1044,6 +1044,9 @@ class SkinAnalysisWindow(QMainWindow):
                 proc_args.append(str(json_path))
                 log.debug(f"JSON 파일 경로 전달: {json_path}")
                 self._append_log(f"[DEBUG] JSON 파일 경로 전달: {json_path}")
+                # --llm-scores도 전달 (서브프로세스에서 LLM 점수 표시용)
+                if self.chk_llm_scores.isChecked():
+                    proc_args.append("--llm-scores")
             else:
                 log.debug(f"JSON 파일을 찾을 수 없음: {json_path}")
                 self._append_log(f"[DEBUG] JSON 파일을 찾을 수 없음: {json_path}")
