@@ -439,6 +439,8 @@ class SkinMeasurementCompareDialog(QDialog):
                         report_text += f"  [근거: {metric.reason}]\n"
 
         self.llm_report_text.setText(report_text)
+        # 스크롤을 상단으로 이동
+        self.llm_report_text.verticalScrollBar().setValue(0)
 
         # Report 저장 (엑셀 내보내기 시 항목별 소견 출력용)
         self._last_llm_report_orig = orig_report
