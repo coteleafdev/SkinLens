@@ -1305,7 +1305,9 @@ class LlmSkinReporter:
             dw_cfg                 = sc_cfg.get("dynamic_weighting", {})
             dw_enabled             = dw_cfg.get("enabled", False)
             dw_threshold           = dw_cfg.get("score_difference_threshold", 15.0)
-        except Exception:
+            log.info(f"[RGP] 점수 보정 설정: sc_enabled={sc_enabled}, sc_mode={sc_mode}, a_weight={a_weight}, l_weight={l_weight}, dw_enabled={dw_enabled}")
+        except Exception as e:
+            log.warning(f"[RGP] 점수 보정 설정 로드 실패: {e}")
             sc_enabled, sc_mode    = False, "hybrid"
             a_weight, l_weight     = 0.7, 0.3
             dw_enabled, dw_threshold = False, 15.0
