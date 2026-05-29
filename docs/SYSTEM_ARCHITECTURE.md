@@ -477,11 +477,13 @@ graph TB
 {
   "database": {
     "sqlite": {
-      "path": "execution_history.db"
+      "path": "results/execution_history.db"
     }
   }
 }
 ```
+
+**위치**: `results/` 디렉토리 (기본: `results/execution_history.db`)
 
 **환경 변수**: `EXECUTION_HISTORY_DB`
 

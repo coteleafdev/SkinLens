@@ -209,16 +209,26 @@ SkinLens v1.0/
 │   ├── *.md                    # 마크다운 문서
 │   ├── html/                   # HTML 문서
 │   └── db/                     # DB 문서
-├── runtime/                    # 런타임 파일 (git 제외)
-│   ├── data/                   # 데이터 파일
-│   │   └── db/                 # 데이터베이스 파일
-│   │       ├── execution_history.db
-│   │       ├── skin_analysis.db
-│   │       └── backup/          # 백업 DB
+├── results/                    # 결과 파일 (git 제외)
+│   ├── 이미지명/               # 분석 결과별 폴더
+│   │   ├── 00_input_이미지명.json
+│   │   ├── 00_input_이미지명.png
+│   │   └── 01_restored_이미지명.png
+│   ├── skin_analysis.db        # 통합 DB (서버 + 로컬)
+│   ├── execution_history.db    # 실행 기록 DB
+│   ├── api_jobs/               # 서버 API 작업
+│   │   └── {job_id}/
+│   ├── exports/                # 엑셀/CSV 내보내기
+│   ├── images/                 # 입력 이미지 저장소
 │   ├── logs/                   # 로그 파일
-│   ├── temp/                   # 임시 파일
-│   ├── results/                # 결과 파일
+│   │   ├── app/
+│   │   ├── server/
+│   │   ├── llm/
+│   │   └── error/
 │   └── weights/                # 모델 가중치
+│       ├── restoration/
+│       ├── detection/
+│       └── analysis/
 ├── scripts/                    # 유틸리티 스크립트
 │   ├── batch_report.py         # 배치 리포트
 │   ├── bp_optimizer.py         # 백포인트 최적화
@@ -587,9 +597,9 @@ chmod +x scripts/deploy/deploy.sh
 ### 제외되는 파일/디렉토리
 
 - **민감 정보**: `config/config.secrets.json`, `*.secrets.json`, `.env`, `.env.*`
-- **모델 가중치**: `RestoreFormerPlusPlus/weights/`, `CodeFormer/weights/`, `*.ckpt`, `*.pth`
-- **외부 모델**: `models/`
-- **런타임 생성**: `results/`, `data/db/`, `logs/`, `temp/`, `backup/`, `*.db`, `*.xlsx`, `__pycache__/`, `*.pyc`
+- **모델 가중치**: `external/RestoreFormerPlusPlus/weights/`, `external/CodeFormer/weights/`, `results/weights/`, `*.ckpt`, `*.pth`
+- **외부 모델**: `external/`
+- **런타임 생성**: `results/`, `backup/`, `*.db`, `__pycache__/`, `*.pyc`
 - **Python 패키지**: `*.egg-info/`, `dist/`, `build/`, `.venv/`
 
 ### 배포 후 설정
@@ -598,7 +608,7 @@ chmod +x scripts/deploy/deploy.sh
 
 1. **비밀 설정 파일 생성**: `config/config.secrets.json` 복사 및 실제 값 입력
 2. **환경 변수 설정**: `.env` 파일 생성 또는 시스템 환경 변수 설정
-3. **모델 가중치 다운로드**: `models/` 디렉토리에 필요한 가중치 파일 배치
+3. **모델 가중치 다운로드**: `results/weights/` 디렉토리에 필요한 가중치 파일 배치
 
 ## 라이선스
 
