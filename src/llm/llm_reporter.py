@@ -705,6 +705,9 @@ class LlmSkinReporter:
             # RGP 모드에서도 복원 이미지 점수를 생성하여 테이블에 표시
             # LLM 응답에서 ref_metric_scores를 추출하여 ref_metric_opinions 생성
             ref_metric_opinions = []
+            # ref_overall_score와 ref_perceived_age 초기화 (파라미터 값 사용)
+            ref_overall_score = ideal_overall_score
+            ref_perceived_age = ideal_perceived_age
             
             # orig_report의 raw_response에서 ref_metric_scores 추출
             try:
@@ -713,11 +716,11 @@ class LlmSkinReporter:
                 ref_metric_reasons = response_json.get("ref_metric_reasons", {})
                 # LLM 응답에서 ref_overall_score 추출 (provide_scores=False일 때 필요)
                 if "ref_overall_score" in response_json:
-                    ideal_overall_score = response_json["ref_overall_score"]
-                    log.info(f"[RGP] LLM 응답에서 ref_overall_score 추출: {ideal_overall_score}")
+                    ref_overall_score = response_json["ref_overall_score"]
+                    log.info(f"[RGP] LLM 응답에서 ref_overall_score 추출: {ref_overall_score}")
                 if "ref_perceived_age" in response_json:
-                    ideal_perceived_age = response_json["ref_perceived_age"]
-                    log.info(f"[RGP] LLM 응답에서 ref_perceived_age 추출: {ideal_perceived_age}")
+                    ref_perceived_age = response_json["ref_perceived_age"]
+                    log.info(f"[RGP] LLM 응답에서 ref_perceived_age 추출: {ref_perceived_age}")
                 
                 for key, display, category, _ in _METRIC_META:
                     if key in ref_metric_scores:
@@ -742,8 +745,8 @@ class LlmSkinReporter:
                 ref_metric_opinions = []
             
             ideal_report = SkinLLMReport(
-                overall_score=ideal_overall_score,
-                perceived_age=ideal_perceived_age,
+                overall_score=ref_overall_score,
+                perceived_age=ref_perceived_age,
                 metric_opinions=ref_metric_opinions,
                 overall_opinion="[reference_guided 모드: 복원 보고서는 별도 생성하지 않음]",
                 recommendation="",
@@ -1241,6 +1244,10 @@ class LlmSkinReporter:
         if not response_text or response_text.strip() == "":
             raise ValueError("LLM 응답이 비어있습니다.")
         
+        # 내부 변수명 일치: ideal -> ref
+        ref_overall_score = ideal_overall_score
+        ref_perceived_age = ideal_perceived_age
+        
         # 마크다운 코드 블록 제거 (```json ... ```)
         if response_text.startswith("```"):
             lines = response_text.split("\n")
@@ -1366,11 +1373,11 @@ class LlmSkinReporter:
             if "orig_overall_score" in response_json:
                 llm_orig_overall_score = response_json["orig_overall_score"]
             if "ref_overall_score" in response_json:
-                llm_ideal_overall_score = response_json["ref_overall_score"]
+                llm_ref_overall_score = response_json["ref_overall_score"]
             if "orig_perceived_age" in response_json:
                 orig_perceived_age = response_json["orig_perceived_age"]
             if "ref_perceived_age" in response_json:
-                ideal_perceived_age = response_json["ref_perceived_age"]
+                ref_perceived_age = response_json["ref_perceived_age"]
             
             # 점수 보정 적용
             try:
@@ -1399,7 +1406,7 @@ class LlmSkinReporter:
                     
                     # 종합 점수 모니터링
                     _monitor_score_difference(orig_overall_score, llm_orig_overall_score, "종합 점수 (원본)")
-                    _monitor_score_difference(ideal_overall_score, llm_ideal_overall_score, "종합 점수 (복원)")
+                    _monitor_score_difference(ref_overall_score, llm_ref_overall_score, "종합 점수 (복원)")
                     
                     # 종합 점수 보정
                     orig_overall_score = _apply_score_correction(
@@ -1407,8 +1414,8 @@ class LlmSkinReporter:
                         correction_mode, analyzer_weight, llm_weight,
                         dynamic_weighting_enabled, score_difference_threshold
                     )
-                    ideal_overall_score = _apply_score_correction(
-                        ideal_overall_score, llm_ideal_overall_score,
+                    ref_overall_score = _apply_score_correction(
+                        ref_overall_score, llm_ref_overall_score,
                         correction_mode, analyzer_weight, llm_weight,
                         dynamic_weighting_enabled, score_difference_threshold
                     )
@@ -1480,7 +1487,7 @@ class LlmSkinReporter:
                     
                     # 종합 점수 모니터링
                     _monitor_score_difference(orig_overall_score, llm_orig_overall_score, "종합 점수 (원본)")
-                    _monitor_score_difference(ideal_overall_score, llm_ideal_overall_score, "종합 점수 (복원)")
+                    _monitor_score_difference(ref_overall_score, llm_ref_overall_score, "종합 점수 (복원)")
                     
                     # 종합 점수 보정 (config 가중치 사용)
                     orig_overall_score = _apply_score_correction(
@@ -1488,8 +1495,8 @@ class LlmSkinReporter:
                         "hybrid", analyzer_weight, llm_weight,
                         dynamic_weighting_enabled, score_difference_threshold
                     )
-                    ideal_overall_score = _apply_score_correction(
-                        ideal_overall_score, llm_ideal_overall_score,
+                    ref_overall_score = _apply_score_correction(
+                        ref_overall_score, llm_ref_overall_score,
                         "hybrid", analyzer_weight, llm_weight,
                         dynamic_weighting_enabled, score_difference_threshold
                     )
@@ -1554,7 +1561,7 @@ class LlmSkinReporter:
                 else:
                     # 점수 보정 비활성화: 점수 차이만 모니터링
                     _monitor_score_difference(orig_overall_score, llm_orig_overall_score, "종합 점수 (원본)")
-                    _monitor_score_difference(ideal_overall_score, llm_ideal_overall_score, "종합 점수 (복원)")
+                    _monitor_score_difference(ref_overall_score, llm_ref_overall_score, "종합 점수 (복원)")
                     
                     if anomaly_detection_enabled:
                         log.info(f"[오탐 방지] 활성화: diff_comparison_threshold={diff_comparison_threshold}")
@@ -1598,11 +1605,11 @@ class LlmSkinReporter:
                     
                     # LLM 점수 사용
                     orig_overall_score = llm_orig_overall_score
-                    ideal_overall_score = llm_ideal_overall_score
+                    ref_overall_score = llm_ref_overall_score
             except Exception as e:
                 log.warning(f"[점수 보정] 적용 실패, LLM 점수 사용: {e}")
                 orig_overall_score = llm_orig_overall_score
-                ideal_overall_score = llm_ideal_overall_score
+                ref_overall_score = llm_ref_overall_score
             
             orig_report = SkinLLMReport(
                 overall_score=orig_overall_score,
@@ -1616,8 +1623,8 @@ class LlmSkinReporter:
             )
 
             ideal_report = SkinLLMReport(
-                overall_score=ideal_overall_score,
-                perceived_age=ideal_perceived_age,
+                overall_score=ref_overall_score,
+                perceived_age=ref_perceived_age,
                 metric_opinions=ref_metric_opinions,
                 overall_opinion=ideal_overall_opinion,
                 recommendation=recommendation,
