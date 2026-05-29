@@ -980,7 +980,7 @@ class LlmSkinReporter:
 
         응답 JSON 필드:
           reference_baseline   — 복원본 기준선 서술 (카테고리별)
-          correction_reasons   — 항목별 보정 이유
+          score_reasons        — 항목별 점수 산출 이유
           orig_metric_scores   — 18개 항목 최종 점수
           orig_metric_opinions — 18개 항목 소견
           orig_overall_score   — 종합 점수
@@ -1075,7 +1075,7 @@ class LlmSkinReporter:
         # ── 항목 점수 파싱 ────────────────────────────────────────
         llm_scores   = rj.get("orig_metric_scores",   {})
         llm_opinions = rj.get("orig_metric_opinions",  {})
-        corrections  = rj.get("correction_reasons",    {})
+        corrections  = rj.get("score_reasons",         {})
 
         # CV 분석기 점수 보정 설정 로드
         try:

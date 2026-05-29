@@ -582,7 +582,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "톤": "복원본에서 관찰된 톤 기준선 서술",
     "피부 타입": "복원본에서 관찰된 피부 타입 기준선 서술"
   },
-  "correction_reasons": {
+  "score_reasons": {
     "melasma_score":                       "산출 이유 (1~2문장)",
     "freckle_score":                       "산출 이유 (1~2문장)",
     "redness_score":                       "산출 이유 (1~2문장)",

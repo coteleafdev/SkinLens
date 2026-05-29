@@ -306,7 +306,7 @@ _REFERENCE_GUIDED_PROMPT_FALLBACK = """\
 
 원본 이미지에서 Step 1의 구조가 아래 요인에 의해
 가려지거나 과장된 정도를 판단하십시오.
-보정이 적용된 항목과 이유를 `correction_reasons` 필드에 기재하십시오.
+보정이 적용된 항목과 이유를 `score_reasons` 필드에 기재하십시오.
 
 | 오탐 요인 | 설명 |
 |---|---|
@@ -351,7 +351,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "탄력": "복원본에서 관찰된 탄력 기준선 서술",
     "홍조": "복원본에서 관찰된 홍조 기준선 서술"
   }},
-  "correction_reasons": {{
+  "score_reasons": {{
     "melasma_score":                       "보정 이유 (없으면 빈 문자열)",
     "freckle_score":                       "",
     "redness_score":                       "",
