@@ -146,7 +146,7 @@ class SkinMeasurementCompareDialog(QDialog):
 
         legend = QLabel(
             "원본: 점수로직으로 산출한 점수 | "
-            "복원: 복원 이미지로 산출한 점수"
+            "기준: 기준 이미지로 산출한 점수"
         )
         if self._llm_scores:
             legend.setText(
@@ -159,9 +159,9 @@ class SkinMeasurementCompareDialog(QDialog):
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         if self._llm_scores:
-            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "복원 점수", "원본 LLM 측정 점수", "복원 LLM 측정 점수", "차이 (원본/복원)"])
+            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "기준 점수", "원본 LLM 측정 점수", "기준 LLM 측정 점수", "차이 (원본/기준)"])
         else:
-            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "복원 점수", "원본 LLM 측정 점수", "복원 LLM 측정 점수", "차이 (원본/복원)"])
+            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "기준 점수", "원본 LLM 측정 점수", "기준 LLM 측정 점수", "차이 (원본/기준)"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().setVisible(False)
         self.table.setAlternatingRowColors(True)
@@ -190,7 +190,7 @@ class SkinMeasurementCompareDialog(QDialog):
                     item_orig.setBackground(QColor(240, 240, 240))
                 self.table.setItem(row, 1, item_orig)
                 
-                # 복원 점수 (없으면 "N/A")
+                # 기준 점수 (없으면 "N/A")
                 if mi.get(key) is not None:
                     item_ideal = QTableWidgetItem(f"{vi:.1f}")
                 else:
@@ -265,7 +265,7 @@ class SkinMeasurementCompareDialog(QDialog):
             QTimer.singleShot(100, self.btn_llm.click)
 
     def _generate_llm_report_dual(self) -> None:
-        """LLM API를 사용하여 원본+복원 이미지를 한번에 분석하여 소견을 생성합니다."""
+        """LLM API를 사용하여 원본+기준 이미지를 한번에 분석하여 소견을 생성합니다."""
         self.llm_report_text.setText("LLM 소견 생성 중... 잠시 기다려주세요.")
         self.btn_llm.setEnabled(False)  # 버튼 비활성화
 
@@ -389,7 +389,7 @@ class SkinMeasurementCompareDialog(QDialog):
 【원본 이미지 종합 소견】
 {orig_report.overall_opinion}
 
-【복원 이미지 종합 소견】
+【기준 이미지 종합 소견】
 {ideal_report.overall_opinion}
 
 【관리 권고사항】
@@ -418,8 +418,8 @@ class SkinMeasurementCompareDialog(QDialog):
                     if metric.reason:
                         report_text += f"  [근거: {metric.reason}]\n"
 
-        # 복원 이미지 항목별 소견 추가 (테이블 순서와 동일하게)
-        report_text += f"\n\n【복원 이미지 {measurement_count}개 항목별 LLM 소견】\n"
+        # 기준 이미지 항목별 소견 추가 (테이블 순서와 동일하게)
+        report_text += f"\n\n【기준 이미지 {measurement_count}개 항목별 LLM 소견】\n"
         
         # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
         ideal_opinions_dict = {metric.key: metric for metric in ideal_report.metric_opinions}
@@ -441,16 +441,16 @@ class SkinMeasurementCompareDialog(QDialog):
 
         # 테이블 헤더 업데이트
         if self._llm_scores:
-            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "복원 점수", "원본 LLM 측정 점수", "복원 LLM 측정 점수", "차이 (원본/복원)"])
+            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "기준 점수", "원본 LLM 측정 점수", "기준 LLM 측정 점수", "차이 (원본/기준)"])
         else:
-            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "복원 점수", "원본 LLM 측정 점수", "복원 LLM 측정 점수", "차이 (원본/복원)"])
+            self.table.setHorizontalHeaderLabels(["항목명", "원본 점수", "기준 점수", "원본 LLM 측정 점수", "기준 LLM 측정 점수", "차이 (원본/기준)"])
 
-        # 원본/복원 이미지 개별 항목 점수 업데이트 (동시에)
+        # 원본/기준 이미지 개별 항목 점수 업데이트 (동시에)
         self._update_table_with_llm_scores(orig_report.metric_opinions, ideal_report.metric_opinions)
 
-        # 원본/복원 이미지 LLM 피부건강지수 표시 (동시에)
-        # 복원 이미지의 실제 LLM 측정 점수가 있는 경우에만 표시
-        # reference_guided 모드에서는 복원 LLM 점수가 없으므로 내부 점수 표시 안 함
+        # 원본/기준 이미지 LLM 피부건강지수 표시 (동시에)
+        # 기준 이미지의 실제 LLM 측정 점수가 있는 경우에만 표시
+        # reference_guided 모드에서는 기준 LLM 점수가 없으므로 내부 점수 표시 안 함
         ideal_has_llm = (
             hasattr(ideal_report, 'metric_opinions') and 
             len(ideal_report.metric_opinions) > 0
@@ -476,18 +476,18 @@ class SkinMeasurementCompareDialog(QDialog):
         orig_metric_opinions: List[Any],
         ideal_metric_opinions: List[Any]
     ) -> None:
-        """테이블에 LLM 복원 점수를 업데이트합니다 (원본+복원 동시).
+        """테이블에 LLM 기준 점수를 업데이트합니다 (원본+복원 동시).
 
         Args:
             orig_metric_opinions: 원본 이미지 LLM 소견에 포함된 항목별 점수
-            ideal_metric_opinions: 복원 이미지 LLM 소견에 포함된 항목별 점수
+            ideal_metric_opinions: 기준 이미지 LLM 소견에 포함된 항목별 점수
         """
         # 원본 점수 매핑 생성
         orig_scores = {}
         for metric in orig_metric_opinions:
             orig_scores[metric.display_name] = metric.score
         
-        # 복원 점수 매핑 생성
+        # 기준 점수 매핑 생성
         ideal_scores = {}
         for metric in ideal_metric_opinions:
             ideal_scores[metric.display_name] = metric.score
@@ -512,7 +512,7 @@ class SkinMeasurementCompareDialog(QDialog):
                     except (ValueError, AttributeError) as e:
                         log.debug("원본 기본 점수 파싱 실패: %s", e)
 
-            # 복원 점수 가져오기
+            # 기준 점수 가져오기
             ideal_base_item = self.table.item(r, 2)
             ideal_base_score = None
             if ideal_base_item:
@@ -559,13 +559,13 @@ class SkinMeasurementCompareDialog(QDialog):
                 diff_item.setForeground(QColor(150, 150, 150))
     
     def _update_table_with_llm_overall_both(self, orig_overall_score: float, ideal_overall_score: float) -> None:
-        """원본/복원 이미지의 LLM 피부건강지수를 라벨에 표시합니다.
+        """원본/기준 이미지의 LLM 피부건강지수를 라벨에 표시합니다.
 
         Args:
             orig_overall_score: 원본 이미지 LLM 피부건강지수
-            ideal_overall_score: 복원 이미지 LLM 피부건강지수
+            ideal_overall_score: 기준 이미지 LLM 피부건강지수
         """
-        self.llm_overall_label.setText(f"LLM 피부건강지수 - 원본: {orig_overall_score:.1f}점 / 복원: {ideal_overall_score:.1f}점")
+        self.llm_overall_label.setText(f"LLM 피부건강지수 - 원본: {orig_overall_score:.1f}점 / 기준: {ideal_overall_score:.1f}점")
 
         # 테이블에는 피부건강지수를 표시하지 않음 (항목별 점수만 표시)
         # 피부건강지수는 라벨에만 표시하여 항목별 점수와 혼동 방지
@@ -621,7 +621,7 @@ class SkinMeasurementCompareDialog(QDialog):
             def append_with_font_local(values: List[Any], font: Optional[Font] = None) -> int:
                 return append_with_font(ws, values, font)
 
-            # ── 원본/복원 이미지 추가 (제일 위에 배치) ─────────────────
+            # ── 원본/기준 이미지 추가 (제일 위에 배치) ─────────────────
             try:
                 # 원본 이미지
                 img_orig = OpenpyxlImage(str(self._orig_path))
@@ -630,7 +630,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 img_orig.anchor = "A1"
                 ws.add_image(img_orig)
                 
-                # 복원 이미지
+                # 기준 이미지
                 img_ideal = OpenpyxlImage(str(self._ideal_path))
                 img_ideal.width = 200
                 img_ideal.height = 200
@@ -640,7 +640,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 # 이미지 라벨
                 ws.cell(row=1, column=2, value="원본")
                 ws.cell(row=1, column=2).font = bold_font
-                ws.cell(row=1, column=6, value="복원")
+                ws.cell(row=1, column=6, value="기준")
                 ws.cell(row=1, column=6).font = bold_font
                 
                 # 이미지 아래에 빈 행 추가 (이미지 공간 확보)
@@ -679,16 +679,16 @@ class SkinMeasurementCompareDialog(QDialog):
 
             # 메타 정보 행 추가
             append_with_font_local(["원본 이미지", str(self._orig_path)], bold_font)
-            append_with_font_local(["복원 이미지", str(self._ideal_path)], bold_font)
+            append_with_font_local(["기준 이미지", str(self._ideal_path)], bold_font)
             append_with_font_local(["원본 피부건강지수", f"{orig_overall:.1f}"], bold_font)
-            append_with_font_local(["복원 피부건강지수", f"{ideal_overall:.1f}"], bold_font)
+            append_with_font_local(["기준 피부건강지수", f"{ideal_overall:.1f}"], bold_font)
             if orig_llm_overall is not None:
                 append_with_font_local(["원본 LLM 피부건강지수", f"{orig_llm_overall:.1f}"], bold_font)
-            # 복원 LLM 측정이 없으면 '-' 표시
+            # 기준 LLM 측정이 없으면 '-' 표시
             if ideal_has_llm and ideal_llm_overall is not None:
-                append_with_font_local(["복원 LLM 피부건강지수", f"{ideal_llm_overall:.1f}"], bold_font)
+                append_with_font_local(["기준 LLM 피부건강지수", f"{ideal_llm_overall:.1f}"], bold_font)
             else:
-                append_with_font_local(["복원 LLM 피부건강지수", "-"], bold_font)
+                append_with_font_local(["기준 LLM 피부건강지수", "-"], bold_font)
             # 엄격한 평가 모드 표시
             try:
                 from src.utils.config import load_config as _load_config
@@ -746,13 +746,13 @@ class SkinMeasurementCompareDialog(QDialog):
                                 append_with_font_local([f"[근거: {metric.reason}"], small_font)
                             append_with_font_local([])  # 빈 행
 
-            # reference_guided 모드에서는 복원 이미지 소견 제외
+            # reference_guided 모드에서는 기준 이미지 소견 제외
             if self._last_llm_report_ideal and scoring_mode != "reference_guided":
-                append_with_font_local(["복원 이미지 종합 소견"], bold_font)
+                append_with_font_local(["기준 이미지 종합 소견"], bold_font)
                 append_with_font_local([self._sanitize_cell_text(self._last_llm_report_ideal.overall_opinion)], small_font)
                 append_with_font_local([])  # 빈 행
 
-                append_with_font_local(["복원 이미지 항목별 소견"], bold_font)
+                append_with_font_local(["기준 이미지 항목별 소견"], bold_font)
                 # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
                 ideal_opinions_dict = {metric.key: metric for metric in self._last_llm_report_ideal.metric_opinions}
                 for cat_name, keys in get_measurement_categories():

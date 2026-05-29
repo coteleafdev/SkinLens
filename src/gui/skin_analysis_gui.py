@@ -168,8 +168,8 @@ def _show_double_image_preview_dialog(
     parent: Optional[QWidget],
     paths: tuple[Optional[Path], Optional[Path]],
 ) -> None:
-    """원본·복원 두 칸에 해당하는 이미지를 한 창에 나란히 확대."""
-    titles = ("원본", "복원")
+    """원본·기준 두 칸에 해당하는 이미지를 한 창에 나란히 확대."""
+    titles = ("원본", "기준")
     if not any(p is not None and p.is_file() for p in paths):
         QMessageBox.information(parent, "미리보기", "표시할 이미지가 없습니다.")
         return
@@ -569,10 +569,10 @@ class SkinAnalysisWindow(QMainWindow):
             "켜면 복원(RF++/CF) 후 분석 점수 경향에 맞춰 CodeFormer "
             "fidelity·후처리(모공/톤/주름/트러블)를 가산합니다."
         )
-        self.chk_score_safety_net = QCheckBox("점수 안전장치 (복원 점수 < 원본 점수 시 조정)")
+        self.chk_score_safety_net = QCheckBox("점수 안전장치 (기준 점수 < 원본 점수 시 조정)")
         self.chk_score_safety_net.setChecked(gui_defaults.get("score_safety_net", True))
         self.chk_score_safety_net.setToolTip(
-            "켜면 복원이미지 점수가 원본보다 1점 미만일 때 가장 가중치가 높은 항목 점수를 조정하여 피부건강지수가 1점 오르도록 함. "
+            "켜면 기준이미지 점수가 원본보다 1점 미만일 때 가장 가중치가 높은 항목 점수를 조정하여 피부건강지수가 1점 오르도록 함. "
             "기본 켬, 끄려면 --no-score-safety-net"
         )
 
@@ -634,7 +634,7 @@ class SkinAnalysisWindow(QMainWindow):
         btn_prev.clicked.connect(self._refresh_previews)
         btn_all = QPushButton("크게보기")
         btn_all.setToolTip(
-            "원본·복원 이미지를 한 창에 나란히 크게 표시합니다. "
+            "원본·기준 이미지를 한 창에 나란히 크게 표시합니다. "
             "각 썸네일을 클릭해도 개별 확대가 됩니다."
         )
         btn_all.clicked.connect(self._show_all_previews_large)
@@ -982,10 +982,10 @@ class SkinAnalysisWindow(QMainWindow):
             try:
                 orig = Path(self.edit_input.text().strip()) if not self.chk_text2img.isChecked() else None
                 if orig and orig.is_file():
-                    # 산출 폴더에서 복원 이미지 찾기
+                    # 산출 폴더에서 기준 이미지 찾기
                     out_dir = Path(self.edit_out.text().strip())
                     stem = orig.stem
-                    # 복원 이미지 경로 우선순위 (skin_measurement_chart_dialog과 동일)
+                    # 기준 이미지 경로 우선순위 (skin_measurement_chart_dialog과 동일)
                     ideal_candidates = [
                         out_dir / f"01_restored_{stem}.png",  # RESTORE_ONLY 모드 기본
                         out_dir / f"00_restored_{stem}.png",
@@ -1002,7 +1002,7 @@ class SkinAnalysisWindow(QMainWindow):
                         # 별도 프로세스로 안전하게 실행 (프로세스 격리)
                         self._launch_compare_subprocess(orig, ideal)
                     else:
-                        self._append_log("[경고] 복원 이미지를 찾을 수 없습니다.")
+                        self._append_log("[경고] 기준 이미지를 찾을 수 없습니다.")
             except Exception as e:
                 self._append_log(f"[경고] 측정항목 비교 다이얼로그 표시 실패: {e}")
 

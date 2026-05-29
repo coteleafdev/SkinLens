@@ -378,7 +378,7 @@ def _cli_body(args) -> int:
                             from src.gui.analyzer_compare_gui import analyze_compare_triple
                             o, i1, i2 = analyze_compare_triple(Path(init_resolved), final_p, final_p)
 
-                        # JSON 출력: 원본이미지, 원본점수, 복원이미지, 복원점수 (raw 점수 제외)
+                        # JSON 출력: 원본이미지, 원본점수, 기준이미지, 기준점수 (raw 점수 제외)
                         # measurements에서 raw 점수 필터링
                         def filter_measurements(measurements):
                             return {k: v for k, v in measurements.items() if not k.endswith("_raw")}
@@ -508,7 +508,7 @@ def _cli_body(args) -> int:
                         original_perceived_age = o.get("perceived_age", 0)
                         restored_perceived_age = i1.get("perceived_age", 0)
 
-                        # LLM API 호출 (원본이미지와 복원이미지만 제공)
+                        # LLM API 호출 (원본이미지와 기준이미지만 제공)
                         llm_orig_result = None
                         llm_ideal_result = None
                         try:
@@ -957,7 +957,7 @@ def _cli() -> int:
         action=argparse.BooleanOptionalAction,
         default=True,
         help=(
-            "켜면 복원이미지 점수가 원본보다 1점 미만일 때 가장 가중치가 높은 항목 점수를 조정하여 종합점수가 1점 오르도록 함. "
+            "켜면 기준이미지 점수가 원본보다 1점 미만일 때 가장 가중치가 높은 항목 점수를 조정하여 종합점수가 1점 오르도록 함. "
             "기본 켜짐. 끄려면 --no-score-safety-net"
         ),
     )
