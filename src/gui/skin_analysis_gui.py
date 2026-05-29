@@ -1031,15 +1031,11 @@ class SkinAnalysisWindow(QMainWindow):
                 str(orig.resolve()),
                 str(ideal.resolve())
             ]
-            # LLM 점수 제공 옵션 전달 (기본값: 미제공, 체크 시 제공)
-            chk_state = self.chk_llm_scores.isChecked()
-            log.debug("chk_llm_scores.isChecked() = %s", chk_state)
-            self._append_log(f"[DEBUG] LLM 점수 제공 체크박스 상태: {chk_state}")
-            if chk_state:
-                proc_args.append("--llm-scores")  # 내부 측정 점수 제공
-                log.debug("--llm-scores 옵션 추가됨 (내부 측정 점수 제공)")
-                self._append_log("[DEBUG] --llm-scores 옵션 추가됨 (내부 측정 점수 제공)")
-            # else: 기본값이 점수 미제공이므로 옵션 미전달
+            # 비교 다이얼로그 실행 시 자동으로 --llm-scores 활성화
+            # 메인 프로세스의 LLM 점수를 재사용하여 중복 API 호출 방지
+            proc_args.append("--llm-scores")  # 내부 측정 점수 제공
+            log.debug("--llm-scores 옵션 자동 추가됨 (중복 LLM 호출 방지)")
+            self._append_log("[DEBUG] --llm-scores 옵션 자동 추가됨 (중복 LLM 호출 방지)")
             
             log.debug("proc_args = %s", proc_args)
             self._append_log(f"[DEBUG] 실행 인자: {proc_args}")
