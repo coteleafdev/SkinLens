@@ -190,9 +190,14 @@ def _build_score_criteria_section() -> str:
 
         lines.append("")
 
-        # 항목별 구체적 점수 기준 추가
-        if detailed_criteria:
+        # 엄격한 평가 모드 확인
+        strict_mode = criteria.get("엄격한 평가 모드", {}).get("enabled", False)
+
+        # 항목별 구체적 점수 기준 추가 (엄격한 평가 모드가 활성화된 경우)
+        if strict_mode and detailed_criteria:
             lines.append("### 항목별 구체적 점수 기준")
+            lines.append("")
+            lines.append("**참고:** 엄격한 평가 모드가 활성화되어 있습니다. 모든 카테고리에 엄격한 기준이 적용됩니다.")
             lines.append("")
 
             for category_name, category_data in detailed_criteria.items():
