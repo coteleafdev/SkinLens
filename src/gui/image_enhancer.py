@@ -349,6 +349,20 @@ def _cli_body(args) -> int:
                         f"(stem={r.output_stem!r}, out_dir={out_dir.resolve()})"
                     )
                 else:
+                    # 이미지별 폴더로 파일 이동
+                    image_folder = out_dir / r.output_stem
+                    image_folder.mkdir(parents=True, exist_ok=True)
+                    
+                    # 스테이징된 파일 이동
+                    staged_file = out_dir / f"00_input_{r.output_stem}.png"
+                    if staged_file.exists():
+                        shutil.move(str(staged_file), str(image_folder / staged_file.name))
+                    
+                    # 복원 파일 이동
+                    if final_p.exists():
+                        shutil.move(str(final_p), str(image_folder / final_p.name))
+                        final_p = image_folder / final_p.name  # 경로 업데이트
+
                     try:
                         from src.gui.analyzer_compare_gui import show_restore_score_popup, analyze_compare_triple
                         from src.scoring.skin_scoring import SkinAnalyzer
@@ -783,8 +797,13 @@ def _cli_body(args) -> int:
                                     input_filename = max(staged_files, key=lambda f: f.stat().st_mtime).stem
                             else:
                                 input_filename = Path(init_resolved).stem  # 원본 파일명
-                            json_path = args.out_dir / f"{input_filename}.json"
-                            json_path.parent.mkdir(parents=True, exist_ok=True)
+                            
+                            # 이미지별 폴더 생성 (results/이미지명/)
+                            image_folder = args.out_dir / input_filename.replace("00_input_", "")
+                            image_folder.mkdir(parents=True, exist_ok=True)
+                            
+                            # JSON 저장 (results/이미지명/00_input_이미지명.json)
+                            json_path = image_folder / f"{input_filename}.json"
                             with open(json_path, "w", encoding="utf-8") as f:
                                 f.write(json_output)
                             log.info(f"[완료] JSON 저장 완료: {json_path}")
@@ -875,8 +894,13 @@ def _cli_body(args) -> int:
                         input_filename = max(staged_files, key=lambda f: f.stat().st_mtime).stem
                 else:
                     input_filename = Path(init_resolved).stem if init_resolved else "error"
-                json_path = args.out_dir / f"{input_filename}.json"
-                json_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                # 이미지별 폴더 생성 (results/이미지명/)
+                image_folder = args.out_dir / input_filename.replace("00_input_", "")
+                image_folder.mkdir(parents=True, exist_ok=True)
+                
+                # JSON 저장 (results/이미지명/00_input_이미지명.json)
+                json_path = image_folder / f"{input_filename}.json"
                 with open(json_path, "w", encoding="utf-8") as f:
                     f.write(json_output)
                 print(f"[오류] 오류 JSON 저장: {json_path}", file=sys.stderr, flush=True)

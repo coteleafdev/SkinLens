@@ -30,7 +30,7 @@ class SkinAnalysisDB:
 
     def __init__(
         self,
-        db_path: str = "skin_analysis.db",
+        db_path: str = "results/skin_analysis.db",
         supabase_sync: Optional[bool] = None,
     ):
         """
@@ -39,7 +39,7 @@ class SkinAnalysisDB:
         Parameters
         ----------
         db_path:
-            DB 파일 경로 (기본값: skin_analysis.db).
+            DB 파일 경로 (기본값: results/skin_analysis.db).
         supabase_sync:
             Supabase 동기화 여부. None이면 config.json의 supabase.enabled를 사용.
             기본값은 config.json의 supabase.enabled (기본 true).

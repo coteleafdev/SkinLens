@@ -166,7 +166,7 @@ async def get_incidents(
 ):
     """장애 이벤트 목록 조회"""
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         incidents = db.get_incidents(
             severity=severity,
             status=status,
@@ -183,7 +183,7 @@ async def get_incidents(
 async def get_incident(incident_id: str):
     """특정 장애 이벤트 조회"""
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         incident = db.get_incident(incident_id)
         if not incident:
             raise HTTPException(status_code=404, detail="Incident not found")
@@ -199,7 +199,7 @@ async def get_incident(incident_id: str):
 async def trigger_recovery(incident_id: str, action: RecoveryActionCreate):
     """수동 복구 트리거"""
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         # 장애 확인
         incident = db.get_incident(incident_id)
         if not incident:
@@ -232,7 +232,7 @@ async def trigger_recovery(incident_id: str, action: RecoveryActionCreate):
 async def get_recovery_actions(incident_id: str):
     """복구 작업 목록 조회"""
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         actions = db.get_recovery_actions(incident_id)
         return actions
     except Exception as e:
@@ -244,7 +244,7 @@ async def get_recovery_actions(incident_id: str):
 async def trigger_rollback(action_id: str):
     """롤백 트리거"""
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         # 복구 작업 상태를 rolled_back으로 변경
         success = db.update_recovery_action_status(action_id, "rolled_back")
         if not success:

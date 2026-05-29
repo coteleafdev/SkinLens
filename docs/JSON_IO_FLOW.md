@@ -18,6 +18,29 @@
 10. **DB 저장:** 로컬 SQLite DB와 Supabase DB에 저장
 11. **응답 반환:** 클라이언트에 결과 반환
 
+## 폴더 구조
+
+### 로컬 분석 모드 (GUI/CLI)
+
+```
+results/
+├── 이미지명/
+│   ├── 00_input_이미지명.json      # 분석 결과 JSON
+│   ├── 00_input_이미지명.png      # 스테이징된 입력 이미지
+│   └── 01_restored_이미지명.png   # 복원된 이미지
+├── skin_analysis.db               # 통합 DB (서버 + 로컬)
+└── api_jobs/                      # 서버 API 작업 폴더
+    └── {job_id}/
+        ├── job.json
+        ├── artifacts/
+        └── ...
+```
+
+**특징:**
+- 이미지별로 폴더 분리로 파일 관리 용이
+- 하나의 `skin_analysis.db`로 서버와 로컬 데이터 통합
+- 서버 API 작업은 별도 `api_jobs/` 폴더로 관리
+
 ## 전체 데이터 흐름
 
 ```mermaid

@@ -168,7 +168,7 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(_auto_backup_task())
     
     # 자동 복구 엔진 초기화
-    db = SkinAnalysisDB()
+    db = SkinAnalysisDB(db_path="results/skin_analysis.db")
     alert_system = AlertSystem()
     recovery_engine = RecoveryEngine(db, alert_system)
     health_monitor = HealthMonitor(recovery_engine)

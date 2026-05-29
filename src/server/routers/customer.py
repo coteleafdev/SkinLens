@@ -192,7 +192,7 @@ async def get_my_preferences(
     user_role = current_customer.get("role", "customer")
     
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         preferences = db.get_user_preferences(customer_id)
         if preferences is None:
             # 기본 설정 반환
@@ -225,7 +225,7 @@ async def set_my_language(
         raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
     
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         db.set_user_language(customer_id, language)
         return {"message": "Language updated successfully", "language": language}
     except Exception as e:
@@ -246,7 +246,7 @@ async def set_my_timezone(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB()
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         db.set_user_timezone(customer_id, timezone)
         return {"message": "Timezone updated successfully", "timezone": timezone}
     except Exception as e:
