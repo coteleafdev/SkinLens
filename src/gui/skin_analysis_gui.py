@@ -1031,11 +1031,22 @@ class SkinAnalysisWindow(QMainWindow):
                 str(orig.resolve()),
                 str(ideal.resolve())
             ]
-            # 비교 다이얼로그 실행 시 자동으로 --llm-scores 활성화
-            # 메인 프로세스의 LLM 점수를 재사용하여 중복 API 호출 방지
-            proc_args.append("--llm-scores")  # 내부 측정 점수 제공
-            log.debug("--llm-scores 옵션 자동 추가됨 (중복 LLM 호출 방지)")
-            self._append_log("[DEBUG] --llm-scores 옵션 자동 추가됨 (중복 LLM 호출 방지)")
+            # JSON 파일 경로 찾기 (메인 프로세스에서 저장된 LLM 결과)
+            json_path = None
+            staged_files = list(ideal.parent.glob("00_input_*.png"))
+            if staged_files:
+                input_filename = staged_files[0].stem
+            else:
+                input_filename = orig.stem
+            json_path = ideal.parent / f"{input_filename}.json"
+            if json_path.exists():
+                proc_args.append("--llm-json")
+                proc_args.append(str(json_path))
+                log.debug(f"JSON 파일 경로 전달: {json_path}")
+                self._append_log(f"[DEBUG] JSON 파일 경로 전달: {json_path}")
+            else:
+                log.debug(f"JSON 파일을 찾을 수 없음: {json_path}")
+                self._append_log(f"[DEBUG] JSON 파일을 찾을 수 없음: {json_path}")
             
             log.debug("proc_args = %s", proc_args)
             self._append_log(f"[DEBUG] 실행 인자: {proc_args}")
