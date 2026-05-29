@@ -844,6 +844,19 @@ def _cli_body(args) -> int:
                 print(f"[오류] 오류 JSON 저장: {args.output_json}", file=sys.stderr, flush=True)
             else:
                 print(json_output, flush=True)
+            
+            # save_json 옵션이 있으면 out-dir에도 저장
+            if args.save_json:
+                staged_files = list(args.out_dir.glob("00_input_*.png"))
+                if staged_files:
+                    input_filename = staged_files[0].stem
+                else:
+                    input_filename = Path(init_resolved).stem if init_resolved else "error"
+                json_path = args.out_dir / f"{input_filename}.json"
+                json_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(json_path, "w", encoding="utf-8") as f:
+                    f.write(json_output)
+                print(f"[오류] 오류 JSON 저장: {json_path}", file=sys.stderr, flush=True)
             return 1
 
     # 전체 처리 시간 출력
