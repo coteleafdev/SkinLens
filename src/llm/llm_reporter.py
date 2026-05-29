@@ -137,16 +137,39 @@ def _monitor_score_difference(
             f"[점수 차이] {metric_name}: 심각한 차이 발생 "
             f"(자체={analyzer_score:.1f}, LLM={llm_score:.1f}, 차이={score_diff:.1f})"
         )
-    elif score_diff >= warning_threshold:
-        log.warning(
-            f"[점수 차이] {metric_name}: 큰 차이 발생 "
-            f"(자체={analyzer_score:.1f}, LLM={llm_score:.1f}, 차이={score_diff:.1f})"
-        )
-    else:
-        log.debug(
-            f"[점수 차이] {metric_name}: 정상 범위 "
-            f"(자체={analyzer_score:.1f}, LLM={llm_score:.1f}, 차이={score_diff:.1f})"
-        )
+
+
+def _is_response_truncated(response_text: str) -> bool:
+    """응답이 짤렸는지 확인
+    
+    Args:
+        response_text: LLM 응답 텍스트
+    
+    Returns:
+        bool: 응답이 짤렸으면 True
+    """
+    if not response_text:
+        return True
+    
+    # 마크다운 코드 블록 제거
+    if response_text.startswith("```"):
+        lines = response_text.split("\n")
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        response_text = "\n".join(lines).strip()
+    
+    # JSON이 중괄호로 닫히지 않은 경우
+    if not response_text.strip().endswith("}"):
+        return True
+    
+    # 따옴표 균형이 맞지 않는 경우
+    quote_count = response_text.count('"')
+    if quote_count % 2 != 0:
+        return True
+    
+    return False
 
 
 class LlmSkinReporter:
@@ -352,20 +375,33 @@ class LlmSkinReporter:
             raise FileNotFoundError(f"이미지 파일을 찾을 수 없습니다: {image_path}")
 
         # LLM API 호출 및 JSON 파싱 재시도
-        for attempt in range(self.max_retries + 1):
+        current_max_tokens = self.max_output_tokens_single
+        max_token_increase_retries = 2  # 토큰 증가 재시도 횟수
+        
+        for attempt in range(self.max_retries + 1 + max_token_increase_retries):
             try:
                 if self.progress_callback:
-                    self.progress_callback(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1})")
+                    self.progress_callback(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1 + max_token_increase_retries})")
                 else:
-                    log.info(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1})")
+                    log.info(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1 + max_token_increase_retries}, max_tokens={current_max_tokens})")
 
                 # LLM API 호출
                 response_text: str = self._call_llm(
                     system_prompt,
                     user_prompt,
                     [image_path],
-                    max_output_tokens=self.max_output_tokens_single,
+                    max_output_tokens=current_max_tokens,
                 )
+
+                # 응답 완전성 검사
+                if _is_response_truncated(response_text):
+                    if attempt < self.max_retries + max_token_increase_retries:
+                        log.warning("[LLM] 응답이 짤린 것으로 감지됨. max_tokens 증가 후 재요청")
+                        current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
+                        time.sleep(self.retry_delay)
+                        continue
+                    else:
+                        log.error("[LLM] 응답이 짤린 상태로 최대 재시도 도달")
 
                 # 응답 파싱
                 report: SkinLLMReport = self._parse_single_response(
@@ -379,13 +415,18 @@ class LlmSkinReporter:
                 return report
 
             except (json.JSONDecodeError, ValueError) as e:
+                # 응답이 짤렸는지 확인
+                if _is_response_truncated(response_text):
+                    if attempt < self.max_retries + max_token_increase_retries:
+                        log.warning("[LLM] JSON 파싱 실패 및 응답 짤림 감지. max_tokens 증가 후 재요청")
+                        current_max_tokens = int(current_max_tokens * 1.5)
+                        time.sleep(self.retry_delay)
+                        continue
+                
                 # JSON 파싱 오류는 재시도
                 if attempt < self.max_retries:
                     log.warning(f"[LLM] JSON 파싱 실패 (시도 {attempt + 1}/{self.max_retries + 1}): {e}")
                     log.debug(f"[LLM] 응답 텍스트 (첫 500자): {response_text[:500]}")
-                    # 불완전한 JSON 감지: 마지막 문자가 중괄호나 대괄호로 끝나지 않는 경우
-                    if response_text and not response_text.rstrip().endswith('}'):
-                        log.warning("[LLM] 응답이 불완전해 보입니다 (JSON이 닫히지 않음). 즉시 재시도합니다.")
                     time.sleep(self.retry_delay)
                 else:
                     log.error(f"[LLM] JSON 파싱 최종 실패: {e}")
@@ -534,22 +575,35 @@ class LlmSkinReporter:
 
         # ── API 호출 (재시도 포함) ────────────────────────────────
         # 이미지 순서: [원본, 복원] — 프롬프트에서 "이미지 1=원본, 이미지 2=복원"으로 명시
-        for attempt in range(self.max_retries + 1):
+        current_max_tokens = self.max_output_tokens_dual
+        max_token_increase_retries = 2  # 토큰 증가 재시도 횟수
+        
+        for attempt in range(self.max_retries + 1 + max_token_increase_retries):
             try:
                 if self.progress_callback:
                     self.progress_callback(
                         f"[복원 기반 분석] LLM 소견 생성 중... "
-                        f"(시도 {attempt + 1}/{self.max_retries + 1})"
+                        f"(시도 {attempt + 1}/{self.max_retries + 1 + max_token_increase_retries})"
                     )
                 else:
-                    log.info("[RGP] LLM API 호출 시작")
+                    log.info("[RGP] LLM API 호출 시작 (max_tokens=%d)", current_max_tokens)
 
                 response_text = self._call_llm(
                     system_prompt,
                     user_prompt,
                     [orig_image_path, ideal_image_path],
-                    max_output_tokens=self.max_output_tokens_dual,
+                    max_output_tokens=current_max_tokens,
                 )
+
+                # 응답 완전성 검사
+                if self._is_response_truncated(response_text):
+                    if attempt < self.max_retries + max_token_increase_retries:
+                        log.warning("[RGP] 응답이 짤린 것으로 감지됨. max_tokens 증가 후 재요청")
+                        current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
+                        time.sleep(self.retry_delay)
+                        continue
+                    else:
+                        log.error("[RGP] 응답이 짤린 상태로 최대 재시도 도달")
 
                 report = self._parse_reference_guided_response(
                     response_text,
@@ -562,6 +616,14 @@ class LlmSkinReporter:
                 return report
 
             except (json.JSONDecodeError, ValueError) as e:
+                # 응답이 짤렸는지 확인
+                if self._is_response_truncated(response_text):
+                    if attempt < self.max_retries + max_token_increase_retries:
+                        log.warning("[RGP] JSON 파싱 실패 및 응답 짤림 감지. max_tokens 증가 후 재요청")
+                        current_max_tokens = int(current_max_tokens * 1.5)
+                        time.sleep(self.retry_delay)
+                        continue
+                
                 if attempt < self.max_retries:
                     log.warning("[RGP] JSON 파싱 실패 (시도 %d): %s", attempt + 1, e)
                     time.sleep(self.retry_delay)
@@ -776,20 +838,33 @@ class LlmSkinReporter:
             raise FileNotFoundError(f"복원 이미지 파일을 찾을 수 없습니다: {ideal_image_path}")
         
         # LLM API 호출 및 JSON 파싱 재시도
-        for attempt in range(self.max_retries + 1):
+        current_max_tokens = self.max_output_tokens_dual
+        max_token_increase_retries = 2  # 토큰 증가 재시도 횟수
+        
+        for attempt in range(self.max_retries + 1 + max_token_increase_retries):
             try:
                 if self.progress_callback:
-                    self.progress_callback(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1})")
+                    self.progress_callback(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1 + max_token_increase_retries})")
                 else:
-                    log.info(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1})")
+                    log.info(f"LLM 소견 생성 중... (시도 {attempt + 1}/{self.max_retries + 1 + max_token_increase_retries}, max_tokens={current_max_tokens})")
 
                 # LLM API 호출
                 response_text: str = self._call_llm(
                     system_prompt,
                     user_prompt,
                     [orig_image_path, ideal_image_path],
-                    max_output_tokens=self.max_output_tokens_dual,
+                    max_output_tokens=current_max_tokens,
                 )
+
+                # 응답 완전성 검사
+                if _is_response_truncated(response_text):
+                    if attempt < self.max_retries + max_token_increase_retries:
+                        log.warning("[LLM] 응답이 짤린 것으로 감지됨. max_tokens 증가 후 재요청")
+                        current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
+                        time.sleep(self.retry_delay)
+                        continue
+                    else:
+                        log.error("[LLM] 응답이 짤린 상태로 최대 재시도 도달")
 
                 # 응답 파싱
                 return self._parse_dual_response(
@@ -804,13 +879,18 @@ class LlmSkinReporter:
                 )
 
             except (json.JSONDecodeError, ValueError) as e:
+                # 응답이 짤렸는지 확인
+                if _is_response_truncated(response_text):
+                    if attempt < self.max_retries + max_token_increase_retries:
+                        log.warning("[LLM] JSON 파싱 실패 및 응답 짤림 감지. max_tokens 증가 후 재요청")
+                        current_max_tokens = int(current_max_tokens * 1.5)
+                        time.sleep(self.retry_delay)
+                        continue
+                
                 # JSON 파싱 오류는 재시도
                 if attempt < self.max_retries:
                     log.warning(f"[LLM] JSON 파싱 실패 (시도 {attempt + 1}/{self.max_retries + 1}): {e}")
                     log.debug(f"[LLM] 응답 텍스트 (첫 500자): {response_text[:500]}")
-                    # 불완전한 JSON 감지: 마지막 문자가 중괄호나 대괄호로 끝나지 않는 경우
-                    if response_text and not response_text.rstrip().endswith('}'):
-                        log.warning("[LLM] 응답이 불완전해 보입니다 (JSON이 닫히지 않음). 즉시 재시도합니다.")
                     time.sleep(self.retry_delay)
                 else:
                     log.error(f"[LLM] JSON 파싱 최종 실패: {e}")
