@@ -131,8 +131,8 @@ def show_skin_measurement_compare_dialog(
                                 for m in orig_data.get("metric_opinions", [])
                             ],
                             raw_response=orig_data.get("raw_response", ""),
-                            recommendation=orig_data.get("recommendation", ""),
-                            matched_products=orig_data.get("matched_products", [])
+                            recommendation=gemini_analysis.get("recommendation", ""),
+                            matched_products=gemini_analysis.get("matched_products", [])
                         )
                         
                         ideal_data = gemini_analysis["restored"]
@@ -423,8 +423,8 @@ def show_skin_measurement_compare_dialog(
                                     for m in orig_data.get("metric_opinions", [])
                                 ],
                                 raw_response=orig_data.get("raw_response", ""),
-                                recommendation=orig_data.get("recommendation", ""),
-                                matched_products=orig_data.get("matched_products", [])
+                                recommendation=llm_analysis.get("recommendation", ""),
+                                matched_products=llm_analysis.get("matched_products", [])
                             )
                             ideal_data = llm_analysis["restored"]
                             gemini_ideal_result = SkinLLMReport(
