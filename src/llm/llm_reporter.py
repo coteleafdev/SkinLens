@@ -1110,7 +1110,15 @@ class LlmSkinReporter:
                     pass
             
             if not recovered:
-                raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
+                log.error("[RGP] JSON 복구 실패, 빈 결과 반환")
+                # 빈 결과 반환
+                return SkinLLMReport(
+                    overall_opinion="",
+                    overall_score=0,
+                    perceived_age=0,
+                    metric_opinions=[],
+                    raw_response=response_text
+                )
 
         # ── reference_baseline 존재 여부 확인 ────────────────────
         has_baseline = bool(rj.get("reference_baseline"))

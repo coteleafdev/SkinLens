@@ -160,9 +160,10 @@ def show_skin_measurement_compare_dialog(
             safety_net_applied = result_ideal.get("safety_net_adjusted", False)
             # JSON에서 LLM 결과를 성공적으로 읽었으면 LLM 재호출 방지
             # llm_json_path가 전달되었고 JSON에서 읽었으면 무조건 False로 설정
+            # 빈 결과여도 JSON에서 읽었으면 LLM 재호출 방지 (LLM 호출은 1회만 수행)
             if llm_json_path and llm_json_path.exists() and gemini_orig_result is not None and gemini_ideal_result is not None:
                 llm_provide_scores = False
-                log.debug(f"modal=True: JSON에서 LLM 결과 성공적으로 읽음, llm_provide_scores=False (LLM 재호출 방지)")
+                log.debug(f"modal=True: JSON에서 LLM 결과 읽음, llm_provide_scores=False (LLM 재호출 방지)")
             else:
                 llm_provide_scores = True  # JSON에서 읽지 못했으면 항상 LLM 소견 생성
                 log.debug(f"modal=True: JSON에서 LLM 결과를 읽지 못함, llm_provide_scores=True (LLM 소견 생성)")

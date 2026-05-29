@@ -672,6 +672,7 @@ def _cli_body(args) -> int:
                         }
 
                         # LLM 결과가 있으면 추가 (provide_scores와 관계없이)
+                        # LLM 결과가 없어도 빈 결과를 추가하여 서브프로세스에서 LLM 재호출 방지
                         if llm_orig_result and llm_ideal_result:
                             # 원본 보고서
                             orig_dict = {
