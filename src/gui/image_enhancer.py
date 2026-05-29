@@ -779,13 +779,8 @@ def _cli_body(args) -> int:
                                 print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
                                 proc.setArguments(proc_args)
                                 proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
-                                proc.readyReadStandardOutput.connect(lambda: self._on_compare_stdout(proc))
-                                proc.finished.connect(lambda code, status: self._on_compare_finished(code, status))
-                                self._compare_process = proc
                                 proc.start()
-                                measurement_count = get_measurement_count()
-                                self._append_log(f"[{measurement_count}비교] 서브프로세스 시작: {Path(__file__).name}")
-                                self._append_log(f"[{measurement_count}비교] 인자: {' '.join(proc_args)}")
+                                log.info(f"[진행] 측정항목 비교 서브프로세스 시작: {' '.join(proc_args)}")
                     except Exception as e:
                         print(f"[경고] 점수 분석 실패: {e}", flush=True)
         except Exception as e:
