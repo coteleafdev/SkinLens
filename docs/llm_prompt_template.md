@@ -355,10 +355,10 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
 1. 응답은 반드시 JSON 형식만 출력하십시오. Markdown 코드블록(```) 없이 순수 JSON만 출력.
 2. JSON은 반드시 완전하고 유효해야 합니다. 모든 문자열은 큰따옴표(")로 감싸고, 모든 중괄호와 대괄호를 닫으십시오.
 3. 응답이 중단되지 않도록 모든 필드를 완전히 작성하십시오. 특히 문자열 필드는 반드시 닫는 큰따옴표를 포함해야 합니다.
-4. 각 항목 소견은 2~3문장, 구체적이고 전문적인 한국어로 작성.
+4. 각 항목 소견은 1문장, 구체적이고 전문적인 한국어로 작성.
 5. 점수 10~90 기준: SCORE_CRITERIA 섹션의 점수 기준을 참조하십시오.
 6. 이미지를 직접 참고하여 점수와 이미지 상태가 일치하는 소견을 작성.
-7. 종합 소견은 5~8문장, 전반적 피부 상태 평가와 개선 방향 포함.
+7. 종합 소견은 3~5문장, 전반적 피부 상태 평가와 개선 방향 포함.
 8. 관리 권고사항은 RECOMMENDATION_GUIDELINES 섹션의 가이드라인을 참조하여 작성.
 9. 의학적 진단이 아닌 피부 관리 관점의 소견임을 전제로 작성.
 <!-- SYSTEM_PROMPT_END -->
@@ -434,7 +434,7 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
 - 종합 점수가 낮은 경우(예: 여드름 점수가 낮음), 관련 항목(여드름 후 색소, 염증성 홍조 등)의 소견도 이를 반영하여 작성하시오.
 - 특정 항목 점수가 우수하더라도, 전체 피부 문제(예: 여드름)와 관련이 있다면 그 맥락을 소견에 포함하시오.
 - 예: 여드름 점수가 낮고 주근깨 점수가 높더라도, 실제 이미지에서 여드름이 관찰된다면 주근깨 소견에도 '여드름으로 인한 붉은 자국' 등의 맥락을 반영하시오.
-- 개별 항목 소견은 2~3문장으로 간결하되, 전체 피부 상태와의 연관성을 명확히 하시오.
+- 개별 항목 소견은 1문장으로 간결하되, 전체 피부 상태와의 연관성을 명확히 하시오.
 
 ```json 없이 순수 JSON만 출력:
 {
@@ -479,26 +479,26 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
     "skin_type_score": "점수 근거 (1~2문장)"
   },
   "metric_opinions": {
-    "melasma_score": "소견 텍스트 (2~3문장)",
-    "freckle_score": "소견 텍스트 (2~3문장)",
-    "redness_score": "소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "소견 텍스트 (2~3문장)",
-    "acne_score": "소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "소견 텍스트 (2~3문장)",
-    "pore_size_score": "소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "소견 텍스트 (2~3문장)",
-    "roughness_score": "소견 텍스트 (2~3문장)",
-    "skin_tone_score": "소견 텍스트 (2~3문장)",
-    "dullness_score": "소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "소견 텍스트 (2~3문장)",
-    "skin_type_score": "소견 텍스트 (2~3문장)"
+    "melasma_score": "소견 텍스트 (1문장)",
+    "freckle_score": "소견 텍스트 (1문장)",
+    "redness_score": "소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "소견 텍스트 (1문장)",
+    "acne_score": "소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "소견 텍스트 (1문장)",
+    "pore_size_score": "소견 텍스트 (1문장)",
+    "pore_sagging_score": "소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "소견 텍스트 (1문장)",
+    "roughness_score": "소견 텍스트 (1문장)",
+    "skin_tone_score": "소견 텍스트 (1문장)",
+    "dullness_score": "소견 텍스트 (1문장)",
+    "uneven_tone_score": "소견 텍스트 (1문장)",
+    "jawline_blur_score": "소견 텍스트 (1문장)",
+    "cheek_sagging_score": "소견 텍스트 (1문장)",
+    "skin_type_score": "소견 텍스트 (1문장)"
   },
-  "overall_opinion": "종합 소견 5~8문장",
+  "overall_opinion": "종합 소견 3~5문장",
   "recommendation": "관리 권고사항 (번호 목록 형식)"
 }
 ```
@@ -590,8 +590,8 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 
 ## 소견 작성 가이드라인
 
-- 각 항목 소견은 2~3문장으로 작성하되, Step 2에서 적용한 보정 내용을 반영하십시오.
-- 종합 소견은 5~8문장으로 작성하고, 복원 기준선과 원본 상태의 차이를 서술하십시오.
+- 각 항목 소견은 1문장으로 작성하되, Step 2에서 적용한 보정 내용을 반영하십시오.
+- 종합 소견은 3~5문장으로 작성하고, 복원 기준선과 원본 상태의 차이를 서술하십시오.
 - 소견 작성 시 "고객님" 표현을 사용하십시오.
 - 점수 기준: SCORE_CRITERIA 섹션 참조 (10~90 스케일).
 - **트러블, 색소, 홍조, 모공 점수는 반드시 "항목별 구체적 점수 기준" 섹션의 기준을 따르십시오.**
@@ -693,30 +693,30 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "skin_type_score": 80.0
   },
   "orig_metric_opinions": {
-    "melasma_score": "원본 소견 (Step 2 보정 내용 반영, 2~3문장)",
-    "freckle_score": "원본 소견",
-    "redness_score": "원본 소견",
-    "post_inflammatory_erythema_score": "원본 소견",
-    "acne_score": "원본 소견",
-    "post_acne_pigment_score": "원본 소견",
-    "pore_size_score": "원본 소견",
-    "pore_sagging_score": "원본 소견",
-    "eye_wrinkle_score": "원본 소견",
-    "nasolabial_wrinkle_score": "원본 소견",
-    "fine_deep_wrinkle_score": "원본 소견",
-    "roughness_score": "원본 소견",
-    "skin_tone_score": "원본 소견",
-    "dullness_score": "원본 소견",
-    "uneven_tone_score": "원본 소견",
-    "jawline_blur_score": "원본 소견",
-    "cheek_sagging_score": "원본 소견",
-    "skin_type_score": "원본 소견"
+    "melasma_score": "원본 소견 (Step 2 보정 내용 반영, 1문장)",
+    "freckle_score": "원본 소견 (1문장)",
+    "redness_score": "원본 소견 (1문장)",
+    "post_inflammatory_erythema_score": "원본 소견 (1문장)",
+    "acne_score": "원본 소견 (1문장)",
+    "post_acne_pigment_score": "원본 소견 (1문장)",
+    "pore_size_score": "원본 소견 (1문장)",
+    "pore_sagging_score": "원본 소견 (1문장)",
+    "eye_wrinkle_score": "원본 소견 (1문장)",
+    "nasolabial_wrinkle_score": "원본 소견 (1문장)",
+    "fine_deep_wrinkle_score": "원본 소견 (1문장)",
+    "roughness_score": "원본 소견 (1문장)",
+    "skin_tone_score": "원본 소견 (1문장)",
+    "dullness_score": "원본 소견 (1문장)",
+    "uneven_tone_score": "원본 소견 (1문장)",
+    "jawline_blur_score": "원본 소견 (1문장)",
+    "cheek_sagging_score": "원본 소견 (1문장)",
+    "skin_type_score": "원본 소견 (1문장)"
   },
   "orig_overall_score": 74.5,
   "ref_overall_score": 78.0,
   "orig_perceived_age": 38.0,
   "ref_perceived_age": 36.0,
-  "orig_overall_opinion": "종합 소견 5~8문장 (복원 기준선과 비교하여 원본 상태를 서술)",
+  "orig_overall_opinion": "종합 소견 3~5문장 (복원 기준선과 비교하여 원본 상태를 서술)",
   "recommendation": "관리 권고사항 (번호 목록)"
 }
 <!-- REFERENCE_GUIDED_PROMPT_END -->
@@ -826,7 +826,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 - 종합 소견은 원본과 복원 이미지의 전반적 피부 상태를 비교하여 작성하시오.
 - 관리 권고사항은 복원 이미지의 상태를 기준으로 작성하되, 원본과의 차이를 고려하시오.
 - 소견 작성 시 "고객님" 표현을 사용하십시오.
-- 개별 항목 소견은 2~3문장으로 간결하되, 각 이미지의 특성을 명확히 반영하시오.
+- 개별 항목 소견은 1문장으로 간결하되, 각 이미지의 특성을 명확히 반영하시오.
 - **JSON 출력 시 반드시 모든 문자열을 큰따옴표(")로 감싸고, 모든 중괄호와 대괄호를 닫으십시오. 응답이 중단되지 않도록 모든 필드를 완전히 작성하십시오.**
 
 **중요 지침 - 원본 점수 산출 시 주의사항**:
@@ -920,27 +920,27 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "skin_type_score": "복원 이미지 점수 근거 (1~2문장)"
   },
   "orig_metric_opinions": {
-    "melasma_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "freckle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "redness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "acne_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "pore_size_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "roughness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "skin_tone_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "dullness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "skin_type_score": "원본 이미지 소견 텍스트 (2~3문장)"
+    "melasma_score": "원본 이미지 소견 텍스트 (1문장)",
+    "freckle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "redness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "원본 이미지 소견 텍스트 (1문장)",
+    "acne_score": "원본 이미지 소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "원본 이미지 소견 텍스트 (1문장)",
+    "pore_size_score": "원본 이미지 소견 텍스트 (1문장)",
+    "pore_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "roughness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "skin_tone_score": "원본 이미지 소견 텍스트 (1문장)",
+    "dullness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "uneven_tone_score": "원본 이미지 소견 텍스트 (1문장)",
+    "jawline_blur_score": "원본 이미지 소견 텍스트 (1문장)",
+    "cheek_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
+    "skin_type_score": "원본 이미지 소견 텍스트 (1문장)"
   },
-  "orig_overall_opinion": "원본 이미지 종합 소견 5~8문장",
-  "ref_overall_opinion": "복원 이미지 종합 소견 5~8문장",
+  "orig_overall_opinion": "원본 이미지 종합 소견 3~5문장",
+  "ref_overall_opinion": "복원 이미지 종합 소견 3~5문장",
   "orig_overall_score": 74.5,
   "ref_overall_score": 78.0,
   "orig_perceived_age": 38.0,
@@ -1014,26 +1014,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 ```json
 {
   "metric_opinions": {
-    "melasma_score": "소견 텍스트 (2~3문장)",
-    "freckle_score": "소견 텍스트 (2~3문장)",
-    "redness_score": "소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "소견 텍스트 (2~3문장)",
-    "acne_score": "소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "소견 텍스트 (2~3문장)",
-    "pore_size_score": "소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "소견 텍스트 (2~3문장)",
-    "roughness_score": "소견 텍스트 (2~3문장)",
-    "skin_tone_score": "소견 텍스트 (2~3문장)",
-    "dullness_score": "소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "소견 텍스트 (2~3문장)",
-    "skin_type_score": "소견 텍스트 (2~3문장)"
+    "melasma_score": "소견 텍스트 (1문장)",
+    "freckle_score": "소견 텍스트 (1문장)",
+    "redness_score": "소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "소견 텍스트 (1문장)",
+    "acne_score": "소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "소견 텍스트 (1문장)",
+    "pore_size_score": "소견 텍스트 (1문장)",
+    "pore_sagging_score": "소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "소견 텍스트 (1문장)",
+    "roughness_score": "소견 텍스트 (1문장)",
+    "skin_tone_score": "소견 텍스트 (1문장)",
+    "dullness_score": "소견 텍스트 (1문장)",
+    "uneven_tone_score": "소견 텍스트 (1문장)",
+    "jawline_blur_score": "소견 텍스트 (1문장)",
+    "cheek_sagging_score": "소견 텍스트 (1문장)",
+    "skin_type_score": "소견 텍스트 (1문장)"
   },
-  "overall_opinion": "종합 소견 5~8문장 (전반적 피부 상태 평가와 개선 방향 포함)",
+  "overall_opinion": "종합 소견 3~5문장 (전반적 피부 상태 평가와 개선 방향 포함)",
   "recommendation": "관리 권고사항 (3~5가지 항목, 구체적 케어 방법)"
 }
 ```
@@ -1043,47 +1043,47 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 ```json
 {
   "original_metric_opinions": {
-    "melasma_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "freckle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "redness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "acne_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "pore_size_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "roughness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "skin_tone_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "dullness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "skin_type_score": "원본 이미지 소견 텍스트 (2~3문장)"
+    "melasma_score": "원본 이미지 소견 텍스트 (1문장)",
+    "freckle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "redness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "원본 이미지 소견 텍스트 (1문장)",
+    "acne_score": "원본 이미지 소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "원본 이미지 소견 텍스트 (1문장)",
+    "pore_size_score": "원본 이미지 소견 텍스트 (1문장)",
+    "pore_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "roughness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "skin_tone_score": "원본 이미지 소견 텍스트 (1문장)",
+    "dullness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "uneven_tone_score": "원본 이미지 소견 텍스트 (1문장)",
+    "jawline_blur_score": "원본 이미지 소견 텍스트 (1문장)",
+    "cheek_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
+    "skin_type_score": "원본 이미지 소견 텍스트 (1문장)"
   },
   "restored_metric_opinions": {
-    "melasma_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "freckle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "redness_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "acne_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "pore_size_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "roughness_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "skin_tone_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "dullness_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "skin_type_score": "복원 이미지 소견 텍스트 (2~3문장)"
+    "melasma_score": "복원 이미지 소견 텍스트 (1문장)",
+    "freckle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "redness_score": "복원 이미지 소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "복원 이미지 소견 텍스트 (1문장)",
+    "acne_score": "복원 이미지 소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "복원 이미지 소견 텍스트 (1문장)",
+    "pore_size_score": "복원 이미지 소견 텍스트 (1문장)",
+    "pore_sagging_score": "복원 이미지 소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "roughness_score": "복원 이미지 소견 텍스트 (1문장)",
+    "skin_tone_score": "복원 이미지 소견 텍스트 (1문장)",
+    "dullness_score": "복원 이미지 소견 텍스트 (1문장)",
+    "uneven_tone_score": "복원 이미지 소견 텍스트 (1문장)",
+    "jawline_blur_score": "복원 이미지 소견 텍스트 (1문장)",
+    "cheek_sagging_score": "복원 이미지 소견 텍스트 (1문장)",
+    "skin_type_score": "복원 이미지 소견 텍스트 (1문장)"
   },
-  "original_overall_opinion": "원본 이미지 종합 소견 5~8문장",
-  "restored_overall_opinion": "복원 이미지 종합 소견 5~8문장",
+  "original_overall_opinion": "원본 이미지 종합 소견 3~5문장",
+  "restored_overall_opinion": "복원 이미지 종합 소견 3~5문장",
   "recommendation": "관리 권고사항 (번호 목록 형식)",
   "product_recommendations": {
     "matched_products": [
@@ -1180,7 +1180,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 - 종합 소견은 원본과 복원 이미지의 전반적 피부 상태를 비교하여 작성하시오.
 - 관리 권고사항은 복원 이미지의 상태를 기준으로 작성하되, 원본과의 차이를 고려하시오.
 - 소견 작성 시 "고객님" 표현을 사용하십시오.
-- 개별 항목 소견은 2~3문장으로 간결하되, 각 이미지의 특성을 명확히 반영하시오.
+- 개별 항목 소견은 1문장으로 간결하되, 각 이미지의 특성을 명확히 반영하시오.
 - **JSON 출력 시 반드시 모든 문자열을 큰따옴표(")로 감싸고, 모든 중괄호와 대괄호를 닫으십시오. 응답이 중단되지 않도록 모든 필드를 완전히 작성하십시오.**
 
 ```json 없이 순수 JSON만 출력:
@@ -1226,51 +1226,51 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "skin_type_score": 78.0
   }},
   "original_metric_opinions": {{
-    "melasma_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "freckle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "redness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "acne_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "pore_size_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "roughness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "skin_tone_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "dullness_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
-    "skin_type_score": "원본 이미지 소견 텍스트 (2~3문장)"
+    "melasma_score": "원본 이미지 소견 텍스트 (1문장)",
+    "freckle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "redness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "원본 이미지 소견 텍스트 (1문장)",
+    "acne_score": "원본 이미지 소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "원본 이미지 소견 텍스트 (1문장)",
+    "pore_size_score": "원본 이미지 소견 텍스트 (1문장)",
+    "pore_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "원본 이미지 소견 텍스트 (1문장)",
+    "roughness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "skin_tone_score": "원본 이미지 소견 텍스트 (1문장)",
+    "dullness_score": "원본 이미지 소견 텍스트 (1문장)",
+    "uneven_tone_score": "원본 이미지 소견 텍스트 (1문장)",
+    "jawline_blur_score": "원본 이미지 소견 텍스트 (1문장)",
+    "cheek_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
+    "skin_type_score": "원본 이미지 소견 텍스트 (1문장)"
   }},
   "restored_metric_opinions": {{
-    "melasma_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "freckle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "redness_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "post_inflammatory_erythema_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "acne_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "post_acne_pigment_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "pore_size_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "pore_sagging_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "eye_wrinkle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "nasolabial_wrinkle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "fine_deep_wrinkle_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "roughness_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "skin_tone_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "dullness_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "uneven_tone_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "jawline_blur_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "cheek_sagging_score": "복원 이미지 소견 텍스트 (2~3문장)",
-    "skin_type_score": "복원 이미지 소견 텍스트 (2~3문장)"
+    "melasma_score": "복원 이미지 소견 텍스트 (1문장)",
+    "freckle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "redness_score": "복원 이미지 소견 텍스트 (1문장)",
+    "post_inflammatory_erythema_score": "복원 이미지 소견 텍스트 (1문장)",
+    "acne_score": "복원 이미지 소견 텍스트 (1문장)",
+    "post_acne_pigment_score": "복원 이미지 소견 텍스트 (1문장)",
+    "pore_size_score": "복원 이미지 소견 텍스트 (1문장)",
+    "pore_sagging_score": "복원 이미지 소견 텍스트 (1문장)",
+    "eye_wrinkle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "nasolabial_wrinkle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "fine_deep_wrinkle_score": "복원 이미지 소견 텍스트 (1문장)",
+    "roughness_score": "복원 이미지 소견 텍스트 (1문장)",
+    "skin_tone_score": "복원 이미지 소견 텍스트 (1문장)",
+    "dullness_score": "복원 이미지 소견 텍스트 (1문장)",
+    "uneven_tone_score": "복원 이미지 소견 텍스트 (1문장)",
+    "jawline_blur_score": "복원 이미지 소견 텍스트 (1문장)",
+    "cheek_sagging_score": "복원 이미지 소견 텍스트 (1문장)",
+    "skin_type_score": "복원 이미지 소견 텍스트 (1문장)"
   }},
   "original_overall_score": 65.0,
   "original_perceived_age": 22.0,
   "restored_overall_score": 70.0,
   "restored_perceived_age": 21.0,
-  "original_overall_opinion": "원본 이미지 종합 소견 5~8문장",
-  "restored_overall_opinion": "복원 이미지 종합 소견 5~8문장",
+  "original_overall_opinion": "원본 이미지 종합 소견 3~5문장",
+  "restored_overall_opinion": "복원 이미지 종합 소견 3~5문장",
   "recommendation": "관리 권고사항 (번호 목록 형식)",
   "product_recommendations": {{
     "matched_products": [
