@@ -1288,6 +1288,8 @@ class LlmSkinReporter:
         if has_baseline:
             for cat, desc in rj["reference_baseline"].items():
                 log.debug("[RGP] 기준선[%s]: %s", cat, desc[:80])
+        
+        log.info("[RGP] 기준선 로그 완료, 항목 점수 파싱 시작")
 
         # ── 항목 점수 파싱 ────────────────────────────────────────
         llm_scores   = rj.get("orig_metric_scores",   {})
