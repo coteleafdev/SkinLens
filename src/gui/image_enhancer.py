@@ -769,7 +769,18 @@ def _cli_body(args) -> int:
                         if args.save_json:
                             staged_files = list(args.out_dir.glob("00_input_*.png"))
                             if staged_files:
-                                input_filename = staged_files[0].stem  # 확장자 제거 (예: 00_input_색소침착_트러블_홍조)
+                                # 현재 처리 중인 파일과 일치하는 스테이징된 파일 찾기
+                                input_stem = Path(init_resolved).stem
+                                matching_file = None
+                                for f in staged_files:
+                                    if f.stem == f"00_input_{input_stem}":
+                                        matching_file = f
+                                        break
+                                if matching_file:
+                                    input_filename = matching_file.stem
+                                else:
+                                    # 일치하는 파일이 없으면 가장 최근 파일 사용
+                                    input_filename = max(staged_files, key=lambda f: f.stat().st_mtime).stem
                             else:
                                 input_filename = Path(init_resolved).stem  # 원본 파일명
                             json_path = args.out_dir / f"{input_filename}.json"
@@ -849,7 +860,19 @@ def _cli_body(args) -> int:
             if args.save_json:
                 staged_files = list(args.out_dir.glob("00_input_*.png"))
                 if staged_files:
-                    input_filename = staged_files[0].stem
+                    # 현재 처리 중인 파일과 일치하는 스테이징된 파일 찾기
+                    input_stem = Path(init_resolved).stem if init_resolved else None
+                    matching_file = None
+                    if input_stem:
+                        for f in staged_files:
+                            if f.stem == f"00_input_{input_stem}":
+                                matching_file = f
+                                break
+                    if matching_file:
+                        input_filename = matching_file.stem
+                    else:
+                        # 일치하는 파일이 없으면 가장 최근 파일 사용
+                        input_filename = max(staged_files, key=lambda f: f.stat().st_mtime).stem
                 else:
                     input_filename = Path(init_resolved).stem if init_resolved else "error"
                 json_path = args.out_dir / f"{input_filename}.json"
