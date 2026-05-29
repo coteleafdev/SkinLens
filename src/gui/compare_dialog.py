@@ -747,13 +747,14 @@ class SkinMeasurementCompareDialog(QDialog):
                                 append_with_font_local([f"[근거: {metric.reason}"], small_font)
                             append_with_font_local([])  # 빈 행
 
-            # reference_guided 모드에서는 기준 이미지 소견 제외
-            if self._last_llm_report_ideal and scoring_mode != "reference_guided":
-                append_with_font_local(["기준 이미지 종합 소견"], bold_font)
-                append_with_font_local([self._sanitize_cell_text(self._last_llm_report_ideal.overall_opinion)], small_font)
-                append_with_font_local([])  # 빈 행
+            # reference_guided 모드에서는 기준 이미지 종합 소견 제외하지만 산출근거는 표시
+            if self._last_llm_report_ideal:
+                if scoring_mode != "reference_guided":
+                    append_with_font_local(["기준 이미지 종합 소견"], bold_font)
+                    append_with_font_local([self._sanitize_cell_text(self._last_llm_report_ideal.overall_opinion)], small_font)
+                    append_with_font_local([])  # 빈 행
 
-                append_with_font_local(["기준 이미지 항목별 소견"], bold_font)
+                append_with_font_local(["기준 이미지 항목별 산출근거"], bold_font)
                 # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
                 ideal_opinions_dict = {metric.key: metric for metric in self._last_llm_report_ideal.metric_opinions}
                 for cat_name, keys in get_measurement_categories():
@@ -761,14 +762,7 @@ class SkinMeasurementCompareDialog(QDialog):
                         if key in ideal_opinions_dict:
                             metric = ideal_opinions_dict[key]
                             append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
-                            # metric.opinion이 dict인 경우 문자열 추출
-                            opinion_text = metric.opinion
-                            if isinstance(opinion_text, dict):
-                                opinion_text = opinion_text.get('opinion', str(opinion_text))
-                            elif not isinstance(opinion_text, str):
-                                opinion_text = str(opinion_text)
-                            append_with_font_local([self._sanitize_cell_text(opinion_text)], small_font)
-                            # 근거 필드 추가
+                            # 소견은 표시하지 않고 산출근거만 표시
                             if metric.reason:
                                 append_with_font_local([f"[근거: {metric.reason}"], small_font)
                             append_with_font_local([])  # 빈 행
