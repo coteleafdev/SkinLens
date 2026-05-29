@@ -1371,6 +1371,7 @@ class LlmSkinReporter:
             final_overall = _apply_score_correction(
                 orig_overall_score, llm_overall,
                 sc_mode, a_weight, l_weight, dw_enabled, dw_threshold,
+                prefer_llm_on_large_diff=True,  # 복원 기반 모드에서 LLM 점수 우선
             )
         else:
             final_overall = llm_overall
