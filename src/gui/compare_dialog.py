@@ -80,7 +80,7 @@ class SkinMeasurementCompareDialog(QDialog):
             self.setWindowTitle(f"{project_name} v{project_version} - 피부 분석 {measurement_count}항목 비교 (원본 vs 복원){title_suffix}")
         except Exception:
             self.setWindowTitle(f"SkinLens v1.0.0 - 피부 분석 {measurement_count}항목 비교 (원본 vs 복원){title_suffix}")
-        self.resize(1000, 800)
+        self.resize(1000, 1100)
         
         # LLM 소견 생성을 위해 원본/복원 경로와 측정 결과 저장
         self._orig_path = orig_path
