@@ -370,7 +370,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 match_reason = product.get('match_reason', '')
 
                 product_text += f"\n{i}. {product_name} ({category})\n"
-                product_text += f"   매칭 점수: {int(round(match_score))}\n"
+                product_text += f"   매칭 점수: {int(round(match_score * 100))}%\n"
                 product_text += f"   주요 성분: {', '.join(key_ingredients)}\n"
                 product_text += f"   효능: {efficacy}\n"
                 product_text += f"   추천 이유: {match_reason}\n"
