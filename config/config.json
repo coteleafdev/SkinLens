@@ -1117,10 +1117,10 @@
         ]
       },
       "jawline_blur_score": {
-        "name_ko": "턱선 블러",
+        "name_ko": "턱선 흐림",
         "name_en": "Jawline Blur",
         "category": "elasticity",
-        "description": "턱선 블러 (탄력)",
+        "description": "턱선 흐림 (탄력)",
         "breakpoints": [
           [
             0.0,
