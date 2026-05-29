@@ -499,7 +499,7 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
     "skin_type_score": "소견 텍스트 (1문장)"
   },
   "overall_opinion": "종합 소견 3~5문장",
-  "recommendation": "관리 권고사항 (번호 목록 형식)"
+  "recommendation": "관리 권고사항 (3~5가지 항목, 각 1문장)"
 }
 ```
 <!-- SINGLE_IMAGE_USER_PROMPT_END -->
@@ -717,7 +717,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
   "orig_perceived_age": 38.0,
   "ref_perceived_age": 36.0,
   "orig_overall_opinion": "종합 소견 3~5문장 (복원 기준선과 비교하여 원본 상태를 서술)",
-  "recommendation": "관리 권고사항 (번호 목록)"
+  "recommendation": "관리 권고사항 (3~5가지 항목, 각 1문장)"
 }
 <!-- REFERENCE_GUIDED_PROMPT_END -->
 
@@ -945,7 +945,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
   "ref_overall_score": 78.0,
   "orig_perceived_age": 38.0,
   "ref_perceived_age": 36.0,
-  "recommendation": "관리 권고사항 (번호 목록 형식)"
+  "recommendation": "관리 권고사항 (3~5가지 항목, 각 1문장)"
 }
 ```
 
@@ -1034,7 +1034,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "skin_type_score": "소견 텍스트 (1문장)"
   },
   "overall_opinion": "종합 소견 3~5문장 (전반적 피부 상태 평가와 개선 방향 포함)",
-  "recommendation": "관리 권고사항 (3~5가지 항목, 구체적 케어 방법)"
+  "recommendation": "관리 권고사항 (3~5가지 항목, 각 1문장)"
 }
 ```
 
@@ -1084,7 +1084,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
   },
   "original_overall_opinion": "원본 이미지 종합 소견 3~5문장",
   "restored_overall_opinion": "복원 이미지 종합 소견 3~5문장",
-  "recommendation": "관리 권고사항 (번호 목록 형식)",
+  "recommendation": "관리 권고사항 (3~5가지 항목, 각 1문장)",
   "product_recommendations": {
     "matched_products": [
       {
@@ -1271,7 +1271,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
   "restored_perceived_age": 21.0,
   "original_overall_opinion": "원본 이미지 종합 소견 3~5문장",
   "restored_overall_opinion": "복원 이미지 종합 소견 3~5문장",
-  "recommendation": "관리 권고사항 (번호 목록 형식)",
+  "recommendation": "관리 권고사항 (3~5가지 항목, 각 1문장)",
   "product_recommendations": {{
     "matched_products": [
       {{
