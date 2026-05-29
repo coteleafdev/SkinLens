@@ -511,92 +511,97 @@ def _cli_body(args) -> int:
                         # LLM API 호출 (원본이미지와 기준이미지만 제공)
                         llm_orig_result = None
                         llm_ideal_result = None
-                        try:
-                            from src.llm.llm_skin_report import LlmSkinReporter, list_available_models, _load_llm_api_key
-                            import time
-
-                            log.info("[진행] LLM API 호출 중... (원본+복원 분석)")
-                            llm_start = time.time()
-
-                            # 사용 가능한 모델 목록 출력
+                        llm_time = 0
+                        # 체크박스가 OFF이면 LLM 호출 건너뜀
+                        if not args.llm_scores:
+                            log.info("[진행] LLM에 점수 제공 체크박스가 OFF로 설정되어 LLM 호출 건너뜀")
+                        else:
                             try:
-                                api_key = _load_llm_api_key()
-                                available_models = list_available_models(api_key)
-                                if available_models:
-                                    log.info(f"[LLM] 사용 가능한 모델 {len(available_models)}개")
-                                    log.info(f"[LLM] 사용 가능한 모델 목록 (상위 5개): {', '.join(available_models[:5])}...")
-                            except Exception as e:
-                                log.warning(f"[LLM] 사용 가능한 모델 목록 조회 실패: {e}")
+                                from src.llm.llm_skin_report import LlmSkinReporter, list_available_models, _load_llm_api_key
+                                import time
 
-                            reporter = LlmSkinReporter()
-                            log.info(f"[LLM] 모델: {reporter.model_name}")
-                            
-                            # 진행 콜백
-                            def progress_callback(msg: str) -> None:
-                                log.info(f"[LLM] {msg}")
+                                log.info("[진행] LLM API 호출 중... (원본+복원 분석)")
+                                llm_start = time.time()
 
-                            # 내부 측정 점수 제공 여부 결정
-                            orig_measurements = {} if not args.llm_scores else original_score_filtered
-                            ideal_measurements = {} if not args.llm_scores else restored_score_filtered
-                            provide_scores = args.llm_scores  # --llm-scores true면 점수 제공
-                            
-                            # ProductRepository 생성 (LLM Reporter에 전달)
-                            product_repo = None
-                            concerns = []
-                            skin_type = None
-                            try:
-                                from src.db.product_repository import ProductRepository
-                                product_repo = ProductRepository(db_path=str(args.out_dir / "skin_analysis.db"))
-                                log.info("[정보] ProductRepository 초기화 완료")
+                                # 사용 가능한 모델 목록 출력
+                                try:
+                                    api_key = _load_llm_api_key()
+                                    available_models = list_available_models(api_key)
+                                    if available_models:
+                                        log.info(f"[LLM] 사용 가능한 모델 {len(available_models)}개")
+                                        log.info(f"[LLM] 사용 가능한 모델 목록 (상위 5개): {', '.join(available_models[:5])}...")
+                                except Exception as e:
+                                    log.warning(f"[LLM] 사용 가능한 모델 목록 조회 실패: {e}")
+
+                                reporter = LlmSkinReporter()
+                                log.info(f"[LLM] 모델: {reporter.model_name}")
                                 
-                                # 설문에서 고민사항 추출 (input_json이 있는 경우)
-                                if hasattr(args, 'input_json') and args.input_json:
-                                    survey = args.input_json.get("survey", {})
-                                    concerns = survey.get("skin_concerns", [])
-                                    skin_types = survey.get("skin_types", [])
-                                    skin_type = skin_types[0] if skin_types else None
-                                    log.info(f"[정보] 설문 응답: concerns={concerns}, skin_type={skin_type}")
-                                else:
-                                    # 설문이 없는 경우 분석 결과에서 피부타입 추출
-                                    # skin_type_score 기반 피부타입 추정
-                                    skin_type_score = original_score_filtered.get("skin_type_score", 0)
-                                    if skin_type_score < 40:
-                                        skin_type = "oily"  # 지성
-                                    elif skin_type_score < 60:
-                                        skin_type = "combination"  # 복합성
-                                    elif skin_type_score < 80:
-                                        skin_type = "dry"  # 건성
-                                    else:
-                                        skin_type = "sensitive"  # 민감성
-                                    log.info(f"[정보] 분석 결과 기반 피부타입 추정: skin_type_score={skin_type_score}, skin_type={skin_type}")
-                            except Exception as e:
-                                log.warning(f"[경고] ProductRepository 초기화 실패: {e}")
-                            
-                            # 듀얼 이미지 분석 (product_repository 전달)
-                            llm_orig_result, llm_ideal_result = reporter.generate_report_from_dual_images(
-                                str(init_resolved),  # orig_image_path
-                                str(final_p),  # ideal_image_path
-                                orig_measurements,  # orig_measurements_report
-                                original_score_adjusted.get("overall", 0),  # orig_overall_score
-                                original_perceived_age,  # orig_perceived_age
-                                ideal_measurements,  # ideal_measurements_report
-                                restored_score_adjusted.get("overall", 0),  # ideal_overall_score
-                                restored_perceived_age,  # ideal_perceived_age
-                                provide_scores=provide_scores,  # --llm-scores true면 True
-                                product_info=None,  # LLM Reporter가 내부적으로 생성
-                                product_repository=product_repo,  # ProductRepository 전달
-                                concerns=concerns,  # 설문 응답 전달
-                                skin_type=skin_type,  # 설문 응답 전달
-                            )
+                                # 진행 콜백
+                                def progress_callback(msg: str) -> None:
+                                    log.info(f"[LLM] {msg}")
 
-                            llm_time = time.time() - llm_start
-                            log.info(f"[완료] LLM API 호출 완료 ({llm_time:.2f}초)")
-                        except Exception as e:
-                            log.warning(f"[경고] LLM API 호출 실패: {e}")
-                            import traceback
-                            traceback.print_exc()
-                            llm_orig_result = None
-                            llm_ideal_result = None
+                                # 내부 측정 점수 제공 여부 결정
+                                orig_measurements = {} if not args.llm_scores else original_score_filtered
+                                ideal_measurements = {} if not args.llm_scores else restored_score_filtered
+                                provide_scores = args.llm_scores  # --llm-scores true면 점수 제공
+                                
+                                # ProductRepository 생성 (LLM Reporter에 전달)
+                                product_repo = None
+                                concerns = []
+                                skin_type = None
+                                try:
+                                    from src.db.product_repository import ProductRepository
+                                    product_repo = ProductRepository(db_path=str(args.out_dir / "skin_analysis.db"))
+                                    log.info("[정보] ProductRepository 초기화 완료")
+                                    
+                                    # 설문에서 고민사항 추출 (input_json이 있는 경우)
+                                    if hasattr(args, 'input_json') and args.input_json:
+                                        survey = args.input_json.get("survey", {})
+                                        concerns = survey.get("skin_concerns", [])
+                                        skin_types = survey.get("skin_types", [])
+                                        skin_type = skin_types[0] if skin_types else None
+                                        log.info(f"[정보] 설문 응답: concerns={concerns}, skin_type={skin_type}")
+                                    else:
+                                        # 설문이 없는 경우 분석 결과에서 피부타입 추출
+                                        # skin_type_score 기반 피부타입 추정
+                                        skin_type_score = original_score_filtered.get("skin_type_score", 0)
+                                        if skin_type_score < 40:
+                                            skin_type = "oily"  # 지성
+                                        elif skin_type_score < 60:
+                                            skin_type = "combination"  # 복합성
+                                        elif skin_type_score < 80:
+                                            skin_type = "dry"  # 건성
+                                        else:
+                                            skin_type = "sensitive"  # 민감성
+                                        log.info(f"[정보] 분석 결과 기반 피부타입 추정: skin_type_score={skin_type_score}, skin_type={skin_type}")
+                                except Exception as e:
+                                    log.warning(f"[경고] ProductRepository 초기화 실패: {e}")
+                                
+                                # 듀얼 이미지 분석 (product_repository 전달)
+                                llm_orig_result, llm_ideal_result = reporter.generate_report_from_dual_images(
+                                    str(init_resolved),  # orig_image_path
+                                    str(final_p),  # ideal_image_path
+                                    orig_measurements,  # orig_measurements_report
+                                    original_score_adjusted.get("overall", 0),  # orig_overall_score
+                                    original_perceived_age,  # orig_perceived_age
+                                    ideal_measurements,  # ideal_measurements_report
+                                    restored_score_adjusted.get("overall", 0),  # ideal_overall_score
+                                    restored_perceived_age,  # ideal_perceived_age
+                                    provide_scores=provide_scores,  # --llm-scores true면 True
+                                    product_info=None,  # LLM Reporter가 내부적으로 생성
+                                    product_repository=product_repo,  # ProductRepository 전달
+                                    concerns=concerns,  # 설문 응답 전달
+                                    skin_type=skin_type,  # 설문 응답 전달
+                                )
+
+                                llm_time = time.time() - llm_start
+                                log.info(f"[완료] LLM API 호출 완료 ({llm_time:.2f}초)")
+                            except Exception as e:
+                                log.warning(f"[경고] LLM API 호출 실패: {e}")
+                                import traceback
+                                traceback.print_exc()
+                                llm_orig_result = None
+                                llm_ideal_result = None
 
                         # 메타데이터 수집
                         # 복원 백엔드 실제 이름 확인 (별칭 지원)
