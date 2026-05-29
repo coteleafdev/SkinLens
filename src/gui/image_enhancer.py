@@ -538,7 +538,7 @@ def _cli_body(args) -> int:
                             # 내부 측정 점수 제공 여부 결정
                             orig_measurements = {} if not args.llm_scores else original_score_filtered
                             ideal_measurements = {} if not args.llm_scores else restored_score_filtered
-                            provide_scores = args.llm_scores  # --llm-scores true면 점수 제공
+                            provide_scores = True  # 항상 LLM 소견 생성
                             
                             # ProductRepository 생성 (LLM Reporter에 전달)
                             product_repo = None
@@ -776,8 +776,6 @@ def _cli_body(args) -> int:
                                 # JSON 파일 경로 전달 (서브프로세스에서 LLM 재호출 방지)
                                 proc_args.append("--llm-json")
                                 proc_args.append(str(json_path))
-                                # --llm-scores도 전달 (서브프로세스에서 LLM 점수 표시용)
-                                proc_args.append("--llm-scores")
                                 print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
                                 proc.setArguments(proc_args)
                                 proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)

@@ -679,26 +679,6 @@ class LlmSkinReporter:
 
         log.info("[generate_dual_report] scoring_mode=%s (config.json llm.scoring_mode)", _scoring_mode)
 
-        # provide_scores=False이면 LLM API 호출하지 않고 빈 보고서 반환
-        if not provide_scores:
-            log.info("[generate_dual_report] provide_scores=False → LLM API 호출 건너뜀")
-            # 빈 보고서 생성
-            orig_report = SkinLLMReport(
-                overall_opinion="",
-                overall_score=0,
-                perceived_age=0,
-                metric_opinions=[],
-                raw_response=""
-            )
-            ideal_report = SkinLLMReport(
-                overall_opinion="",
-                overall_score=0,
-                perceived_age=0,
-                metric_opinions=[],
-                raw_response=""
-            )
-            return orig_report, ideal_report
-
         if _scoring_mode == "reference_guided":
             log.info("[generate_dual_report] scoring_mode=reference_guided → 복원 기반 모드로 라우팅")
             orig_report = self.generate_reference_guided_report(
