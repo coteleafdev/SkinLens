@@ -1301,7 +1301,7 @@
         ]
       },
       "post_inflammatory_erythema_score": {
-        "name_ko": "염증후 홍반",
+        "name_ko": "염증 후 홍반",
         "name_en": "Post-Inflammatory Erythema",
         "category": "redness",
         "description": "염증 후 홍반",
@@ -2376,7 +2376,7 @@
     "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 점수 기준 설정.",
     "_purpose": "점수 스케일 및 등급 라벨 정의.",
     "엄격한 평가 모드": {
-      "enabled": true,
+      "enabled": false,
       "_note": "true이면 모든 카테고리에 엄격한 평가 기준 적용. false이면 일반 평가 기준 사용."
     },
     "점수 스케일": {
@@ -2481,7 +2481,7 @@
           "넓은 홍조(볼 외 턱/이마)": "40~50",
           "심한 홍조(전체 얼굴)": "10~35"
         },
-        "염증후 홍반": {
+        "염증 후 홍반": {
           "없음": 90,
           "1~2개의 작은 자국": "75~85",
           "3~5개의 자국": "60~70",
