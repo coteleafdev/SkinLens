@@ -1920,7 +1920,7 @@
         "status": "active"
       },
       "M03": {
-        "name": "유분 조절",
+        "name": "유분",
         "category": "oiliness",
         "description": "유분 관리 (피부 타입 기반)",
         "ingredients": [
@@ -1986,7 +1986,7 @@
         "status": "active"
       },
       "M09": {
-        "name": "수분 케어",
+        "name": "수분",
         "category": "moisture",
         "description": "수분 관리 (피부 타입 기반)",
         "ingredients": [
