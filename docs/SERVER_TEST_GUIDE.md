@@ -281,7 +281,7 @@ curl -X POST http://localhost:8000/v3/analysis/jobs \
       "category": "트러블 케어",
       "key_ingredients": ["나이아신아마이드", "살리실산", "티트리 오일"],
       "match_score": 0.85,
-      "match_reason": "처방 항목 매칭: M14 (2.5%), 고민사항 매칭: 여드름, 피부 타입 매칭: oily"
+      "match_reason": "처방 항목 매칭: M10 (2.5%), 고민사항 매칭: 여드름, 피부 타입 매칭: oily"
     }
   ]
 }

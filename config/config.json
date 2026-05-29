@@ -821,7 +821,7 @@
           "new_measurement_score": "analyzer_v1"
         },
         "measurement_to_mix_code_mapping": {
-          "new_measurement_score": "M15"
+          "new_measurement_score": "PM01"
         }
       }
     },
@@ -871,7 +871,7 @@
               "measurement2"
             ],
             "mix_codes": [
-              "M15"
+              "PM01"
             ],
             "orthogonal_categories": [
               "orthogonal1"

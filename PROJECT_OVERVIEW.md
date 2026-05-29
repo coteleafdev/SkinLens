@@ -225,7 +225,7 @@ result = restorer.restore("input.jpg", "output.jpg")
 1. 피부 측정 점수 수집 (18개 항목)
 2. 나이대 그룹 매핑 (AGE_GROUP_MAPPING)
 3. PCR 규칙 적용 (total, beneficial, trouble, harmful)
-4. 믹스 코드 계산 (M01~M14)
+4. 믹스 코드 계산 (M01~M10)
 5. 처방 항목 생성 (base 비율 포함)
 6. 제품 매칭 (ProductRepository)
 
@@ -548,7 +548,7 @@ flowchart TB
 - **scoring.analyzers**: 7개 분석기 클래스 + 모듈 경로 + enabled 플래그
 - **scoring.measurement_to_analyzer_mapping**: 측정항목-분석기 매핑
 - **scoring.measurement_to_mix_code_mapping**: 측정항목-믹스코드 매핑
-- **scoring.mix_codes**: 믹스 코드 정의 (M01~M14)
+- **scoring.mix_codes**: 믹스 코드 정의 (M01~M10)
 - **_structure_guide**: 추가/변경/삭제 절차 가이드
 
 설정 변경 시 코드 수정 없이 `config.json`만 수정하면 됩니다.
@@ -1113,7 +1113,7 @@ chmod +x deploy.sh
 - [skin_analysis_README.md](docs/skin_analysis_README.md): 피부 분석 상세 문서
 - [tests/README.md](tests/README.md): 테스트 가이드
 - [SKIN_SCORING_GUIDE.md](docs/SKIN_SCORING_GUIDE.md): 18개 측정항목 상세 (가중치·측정원리·ROI), 점수 척도, 카테고리 배분
-- [PRESCRIPTION_GUIDE.md](docs/PRESCRIPTION_GUIDE.md): 처방전 구성 (M01~M14 + PCR 3종), 처방 생성 플로우차트, 베이스 비율 계산
+- [PRESCRIPTION_GUIDE.md](docs/PRESCRIPTION_GUIDE.md): 처방전 구성 (M01~M10 + PCR 3종), 처방 생성 플로우차트, 베이스 비율 계산
 - [ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md): Strategy 패턴 (분석기·복원기·LLM), DB 구조, 의존성 방향도
 - [CODE_REVIEW_HISTORY.md](docs/CODE_REVIEW_HISTORY.md): 코드 리뷰 결과, 리팩토링 이력, 변경 명세서
 - [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](docs/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md): 처방전 고객 가이드
