@@ -351,11 +351,12 @@ def _cli_body(args) -> int:
                     )
                 else:
                     # 이미지별 폴더로 파일 이동
-                    image_folder = out_dir / r.output_stem
+                    input_stem = r.output_stem
+                    image_folder = out_dir / input_stem
                     image_folder.mkdir(parents=True, exist_ok=True)
                     
                     # 스테이징된 파일 이동
-                    staged_file = out_dir / f"00_input_{r.output_stem}.png"
+                    staged_file = out_dir / f"00_input_{input_stem}.png"
                     if staged_file.exists():
                         shutil.move(str(staged_file), str(image_folder / staged_file.name))
                     
@@ -780,31 +781,10 @@ def _cli_body(args) -> int:
                         
                         # JSON 파일 저장 (CLI와 동일하게 results 폴더)
                         # 입력 이미지의 파일명을 사용하여 고객별 결과 누적
-                        # 스테이징된 파일명(00_input_*)이 있으면 우선 사용
+                        # 이미지별 폴더(image_folder)가 이미 생성되었으므로 이를 사용
                         if args.save_json:
-                            staged_files = list(args.out_dir.glob("00_input_*.png"))
-                            if staged_files:
-                                # 현재 처리 중인 파일과 일치하는 스테이징된 파일 찾기
-                                input_stem = Path(init_resolved).stem
-                                matching_file = None
-                                for f in staged_files:
-                                    if f.stem == f"00_input_{input_stem}":
-                                        matching_file = f
-                                        break
-                                if matching_file:
-                                    input_filename = matching_file.stem
-                                else:
-                                    # 일치하는 파일이 없으면 가장 최근 파일 사용
-                                    input_filename = max(staged_files, key=lambda f: f.stat().st_mtime).stem
-                            else:
-                                input_filename = Path(init_resolved).stem  # 원본 파일명
-                            
-                            # 이미지별 폴더 생성 (results/이미지명/)
-                            image_folder = args.out_dir / input_filename.replace("00_input_", "")
-                            image_folder.mkdir(parents=True, exist_ok=True)
-                            
                             # JSON 저장 (results/이미지명/00_input_이미지명.json)
-                            json_path = image_folder / f"{input_filename}.json"
+                            json_path = image_folder / f"00_input_{input_stem}.json"
                             with open(json_path, "w", encoding="utf-8") as f:
                                 f.write(json_output)
                             log.info(f"[완료] JSON 저장 완료: {json_path}")
@@ -815,8 +795,8 @@ def _cli_body(args) -> int:
                                 from src.db.skin_analysis_db import SkinAnalysisDB
                                 db = SkinAnalysisDB(db_path=str(args.out_dir / "skin_analysis.db"))
                                 db.save_analysis(
-                                    original_path=init_resolved,
-                                    restored_path=final_p,
+                                    original_path=str(image_folder / f"00_input_{input_stem}.png"),
+                                    restored_path=str(final_p),
                                     json_result=result_json
                                 )
                             except Exception as e:
