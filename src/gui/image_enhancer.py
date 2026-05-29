@@ -773,9 +773,9 @@ def _cli_body(args) -> int:
                                     str(init_resolved),
                                     str(final_p),
                                 ]
-                                # 내부 측정 점수 제공 여부 전달
-                                if args.llm_scores:
-                                    proc_args.append("--llm-scores")  # 내부 측정 점수 제공
+                                # JSON 파일 경로 전달 (서브프로세스에서 LLM 재호출 방지)
+                                proc_args.append("--llm-json")
+                                proc_args.append(str(json_path))
                                 print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
                                 proc.setArguments(proc_args)
                                 proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
@@ -1104,9 +1104,9 @@ def _run_gui() -> int:
     __import__("os")._exit(exit_code)
 
 
-def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False) -> int:
+def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False, llm_json_path: Path = None) -> int:
     _configure_stdio_encoding()
-    print(f"[DEBUG] _run_compare_dialog 시작: {orig}, {ideal}, llm_scores={llm_scores}", flush=True)
+    print(f"[DEBUG] _run_compare_dialog 시작: {orig}, {ideal}, llm_scores={llm_scores}, llm_json_path={llm_json_path}", flush=True)
     try:
         from PySide6.QtWidgets import QApplication
     except ImportError as e:
@@ -1137,7 +1137,7 @@ def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False) -> in
         app = QApplication(sys.argv)
         print(f"[DEBUG] QApplication 생성 완료, 다이얼로그 표시 시도", flush=True)
         # 서브프로세스 환경: 다이얼로그를 모달로 표시하여 이벤트 루프 유지
-        dlg = show_skin_measurement_compare_dialog(None, orig, ideal, llm_scores=llm_scores, modal=True)
+        dlg = show_skin_measurement_compare_dialog(None, orig, ideal, llm_scores=llm_scores, modal=True, llm_json_path=llm_json_path)
         print(f"[DEBUG] show_skin_measurement_compare_dialog 반환: modal=True, dlg={dlg}", flush=True)
         if dlg:
             print(f"[DEBUG] dlg.exec() 호출 시작", flush=True)
@@ -1213,12 +1213,19 @@ def main() -> int:
             json_output = json.dumps(error_json, indent=2, ensure_ascii=False)
             print(json_output, flush=True)
             return 2
+        # --llm-json 옵션 파싱 (JSON 파일 경로)
+        llm_json_path = None
+        if "--llm-json" in argv:
+            idx = argv.index("--llm-json")
+            if idx + 1 < len(argv):
+                llm_json_path = Path(argv[idx + 1])
+                print(f"[DEBUG] --llm-json 경로: {llm_json_path}", flush=True)
         # --llm-scores 옵션 파싱 (기본값: False - 점수 미제공)
         print(f"[DEBUG] argv = {argv}", flush=True)
         llm_scores = "--llm-scores" in argv  # --llm-scores가 있으면 점수 제공
         print(f"[DEBUG] --llm-scores in argv = {'--llm-scores' in argv}", flush=True)
         print(f"[DEBUG] llm_scores = {llm_scores} (True=점수 제공, False=점수 미제공)", flush=True)
-        return _run_compare_dialog(Path(argv[1]), Path(argv[2]), llm_scores)
+        return _run_compare_dialog(Path(argv[1]), Path(argv[2]), llm_scores, llm_json_path)
     if argv and argv[0] == "--cli":
         return _run_pipeline_cli(argv[1:])
     return _run_gui()

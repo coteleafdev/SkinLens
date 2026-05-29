@@ -59,6 +59,7 @@ def show_skin_measurement_compare_dialog(
     ideal_path: Path,
     llm_scores: bool = False,  # LLM 점수 제공 여부 (기본값: False)
     modal: bool = False,  # 모달 표시 여부 (서브프로세스용)
+    llm_json_path: Path = None,  # LLM JSON 파일 경로 (메인 프로세스에서 전달)
 ) -> Optional:
     """원본·보정 PNG 경로로 분석 후 다이얼로그 표시.
     
@@ -67,7 +68,7 @@ def show_skin_measurement_compare_dialog(
     """
     import time
     start_time = time.time()
-    log.debug(f"show_skin_measurement_compare_dialog 시작: modal={modal}, llm_scores={llm_scores} (True=점수 제공, False=점수 미제공)")
+    log.debug(f"show_skin_measurement_compare_dialog 시작: modal={modal}, llm_scores={llm_scores}, llm_json_path={llm_json_path} (True=점수 제공, False=점수 미제공)")
     
     # modal=True인 경우: 동기로 분석 수행 (서브프로세스용)
     if modal:
@@ -85,16 +86,23 @@ def show_skin_measurement_compare_dialog(
             log.debug(f"modal=True: result_ideal keys={list(result_ideal.keys())}")
             log.info("피부 비교 분석 완료 (동기)")
             
-            # 입력 이미지 파일명으로 JSON 읽기
-            # 스테이징된 파일명(00_input_*)이 있으면 우선 사용
+            # JSON 파일 경로 결정: llm_json_path가 있으면 우선 사용
             gemini_orig_result = None
             gemini_ideal_result = None
-            staged_files = list(ideal_path.parent.glob("00_input_*.png"))
-            if staged_files:
-                input_filename = staged_files[0].stem  # 확장자 제거 (예: 00_input_색소침착_트러블_홍조)
+            if llm_json_path and llm_json_path.exists():
+                results_json_path = llm_json_path
+                log.debug(f"modal=True: 전달된 JSON 파일 사용: {results_json_path}")
             else:
-                input_filename = orig_path.stem  # 원본 파일명
-            results_json_path = ideal_path.parent / f"{input_filename}.json"
+                # 입력 이미지 파일명으로 JSON 읽기
+                # 스테이징된 파일명(00_input_*)이 있으면 우선 사용
+                staged_files = list(ideal_path.parent.glob("00_input_*.png"))
+                if staged_files:
+                    input_filename = staged_files[0].stem  # 확장자 제거 (예: 00_input_색소침착_트러블_홍조)
+                else:
+                    input_filename = orig_path.stem  # 원본 파일명
+                results_json_path = ideal_path.parent / f"{input_filename}.json"
+                log.debug(f"modal=True: 자동 감지된 JSON 파일: {results_json_path}")
+            
             if results_json_path.exists():
                 try:
                     with open(results_json_path, "r", encoding="utf-8") as f:
@@ -150,12 +158,15 @@ def show_skin_measurement_compare_dialog(
             dialog_start = time.time()
             # 안전장치 적용 여부 확인
             safety_net_applied = result_ideal.get("safety_net_adjusted", False)
+            # JSON에서 LLM 결과를 성공적으로 읽었으면 LLM 재호출 방지
+            llm_provide_scores = llm_scores and (gemini_orig_result is None or gemini_ideal_result is None)
+            log.debug(f"modal=True: llm_provide_scores={llm_provide_scores} (JSON에서 읽었으면 False, 없으면 True)")
             dlg = SkinMeasurementCompareDialog(
                 parent, orig_path, ideal_path,
                 result_orig,  # type: ignore[arg-type]
                 result_ideal,  # type: ignore[arg-type]
                 llm_scores=llm_scores,  # --llm-scores true면 점수 제공
-                llm_provide_scores=llm_scores,  # --llm-scores true면 점수 제공
+                llm_provide_scores=llm_provide_scores,  # JSON에서 읽었으면 False로 설정하여 LLM 재호출 방지
                 llm_orig_report=gemini_orig_result,
                 llm_ideal_report=gemini_ideal_result,
                 safety_net_applied=safety_net_applied,
