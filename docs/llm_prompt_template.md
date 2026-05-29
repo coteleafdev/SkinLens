@@ -712,7 +712,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 - M06: 홍조 (redness_score, post_inflammatory_erythema_score) - 시카, 판테놀, 알란토인 성분
 - M07: 모공 (pore_size_score, pore_sagging_score) - 살리실산, BHA, PHA 성분
 - M08: 피부결 (roughness_score) - AHA, 효소, 각질 제거 성분
-- M10: 여드름 (acne_score) - 살리실산, 티트리 오일, 나이아신아마이드 성분
+- M10: 트러블 (acne_score) - 살리실산, 티트리 오일, 나이아신아마이드 성분
 
 **제품 추천 가이드라인**:
 - 처방전 비율이 높은 항목(0.5% 이상)에 해당하는 성분이 포함된 제품을 우선 추천하십시오.
