@@ -1541,6 +1541,7 @@ class LlmSkinReporter:
                 api_config = get_llm_api_config()
                 score_correction_config = api_config.get("score_correction", {})
                 score_correction_enabled = score_correction_config.get("enabled", False)
+                log.info(f"[점수 보정] generate_dual_report: score_correction_config={score_correction_config}, score_correction_enabled={score_correction_enabled}")
                 
                 # 동적 가중치 설정 (score_correction과 독립적으로 작동)
                 dynamic_weighting_config = score_correction_config.get("dynamic_weighting", {})
