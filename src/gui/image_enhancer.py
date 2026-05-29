@@ -771,6 +771,7 @@ def _cli_body(args) -> int:
                                 "matched_products": getattr(llm_orig_result, 'matched_products', []),
                                 "product_recommendations": {}  # LLM 생성 추천은 현재 미사용
                             }
+                            log.info(f"[JSON 저장] matched_products: {len(result_json['llm_analysis']['matched_products'])}")
                         else:
                             result_json["llm_analysis"] = {
                                 "note": "LLM API 호출 실패 또는 미제공 모드"

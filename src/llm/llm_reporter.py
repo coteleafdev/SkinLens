@@ -582,6 +582,7 @@ class LlmSkinReporter:
                 )
                 repo.close()
             product_info = product_info or json.dumps(matched_products, ensure_ascii=False)
+            log.info(f"[RGP] 매칭된 제품 수: {len(matched_products)}")
         except Exception as e:
             log.warning("[RGP] 제품 매칭 실패: %s", e)
             product_info = product_info or "[]"
@@ -1376,6 +1377,7 @@ class LlmSkinReporter:
         else:
             final_overall = llm_overall
 
+        log.info(f"[RGP] SkinLLMReport 생성: matched_products={len(matched_products)}")
         return SkinLLMReport(
             overall_score=final_overall,
             perceived_age=llm_age,
