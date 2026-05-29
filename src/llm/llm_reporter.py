@@ -53,6 +53,7 @@ def _apply_score_correction(
     llm_weight: float = 0.3,
     dynamic_weighting: bool = False,
     score_difference_threshold: float = 15.0,
+    prefer_llm_on_large_diff: bool = False,
 ) -> float:
     """점수 보정 로직
     
@@ -64,6 +65,7 @@ def _apply_score_correction(
         llm_weight: LLM 가중치 (hybrid 모드에서만 사용)
         dynamic_weighting: 동적 가중치 조정 활성화 여부
         score_difference_threshold: 동적 가중치 조정 임계값
+        prefer_llm_on_large_diff: 점수 차이가 큰 경우 LLM 점수 우선 (복원 기반 모드용)
     
     Returns:
         보정된 점수
@@ -79,10 +81,16 @@ def _apply_score_correction(
         if dynamic_weighting:
             score_diff = abs(analyzer_score - llm_score)
             if score_diff >= score_difference_threshold:
-                log.info(
-                    f"[점수 보정] 점수 차이 {score_diff:.1f} >= 임계값 {score_difference_threshold}, 자체 분석기 점수 사용"
-                )
-                return analyzer_score
+                if prefer_llm_on_large_diff:
+                    log.info(
+                        f"[점수 보정] 점수 차이 {score_diff:.1f} >= 임계값 {score_difference_threshold}, LLM 점수 우선 (복원 기반 모드)"
+                    )
+                    return llm_score
+                else:
+                    log.info(
+                        f"[점수 보정] 점수 차이 {score_diff:.1f} >= 임계값 {score_difference_threshold}, 자체 분석기 점수 사용"
+                    )
+                    return analyzer_score
             else:
                 log.debug(
                     f"[점수 보정] 기존 가중치 사용: 점수 차이 {score_diff:.1f} < 임계값 {score_difference_threshold}"
@@ -1325,11 +1333,12 @@ class LlmSkinReporter:
                 log.debug("[RGP] 보정[%s]: %s", key, reason)
             _monitor_score_difference(cv_score, llm_score, f"{display}(RGP)")
 
-            # 하이브리드 보정
+            # 하이브리드 보정 (복원 기반 모드: 점수 차이가 크면 LLM 점수 우선)
             if sc_enabled:
                 final_score = _apply_score_correction(
                     cv_score, llm_score,
                     sc_mode, a_weight, l_weight, dw_enabled, dw_threshold,
+                    prefer_llm_on_large_diff=True,  # 복원 기반 모드에서 LLM 점수 우선
                 )
             else:
                 # 보정 비활성화 → LLM(reference_guided) 점수 우선
