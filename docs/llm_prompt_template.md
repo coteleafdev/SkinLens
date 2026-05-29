@@ -409,6 +409,18 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
 ### [피부 타입]
   - 피부 타입: {skin_type_score}점 / {skin_type_label} → {grade}
 
+## 맞춤형 제품 정보
+
+{product_info}
+
+---
+
+## 고객 설문 정보
+
+{survey_info}
+
+---
+
 ## 요청
 첨부된 얼굴 원본 사진과 위 측정 점수를 함께 참고하여 아래 JSON 형식으로 응답하시오.
 
@@ -555,6 +567,12 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 ## 맞춤형 제품 정보
 
 {product_info}
+
+---
+
+## 고객 설문 정보
+
+{survey_info}
 
 ---
 
@@ -734,6 +752,12 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 **중요**: 아래 제품 목록은 시스템이 처방전 기반으로 이미 매칭한 실제 제품입니다. LLM은 제품명, 카테고리, 성분을 그대로 사용하여 추천 설명을 작성하십시오. 제품명을 변경하거나 새로운 제품명을 생성하지 마십시오.
 
 {product_info}
+
+---
+
+## 고객 설문 정보
+
+{survey_info}
 
 ---
 

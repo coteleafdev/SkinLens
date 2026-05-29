@@ -322,6 +322,7 @@ class LlmSkinReporter:
         perceived_age: float,
         provide_scores: bool = True,
         product_info: Optional[str] = None,
+        survey_info: Optional[str] = None,
     ) -> SkinLLMReport:
         """이미지 경로 + 측정 점수 → LLM 소견
 
@@ -343,6 +344,7 @@ class LlmSkinReporter:
             perceived_age,
             provide_scores=provide_scores,
             product_info=product_info,
+            survey_info=survey_info,
         )
         
         # 이미지 로드
@@ -420,6 +422,7 @@ class LlmSkinReporter:
         product_repository: Optional[Any] = None,  # ProductRepository 의존성 주입
         concerns: Optional[List[str]] = None,  # 설문 응답: 고민사항
         skin_type: Optional[str] = None,  # 설문 응답: 피부 타입
+        survey_info: Optional[str] = None,  # 설문 정보 JSON
     ) -> tuple[SkinLLMReport, SkinLLMReport]:
         """하위 호환성을 위한 별칭 메서드. generate_dual_report()를 호출합니다."""
         return self.generate_dual_report(
@@ -436,6 +439,7 @@ class LlmSkinReporter:
             product_repository,
             concerns,
             skin_type,
+            survey_info,
         )
 
     def generate_reference_guided_report(
@@ -448,6 +452,7 @@ class LlmSkinReporter:
         ideal_measurements_report: Dict[str, Any],
         provide_scores: bool = True,
         product_info: Optional[str] = None,
+        survey_info: Optional[str] = None,
     ) -> SkinLLMReport:
         """복원 이미지를 레퍼런스로 사용하여 원본 점수 정확도를 높인 보고서 반환.
 
@@ -521,6 +526,7 @@ class LlmSkinReporter:
             provide_scores=provide_scores,
             product_info=product_info,
             prescription_info=prescription_info,
+            survey_info=survey_info,
         )
 
         # ── API 호출 (재시도 포함) ────────────────────────────────
@@ -588,6 +594,7 @@ class LlmSkinReporter:
         product_repository: Optional[Any] = None,  # ProductRepository 의존성 주입
         concerns: Optional[List[str]] = None,  # 설문 응답: 고민사항
         skin_type: Optional[str] = None,  # 설문 응답: 피부 타입
+        survey_info: Optional[str] = None,  # 설문 정보 JSON
     ) -> tuple[SkinLLMReport, SkinLLMReport]:
         """듀얼 이미지 분석 (원본 + 복원)
         
@@ -678,6 +685,7 @@ class LlmSkinReporter:
                 ideal_measurements_report=ideal_measurements_report,
                 provide_scores=provide_scores,
                 product_info=product_info,
+                survey_info=survey_info,
             )
             # 복원 보고서는 빈 보고서로 대체 (reference_guided는 원본 1세트만 반환)
             from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
@@ -704,6 +712,7 @@ class LlmSkinReporter:
             provide_scores=provide_scores,
             product_info=product_info,
             prescription_info=prescription_info,
+            survey_info=survey_info,
         )
         
         # 이미지 로드

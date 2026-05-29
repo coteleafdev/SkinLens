@@ -373,7 +373,7 @@ pytest tests/test_server.py -v
 - [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md): 프로젝트 전체 개요 (비전, 아키텍처, 로드맵)
 - [ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md): 아키텍처 가이드 (Strategy Pattern, DB 구조)
 - [API 가이드](docs/API_GUIDE.md): FastAPI 서버 사용 가이드
-- [데이터 처리 흐름](docs/data_process_flow.md): 데이터 처리 전체 흐름 (입력→분석→출력)
+- [데이터 처리 흐름](docs/JSON_IO_FLOW.md): 데이터 처리 전체 흐름 (입력→분석→출력)
 - [데이터베이스 아키텍처](docs/DATABASE_ARCHITECTURE.md): DB 구조 및 관리 가이드
 - [피부 분석 문서](docs/skin_analysis_README.md): 피부 분석 상세 문서
 - [복원 엔진 추가 가이드](docs/RESTORATION_ENGINE_GUIDE.md): 새로운 복원 엔진 추가 방법
@@ -545,7 +545,7 @@ curl http://localhost:8000/v3/admin/audit/summary?days=30 \
 - **조건부 동작**: ProductTable 데이터가 없을 때는 에러 없이 진행, 데이터 추가 시 자동 동작
 - **결과 JSON**: llm_analysis.product_recommendations 포함
 
-자세한 내용은 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#32-데이터-처리-흐름) 및 [data_process_flow.md](docs/data_process_flow.md)를 참조하세요.
+자세한 내용은 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#32-데이터-처리-흐름) 및 [JSON_IO_FLOW.md](docs/JSON_IO_FLOW.md)를 참조하세요.
 
 자세한 내용은 [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#16-sd-기능-제거-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#17-복원-엔진-전처리후처리-확장-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#18-모공-완화-기능-제거-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#19-코드-품질-개선-ai_skin_v3_deep_reviewmd-기반-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#20-phase-2-안정성-개선-완료-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#21-phase-3-로깅-개선-완료-2026-05-16), 및 [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#22-매직넘버-외부-주입-완료-2026-05-16)를 참조하세요.
 

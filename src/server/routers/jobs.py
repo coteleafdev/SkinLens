@@ -127,6 +127,7 @@ async def _run_job(job_id: str) -> None:
             lateral_images=meta.get("lateral_images"),
             use_multi_view_analysis=meta.get("use_multi_view_analysis", True),
             executor=executor,
+            input_json=meta.get("input_json"),
         )
 
         # 진행률 보고: 결과 처리

@@ -12,10 +12,11 @@
 4. **분석 실행:** 피부 상태 분석 및 점수 계산
 5. **처방 계산:** 피부 측정 점수 기반 처방전 생성
 6. **제품 매칭:** 맞춤형 화장품 추천
-7. **AI 소견 생성:** Gemini 소견 생성
-8. **출력 JSON 생성:** 분석 결과 JSON 생성
-9. **DB 저장:** 로컬 SQLite DB와 Supabase DB에 저장
-10. **응답 반환:** 클라이언트에 결과 반환
+7. **AI 소견 생성:** Gemini 소견 생성 (설문 정보 포함)
+8. **입력 JSON → LLM → 출력 JSON:** 설문 정보가 LLM 프롬프트에 포함되어 개인화된 소견 생성
+9. **출력 JSON 생성:** 분석 결과 JSON 생성
+10. **DB 저장:** 로컬 SQLite DB와 Supabase DB에 저장
+11. **응답 반환:** 클라이언트에 결과 반환
 
 ## 전체 데이터 흐름
 
@@ -29,12 +30,14 @@ flowchart TD
     F --> G[7. 처방 계산]
     G --> H[8. 제품 매칭]
     H --> I[9. Gemini 소견 생성]
-    I --> J[10. 출력 JSON 생성]
-    J --> K[11. 아티팩트 정리]
-    K --> L[12. 로컬 DB 저장]
-    L --> M[13. Supabase 동기화]
-    M --> N[14. job 상태 업데이트]
-    N --> O[15. 클라이언트 응답]
+    I --> I1[설문 정보 포함]
+    I1 --> J[10. 입력 JSON → LLM → 출력 JSON]
+    J --> K[11. 출력 JSON 생성]
+    K --> L[12. 아티팩트 정리]
+    L --> M[13. 로컬 DB 저장]
+    M --> N[14. Supabase 동기화]
+    N --> O[15. job 상태 업데이트]
+    O --> P[16. 클라이언트 응답]
 
     A --> A1[이미지 캡처]
     A --> A2[설문 응답]
@@ -107,13 +110,14 @@ flowchart TD
 | **6. 피부 분석** | - AnalyzerRegistry에서 분석기 선택 (6개 분석기)<br>- SkinAnalyzerV3.analyze_all_multi_v3()<br>- 다중 뷰 분석 (정면 + 좌45° + 우45°)<br>- 얼굴 검출 (MediaPipe / Haar Cascade)<br>- 18개 측정항목 분석:<br>  • 기미, 주근깨, 색소 자국<br>  • 홍조, 염증후 홍반, 여드름<br>  • 주름 (눈가/인중/미세/깊은)<br>  • 모공 (크기/늘어짐), 거칠기<br>  • 피부톤, 칙칙함, 불균형<br>  • 턱선 흐림, 볼 처짐, 건조도<br>- 각도별 특화 항목 가중치 적용:<br>  • 측면 특화 (front: 20%, left: 40%, right: 40%): 모공 처짐, 눈가 주름, 턱선 흐림, 볼 처짐<br>  • 정면 특화 (front: 70%, left: 15%, right: 15%): 기미, 홍조, 피부 톤, 칙칙함, 톤 불균일, 인중 주름<br>  • 최대값 기반: 여드름, 여드름 후 색소<br>  • 기본값 (33% each): 기타 항목<br>- 각도별 개별 결과 포함 (`angle_results`)<br>- 직교 신호 분해 (10개 내부 신호)<br>- 가중치 체계 적용 (레이어A/레이어B/레거시)<br>- 점수 계산 (0-100) |
 | **7. 처방 계산** | - PrescriptionCalculator로 처방전 생성<br>- AGE_GROUP_MAPPING으로 나이대 그룹 매핑 (config.json에서 로드)<br>- PCR (Prescription Calculator Rules) 규칙 적용<br>- total/beneficial/trouble/harmful 계산<br>- 믹스 코드 계산 (M01~M10)<br>- base 비율 계산 (중복 제거)<br>- 처방 항목 생성 |
 | **8. 제품 매칭** | - ProductRepository에서 맞춤형 화장품 조회<br>- 설문(survey)의 피부 고민사항 매칭 (+0.5 점)<br>- 피부 타입 매칭 (+0.3 점)<br>- 측정 점수 기반 매칭 (+0.2 점)<br>- match_score 계산 및 정렬<br>- 상위 3개 제품 선정<br>- 성분 정보 문자열 생성<br>- product_recommendations 구조 생성 |
-| **9. Gemini 소견 생성** | - LLMRegistry에서 LLM 선택 (gemini_v1)<br>- gemini_report=true인 경우<br>- 분석 결과를 Gemini API에 전송<br>- 맞춤형 화장품 성분 정보 포함 (제품 매칭 성공 시)<br>- 듀얼 이미지 소견 (원본/복원 비교)<br>- 한국어 소견서 생성<br>- 개선 제안 제시<br>- 맞춤형 화장품 추천 포함 |
-| **10. 출력 JSON 생성** | {<br>  "input_image": "/path/to/original.png",<br>  "restored_image": "/path/to/restored.png",<br>  "metadata": {<br>    "analyzers": {"pigmentation": "pigmentation_v1", ...},<br>    "restorer": {"name": "codeformer_v1", "config": {...}},<br>    "llm": {"name": "gemini_v1", "model": "models/gemini-2.5-pro"}<br>  },<br>  "input_json": {survey, client_meta},<br>  "internal_analysis": {<br>    "original": {<br>      "melasma_score": 56,<br>      "redness_score": 72,<br>      ... (18개 항목)<br>      "overall_score": 65<br>    },<br>    "restored": { ... }<br>  },<br>  "prescription": {<br>    "mix_codes": {<br>      "M01": {"base": 10.0, "items": ["나이아신아마이드", "비타민 C"]}<br>    }<br>  },<br>  "llm_analysis": {<br>    "recommendation": "...",<br>    "product_recommendations": {<br>      "matched_products": [...],<br>      "recommendation_summary": "..."<br>    }<br>  }<br>} |
-| **11. 아티팩트 정리** | - results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v3/analysis/jobs/{job_id}/artifacts/...) |
-| **12. 로컬 DB 저장** | - SkinAnalysisDB.save_analysis()<br>- analyses 테이블 INSERT:<br>  • customer_id<br>  • original_image_path<br>  • restored_image_path<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta<br>  • original_filename<br>  • overall_score_original<br>  • overall_score_restored |
-| **13. Supabase 동기화** | - SupabaseSync.sync()<br>- 이미지 업로드 (Storage):<br>  • original.png → skin-images/{customer_id}/{date}_{id}/<br>  • restored.png → skin-images/{customer_id}/{date}_{id}/<br>- DB upsert (skin_analyses 테이블):<br>  • local_id<br>  • customer_id<br>  • original_filename<br>  • storage_original<br>  • storage_restored<br>  • overall_score_original<br>  • overall_score_restored<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta |
-| **14. job 상태 업데이트** | - job 상태: running → succeeded/failed<br>- finished_at 타임스탬프<br>- artifacts URL 저장<br>- job.json 업데이트 |
-| **15. 클라이언트 응답** | - GET /v3/analysis/jobs/{job_id}/result<br>- {<br>  "job_id": "...",<br>  "status": "succeeded",<br>  "timestamp": "...",<br>  "analysis": { ...출력 JSON... },<br>  "artifacts": {<br>    "results.json": "/v3/analysis/jobs/.../artifacts/...",<br>    "restored_image": "/v3/analysis/jobs/.../artifacts/...",<br>    "input_image": "/v3/analysis/jobs/.../artifacts/..."<br>  }<br>} |
+| **9. Gemini 소견 생성** | - LLMRegistry에서 LLM 선택 (gemini_v1)<br>- llm_report=true인 경우<br>- 분석 결과를 Gemini API에 전송<br>- 맞춤형 화장품 성분 정보 포함 (제품 매칭 성공 시)<br>- **설문 정보(survey) 포함** ← 신규<br>- 듀얼 이미지 소견 (원본/복원 비교)<br>- 한국어 소견서 생성<br>- 개선 제안 제시<br>- 맞춤형 화장품 추천 포함 |
+| **10. 입력 JSON → LLM → 출력 JSON** | - input_json["survey"]에서 설문 정보 추출<br>- LLM 프롬프트에 survey_info 포함<br>- Gemini API 호출 (설문 정보 포함)<br>- 개인화된 소견 생성 (성별, 연령, 피부 타입, 고민사항, 알레르지 반영)<br>- 출력 JSON의 llm_report에 개인화된 소견 저장<br>- LLM API 통계(llm_stats) 저장 |
+| **11. 출력 JSON 생성** | {<br>  "input_image": "/path/to/original.png",<br>  "restored_image": "/path/to/restored.png",<br>  "metadata": {<br>    "analyzers": {"pigmentation": "pigmentation_v1", ...},<br>    "restorer": {"name": "codeformer_v1", "config": {...}},<br>    "llm": {"name": "gemini_v1", "model": "models/gemini-2.5-pro"}<br>  },<br>  "input_json": {survey, client_meta},<br>  "internal_analysis": {<br>    "original": {<br>      "melasma_score": 56,<br>      "redness_score": 72,<br>      ... (18개 항목)<br>      "overall_score": 65<br>    },<br>    "restored": { ... }<br>  },<br>  "prescription": {<br>    "mix_codes": {<br>      "M01": {"base": 10.0, "items": ["나이아신아마이드", "비타민 C"]}<br>    }<br>  },<br>  "llm_report": {<br>    "overall_score": 74.5,<br>    "perceived_age": 38.0,<br>    "metric_opinions": {...},<br>    "overall_opinion": "고객님의 피부는 전반적으로 양호한 상태입니다...",<br>    "recommendation": "여드름 관리를 위해...",<br>    "matched_products": [...],<br>    "strict_evaluation_mode": true,<br>    "llm_stats": {...}<br>  }<br>} |
+| **12. 아티팩트 정리** | - results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v3/analysis/jobs/{job_id}/artifacts/...) |
+| **13. 로컬 DB 저장** | - SkinAnalysisDB.save_analysis()<br>- analyses 테이블 INSERT:<br>  • customer_id<br>  • original_image_path<br>  • restored_image_path<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta<br>  • original_filename<br>  • overall_score_original<br>  • overall_score_restored |
+| **14. Supabase 동기화** | - SupabaseSync.sync()<br>- 이미지 업로드 (Storage):<br>  • original.png → skin-images/{customer_id}/{date}_{id}/<br>  • restored.png → skin-images/{customer_id}/{date}_{id}/<br>- DB upsert (skin_analyses 테이블):<br>  • local_id<br>  • customer_id<br>  • original_filename<br>  • storage_original<br>  • storage_restored<br>  • overall_score_original<br>  • overall_score_restored<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta |
+| **15. job 상태 업데이트** | - job 상태: running → succeeded/failed<br>- finished_at 타임스탬프<br>- artifacts URL 저장<br>- job.json 업데이트 |
+| **16. 클라이언트 응답** | - GET /v3/analysis/jobs/{job_id}/result<br>- {<br>  "job_id": "...",<br>  "status": "succeeded",<br>  "timestamp": "...",<br>  "analysis": { ...출력 JSON... },<br>  "artifacts": {<br>    "results.json": "/v3/analysis/jobs/.../artifacts/...",<br>    "restored_image": "/v3/analysis/jobs/.../artifacts/...",<br>    "input_image": "/v3/analysis/jobs/.../artifacts/..."<br>  }<br>} |
 
 ## 상세 단계 설명
 
@@ -289,29 +293,235 @@ resize_wh = tuple(config.get("restoration", {}).get("input_resize", [1024, 1365]
 
 ### 7. Gemini 소견 생성
 
-**조건:** `gemini_report=true`
+**조건:** `llm_report=true`
 
 **처리 과정:**
-1. 분석 결과를 한국어로 변환
-2. 맞춤형 화장품 성분 정보 포함 (제품 매칭 성공 시)
-3. Gemini API에 전송
-4. 소견서 생성
-5. 개선 제안 제시
-6. 맞춤형 화장품 추천 포함
+1. **설문 정보 추출:** `input_json["survey"]`에서 고객 설문 정보 추출
+2. **프롬프트 구성:** 다음 정보를 포함하여 LLM 프롬프트 생성
+   - CV 분석 점수 (18개 항목)
+   - 종합 점수, 인지 나이
+   - 처방전 정보 (M01~M10 비율)
+   - 제품 정보 (DB 매칭 결과)
+   - **설문 정보 (survey)** ← 신규 추가
+3. **Gemini API 호출:** 구성된 프롬프트와 이미지를 Gemini API에 전송
+4. **소견서 생성:** LLM이 개인화된 한국어 소견서 생성
+5. **개선 제안 제시:** 고객의 고민사항, 피부 타입, 선호사항 반영
+6. **맞춤형 화장품 추천:** 설문 정보 기반 제품 추천 설명
+
+**설문 정보 포함 내용:**
+```json
+{
+  "consent_agreed": true,
+  "gender": "female",
+  "age_group": "30s",
+  "ethnicity": "korean",
+  "skin_types": ["combination", "sensitive"],
+  "skin_concerns": ["acne", "red_marks", "pore_sebum"],
+  "allergies": {
+    "sunlight": { "has": true, "detail": "여름철 일광 두드러기" }
+  },
+  "current_products": ["cleanser", "toner", "serum", "sunscreen"],
+  "improvement_goals": ["pore_reduction", "tone_brightening"],
+  "preferred_formula": ["light", "fragrance_free"],
+  "price_range": "30k_50k"
+}
+```
+
+**LLM 프롬프트 구조:**
+```markdown
+## 시스템 분석기 측정 점수
+- 종합 점수: 74.5점
+- 인지 나이: 38.0세
+
+## 점수 평가 기준
+{score_criteria_section}
+
+## 처방전 정보
+{prescription_info}
+
+## 맞춤형 제품 정보
+{product_info}
+
+## 고객 설문 정보
+{survey_info}  ← 신규 추가
+
+## 소견 작성 가이드라인
+- 고객의 설문 정보(성별, 연령, 피부 타입, 고민사항, 알레르기 등)를 반영하여 개인화된 소견 작성
+- 알레르기 정보를 고려하여 성분 추천 시 주의
+- 개선 목표와 선호 제형/가격대를 반영한 제품 추천
+```
 
 **출력 구조:**
 ```json
 {
-  "original": {
-    "overall_score": 65,
-    "summary": "전반적으로 양호한 피부 상태...",
-    "recommendation": "현재 피부 상태를 개선하기 위해..."
+  "strict_evaluation_mode": true,
+  "metric_scores": {
+    "melasma_score": 70.0,
+    "freckle_score": 65.0,
+    ...
   },
-  "restored": { ... }
+  "metric_opinions": {
+    "melasma_score": {
+      "opinion": "30대 여성 고객님의 피부에 기미가 관찰됩니다...",
+      "reason": "점수 산출 근거"
+    },
+    ...
+  },
+  "overall_score": 74.5,
+  "perceived_age": 38.0,
+  "overall_opinion": "고객님의 피부는 전반적으로 양호한 상태입니다. 특히 여드름 고민사항을 고려할 때...",
+  "recommendation": "여드름 관리를 위해 살리실산 성분이 포함된 제품을 추천합니다. 알레르기(일광 두드러기)를 고려하여 자외선 차단제 사용을 권장합니다.",
+  "matched_products": [
+    {
+      "product_id": "P001",
+      "product_name": "꼬드리브 트러블 케어 세럼",
+      "category": "트러블 케어",
+      "key_ingredients": ["나이아신아마이드", "살리실산"],
+      "efficacy": "여드름 억제, 모공 관리",
+      "match_score": 0.95
+    }
+  ],
+  "llm_stats": {
+    "input_tokens": 2500,
+    "output_tokens": 800,
+    "execution_time_sec": 3.2,
+    "estimated_cost_usd": 0.005
+  }
 }
 ```
 
-### 8. 출력 JSON 구조
+### 8. 입력 JSON → LLM → 출력 JSON 흐름
+
+**데이터 흐름 개요:**
+```
+입력 JSON (input_json)
+  → survey 정보 추출
+  → LLM 프롬프트 구성 (survey_info 포함)
+  → Gemini API 호출
+  → 개인화된 소견 생성
+  → 출력 JSON (llm_report)
+```
+
+**상세 단계:**
+
+**1. 입력 JSON 수신 (서버)**
+```python
+# src/server/routers/jobs.py
+input_json: Dict[str, Any] = {}
+if survey:
+    input_json["survey"] = json.loads(survey)
+if client_meta:
+    input_json["client_meta"] = json.loads(client_meta)
+
+meta["input_json"] = input_json if input_json else None
+```
+
+**2. 파이프라인 전달**
+```python
+# src/server/routers/jobs.py
+result = await run_analysis_pipeline_async(
+    input_image=Path(meta["input_image_path"]),
+    output_dir=Path(meta["output_dir"]),
+    input_json=meta.get("input_json"),  # ← 전달
+    ...
+)
+```
+
+**3. 설문 정보 추출**
+```python
+# src/cli/skin_analysis_cli.py
+survey_info = None
+if input_json:
+    survey = input_json.get("survey", {})
+    survey_info = json.dumps(survey, ensure_ascii=False)
+```
+
+**4. LLM 프롬프트 구성**
+```python
+# src/llm/llm_prompt_builder.py
+format_dict = {
+    "overall_score": f"{overall_score:.1f}",
+    "perceived_age": f"{perceived_age:.1f}",
+    "product_info": product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
+    "survey_info": survey_info or "제공된 설문 정보가 없습니다.",  # ← 추가
+    "strict_evaluation_mode": "true" if strict_mode_enabled else "false",
+}
+```
+
+**5. LLM API 호출**
+```python
+# src/llm/llm_reporter.py
+llm_result = reporter.generate_report_from_dual_images(
+    orig_image_path=str(input_image),
+    orig_measurements_report=orig_analysis.get("measurements_report", {}),
+    orig_overall_score=float(orig_analysis.get("overall_score", 0)),
+    orig_perceived_age=float(orig_analysis.get("perceived_age", 0)),
+    ideal_image_path=str(restored_image),
+    ideal_measurements_report=rest_analysis.get("measurements_report", {}),
+    ideal_overall_score=float(rest_analysis.get("overall_score", 0)),
+    ideal_perceived_age=float(rest_analysis.get("perceived_age", 0)),
+    provide_scores=args.llm_scores,
+    survey_info=survey_info,  # ← 전달
+)
+```
+
+**6. 출력 JSON 생성**
+```python
+# src/cli/skin_analysis_cli.py
+analysis_result["llm_report"] = llm_result
+analysis_result["llm_stats"] = orig_report.llm_stats
+```
+
+**입력 JSON → LLM → 출력 JSON 매핑:**
+
+| 입력 JSON (survey) | LLM 프롬프트 | 출력 JSON (llm_report) |
+|-------------------|--------------|------------------------|
+| `gender` | `{survey_info}`에 포함 | `overall_opinion`에 성별 반영 |
+| `age_group` | `{survey_info}`에 포함 | `overall_opinion`에 연령대 반영 |
+| `skin_types` | `{survey_info}`에 포함 | `recommendation`에 피부 타입 반영 |
+| `skin_concerns` | `{survey_info}`에 포함 | `metric_opinions`에 고민사항 반영 |
+| `allergies` | `{survey_info}`에 포함 | `recommendation`에 알레르기 주의 반영 |
+| `improvement_goals` | `{survey_info}`에 포함 | `recommendation`에 개선 목표 반영 |
+| `preferred_formula` | `{survey_info}`에 포함 | `matched_products` 필터링 |
+| `price_range` | `{survey_info}`에 포함 | `matched_products` 필터링 |
+
+**출력 JSON의 llm_report 구조:**
+```json
+{
+  "llm_report": {
+    "overall_score": 74.5,
+    "perceived_age": 38.0,
+    "metric_opinions": {
+      "melasma_score": {
+        "opinion": "30대 여성 고객님의 피부에 기미가 관찰됩니다...",
+        "reason": "점수 산출 근거"
+      },
+      ...
+    },
+    "overall_opinion": "고객님의 피부는 전반적으로 양호한 상태입니다. 특히 여드름 고민사항을 고려할 때...",
+    "recommendation": "여드름 관리를 위해 살리실산 성분이 포함된 제품을 추천합니다. 알레르기(일광 두드러기)를 고려하여 자외선 차단제 사용을 권장합니다.",
+    "matched_products": [
+      {
+        "product_id": "P001",
+        "product_name": "꼬드리브 트러블 케어 세럼",
+        "category": "트러블 케어",
+        "key_ingredients": ["나이아신아마이드", "살리실산"],
+        "efficacy": "여드름 억제, 모공 관리",
+        "match_score": 0.95
+      }
+    ],
+    "strict_evaluation_mode": true,
+    "llm_stats": {
+      "input_tokens": 2500,
+      "output_tokens": 800,
+      "execution_time_sec": 3.2,
+      "estimated_cost_usd": 0.005
+    }
+  }
+}
+```
+
+### 9. 출력 JSON 구조
 
 ```json
 {
@@ -373,7 +583,7 @@ resize_wh = tuple(config.get("restoration", {}).get("input_resize", [1024, 1365]
 }
 ```
 
-### 9. DB 저장
+### 10. DB 저장
 
 **로컬 SQLite DB (skin_analysis_db.py):**
 ```python
@@ -399,7 +609,7 @@ syncer.sync(
 )
 ```
 
-## DB 스키마
+### 11. DB 스키마
 
 ### 로컬 SQLite DB
 
@@ -465,7 +675,7 @@ CREATE TABLE IF NOT EXISTS skin_analyses (
 ALTER TABLE skin_analyses ADD COLUMN IF NOT EXISTS input_json JSONB;
 ```
 
-## API 엔드포인트
+### 12. API 엔드포인트
 
 ### POST /v3/analysis/jobs
 

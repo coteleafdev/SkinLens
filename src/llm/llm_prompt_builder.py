@@ -48,6 +48,7 @@ def _build_user_prompt(
     perceived_age: float,
     provide_scores: bool = True,  # 점수 제공 여부
     product_info: Optional[str] = None,  # 맞춤형 화장품 성분 정보
+    survey_info: Optional[str] = None,  # 설문 정보
 ) -> str:
     """측정 점수표를 포함한 분석 요청 프롬프트 (단일 이미지용)"""
     template = load_prompt_template()
@@ -64,6 +65,7 @@ def _build_user_prompt(
         "overall_score": f"{overall_score:.1f}",
         "perceived_age": f"{perceived_age:.1f}",
         "product_info": product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
+        "survey_info": survey_info or "제공된 설문 정보가 없습니다.",
     }
     
     # skin_type_label 추가 (별도 필드)
@@ -100,6 +102,7 @@ def _build_reference_guided_prompt(
     provide_scores: bool = True,
     product_info: Optional[str] = None,
     prescription_info: Optional[str] = None,
+    survey_info: Optional[str] = None,
 ) -> str:
     """복원 이미지를 레퍼런스(기준선)로 활용하여 원본 점수 정확도를 높이는 프롬프트.
 
@@ -161,6 +164,7 @@ def _build_reference_guided_prompt(
         "score_criteria_section": score_criteria_section,
         "product_info":        product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
         "prescription_info":   prescription_info or "{}",
+        "survey_info":         survey_info or "제공된 설문 정보가 없습니다.",
         "strict_evaluation_mode": "true" if strict_mode_enabled else "false",
     }
 
@@ -429,6 +433,7 @@ def _build_dual_image_prompt(
     provide_scores: bool = True,  # 점수 제공 여부
     product_info: Optional[str] = None,  # 맞춤형 화장품 성분 정보
     prescription_info: Optional[str] = None,  # 처방전 정보 (A01-A14)
+    survey_info: Optional[str] = None,  # 설문 정보
 ) -> str:
     """듀얼 이미지 프롬프트 빌더"""
     from src.skin.core.config_parser import load_prompt_template
@@ -494,6 +499,7 @@ def _build_dual_image_prompt(
         "ideal_perceived_age": f"{ideal_perceived_age:.1f}",
         "product_info": product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
         "prescription_info": prescription_info or "{}",
+        "survey_info": survey_info or "제공된 설문 정보가 없습니다.",
         "strict_evaluation_mode": "true" if strict_mode_enabled else "false",
     }
     

@@ -158,6 +158,7 @@ def run_analysis_pipeline(
     region: Optional[str] = None,
     lateral_images: Optional[List[Dict[str, str]]] = None,
     use_multi_view_analysis: bool = True,
+    input_json: Optional[Dict[str, Any]] = None,
     # lateral_images: [{"angle": "front"|"left45"|"right45", "path": "/path/to/img.jpg"}, ...]
     # use_multi_view_analysis: 다중 뷰 분석 사용 여부 (기본 True)
 ) -> Dict[str, Any]:
@@ -394,6 +395,16 @@ def run_analysis_pipeline(
         except Exception as e:
             log.warning("점수 안전장치 적용 실패, 원래 점수 사용: %s", e)
     
+    # ── 설문 JSON 로드 ───────────────────────────────────────────────
+    survey_info = None
+    if input_json:
+        try:
+            survey = input_json.get("survey", {})
+            survey_info = json.dumps(survey, ensure_ascii=False)
+            log.info("설문 정보 로드 완료")
+        except Exception as e:
+            log.warning(f"설문 정보 로드 실패: {e}")
+    
     # ── LLM AI 소견 작성 ─────────────────────────────────────────────
     if llm_report:
         log.info("LLM (Gemini) AI 소견 작성 중...")
@@ -417,6 +428,7 @@ def run_analysis_pipeline(
                     ideal_overall_score=float(rest_analysis.get("overall_score", 0)),
                     ideal_perceived_age=float(rest_analysis.get("perceived_age", 0)),
                     provide_scores=args.llm_scores,  # [FIX] GUI와 동일하게 args.llm_scores 사용 (기본 False)
+                    survey_info=survey_info,
                 )
             else:
                 # 단일 이미지 모드: 원본 이미지 소견 작성
@@ -426,6 +438,7 @@ def run_analysis_pipeline(
                     overall_score=float(analysis_result.get("overall_score", 0)),
                     perceived_age=float(analysis_result.get("perceived_age", 0)),
                     provide_scores=args.llm_scores,  # [FIX] GUI와 동일하게 args.llm_scores 사용 (기본 False)
+                    survey_info=survey_info,
                 )
 
             analysis_result["llm_report"] = llm_result
@@ -718,6 +731,7 @@ async def run_analysis_pipeline_async(
     lateral_images: Optional[List[Dict[str, str]]] = None,
     use_multi_view_analysis: bool = True,
     executor: Optional[ThreadPoolExecutor] = None,
+    input_json: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """복원 → 분석 통합 파이프라인 실행 (비동기 버전).
     
@@ -759,6 +773,7 @@ async def run_analysis_pipeline_async(
             region,
             lateral_images,
             use_multi_view_analysis,
+            input_json,
         )
         return result
     finally:
@@ -973,6 +988,13 @@ def main():
         type=str,
         default=None,
         help="LLM (Gemini) API 키 (지정하지 않으면 환경 변수 GOOGLE_API_KEY 사용)"
+    )
+    
+    parser.add_argument(
+        "--input-json",
+        type=str,
+        default=None,
+        help="설문 JSON 파일 경로 (고객정보, 설문내용 포함)"
     )
     
     parser.add_argument(
