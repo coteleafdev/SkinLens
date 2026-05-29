@@ -1899,7 +1899,7 @@
     },
     "mix_codes": {
       "M01": {
-        "name": "광채",
+        "name": "톤&밝기",
         "category": "radiance",
         "description": "톤 & 밝기 관리",
         "ingredients": [

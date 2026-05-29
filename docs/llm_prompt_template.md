@@ -705,13 +705,13 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 {prescription_info}
 
 **처방 항목 설명**:
-- M01: 광채 (dullness_score) - 비타민C, 나이아신아마이드 성분
+- M01: 톤&밝기 (dullness_score) - 비타민C, 나이아신아마이드 성분
 - M02: 주름 (eye_wrinkle_score, nasolabial_wrinkle_score, fine_deep_wrinkle_score) - 레티놀, 펩타이드, 아데노신 성분
-- M05: 탄력 (jawline_blur_score) - 콜라겐, 엘라스틴 성분
-- M06: 색소침착 (melasma_score, freckle_score, post_acne_pigment_score) - 비타민C, 나이아신아마이드, 알부틴, 트라넥삼산 성분
-- M07: 홍조 (redness_score, post_inflammatory_erythema_score) - 시카, 판테놀, 알란토인 성분
+- M04: 탄력&처짐 (jawline_blur_score, cheek_sagging_score) - 콜라겐, 엘라스틴 성분
+- M05: 색소침착 (melasma_score, freckle_score, post_acne_pigment_score) - 비타민C, 나이아신아마이드, 알부틴, 트라넥삼산 성분
+- M06: 홍조 (redness_score, post_inflammatory_erythema_score) - 시카, 판테놀, 알란토인 성분
+- M07: 모공 (pore_size_score, pore_sagging_score) - 살리실산, BHA, PHA 성분
 - M08: 피부결 (roughness_score) - AHA, 효소, 각질 제거 성분
-- M09: 모공 (pore_size_score, pore_sagging_score) - 살리실산, BHA, PHA 성분
 - M10: 여드름 (acne_score) - 살리실산, 티트리 오일, 나이아신아마이드 성분
 
 **제품 추천 가이드라인**:
