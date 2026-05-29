@@ -18,8 +18,17 @@ __pycache__/
 *.db
 gui_debug.log
 
-# 정리된 디렉토리 (하위 호환성)
-results/
+# results 폴더 내 제외 파일
+results/*.db
+results/*.json
+results/*.png
+results/*.jpg
+results/api_jobs/
+results/exports/*.xlsx
+results/exports/*.csv
+results/logs/*.log
+results/images/*.jpg
+results/images/*.png
 backup/
 
 # Python 패키지
