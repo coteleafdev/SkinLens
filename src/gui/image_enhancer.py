@@ -783,7 +783,7 @@ def _cli_body(args) -> int:
                                 proc_args.append("--llm-json")
                                 proc_args.append(str(json_path))
                                 # --llm-scores도 전달 (서브프로세스에서 LLM 점수 표시용)
-                                if args.llm_scores:
+                                if provide_scores:
                                     proc_args.append("--llm-scores")
                                 print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
                                 print(f"[DEBUG] JSON 파일 경로: {json_path}", flush=True)
