@@ -1114,10 +1114,10 @@ class LlmSkinReporter:
                 # 보정 비활성화 → LLM(reference_guided) 점수 우선
                 final_score = llm_score
 
-            # 소견에 보정 근거 부기
+            # 소견에 산출 근거 부기
             base_opinion = llm_opinions.get(key, "")
             if reason and base_opinion:
-                opinion_text = f"{base_opinion} [보정근거: {reason}]"
+                opinion_text = f"{base_opinion} [산출근거: {reason}]"
             else:
                 opinion_text = base_opinion
 

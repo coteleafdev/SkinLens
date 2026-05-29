@@ -75,7 +75,7 @@ generate_dual_report()
     │
     └── [신규] _parse_reference_guided_response()
             ↓
-        JSON 파싱: orig_scores(18개) + 보정근거 + 소견
+        JSON 파싱: orig_scores(18개) + 산출근거 + 소견
             ↓
         _build_orig_report_from_reference()
             ↓
@@ -214,7 +214,7 @@ config.json:
 ### 5.2 `correction_reasons` 필드 활용
 
 `_parse_reference_guided_response()`에서 `correction_reasons`를 파싱하여
-`MetricOpinion.opinion` 뒤에 `[보정근거: ...]` 형태로 appendix한다.
+`MetricOpinion.opinion` 뒤에 `[산출근거: ...]` 형태로 appendix한다.
 디버그 로그에도 기록한다.
 
 ---
