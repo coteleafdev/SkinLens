@@ -649,9 +649,9 @@ def _cli_body(args) -> int:
                             "original_image": str(Path(init_resolved).resolve()),
                             "restored_image": str(final_p.resolve()),
                             "metadata": metadata,
-                            "timing": {
-                                "total_elapsed_seconds": round(total_elapsed, 2),
-                                "llm_elapsed_seconds": round(llm_time, 2) if llm_time > 0 else None
+                            "execution_time": {
+                                "total_sec": round(total_elapsed, 2),
+                                "llm_sec": round(llm_time, 2) if llm_time > 0 else None
                             },
                             # 내부 측정 점수 추가
                             "internal_analysis": {

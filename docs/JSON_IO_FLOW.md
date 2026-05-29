@@ -606,6 +606,15 @@ analysis_result["llm_stats"] = orig_report.llm_stats
     {"angle": "left45",  "path": "/path/to/left45.jpg"},
     {"angle": "right45", "path": "/path/to/right45.jpg"}
   ],
+  "metadata": {
+    "analyzers": {...},
+    "restorer": {...},
+    "llm": {...}
+  },
+  "execution_time": {
+    "total_sec": 45.2,      // 전체 처리 시간 (초)
+    "llm_sec": 3.2          // LLM 처리 시간 (초)
+  },
   "internal_analysis": {
     "original": {
       "melasma_score": 56,
