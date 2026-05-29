@@ -632,6 +632,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score":                 "산출 이유 (1~2문장)",
     "skin_type_score":                     "산출 이유 (1~2문장)"
   },
+  "ideal_metric_reasons": {
+    "melasma_score":                       "복원 이미지 점수 근거 (1~2문장)",
+    "freckle_score":                       "복원 이미지 점수 근거 (1~2문장)",
+    "redness_score":                       "복원 이미지 점수 근거 (1~2문장)",
+    "post_inflammatory_erythema_score":    "복원 이미지 점수 근거 (1~2문장)",
+    "acne_score":                          "복원 이미지 점수 근거 (1~2문장)",
+    "post_acne_pigment_score":             "복원 이미지 점수 근거 (1~2문장)",
+    "pore_size_score":                     "복원 이미지 점수 근거 (1~2문장)",
+    "pore_sagging_score":                  "복원 이미지 점수 근거 (1~2문장)",
+    "eye_wrinkle_score":                   "복원 이미지 점수 근거 (1~2문장)",
+    "nasolabial_wrinkle_score":            "복원 이미지 점수 근거 (1~2문장)",
+    "fine_deep_wrinkle_score":             "복원 이미지 점수 근거 (1~2문장)",
+    "roughness_score":                     "복원 이미지 점수 근거 (1~2문장)",
+    "skin_tone_score":                     "복원 이미지 점수 근거 (1~2문장)",
+    "dullness_score":                      "복원 이미지 점수 근거 (1~2문장)",
+    "uneven_tone_score":                   "복원 이미지 점수 근거 (1~2문장)",
+    "jawline_blur_score":                  "복원 이미지 점수 근거 (1~2문장)",
+    "cheek_sagging_score":                 "복원 이미지 점수 근거 (1~2문장)",
+    "skin_type_score":                     "복원 이미지 점수 근거 (1~2문장)"
+  },
   "orig_metric_scores": {
     "melasma_score": 70.0,
     "freckle_score": 65.0,
@@ -652,6 +672,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": 75.0,
     "skin_type_score": 78.0
   },
+  "ideal_metric_scores": {
+    "melasma_score": 75.0,
+    "freckle_score": 70.0,
+    "redness_score": 72.0,
+    "post_inflammatory_erythema_score": 75.0,
+    "acne_score": 90.0,
+    "post_acne_pigment_score": 80.0,
+    "pore_size_score": 70.0,
+    "pore_sagging_score": 68.0,
+    "eye_wrinkle_score": 75.0,
+    "nasolabial_wrinkle_score": 72.0,
+    "fine_deep_wrinkle_score": 76.0,
+    "roughness_score": 73.0,
+    "skin_tone_score": 70.0,
+    "dullness_score": 78.0,
+    "uneven_tone_score": 70.0,
+    "jawline_blur_score": 82.0,
+    "cheek_sagging_score": 78.0,
+    "skin_type_score": 80.0
+  },
   "orig_metric_opinions": {
     "melasma_score": "원본 소견 (Step 2 보정 내용 반영, 2~3문장)",
     "freckle_score": "원본 소견",
@@ -671,6 +711,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "jawline_blur_score": "원본 소견",
     "cheek_sagging_score": "원본 소견",
     "skin_type_score": "원본 소견"
+  },
+  "ideal_metric_opinions": {
+    "melasma_score": "복원 소견 (2~3문장)",
+    "freckle_score": "복원 소견",
+    "redness_score": "복원 소견",
+    "post_inflammatory_erythema_score": "복원 소견",
+    "acne_score": "복원 소견",
+    "post_acne_pigment_score": "복원 소견",
+    "pore_size_score": "복원 소견",
+    "pore_sagging_score": "복원 소견",
+    "eye_wrinkle_score": "복원 소견",
+    "nasolabial_wrinkle_score": "복원 소견",
+    "fine_deep_wrinkle_score": "복원 소견",
+    "roughness_score": "복원 소견",
+    "skin_tone_score": "복원 소견",
+    "dullness_score": "복원 소견",
+    "uneven_tone_score": "복원 소견",
+    "jawline_blur_score": "복원 소견",
+    "cheek_sagging_score": "복원 소견",
+    "skin_type_score": "복원 소견"
   },
   "orig_overall_score": 74.5,
   "orig_perceived_age": 38.0,
@@ -797,7 +857,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 ```json 없이 순수 JSON만 출력:
 {
   "strict_evaluation_mode": {strict_evaluation_mode},
-  "original_metric_scores": {
+  "orig_metric_scores": {
     "melasma_score": 70.0,
     "freckle_score": 65.0,
     "redness_score": 68.0,
@@ -817,7 +877,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": 75.0,
     "skin_type_score": 78.0
   },
-  "restored_metric_scores": {
+  "ideal_metric_scores": {
     "melasma_score": 70.0,
     "freckle_score": 82.0,
     "redness_score": 67.0,
@@ -837,7 +897,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": 75.0,
     "skin_type_score": 78.0
   },
-  "original_metric_reasons": {
+  "orig_metric_reasons": {
     "melasma_score": "원본 이미지 점수 근거 (1~2문장)",
     "freckle_score": "원본 이미지 점수 근거 (1~2문장)",
     "redness_score": "원본 이미지 점수 근거 (1~2문장)",
@@ -857,7 +917,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "원본 이미지 점수 근거 (1~2문장)",
     "skin_type_score": "원본 이미지 점수 근거 (1~2문장)"
   },
-  "restored_metric_reasons": {
+  "ideal_metric_reasons": {
     "melasma_score": "복원 이미지 점수 근거 (1~2문장)",
     "freckle_score": "복원 이미지 점수 근거 (1~2문장)",
     "redness_score": "복원 이미지 점수 근거 (1~2문장)",
@@ -877,7 +937,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "복원 이미지 점수 근거 (1~2문장)",
     "skin_type_score": "복원 이미지 점수 근거 (1~2문장)"
   },
-  "original_metric_opinions": {
+  "orig_metric_opinions": {
     "melasma_score": "원본 이미지 소견 텍스트 (2~3문장)",
     "freckle_score": "원본 이미지 소견 텍스트 (2~3문장)",
     "redness_score": "원본 이미지 소견 텍스트 (2~3문장)",
@@ -897,7 +957,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
     "skin_type_score": "원본 이미지 소견 텍스트 (2~3문장)"
   },
-  "restored_metric_opinions": {
+  "ideal_metric_opinions": {
     "melasma_score": "복원 이미지 소견 텍스트 (2~3문장)",
     "freckle_score": "복원 이미지 소견 텍스트 (2~3문장)",
     "redness_score": "복원 이미지 소견 텍스트 (2~3문장)",
@@ -917,8 +977,8 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "복원 이미지 소견 텍스트 (2~3문장)",
     "skin_type_score": "복원 이미지 소견 텍스트 (2~3문장)"
   },
-  "original_overall_opinion": "원본 이미지 종합 소견 5~8문장",
-  "restored_overall_opinion": "복원 이미지 종합 소견 5~8문장",
+  "orig_overall_opinion": "원본 이미지 종합 소견 5~8문장",
+  "ideal_overall_opinion": "복원 이미지 종합 소견 5~8문장",
   "recommendation": "관리 권고사항 (번호 목록 형식)"
 }
 ```
