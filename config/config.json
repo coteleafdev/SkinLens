@@ -72,10 +72,10 @@
     "max_output_tokens_single": 8192,
     "max_output_tokens_dual": 65536,
     "score_correction": {
-      "enabled": false,
+      "enabled": true,
       "mode": "hybrid",
-      "analyzer_weight": 0.7,
-      "llm_weight": 0.3,
+      "analyzer_weight": 0.5,
+      "llm_weight": 0.5,
       "dynamic_weighting": {
         "enabled": true,
         "score_difference_threshold": 15.0,
