@@ -1029,6 +1029,7 @@ class LlmSkinReporter:
             else:
                 opinion_text = base_opinion
 
+            # reference_guided 모드에서는 근거가 이미 소견에 포함되어 있으므로 reason 필드는 비움
             metric_opinions.append(MetricOpinion(
                 key=key,
                 display_name=display,
@@ -1036,7 +1037,7 @@ class LlmSkinReporter:
                 score=final_score,
                 grade=_grade_label(final_score),
                 opinion=opinion_text,
-                reason=reason,
+                reason="",  # reference_guided 모드에서는 중복 표시 방지
             ))
 
         # ── 종합 점수 ─────────────────────────────────────────────
