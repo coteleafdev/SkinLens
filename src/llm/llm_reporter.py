@@ -614,7 +614,7 @@ class LlmSkinReporter:
                 )
 
                 # 응답 완전성 검사
-                if self._is_response_truncated(response_text):
+                if _is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
                         log.warning(
                             "[RGP] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
@@ -646,7 +646,7 @@ class LlmSkinReporter:
 
             except (json.JSONDecodeError, ValueError) as e:
                 # 응답이 짤렸는지 확인
-                if self._is_response_truncated(response_text):
+                if _is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
                         log.warning(
                             "[RGP] JSON 파싱 실패 및 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d, 에러=%s",

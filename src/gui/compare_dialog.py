@@ -281,7 +281,7 @@ class SkinMeasurementCompareDialog(QDialog):
         ideal_perceived_age = self._ideal_result.get("perceived_age", 0)
         
         provide_scores = self._llm_provide_scores  # 항상 점수 제공
-        log.info(f"[LLM 호출] 다이얼로그에서 LLM API 호출 시작 (provide_scores={provide_scores}, JSON에서 읽음={self._llm_orig_report is not None and self._llm_ideal_report is not None})")
+        log.info(f"[LLM 호출] 다이얼로그에서 LLM API 호출 시작 (provide_scores={provide_scores})")
         log.debug("_generate_llm_report_dual: self._llm_provide_scores=%s (True=점수 제공, False=점수 미제공)", provide_scores)
         
         # 백그라운드 스레드 생성
