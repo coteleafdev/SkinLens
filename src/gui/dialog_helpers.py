@@ -159,8 +159,13 @@ def show_skin_measurement_compare_dialog(
             # 안전장치 적용 여부 확인
             safety_net_applied = result_ideal.get("safety_net_adjusted", False)
             # JSON에서 LLM 결과를 성공적으로 읽었으면 LLM 재호출 방지
-            llm_provide_scores = llm_scores and (gemini_orig_result is None or gemini_ideal_result is None)
-            log.debug(f"modal=True: llm_provide_scores={llm_provide_scores} (JSON에서 읽었으면 False, 없으면 True)")
+            # llm_json_path가 전달되었고 JSON에서 읽었으면 무조건 False로 설정
+            if llm_json_path and llm_json_path.exists() and gemini_orig_result is not None and gemini_ideal_result is not None:
+                llm_provide_scores = False
+                log.debug(f"modal=True: JSON에서 LLM 결과 성공적으로 읽음, llm_provide_scores=False (LLM 재호출 방지)")
+            else:
+                llm_provide_scores = llm_scores
+                log.debug(f"modal=True: JSON에서 LLM 결과를 읽지 못함, llm_provide_scores={llm_provide_scores} (LLM 호출 필요)")
             dlg = SkinMeasurementCompareDialog(
                 parent, orig_path, ideal_path,
                 result_orig,  # type: ignore[arg-type]
