@@ -1931,7 +1931,7 @@
         "status": "active"
       },
       "M04": {
-        "name": "탄력",
+        "name": "탄력&처짐",
         "category": "firmness",
         "description": "탄력 & 처짐 관리",
         "ingredients": [
