@@ -556,8 +556,10 @@ def _cli_body(args) -> int:
                                 log.info(f"[LLM] {msg}")
 
                             # 내부 측정 점수 제공 여부 결정
-                            orig_measurements = {} if not args.llm_scores else original_score_filtered
-                            ideal_measurements = {} if not args.llm_scores else restored_score_filtered
+                            # 처방전 계산을 위해 측정 점수는 항상 전달
+                            # provide_scores는 LLM에게 점수를 제공할지 여부만 결정
+                            orig_measurements = original_score_filtered
+                            ideal_measurements = restored_score_filtered
                             provide_scores = args.llm_scores  # --llm-scores true면 점수 제공
                             
                             # ProductRepository 생성 (LLM Reporter에 전달)
