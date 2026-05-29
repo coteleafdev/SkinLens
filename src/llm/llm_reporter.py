@@ -521,6 +521,7 @@ class LlmSkinReporter:
         survey_info: Optional[str] = None,
         skin_type: Optional[str] = None,
         concerns: Optional[List[str]] = None,
+        matched_products: Optional[List[Dict[str, Any]]] = None,
     ) -> SkinLLMReport:
         """복원 이미지를 레퍼런스로 사용하여 원본 점수 정확도를 높인 보고서 반환.
 
@@ -567,25 +568,31 @@ class LlmSkinReporter:
         prescription_info = json.dumps(full_prescription, ensure_ascii=False)
 
         # ── 제품 매칭 ─────────────────────────────────────────────
-        assessment_recipe = full_prescription.get("assessment", {})
-        matched_products: List[Dict[str, Any]] = []
-        try:
-            if self._product_repository:
-                matched_products = self._product_repository.match_products_by_prescription(
-                    assessment_recipe, max_products=3
-                )
-            else:
-                from src.db.product_repository import ProductRepository
-                repo = ProductRepository()
-                matched_products = repo.match_products_by_prescription(
-                    assessment_recipe, max_products=3
-                )
-                repo.close()
+        # 외부에서 전달된 matched_products가 있으면 사용, 없으면 처방전 기반 매칭
+        if matched_products is None:
+            assessment_recipe = full_prescription.get("assessment", {})
+            matched_products: List[Dict[str, Any]] = []
+            try:
+                if self._product_repository:
+                    matched_products = self._product_repository.match_products_by_prescription(
+                        assessment_recipe, max_products=3
+                    )
+                else:
+                    from src.db.product_repository import ProductRepository
+                    repo = ProductRepository()
+                    matched_products = repo.match_products_by_prescription(
+                        assessment_recipe, max_products=3
+                    )
+                    repo.close()
+                product_info = product_info or json.dumps(matched_products, ensure_ascii=False)
+                log.info(f"[RGP] 매칭된 제품 수: {len(matched_products)}")
+            except Exception as e:
+                log.warning("[RGP] 제품 매칭 실패: %s", e)
+                product_info = product_info or "[]"
+        else:
+            # 전달된 matched_products 사용
             product_info = product_info or json.dumps(matched_products, ensure_ascii=False)
-            log.info(f"[RGP] 매칭된 제품 수: {len(matched_products)}")
-        except Exception as e:
-            log.warning("[RGP] 제품 매칭 실패: %s", e)
-            product_info = product_info or "[]"
+            log.info(f"[RGP] 전달된 matched_products 사용: {len(matched_products)}")
 
         # ── 프롬프트 조립 ─────────────────────────────────────────
         system_prompt = _build_system_prompt()
@@ -805,6 +812,7 @@ class LlmSkinReporter:
                 provide_scores=provide_scores,
                 product_info=product_info,
                 survey_info=survey_info,
+                matched_products=matched_products,
             )
             # RGP 모드에서도 복원 이미지 점수를 생성하여 테이블에 표시
             # LLM 응답에서 ref_metric_scores를 추출하여 ref_metric_opinions 생성
