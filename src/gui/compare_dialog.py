@@ -351,6 +351,9 @@ class SkinMeasurementCompareDialog(QDialog):
             pass
 
         recommendation_text = getattr(orig_report, 'recommendation', '')
+        # recommendation이 리스트인 경우 문자열로 변환
+        if isinstance(recommendation_text, list):
+            recommendation_text = '\n'.join(recommendation_text)
         log.info(f"[GUI] 처방전 길이: {len(recommendation_text)}")
         
         # 제품 추천 정보 추출
