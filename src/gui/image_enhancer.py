@@ -814,12 +814,14 @@ def _cli_body(args) -> int:
                                 log.warning("[경고] PySide6가 설치되어 있지 않아 측정항목 비교 다이얼로그를 표시할 수 없습니다.")
                             else:
                                 proc = QProcess()
+                                # 이미지별 폴더로 이동된 경로 사용
+                                original_moved_path = image_folder / f"00_input_{input_stem}.png"
                                 proc_args = [
                                     sys.executable,
                                     "-B",  # .pyc 파일 생성 비활성화 (캐시 문제 방지)
                                     __file__,
                                     "--compare",
-                                    str(init_resolved),
+                                    str(original_moved_path),
                                     str(final_p),
                                 ]
                                 # JSON 파일 경로 전달 (서브프로세스에서 LLM 재호출 방지)
