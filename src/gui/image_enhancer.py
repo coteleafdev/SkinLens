@@ -679,12 +679,36 @@ def _cli_body(args) -> int:
                         # LLM 결과가 있으면 추가 (provide_scores와 관계없이)
                         # LLM 결과가 없어도 빈 결과를 추가하여 서브프로세스에서 LLM 재호출 방지
                         if llm_orig_result and llm_ideal_result:
+                            # raw_response에서 순수 LLM 점수 추출
+                            import json as json_lib
+                            orig_llm_scores_raw = {}
+                            ideal_llm_scores_raw = {}
+                            
+                            try:
+                                if llm_orig_result.raw_response:
+                                    orig_response_json = json_lib.loads(llm_orig_result.raw_response)
+                                    orig_llm_scores_raw = orig_response_json.get("orig_metric_scores", {})
+                            except (json_lib.JSONDecodeError, AttributeError):
+                                pass
+                            
+                            try:
+                                if llm_ideal_result.raw_response:
+                                    ideal_response_json = json_lib.loads(llm_ideal_result.raw_response)
+                                    ideal_llm_scores_raw = ideal_response_json.get("ref_metric_scores", {})
+                            except (json_lib.JSONDecodeError, AttributeError):
+                                pass
+                            
                             # 원본 보고서
                             orig_dict = {
                                 "raw_response": getattr(llm_orig_result, 'raw_response', ''),
                                 "overall_opinion": getattr(llm_orig_result, 'overall_opinion', ''),
                                 "overall_score": int(round(getattr(llm_orig_result, 'overall_score', 0))),
                                 "perceived_age": int(round(getattr(llm_orig_result, 'perceived_age', 0))),
+                                "metric_scores_raw": orig_llm_scores_raw,  # 순수 LLM 점수 (조정 전)
+                                "metric_scores_adjusted": {  # 보정 적용된 LLM 점수 (조정 후)
+                                    m.key: int(round(m.score))
+                                    for m in llm_orig_result.metric_opinions
+                                },
                                 "metric_opinions": [
                                     {
                                         "key": m.key,
@@ -705,6 +729,11 @@ def _cli_body(args) -> int:
                                 "overall_opinion": getattr(llm_ideal_result, 'overall_opinion', ''),
                                 "overall_score": int(round(getattr(llm_ideal_result, 'overall_score', 0))),
                                 "perceived_age": int(round(getattr(llm_ideal_result, 'perceived_age', 0))),
+                                "metric_scores_raw": ideal_llm_scores_raw,  # 순수 LLM 점수 (조정 전)
+                                "metric_scores_adjusted": {  # 보정 적용된 LLM 점수 (조정 후)
+                                    m.key: int(round(m.score))
+                                    for m in llm_ideal_result.metric_opinions
+                                },
                                 "metric_opinions": [
                                     {
                                         "key": m.key,
@@ -774,6 +803,7 @@ def _cli_body(args) -> int:
                                 proc = QProcess()
                                 proc_args = [
                                     sys.executable,
+                                    "-B",  # .pyc 파일 생성 비활성화 (캐시 문제 방지)
                                     __file__,
                                     "--compare",
                                     str(init_resolved),

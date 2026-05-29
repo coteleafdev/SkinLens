@@ -626,19 +626,74 @@ analysis_result["llm_stats"] = orig_report.llm_stats
       "uneven_tone_score": 70,
       "jawline_blur_score": 60,
       "skin_type_score": 70,
-      "overall_score": 65
+      "overall_score": 65,
+      "measurements": {},              // 자체 분석기 측정값
+      "measurements_raw": {},          // 원시 측정값 (조정 전)
+      "measurements_adjusted": {},     // 조정된 측정값 (안전장치 등 적용)
+      "overall_score_adjusted": 65     // 조정된 종합 점수
     },
     "restored": {
       // 복원 이미지 분석 결과
+      // 구조는 original과 동일
     }
   },
   "llm_analysis": {
     "original": {
+      "raw_response": "...",
+      "overall_opinion": "...",
       "overall_score": 65,
-      "summary": "...",
-      "recommendation": "현재 피부 상태를 개선하기 위해..."
+      "perceived_age": 38,
+      "metric_scores_raw": {              // 순수 LLM 점수 (조정 전)
+        "melasma_score": 75,
+        "freckle_score": 30,
+        ...
+      },
+      "metric_scores_adjusted": {          // 보정 적용된 LLM 점수 (조정 후)
+        "melasma_score": 75,
+        "freckle_score": 30,
+        ...
+      },
+      "metric_opinions": [
+        {
+          "key": "melasma_score",
+          "display_name": "기미",
+          "category": "pigmentation",
+          "score": 75,
+          "opinion": "...",
+          "reason": "...",
+          "grade": "70~80점"
+        },
+        ...
+      ]
     },
-    "restored": { ... },
+    "restored": {
+      "raw_response": "...",
+      "overall_opinion": "...",
+      "overall_score": 75,
+      "perceived_age": 29,
+      "metric_scores_raw": {              // 순수 LLM 점수 (조정 전)
+        "melasma_score": 75,
+        "freckle_score": 70,
+        ...
+      },
+      "metric_scores_adjusted": {          // 보정 적용된 LLM 점수 (조정 후)
+        "melasma_score": 75,
+        "freckle_score": 70,
+        ...
+      },
+      "metric_opinions": [
+        {
+          "key": "melasma_score",
+          "display_name": "기미",
+          "category": "pigmentation",
+          "score": 75,
+          "opinion": "",
+          "reason": "...",
+          "grade": "70~80점"
+        },
+        ...
+      ]
+    },
     "product_recommendations": {
       "matched_products": [
         {
@@ -656,6 +711,16 @@ analysis_result["llm_stats"] = orig_report.llm_stats
   }
 }
 ```
+
+**점수 데이터 포맷 통일:**
+- **자체 분석기 점수** (`internal_analysis`):
+  - `measurements_raw`: 원시 측정값 (조정 전)
+  - `measurements_adjusted`: 조정된 측정값 (안전장치 등 적용)
+  - `measurements`: 현재 사용 중인 측정값
+- **LLM 점수** (`llm_analysis`):
+  - `metric_scores_raw`: 순수 LLM 점수 (조정 전, raw_response에서 추출)
+  - `metric_scores_adjusted`: 보정 적용된 LLM 점수 (조정 후, 자체 분석기 점수와 결합)
+  - `metric_opinions[].score`: 최종 점수 (metric_scores_adjusted와 동일)
 
 **점수 표시 정책:**
 - **출력 JSON**: 모든 점수는 정수로 표시됩니다 (소수점 없음)

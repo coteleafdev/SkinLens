@@ -125,6 +125,7 @@ def show_skin_measurement_compare_dialog(
                                     category=m.get("category", ""),
                                     score=m["score"],
                                     opinion=m["opinion"],
+                                    reason=m.get("reason", ""),  # reason 필드 추가
                                     grade=m["grade"]
                                 )
                                 for m in orig_data.get("metric_opinions", [])
@@ -144,6 +145,7 @@ def show_skin_measurement_compare_dialog(
                                     category=m.get("category", ""),
                                     score=m["score"],
                                     opinion=m["opinion"],
+                                    reason=m.get("reason", ""),  # reason 필드 추가
                                     grade=m["grade"]
                                 )
                                 for m in ideal_data.get("metric_opinions", [])
@@ -414,6 +416,7 @@ def show_skin_measurement_compare_dialog(
                                         category=m.get("category", ""),
                                         score=m["score"],
                                         opinion=m["opinion"],
+                                        reason=m.get("reason", ""),  # reason 필드 추가
                                     )
                                     for m in orig_data.get("metric_opinions", [])
                                 ],
@@ -431,6 +434,7 @@ def show_skin_measurement_compare_dialog(
                                         category=m.get("category", ""),
                                         score=m["score"],
                                         opinion=m["opinion"],
+                                        reason=m.get("reason", ""),  # reason 필드 추가
                                     )
                                     for m in ideal_data.get("metric_opinions", [])
                                 ],
