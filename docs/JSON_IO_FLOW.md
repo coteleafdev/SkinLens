@@ -661,7 +661,9 @@ analysis_result["llm_stats"] = orig_report.llm_stats
 - **출력 JSON**: 모든 점수는 정수로 표시됩니다 (소수점 없음)
   - `internal_analysis.original.overall_score`: 정수 (예: 65)
   - `internal_analysis.original.*_score`: 정수 (예: 56, 72, 68)
+  - `internal_analysis.original.perceived_age`: 정수 (예: 38)
   - `llm_analysis.original.overall_score`: 정수 (예: 65)
+  - `llm_analysis.original.perceived_age`: 정수 (예: 38)
   - `llm_analysis.*.match_score`: 정수 (예: 1)
 - **내부 계산**: float로 유지 (정밀도 보장)
 - **변환 위치**: `src/cli/skin_analysis_cli.py`의 `_convert_scores_to_int()` 함수와 `src/llm/llm_utils.py`의 `report_to_dict()` 함수에서 정수로 변환

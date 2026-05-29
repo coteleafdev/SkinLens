@@ -252,8 +252,8 @@ def populate_compare_score_table(
                 f"복원(raw) {int(round(i2_overall))} / 복원 {int(round(i1_overall))}"
             )
             lbl_age.setText(
-                f"인지 나이: 원본 {orig.get('perceived_age', '-')} / "
-                f"복원 {ideal1.get('perceived_age', '-')}"
+                f"인지 나이: 원본 {int(round(orig.get('perceived_age', 0)))}세 / "
+                f"복원 {int(round(ideal1.get('perceived_age', 0)))}세"
             )
         else:
             lbl_overall.setText(
@@ -261,8 +261,8 @@ def populate_compare_score_table(
                 f"복원(raw) {int(round(i1_overall_raw))} / 복원 {int(round(i1_overall))}"
             )
             lbl_age.setText(
-                f"인지 나이: 원본 {orig.get('perceived_age', '-')} / "
-                f"복원 {ideal1.get('perceived_age', '-')}"
+                f"인지 나이: 원본 {int(round(orig.get('perceived_age', 0)))}세 / "
+                f"복원 {int(round(ideal1.get('perceived_age', 0)))}세"
             )
     else:
         lbl_overall.setText(
@@ -271,9 +271,9 @@ def populate_compare_score_table(
             f"이상2 {int(round(i2_overall))} (raw: {int(round(i2_overall_raw))})"
         )
         lbl_age.setText(
-            f"인지 나이: 원본 {orig.get('perceived_age', '-')} / "
-            f"이상1 {ideal1.get('perceived_age', '-')} / "
-            f"이상2 {ideal2.get('perceived_age', '-')}"
+            f"인지 나이: 원본 {int(round(orig.get('perceived_age', 0)))}세 / "
+            f"이상1 {int(round(ideal1.get('perceived_age', 0)))}세 / "
+            f"이상2 {int(round(ideal2.get('perceived_age', 0)))}세"
         )
 
     mo  = orig.get("measurements_report")  or orig.get("measurements", {})
@@ -738,7 +738,7 @@ class MainWindow(QMainWindow):
             "[analyzer_compare_gui] 측정 결과",
             f"timestamp | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             f"overall_score | 원본 {int(round(o_overall))} | 이상1 {int(round(i1_overall))} | 차이1 {int(round(i1_overall - o_overall)):+d} | 이상2 {int(round(i2_overall))} | 차이2 {int(round(i2_overall - o_overall)):+d}",
-            f"perceived_age | 원본 {orig.get('perceived_age', '-')} | 이상1 {ideal1.get('perceived_age', '-')} | 이상2 {ideal2.get('perceived_age', '-')}",
+            f"perceived_age | 원본 {int(round(orig.get('perceived_age', 0)))}세 | 이상1 {int(round(ideal1.get('perceived_age', 0)))}세 | 이상2 {int(round(ideal2.get('perceived_age', 0)))}세",
             "-" * 72,
         ]
         for key in keys:

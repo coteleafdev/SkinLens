@@ -653,7 +653,7 @@ def _cli_body(args) -> int:
                                 "original": {
                                     "overall_score": float(o.get("overall_score_report", o.get("overall_score", 0))),
                                     "overall_score_raw": float(o.get("overall_score_report_raw", o.get("overall_score_raw", 0))),
-                                    "perceived_age": o.get("perceived_age", 0),
+                                    "perceived_age": int(round(o.get("perceived_age", 0))),
                                     "measurements": filter_measurements(o.get("measurements_report") or o.get("measurements", {})),
                                     "measurements_raw": extract_raw_measurements(o.get("measurements_report") or o.get("measurements", {})),
                                     "overall_score_adjusted": orig_score_adjusted["overall"],
@@ -662,7 +662,7 @@ def _cli_body(args) -> int:
                                 "restored": {
                                     "overall_score": float(i1.get("overall_score_report", i1.get("overall_score", 0))),
                                     "overall_score_raw": float(i1.get("overall_score_report_raw", i1.get("overall_score_raw", 0))),
-                                    "perceived_age": i1.get("perceived_age", 0),
+                                    "perceived_age": int(round(i1.get("perceived_age", 0))),
                                     "measurements": filter_measurements(i1.get("measurements_report") or i.get("measurements", {})),
                                     "measurements_raw": extract_raw_measurements(i1.get("measurements_report") or i.get("measurements", {})),
                                     "overall_score_adjusted": ideal1_score_adjusted["overall"],
@@ -677,14 +677,14 @@ def _cli_body(args) -> int:
                             orig_dict = {
                                 "raw_response": getattr(llm_orig_result, 'raw_response', ''),
                                 "overall_opinion": getattr(llm_orig_result, 'overall_opinion', ''),
-                                "overall_score": getattr(llm_orig_result, 'overall_score', 0),
-                                "perceived_age": getattr(llm_orig_result, 'perceived_age', 0),
+                                "overall_score": int(round(getattr(llm_orig_result, 'overall_score', 0))),
+                                "perceived_age": int(round(getattr(llm_orig_result, 'perceived_age', 0))),
                                 "metric_opinions": [
                                     {
                                         "key": m.key,
                                         "display_name": m.display_name,
                                         "category": m.category,
-                                        "score": m.score,
+                                        "score": int(round(m.score)),
                                         "opinion": m.opinion,
                                         "reason": m.reason,
                                         "grade": m.grade
@@ -697,14 +697,14 @@ def _cli_body(args) -> int:
                             ideal_dict = {
                                 "raw_response": getattr(llm_ideal_result, 'raw_response', ''),
                                 "overall_opinion": getattr(llm_ideal_result, 'overall_opinion', ''),
-                                "overall_score": getattr(llm_ideal_result, 'overall_score', 0),
-                                "perceived_age": getattr(llm_ideal_result, 'perceived_age', 0),
+                                "overall_score": int(round(getattr(llm_ideal_result, 'overall_score', 0))),
+                                "perceived_age": int(round(getattr(llm_ideal_result, 'perceived_age', 0))),
                                 "metric_opinions": [
                                     {
                                         "key": m.key,
                                         "display_name": m.display_name,
                                         "category": m.category,
-                                        "score": m.score,
+                                        "score": int(round(m.score)),
                                         "opinion": m.opinion,
                                         "reason": m.reason,
                                         "grade": m.grade

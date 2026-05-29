@@ -398,8 +398,8 @@ class SkinMeasurementCompareDialog(QDialog):
 【분석 메타데이터】
 - 원본 LLM 측정 피부건강지수: {int(round(orig_report.overall_score))}점
 {ideal_llm_score_text}
-- 원본 인지나이: {orig_report.perceived_age}세
-- 기준 인지나이: {ideal_report.perceived_age}세
+- 원본 인지나이: {int(round(orig_report.perceived_age))}세
+- 기준 인지나이: {int(round(ideal_report.perceived_age))}세
 """
         
         # 원본 이미지 항목별 소견 추가 (테이블 순서와 동일하게)
