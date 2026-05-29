@@ -889,7 +889,10 @@ class SkinAnalysisWindow(QMainWindow):
         # GUI 모드에서 비교창 열기 (비동기 모드 제외)
         if not gui_async:
             args.append("--restore-score-popup")
-        if self.chk_llm_scores.isChecked():
+            # 비교창 열기 시 자동으로 --llm-scores 활성화 (중복 LLM 호출 방지)
+            args.append("--llm-scores")
+            log.debug("--restore-score-popup 사용으로 인해 --llm-scores 자동 활성화 (중복 LLM 호출 방지)")
+        elif self.chk_llm_scores.isChecked():
             args.append("--llm-scores")  # 내부 측정 점수 제공
         if not self.chk_analyzer_score_tune.isChecked():
             args.append("--no-analyzer-score-tune")
