@@ -135,7 +135,7 @@ class SkinMeasurementCompareDialog(QDialog):
             f"<b>원본</b> {orig_path.name} &nbsp;|&nbsp; "
             f"<b>기준</b> {ideal_path.name}<br>"
             f"피부건강지수: 원본 <b>{int(round(rov))}</b> · 기준 <b>{int(round(riv))}</b>점<br>"
-            f"인지나이: 원본 <b>{o_age}</b>세 · 기준 <b>{i_age}</b>세<br>"
+            f"인지나이: 원본 <b>{int(round(o_age))}</b>세 · 기준 <b>{int(round(i_age))}</b>세<br>"
             f"항목 요약: "
             f"<span style='color:#78c8a0'>개선 {n_improved}개</span> &nbsp; "
             f"<span style='color:#c85050'>역전(복원 후 낮아짐) {n_reversed}개</span> &nbsp; "
