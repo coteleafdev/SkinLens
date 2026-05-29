@@ -474,13 +474,13 @@ class SkinMeasurementCompareDialog(QDialog):
     def _update_table_with_llm_scores(
         self,
         orig_metric_opinions: List[Any],
-        ideal_metric_opinions: List[Any]
+        ref_metric_opinions: List[Any]
     ) -> None:
         """테이블에 LLM 기준 점수를 업데이트합니다 (원본+복원 동시).
 
         Args:
             orig_metric_opinions: 원본 이미지 LLM 소견에 포함된 항목별 점수
-            ideal_metric_opinions: 기준 이미지 LLM 소견에 포함된 항목별 점수
+            ref_metric_opinions: 기준 이미지 LLM 소견에 포함된 항목별 점수
         """
         # 원본 점수 매핑 생성
         orig_scores = {}
@@ -488,11 +488,11 @@ class SkinMeasurementCompareDialog(QDialog):
             orig_scores[metric.display_name] = metric.score
         
         # 기준 점수 매핑 생성
-        ideal_scores = {}
-        for metric in ideal_metric_opinions:
-            ideal_scores[metric.display_name] = metric.score
+        ref_scores = {}
+        for metric in ref_metric_opinions:
+            ref_scores[metric.display_name] = metric.score
         
-        log.debug(f"[Table Update] ideal_scores mapping: {len(ideal_scores)} items, sample: {list(ideal_scores.items())[:3] if ideal_scores else 'empty'}")
+        log.debug(f"[Table Update] ref_scores mapping: {len(ref_scores)} items, sample: {list(ref_scores.items())[:3] if ref_scores else 'empty'}")
         
         for r in range(self.table.rowCount()):
             item_name = self.table.item(r, 0)
@@ -501,10 +501,10 @@ class SkinMeasurementCompareDialog(QDialog):
             
             name = item_name.text()
             orig_score = orig_scores.get(name)
-            ideal_score = ideal_scores.get(name)
+            ref_score = ref_scores.get(name)
             
             if r < 3:  # Log first 3 rows for debugging
-                log.debug(f"[Table Update] Row {r}: name='{name}', orig_score={orig_score}, ideal_score={ideal_score}")
+                log.debug(f"[Table Update] Row {r}: name='{name}', orig_score={orig_score}, ref_score={ref_score}")
             
             # 원본 점수 가져오기
             orig_base_item = self.table.item(r, 1)
@@ -518,13 +518,13 @@ class SkinMeasurementCompareDialog(QDialog):
                         log.debug("원본 기본 점수 파싱 실패: %s", e)
 
             # 기준 점수 가져오기
-            ideal_base_item = self.table.item(r, 2)
-            ideal_base_score = None
-            if ideal_base_item:
-                text = ideal_base_item.text()
+            ref_base_item = self.table.item(r, 2)
+            ref_base_score = None
+            if ref_base_item:
+                text = ref_base_item.text()
                 if text and text != 'N/A':
                     try:
-                        ideal_base_score = float(text)
+                        ref_base_score = float(text)
                     except (ValueError, AttributeError) as e:
                         log.debug("기준 기본 점수 파싱 실패: %s", e)
 
@@ -539,19 +539,19 @@ class SkinMeasurementCompareDialog(QDialog):
                     llm_orig_item.setBackground(QColor(240, 240, 240))
 
             # 복원 LLM 점수 설정
-            llm_ideal_item = self.table.item(r, 4)
-            if llm_ideal_item and ideal_score is not None:
-                llm_ideal_item.setText(f"{int(round(ideal_score))}")
+            llm_ref_item = self.table.item(r, 4)
+            if llm_ref_item and ref_score is not None:
+                llm_ref_item.setText(f"{int(round(ref_score))}")
                 # 점수를 제공하는 경우에만 조정 여부에 따라 배경색 변경
-                if self._llm_scores and ideal_base_score is not None and abs(ideal_score - ideal_base_score) > 0.1:
-                    llm_ideal_item.setBackground(QColor(255, 255, 200))  # 조정된 경우 노란색
+                if self._llm_scores and ref_base_score is not None and abs(ref_score - ref_base_score) > 0.1:
+                    llm_ref_item.setBackground(QColor(255, 255, 200))  # 조정된 경우 노란색
                 else:
-                    llm_ideal_item.setBackground(QColor(240, 240, 240))
+                    llm_ref_item.setBackground(QColor(240, 240, 240))
 
             # 차이 업데이트 (LLM 원본/복원 차이)
             diff_item = self.table.item(r, 5)
-            if diff_item and orig_score is not None and ideal_score is not None:
-                llm_diff = ideal_score - orig_score
+            if diff_item and orig_score is not None and ref_score is not None:
+                llm_diff = ref_score - orig_score
                 diff_item.setText(f"{int(round(llm_diff)):+d}")
                 if llm_diff > 0:
                     diff_item.setForeground(QColor(0, 150, 0))

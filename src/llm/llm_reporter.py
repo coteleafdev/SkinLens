@@ -1276,21 +1276,21 @@ class LlmSkinReporter:
                 ))
             
             # 복원 metric_opinions 파싱 (RGP 모드에서는 복원 이미지 소견을 요청하지 않음)
-            ideal_metric_opinions = []
-            ideal_metric_scores = response_json.get("ref_metric_scores", {})
-            ideal_metric_reasons = response_json.get("ref_metric_reasons", {})
+            ref_metric_opinions = []
+            ref_metric_scores = response_json.get("ref_metric_scores", {})
+            ref_metric_reasons = response_json.get("ref_metric_reasons", {})
             for key, display, category, _ in _METRIC_META:
                 # LLM이 측정한 점수를 항상 우선 사용
-                if key in ideal_metric_scores:
-                    score = ideal_metric_scores[key]
+                if key in ref_metric_scores:
+                    score = ref_metric_scores[key]
                 else:
                     # LLM 점수가 없으면 복원 측정 점수를 폴백으로 사용
                     score = ideal_measurements_report.get(key, 0)
                 # RGP 모드에서는 복원 이미지 소견을 요청하지 않으므로 빈 문자열 사용
                 opinion = ""
-                reason = ideal_metric_reasons.get(key, "")
+                reason = ref_metric_reasons.get(key, "")
 
-                ideal_metric_opinions.append(MetricOpinion(
+                ref_metric_opinions.append(MetricOpinion(
                     key=key,
                     display_name=display,
                     category=category,
@@ -1378,8 +1378,8 @@ class LlmSkinReporter:
                                 log.info(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} >= 임계값 {diff_comparison_threshold}, LLM 오탐으로 간주하여 자체 분석기 점수 사용")
                                 orig_metric_opinions[i].score = orig_analyzer_score
                                 orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
-                                ideal_metric_opinions[i].score = ideal_analyzer_score
-                                ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
+                                ref_metric_opinions[i].score = ideal_analyzer_score
+                                ref_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
                                 continue
                             else:
                                 log.debug(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} < 임계값 {diff_comparison_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
@@ -1413,8 +1413,8 @@ class LlmSkinReporter:
                                 correction_mode, analyzer_weight, llm_weight,
                                 dynamic_weighting_enabled, score_difference_threshold
                             )
-                            ideal_metric_opinions[i].score = corrected_score
-                            ideal_metric_opinions[i].grade = _grade_label(corrected_score)
+                            ref_metric_opinions[i].score = corrected_score
+                            ref_metric_opinions[i].grade = _grade_label(corrected_score)
                 elif dynamic_weighting_enabled:
                     # score_correction 비활성화 시에도 동적 가중치 독립 작동
                     analyzer_weight = score_correction_config.get("analyzer_weight", 0.7)
@@ -1459,8 +1459,8 @@ class LlmSkinReporter:
                                 log.info(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} >= 임계값 {diff_comparison_threshold}, LLM 오탐으로 간주하여 자체 분석기 점수 사용")
                                 orig_metric_opinions[i].score = orig_analyzer_score
                                 orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
-                                ideal_metric_opinions[i].score = ideal_analyzer_score
-                                ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
+                                ref_metric_opinions[i].score = ideal_analyzer_score
+                                ref_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
                                 continue
                             else:
                                 log.debug(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} < 임계값 {diff_comparison_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
@@ -1494,8 +1494,8 @@ class LlmSkinReporter:
                                 "hybrid", analyzer_weight, llm_weight,
                                 dynamic_weighting_enabled, score_difference_threshold
                             )
-                            ideal_metric_opinions[i].score = corrected_score
-                            ideal_metric_opinions[i].grade = _grade_label(corrected_score)
+                            ref_metric_opinions[i].score = corrected_score
+                            ref_metric_opinions[i].grade = _grade_label(corrected_score)
                 else:
                     # 점수 보정 비활성화: 점수 차이만 모니터링
                     _monitor_score_difference(orig_overall_score, llm_orig_overall_score, "종합 점수 (원본)")
@@ -1524,8 +1524,8 @@ class LlmSkinReporter:
                                 log.info(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} >= 임계값 {diff_comparison_threshold}, LLM 오탐으로 간주하여 자체 분석기 점수 사용")
                                 orig_metric_opinions[i].score = orig_analyzer_score
                                 orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
-                                ideal_metric_opinions[i].score = ideal_analyzer_score
-                                ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
+                                ref_metric_opinions[i].score = ideal_analyzer_score
+                                ref_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
                                 continue
                             else:
                                 log.debug(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} < 임계값 {diff_comparison_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
@@ -1563,7 +1563,7 @@ class LlmSkinReporter:
             ideal_report = SkinLLMReport(
                 overall_score=ideal_overall_score,
                 perceived_age=ideal_perceived_age,
-                metric_opinions=ideal_metric_opinions,
+                metric_opinions=ref_metric_opinions,
                 overall_opinion=ideal_overall_opinion,
                 recommendation=recommendation,
                 raw_response=response_text,
