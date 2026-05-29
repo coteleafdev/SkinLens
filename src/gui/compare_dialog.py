@@ -764,7 +764,7 @@ class SkinMeasurementCompareDialog(QDialog):
                             append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
                             # 소견은 표시하지 않고 산출근거만 표시
                             if metric.reason:
-                                append_with_font_local([f"[근거: {metric.reason}"], small_font)
+                                append_with_font_local([f"[근거: {metric.reason}]"], small_font)
                             append_with_font_local([])  # 빈 행
 
             if self._last_llm_report_orig:

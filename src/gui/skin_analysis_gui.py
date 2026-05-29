@@ -1026,6 +1026,7 @@ class SkinAnalysisWindow(QMainWindow):
             proc = QProcess(self)
             proc.setProgram(str(Path(sys.executable).resolve()))
             proc_args = [
+                "-B",  # .pyc 파일 생성 비활성화 (캐시 문제 방지)
                 str(current_file),
                 "--compare",
                 str(orig.resolve()),
