@@ -492,8 +492,6 @@ class SkinMeasurementCompareDialog(QDialog):
         for metric in ref_metric_opinions:
             ref_scores[metric.display_name] = metric.score
         
-        log.debug(f"[Table Update] ref_scores mapping: {len(ref_scores)} items, sample: {list(ref_scores.items())[:3] if ref_scores else 'empty'}")
-        
         for r in range(self.table.rowCount()):
             item_name = self.table.item(r, 0)
             if not item_name:
@@ -502,9 +500,6 @@ class SkinMeasurementCompareDialog(QDialog):
             name = item_name.text()
             orig_score = orig_scores.get(name)
             ref_score = ref_scores.get(name)
-            
-            if r < 3:  # Log first 3 rows for debugging
-                log.debug(f"[Table Update] Row {r}: name='{name}', orig_score={orig_score}, ref_score={ref_score}")
             
             # 원본 점수 가져오기
             orig_base_item = self.table.item(r, 1)

@@ -692,12 +692,42 @@ class LlmSkinReporter:
                 product_info=product_info,
                 survey_info=survey_info,
             )
-            # 복원 보고서는 빈 보고서로 대체 (reference_guided는 원본 1세트만 반환)
-            from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
+            # RGP 모드에서도 복원 이미지 점수를 생성하여 테이블에 표시
+            # LLM 응답에서 ref_metric_scores를 추출하여 ref_metric_opinions 생성
+            ref_metric_opinions = []
+            
+            # orig_report의 raw_response에서 ref_metric_scores 추출
+            try:
+                response_json = json.loads(orig_report.raw_response)
+                ref_metric_scores = response_json.get("ref_metric_scores", {})
+                ref_metric_reasons = response_json.get("ref_metric_reasons", {})
+                
+                for key, display, category, _ in _METRIC_META:
+                    if key in ref_metric_scores:
+                        score = ref_metric_scores[key]
+                    else:
+                        score = ideal_measurements_report.get(key, 0)
+                    # RGP 모드에서는 복원 이미지 소견을 요청하지 않으므로 빈 문자열 사용
+                    opinion = ""
+                    reason = ref_metric_reasons.get(key, "")
+                    
+                    ref_metric_opinions.append(MetricOpinion(
+                        key=key,
+                        display_name=display,
+                        category=category,
+                        score=score,
+                        grade=_grade_label(score),
+                        opinion=opinion,
+                        reason=reason,
+                    ))
+            except Exception as e:
+                log.warning(f"[RGP] ref_metric_opinions 생성 실패: {e}")
+                ref_metric_opinions = []
+            
             ideal_report = SkinLLMReport(
                 overall_score=ideal_overall_score,
                 perceived_age=ideal_perceived_age,
-                metric_opinions=[],
+                metric_opinions=ref_metric_opinions,
                 overall_opinion="[reference_guided 모드: 복원 보고서는 별도 생성하지 않음]",
                 recommendation="",
                 raw_response="",
