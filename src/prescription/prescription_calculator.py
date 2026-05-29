@@ -296,8 +296,8 @@ def calculate_skin_assessment_recipe(
     # config.json에서 매핑 로드
     measurement_mapping = _get_measurement_to_mix_code_mapping()
     
-    log.debug(f"[처방전] 측정항목 점수: {skin_assessment_scores}")
-    log.debug(f"[처방전] 매핑: {measurement_mapping}")
+    log.info(f"[처방전] 측정항목 점수: {skin_assessment_scores}")
+    log.info(f"[처방전] 매핑: {measurement_mapping}")
     
     # 믹스 코드별로 매핑된 측정항목 점수 수집
     mix_code_scores: Dict[str, List[float]] = {}
