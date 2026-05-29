@@ -145,6 +145,15 @@ def _build_reference_guided_prompt(
     # ── 3. 점수 기준 섹션 조립 ─────────────────────────────────────
     score_criteria_section = _build_score_criteria_section()
 
+    # ── 3.5 엄격한 평가 모드 확인 ───────────────────────────────────
+    strict_mode_enabled = False
+    try:
+        from src.skin.core.config_parser import get_score_criteria
+        criteria = get_score_criteria()
+        strict_mode_enabled = criteria.get("엄격한 평가 모드", {}).get("enabled", False)
+    except Exception as e:
+        log.warning(f"엄격한 평가 모드 확인 실패: {e}")
+
     # ── 4. 포맷팅 ─────────────────────────────────────────────────
     format_dict = {
         "orig_overall_score":  f"{orig_overall_score:.1f}",
@@ -152,6 +161,7 @@ def _build_reference_guided_prompt(
         "score_criteria_section": score_criteria_section,
         "product_info":        product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
         "prescription_info":   prescription_info or "{}",
+        "strict_evaluation_mode": "true" if strict_mode_enabled else "false",
     }
 
     log.info(
@@ -468,6 +478,15 @@ def _build_dual_image_prompt(
         )
     
     # 템플릿 포맷팅
+    # 엄격한 평가 모드 확인
+    strict_mode_enabled = False
+    try:
+        from src.skin.core.config_parser import get_score_criteria
+        criteria = get_score_criteria()
+        strict_mode_enabled = criteria.get("엄격한 평가 모드", {}).get("enabled", False)
+    except Exception as e:
+        log.warning(f"엄격한 평가 모드 확인 실패: {e}")
+
     format_dict = {
         "orig_overall_score": f"{orig_overall_score:.1f}",
         "orig_perceived_age": f"{orig_perceived_age:.1f}",
@@ -475,6 +494,7 @@ def _build_dual_image_prompt(
         "ideal_perceived_age": f"{ideal_perceived_age:.1f}",
         "product_info": product_info or "제공된 맞춤형 화장품 정보가 없습니다.",
         "prescription_info": prescription_info or "{}",
+        "strict_evaluation_mode": "true" if strict_mode_enabled else "false",
     }
     
     # 프롬프트 구성 정보 로그 기록

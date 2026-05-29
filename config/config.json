@@ -2376,7 +2376,7 @@
     "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 점수 기준 설정.",
     "_purpose": "점수 스케일 및 등급 라벨 정의.",
     "엄격한 평가 모드": {
-      "enabled": false,
+      "enabled": true,
       "_note": "true이면 모든 카테고리에 엄격한 평가 기준 적용. false이면 일반 평가 기준 사용."
     },
     "점수 스케일": {

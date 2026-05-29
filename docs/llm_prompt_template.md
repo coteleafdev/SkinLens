@@ -570,6 +570,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 ## 응답 형식 (순수 JSON — ```json 없이)
 
 {
+  "strict_evaluation_mode": {strict_evaluation_mode},
   "reference_baseline": {
     "주름": "복원본에서 관찰된 주름 기준선 서술",
     "모공": "복원본에서 관찰된 모공 기준선 서술",
@@ -752,6 +753,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 
 ```json 없이 순수 JSON만 출력:
 {
+  "strict_evaluation_mode": {strict_evaluation_mode},
   "original_metric_scores": {
     "melasma_score": 70.0,
     "freckle_score": 65.0,
