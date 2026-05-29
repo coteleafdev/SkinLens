@@ -107,7 +107,7 @@ def show_skin_measurement_compare_dialog(
                 try:
                     with open(results_json_path, "r", encoding="utf-8") as f:
                         results_data = json.load(f)
-                    gemini_analysis = results_data.get("gemini_analysis", {})
+                    gemini_analysis = results_data.get("llm_analysis", {})
                     if "original" in gemini_analysis and "restored" in gemini_analysis:
                         # Gemini 결과를 SkinGeminiReport 객체로 변환
                         from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
@@ -397,10 +397,10 @@ def show_skin_measurement_compare_dialog(
                     try:
                         with open(llm_json_path, 'r', encoding='utf-8') as f:
                             results = json.load(f)
-                        gemini_analysis = results.get("llm_analysis", {})
-                        if "original" in gemini_analysis and "restored" in gemini_analysis:
+                        llm_analysis = results.get("llm_analysis", {})
+                        if "original" in llm_analysis and "restored" in llm_analysis:
                             from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
-                            orig_data = gemini_analysis["original"]
+                            orig_data = llm_analysis["original"]
                             gemini_orig_result = SkinLLMReport(
                                 overall_opinion=orig_data.get("overall_opinion", ""),
                                 overall_score=orig_data.get("overall_score", 0),
@@ -417,7 +417,7 @@ def show_skin_measurement_compare_dialog(
                                 ],
                                 raw_response=orig_data.get("raw_response", ""),
                             )
-                            ideal_data = gemini_analysis["restored"]
+                            ideal_data = llm_analysis["restored"]
                             gemini_ideal_result = SkinLLMReport(
                                 overall_opinion=ideal_data.get("overall_opinion", ""),
                                 overall_score=ideal_data.get("overall_score", 0),
