@@ -776,6 +776,8 @@ def _cli_body(args) -> int:
                                 # JSON 파일 경로 전달 (서브프로세스에서 LLM 재호출 방지)
                                 proc_args.append("--llm-json")
                                 proc_args.append(str(json_path))
+                                # --llm-scores도 전달 (서브프로세스에서 LLM 점수 표시용)
+                                proc_args.append("--llm-scores")
                                 print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
                                 proc.setArguments(proc_args)
                                 proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
