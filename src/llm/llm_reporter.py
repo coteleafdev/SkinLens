@@ -1580,11 +1580,11 @@ class LlmSkinReporter:
                     # 개별 항목 점수 보정
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
                         # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
-                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ideal_metric_scores:
+                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ref_metric_scores:
                             orig_analyzer_score = orig_measurements_report.get(key, 0)
                             ideal_analyzer_score = ideal_measurements_report.get(key, 0)
                             orig_llm_score = orig_metric_scores[key]
-                            ideal_llm_score = ideal_metric_scores[key]
+                            ideal_llm_score = ref_metric_scores[key]
                             
                             # 자체 분석기 원본-복원 차이
                             analyzer_diff = abs(orig_analyzer_score - ideal_analyzer_score)
@@ -1620,9 +1620,9 @@ class LlmSkinReporter:
                             orig_metric_opinions[i].grade = _grade_label(corrected_score)
                         
                         # 복원 점수 보정
-                        if key in ideal_metric_scores:
+                        if key in ref_metric_scores:
                             analyzer_score = ideal_measurements_report.get(key, 0)
-                            llm_score = ideal_metric_scores[key]
+                            llm_score = ref_metric_scores[key]
                             
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (복원)")
@@ -1661,11 +1661,11 @@ class LlmSkinReporter:
                     # 개별 항목 점수 보정
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
                         # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
-                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ideal_metric_scores:
+                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ref_metric_scores:
                             orig_analyzer_score = orig_measurements_report.get(key, 0)
                             ideal_analyzer_score = ideal_measurements_report.get(key, 0)
                             orig_llm_score = orig_metric_scores[key]
-                            ideal_llm_score = ideal_metric_scores[key]
+                            ideal_llm_score = ref_metric_scores[key]
                             
                             # 자체 분석기 원본-복원 차이
                             analyzer_diff = abs(orig_analyzer_score - ideal_analyzer_score)
@@ -1701,9 +1701,9 @@ class LlmSkinReporter:
                             orig_metric_opinions[i].grade = _grade_label(corrected_score)
                         
                         # 복원 점수 보정
-                        if key in ideal_metric_scores:
+                        if key in ref_metric_scores:
                             analyzer_score = ideal_measurements_report.get(key, 0)
-                            llm_score = ideal_metric_scores[key]
+                            llm_score = ref_metric_scores[key]
                             
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (복원)")
@@ -1726,11 +1726,11 @@ class LlmSkinReporter:
                     # 개별 항목 점수 차이 모니터링 및 오탐 방지
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
                         # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
-                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ideal_metric_scores:
+                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ref_metric_scores:
                             orig_analyzer_score = orig_measurements_report.get(key, 0)
                             ideal_analyzer_score = ideal_measurements_report.get(key, 0)
                             orig_llm_score = orig_metric_scores[key]
-                            ideal_llm_score = ideal_metric_scores[key]
+                            ideal_llm_score = ref_metric_scores[key]
                             
                             # 자체 분석기 원본-복원 차이
                             analyzer_diff = abs(orig_analyzer_score - ideal_analyzer_score)
@@ -1755,9 +1755,9 @@ class LlmSkinReporter:
                             llm_score = orig_metric_scores[key]
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (원본)")
                         
-                        if key in ideal_metric_scores:
+                        if key in ref_metric_scores:
                             analyzer_score = ideal_measurements_report.get(key, 0)
-                            llm_score = ideal_metric_scores[key]
+                            llm_score = ref_metric_scores[key]
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (복원)")
                     
                     # LLM 점수 사용
