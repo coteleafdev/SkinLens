@@ -1275,7 +1275,7 @@ class LlmSkinReporter:
                     reason=reason,
                 ))
             
-            # 복원 metric_opinions 파싱
+            # 복원 metric_opinions 파싱 (RGP 모드에서는 복원 이미지 소견을 요청하지 않음)
             ideal_metric_opinions = []
             ideal_metric_scores = response_json.get("ref_metric_scores", {})
             ideal_metric_reasons = response_json.get("ref_metric_reasons", {})
@@ -1286,9 +1286,10 @@ class LlmSkinReporter:
                 else:
                     # LLM 점수가 없으면 복원 측정 점수를 폴백으로 사용
                     score = ideal_measurements_report.get(key, 0)
-                opinion = response_json.get("ref_metric_opinions", {}).get(key, "")
+                # RGP 모드에서는 복원 이미지 소견을 요청하지 않으므로 빈 문자열 사용
+                opinion = ""
                 reason = ideal_metric_reasons.get(key, "")
-                
+
                 ideal_metric_opinions.append(MetricOpinion(
                     key=key,
                     display_name=display,
