@@ -16,6 +16,7 @@ from src.skin.core.config_parser import (
     load_prompt_template,
     extract_section,
     get_measurement_count,
+    get_detailed_scoring_criteria,
 )
 
 from src.llm.llm_metadata import _get_metric_meta
@@ -164,29 +165,70 @@ def _build_reference_guided_prompt(
 def _build_score_criteria_section() -> str:
     """config.json의 score_criteria를 프롬프트 섹션 문자열로 변환."""
     try:
-        from src.skin.core.config_parser import get_score_criteria
+        from src.skin.core.config_parser import get_score_criteria, get_detailed_scoring_criteria
         criteria = get_score_criteria()
-        
+        detailed_criteria = get_detailed_scoring_criteria()
+
         lines = [
             "### 점수 스케일 (10~90)",
             "",
         ]
-        
+
         score_scale = criteria.get("점수 스케일", {})
         for label, range_info in score_scale.items():
             min_score = range_info.get("min", 0)
             max_score = range_info.get("max", 100)
             lines.append(f"- **{label}**: {min_score}~{max_score}점")
-        
+
         lines.append("")
         lines.append("### 등급 라벨")
         lines.append("")
-        
+
         grade_labels = criteria.get("등급 라벨", {})
         for label, description in grade_labels.items():
             lines.append(f"- **{label}**: {description}")
-        
+
         lines.append("")
+
+        # 항목별 구체적 점수 기준 추가
+        if detailed_criteria:
+            lines.append("### 항목별 구체적 점수 기준")
+            lines.append("")
+
+            for category_name, category_data in detailed_criteria.items():
+                lines.append(f"#### {category_name}")
+                lines.append("")
+
+                # 보수적 산출 원칙
+                principles = category_data.get("보수적 산출 원칙", [])
+                if principles:
+                    lines.append("**보수적 산출 원칙:**")
+                    for principle in principles:
+                        lines.append(f"- {principle}")
+                    lines.append("")
+
+                # 각 항목별 기준
+                for key, value in category_data.items():
+                    if key in ["항목", "보수적 산출 원칙", "최종 점수 범위"]:
+                        continue
+                    lines.append(f"**{key}:**")
+                    if isinstance(value, dict):
+                        for sub_key, sub_value in value.items():
+                            if isinstance(sub_value, list):
+                                lines.append(f"- {sub_key}: {', '.join(map(str, sub_value))}")
+                            else:
+                                lines.append(f"- {sub_key}: {sub_value}")
+                    lines.append("")
+
+                # 최종 점수 범위
+                score_range = category_data.get("최종 점수 범위")
+                if score_range:
+                    lines.append(f"**최종 점수 범위:** {score_range}")
+                    lines.append("")
+
+                lines.append("---")
+                lines.append("")
+
         return "\n".join(lines)
     except Exception as e:
         log.warning(f"점수 기준 섹션 생성 실패: {e}")

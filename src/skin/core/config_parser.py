@@ -784,6 +784,20 @@ def get_score_criteria() -> Dict[str, Any]:
     return config.get("score_criteria", {})
 
 
+def get_detailed_scoring_criteria() -> Dict[str, Any]:
+    """config.json에서 항목별 구체적 점수 기준을 로드합니다.
+
+    [REFACTOR 2026-05-29] llm_prompt_template.md에서 config.json으로 이전.
+    트러블, 색소, 홍조, 모공 등 눈으로 쉽게 구별되는 항목의 구체적 점수 기준.
+
+    Returns:
+        항목별 구체적 점수 기준 dict. {트러블, 색소, 홍조, 모공}
+    """
+    config = _load_config_json()
+    score_criteria = config.get("score_criteria", {})
+    return score_criteria.get("항목별 구체적 점수 기준", {})
+
+
 def get_recommendation_guidelines_from_config() -> Dict[str, Any]:
     """config.json에서 관리 권고사항 가이드라인을 로드합니다.
 
