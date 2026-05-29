@@ -293,6 +293,10 @@ def calculate_skin_assessment_recipe(
     if not skin_assessment_scores or not isinstance(skin_assessment_scores, dict):
         return {}
     
+    # measurements 키가 있으면 실제 측정항목 점수 추출
+    if 'measurements' in skin_assessment_scores:
+        skin_assessment_scores = skin_assessment_scores['measurements']
+    
     # config.json에서 매핑 로드
     measurement_mapping = _get_measurement_to_mix_code_mapping()
     
