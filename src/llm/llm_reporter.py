@@ -1578,6 +1578,7 @@ class LlmSkinReporter:
                     )
                     
                     # 개별 항목 점수 보정
+                    log.info(f"[점수 보정] 개별 항목 점수 보정 시작: orig_metric_scores={len(orig_metric_scores)}개, ref_metric_scores={len(ref_metric_scores)}개")
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
                         # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
                         if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ref_metric_scores:
@@ -1608,6 +1609,8 @@ class LlmSkinReporter:
                             analyzer_score = orig_measurements_report.get(key, 0)
                             llm_score = orig_metric_scores[key]
                             
+                            log.debug(f"[점수 보정] {display}: analyzer_score={analyzer_score}, llm_score={llm_score}")
+                            
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (원본)")
                             
@@ -1616,8 +1619,14 @@ class LlmSkinReporter:
                                 correction_mode, analyzer_weight, llm_weight,
                                 dynamic_weighting_enabled, score_difference_threshold
                             )
+                            log.debug(f"[점수 보정] {display}: corrected_score={corrected_score}")
                             orig_metric_opinions[i].score = corrected_score
                             orig_metric_opinions[i].grade = _grade_label(corrected_score)
+                        else:
+                            # LLM 점수가 없는 경우 원본 측정 점수 사용
+                            log.debug(f"[점수 보정] {display}: LLM 점수 없음, 원본 측정 점수 사용")
+                            orig_metric_opinions[i].score = orig_measurements_report.get(key, 0)
+                            orig_metric_opinions[i].grade = _grade_label(orig_metric_opinions[i].score)
                         
                         # 복원 점수 보정
                         if key in ref_metric_scores:
