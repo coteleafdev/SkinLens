@@ -161,12 +161,22 @@ def show_skin_measurement_compare_dialog(
             # JSON에서 LLM 결과를 성공적으로 읽었으면 LLM 재호출 방지
             # llm_json_path가 전달되었고 JSON에서 읽었으면 무조건 False로 설정
             # 빈 결과여도 JSON에서 읽었으면 LLM 재호출 방지 (LLM 호출은 1회만 수행)
-            if llm_json_path and llm_json_path.exists() and gemini_orig_result is not None and gemini_ideal_result is not None:
+            # 빈 결과 확인: overall_opinion이 빈 문자열이고 metric_opinions가 빈 리스트인 경우
+            is_empty_result = False
+            if gemini_orig_result is not None and gemini_ideal_result is not None:
+                if (not gemini_orig_result.overall_opinion and not gemini_orig_result.metric_opinions and
+                    not gemini_ideal_result.overall_opinion and not gemini_ideal_result.metric_opinions):
+                    is_empty_result = True
+                    log.debug(f"modal=True: JSON에서 빈 LLM 결과 읽음 (overall_opinion 빈 문자열, metric_opinions 빈 리스트)")
+            if llm_json_path and llm_json_path.exists() and gemini_orig_result is not None and gemini_ideal_result is not None and not is_empty_result:
                 llm_provide_scores = False
-                log.debug(f"modal=True: JSON에서 LLM 결과 읽음, llm_provide_scores=False (LLM 재호출 방지)")
+                log.debug(f"modal=True: JSON에서 유효한 LLM 결과 읽음, llm_provide_scores=False (LLM 재호출 방지)")
             else:
-                llm_provide_scores = True  # JSON에서 읽지 못했으면 항상 LLM 소견 생성
-                log.debug(f"modal=True: JSON에서 LLM 결과를 읽지 못함, llm_provide_scores=True (LLM 소견 생성)")
+                llm_provide_scores = True  # JSON에서 읽지 못했거나 빈 결과이면 항상 LLM 소견 생성
+                if is_empty_result:
+                    log.debug(f"modal=True: JSON에서 빈 LLM 결과 읽음, llm_provide_scores=True (LLM 소견 생성)")
+                else:
+                    log.debug(f"modal=True: JSON에서 LLM 결과를 읽지 못함, llm_provide_scores=True (LLM 소견 생성)")
             dlg = SkinMeasurementCompareDialog(
                 parent, orig_path, ideal_path,
                 result_orig,  # type: ignore[arg-type]
@@ -380,12 +390,75 @@ def show_skin_measurement_compare_dialog(
                 dialog_start = time.time()
                 # 안전장치 적용 여부 확인
                 safety_net_applied = i.get("safety_net_adjusted", False) if hasattr(i, 'get') else False
+                # modal=False인 경우: JSON에서 LLM 결과 읽기
+                gemini_orig_result = None
+                gemini_ideal_result = None
+                if llm_json_path and llm_json_path.exists():
+                    try:
+                        with open(llm_json_path, 'r', encoding='utf-8') as f:
+                            results = json.load(f)
+                        gemini_analysis = results.get("llm_analysis", {})
+                        if "original" in gemini_analysis and "restored" in gemini_analysis:
+                            from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
+                            orig_data = gemini_analysis["original"]
+                            gemini_orig_result = SkinLLMReport(
+                                overall_opinion=orig_data.get("overall_opinion", ""),
+                                overall_score=orig_data.get("overall_score", 0),
+                                perceived_age=orig_data.get("perceived_age", 0),
+                                metric_opinions=[
+                                    MetricOpinion(
+                                        key=m.get("key", ""),
+                                        display_name=m["display_name"],
+                                        category=m.get("category", ""),
+                                        score=m["score"],
+                                        opinion=m["opinion"],
+                                    )
+                                    for m in orig_data.get("metric_opinions", [])
+                                ],
+                                raw_response=orig_data.get("raw_response", ""),
+                            )
+                            ideal_data = gemini_analysis["restored"]
+                            gemini_ideal_result = SkinLLMReport(
+                                overall_opinion=ideal_data.get("overall_opinion", ""),
+                                overall_score=ideal_data.get("overall_score", 0),
+                                perceived_age=ideal_data.get("perceived_age", 0),
+                                metric_opinions=[
+                                    MetricOpinion(
+                                        key=m.get("key", ""),
+                                        display_name=m["display_name"],
+                                        category=m.get("category", ""),
+                                        score=m["score"],
+                                        opinion=m["opinion"],
+                                    )
+                                    for m in ideal_data.get("metric_opinions", [])
+                                ],
+                                raw_response=ideal_data.get("raw_response", ""),
+                            )
+                            log.debug("modal=False: JSON에서 LLM 결과 읽음")
+                    except Exception as e:
+                        log.debug(f"modal=False: JSON 읽기 실패: {e}")
+                # 빈 결과 확인
+                is_empty_result = False
+                if gemini_orig_result is not None and gemini_ideal_result is not None:
+                    if (not gemini_orig_result.overall_opinion and not gemini_orig_result.metric_opinions and
+                        not gemini_ideal_result.overall_opinion and not gemini_ideal_result.metric_opinions):
+                        is_empty_result = True
+                        log.debug("modal=False: JSON에서 빈 LLM 결과 읽음")
+                # 빈 결과가 아니면 LLM 재호출 방지
+                llm_provide_scores = True
+                if gemini_orig_result is not None and gemini_ideal_result is not None and not is_empty_result:
+                    llm_provide_scores = False
+                    log.debug("modal=False: JSON에서 유효한 LLM 결과 읽음, llm_provide_scores=False (LLM 재호출 방지)")
+                else:
+                    log.debug("modal=False: JSON에서 LLM 결과를 읽지 못했거나 빈 결과, llm_provide_scores=True (LLM 소견 생성)")
                 dlg = SkinMeasurementCompareDialog(
                     parent, orig_path, ideal_path,
                     o,  # type: ignore[arg-type]
                     i,  # type: ignore[arg-type]
                     llm_scores=llm_scores_holder[0],  # --llm-scores true면 점수 제공
-                    llm_provide_scores=True,  # 항상 LLM 소견 생성
+                    llm_provide_scores=llm_provide_scores,  # JSON에서 읽었으면 False로 설정하여 LLM 재호출 방지
+                    llm_orig_report=gemini_orig_result,
+                    llm_ideal_report=gemini_ideal_result,
                     safety_net_applied=safety_net_applied,
                 )
                 dialog_time = time.time() - dialog_start
