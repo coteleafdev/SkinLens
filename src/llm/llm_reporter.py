@@ -679,6 +679,16 @@ class LlmSkinReporter:
 
         log.info("[generate_dual_report] scoring_mode=%s (config.json llm.scoring_mode)", _scoring_mode)
 
+        # provide_scores=False이면 빈 점수를 전달하여 LLM이 직접 점수를 산출하도록 함
+        if not provide_scores:
+            log.info("[generate_dual_report] provide_scores=False → 빈 점수 전달 (LLM이 직접 점수 산출)")
+            orig_measurements_report = {}
+            ideal_measurements_report = {}
+            orig_overall_score = 0
+            ideal_overall_score = 0
+            orig_perceived_age = 0
+            ideal_perceived_age = 0
+
         if _scoring_mode == "reference_guided":
             log.info("[generate_dual_report] scoring_mode=reference_guided → 복원 기반 모드로 라우팅")
             orig_report = self.generate_reference_guided_report(

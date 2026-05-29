@@ -164,8 +164,8 @@ def show_skin_measurement_compare_dialog(
                 llm_provide_scores = False
                 log.debug(f"modal=True: JSON에서 LLM 결과 성공적으로 읽음, llm_provide_scores=False (LLM 재호출 방지)")
             else:
-                llm_provide_scores = llm_scores
-                log.debug(f"modal=True: JSON에서 LLM 결과를 읽지 못함, llm_provide_scores={llm_provide_scores} (LLM 호출 필요)")
+                llm_provide_scores = True  # JSON에서 읽지 못했으면 항상 LLM 소견 생성
+                log.debug(f"modal=True: JSON에서 LLM 결과를 읽지 못함, llm_provide_scores=True (LLM 소견 생성)")
             dlg = SkinMeasurementCompareDialog(
                 parent, orig_path, ideal_path,
                 result_orig,  # type: ignore[arg-type]
@@ -384,7 +384,7 @@ def show_skin_measurement_compare_dialog(
                     o,  # type: ignore[arg-type]
                     i,  # type: ignore[arg-type]
                     llm_scores=llm_scores_holder[0],  # --llm-scores true면 점수 제공
-                    llm_provide_scores=llm_scores_holder[0],  # --llm-scores true면 점수 제공
+                    llm_provide_scores=True,  # 항상 LLM 소견 생성
                     safety_net_applied=safety_net_applied,
                 )
                 dialog_time = time.time() - dialog_start

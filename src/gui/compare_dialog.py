@@ -260,13 +260,9 @@ class SkinMeasurementCompareDialog(QDialog):
         if self._last_llm_report_orig and self._last_llm_report_ideal:
             self._on_llm_dual_finished(self._last_llm_report_orig, self._last_llm_report_ideal, 0.0)
             self.btn_llm.setText("LLM 소견 재생성 (원본+기준 동시)")
-        elif self._llm_provide_scores:
-            # llm_provide_scores=True일 때만 자동으로 LLM 소견 생성 실행
-            QTimer.singleShot(100, self.btn_llm.click)
         else:
-            # llm_provide_scores=False이면 LLM 소견 생성하지 않음
-            self.llm_report_text.setText("LLM 소견이 제공되지 않습니다.\nJSON 파일에서 LLM 결과를 로드했습니다.")
-            self.btn_llm.setText("LLM 소견 생성 (원본+기준 동시)")
+            # LLM 결과가 없으면 항상 자동으로 LLM 소견 생성 실행 (점수 제공 여부와 관계없이)
+            QTimer.singleShot(100, self.btn_llm.click)
 
     def _generate_llm_report_dual(self) -> None:
         """LLM API를 사용하여 원본+기준 이미지를 한번에 분석하여 소견을 생성합니다."""
