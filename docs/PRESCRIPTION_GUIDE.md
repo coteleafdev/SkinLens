@@ -196,7 +196,7 @@ async function calculatePrescription(pcrResultData, pcrResult, bacteriaList)
     skin: {},
     care: {},
     pcr: {
-      [mixCode]: percentage,  // 예: { "M14": 1.5, "M15": 2.0 }
+      [mixCode]: percentage,  // 예: { "M10": 1.5, "PM01": 2.0 }
     },
     assessment: {}
   },

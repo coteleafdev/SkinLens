@@ -2032,13 +2032,13 @@
         {
           "rv_min": -30,
           "rv_max": -20,
-          "mix_code": "M18",
+          "mix_code": "PM04",
           "percentage": 2.5
         },
         {
           "rv_min": -999,
           "rv_max": -30,
-          "mix_code": "M18",
+          "mix_code": "PM04",
           "percentage": 3.0
         }
       ],
@@ -2052,25 +2052,25 @@
         {
           "rv_min": -10,
           "rv_max": 0,
-          "mix_code": "M15",
+          "mix_code": "PM01",
           "percentage": 1.5
         },
         {
           "rv_min": -20,
           "rv_max": -10,
-          "mix_code": "M15",
+          "mix_code": "PM01",
           "percentage": 2.0
         },
         {
           "rv_min": -30,
           "rv_max": -20,
-          "mix_code": "M19",
+          "mix_code": "PM05",
           "percentage": 2.5
         },
         {
           "rv_min": -999,
           "rv_max": -30,
-          "mix_code": "M19",
+          "mix_code": "PM05",
           "percentage": 3.0
         }
       ],
@@ -2084,25 +2084,25 @@
         {
           "rv_min": 0,
           "rv_max": 10,
-          "mix_code": "M16",
+          "mix_code": "PM02",
           "percentage": 1.5
         },
         {
           "rv_min": 10,
           "rv_max": 20,
-          "mix_code": "M16",
+          "mix_code": "PM02",
           "percentage": 2.0
         },
         {
           "rv_min": 20,
           "rv_max": 30,
-          "mix_code": "M20",
+          "mix_code": "PM06",
           "percentage": 2.5
         },
         {
           "rv_min": 30,
           "rv_max": 999,
-          "mix_code": "M20",
+          "mix_code": "PM06",
           "percentage": 3.0
         }
       ],
@@ -2116,25 +2116,25 @@
         {
           "rv_min": 0,
           "rv_max": 10,
-          "mix_code": "M17",
+          "mix_code": "PM03",
           "percentage": 1.5
         },
         {
           "rv_min": 10,
           "rv_max": 20,
-          "mix_code": "M17",
+          "mix_code": "PM03",
           "percentage": 2.0
         },
         {
           "rv_min": 20,
           "rv_max": 30,
-          "mix_code": "M21",
+          "mix_code": "PM07",
           "percentage": 2.5
         },
         {
           "rv_min": 30,
           "rv_max": 999,
-          "mix_code": "M21",
+          "mix_code": "PM07",
           "percentage": 3.0
         }
       ],
