@@ -1116,6 +1116,20 @@ class LlmSkinReporter:
                 except Exception:
                     pass
             
+            # 방법 4: 마지막 콤마 뒤 잘린 부분 제거
+            if not recovered:
+                try:
+                    # 마지막 콤마 찾기
+                    last_comma = response_text.rfind(',')
+                    if last_comma > 0:
+                        # 마지막 콤마 뒤를 제거하고 중괄호 닫기
+                        recovered_text = response_text[:last_comma] + '\n}'
+                        rj = json.loads(recovered_text)
+                        log.warning("[RGP] JSON 복구 성공 (방법4): 마지막 콤마 뒤 잘린 부분 제거")
+                        recovered = True
+                except Exception:
+                    pass
+            
             if not recovered:
                 log.error("[RGP] JSON 복구 실패, 빈 결과 반환")
                 # 빈 결과 반환
@@ -1303,6 +1317,18 @@ class LlmSkinReporter:
                         recovered_text = response_text[:last_complete_pos]
                         response_json = json.loads(recovered_text)
                         log.warning("[LLM] JSON 복구 성공 (방법3): 마지막 완전한 객체 추출")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            # 방법 4: 마지막 콤마 뒤 잘린 부분 제거
+            if not recovered:
+                try:
+                    last_comma = response_text.rfind(',')
+                    if last_comma > 0:
+                        recovered_text = response_text[:last_comma] + '\n}'
+                        response_json = json.loads(recovered_text)
+                        log.warning("[LLM] JSON 복구 성공 (방법4): 마지막 콤마 뒤 잘린 부분 제거")
                         recovered = True
                 except Exception:
                     pass
