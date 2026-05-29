@@ -296,6 +296,9 @@ def calculate_skin_assessment_recipe(
     # config.json에서 매핑 로드
     measurement_mapping = _get_measurement_to_mix_code_mapping()
     
+    log.debug(f"[처방전] 측정항목 점수: {skin_assessment_scores}")
+    log.debug(f"[처방전] 매핑: {measurement_mapping}")
+    
     # 믹스 코드별로 매핑된 측정항목 점수 수집
     mix_code_scores: Dict[str, List[float]] = {}
     
@@ -310,6 +313,8 @@ def calculate_skin_assessment_recipe(
             mix_code_scores[mix_code] = []
         mix_code_scores[mix_code].append(score)
     
+    log.debug(f"[처방전] 믹스 코드별 점수: {mix_code_scores}")
+    
     # 믹스 코드별로 가장 낮은 점수 기준으로 처방 비율 계산
     recipe: Dict[str, float] = {}
     
@@ -323,10 +328,13 @@ def calculate_skin_assessment_recipe(
         # 처방 비율 계산
         percentage = calculate_skin_assessment_percentage(min_score)
         
+        log.debug(f"[처방전] {mix_code}: min_score={min_score}, percentage={percentage}")
+        
         # 비율이 0보다 크면 처방에 추가
         if percentage > 0:
             recipe[mix_code] = percentage
     
+    log.info(f"[처방전] 최종 처방전: {recipe}")
     return recipe
 
 
