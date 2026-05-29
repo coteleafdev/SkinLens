@@ -576,6 +576,15 @@ class SkinMeasurementCompareDialog(QDialog):
             QMessageBox.warning(self, "오류", "openpyxl 라이브러리가 필요합니다.\n설치: pip install openpyxl")
             return
 
+        # scoring_mode 확인
+        scoring_mode = "independent"  # 기본값
+        try:
+            from src.utils.config import load_config as _load_config
+            config = _load_config()
+            scoring_mode = config.get("llm", {}).get("scoring_mode", "independent")
+        except Exception:
+            pass
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         default_name = f"skin_comparison_{timestamp}.xlsx"
         file_path, _ = QFileDialog.getSaveFileName(
@@ -716,7 +725,8 @@ class SkinMeasurementCompareDialog(QDialog):
                                 append_with_font_local([f"[근거: {metric.reason}"], small_font)
                             append_with_font_local([])  # 빈 행
 
-            if self._last_llm_report_ideal:
+            # reference_guided 모드에서는 복원 이미지 소견 제외
+            if self._last_llm_report_ideal and scoring_mode != "reference_guided":
                 append_with_font_local(["복원 이미지 종합 소견"], bold_font)
                 append_with_font_local([self._sanitize_cell_text(self._last_llm_report_ideal.overall_opinion)], small_font)
                 append_with_font_local([])  # 빈 행
