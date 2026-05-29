@@ -338,6 +338,17 @@ class SkinMeasurementCompareDialog(QDialog):
         if self._llm_scores and (getattr(orig_report, 'scores_adjusted', False) or getattr(ideal_report, 'scores_adjusted', False)):
             adjustment_note = "\n⚠ 점수가 LLM 소견에 기반하여 조정되었습니다.\n"
 
+        # 엄격한 평가 모드 확인
+        strict_mode_note = ""
+        try:
+            from src.utils.config import load_config as _load_config
+            config = _load_config()
+            strict_mode_enabled = config.get("score_criteria", {}).get("엄격한 평가 모드", {}).get("enabled", False)
+            if strict_mode_enabled:
+                strict_mode_note = "\n📋 엄격한 평가 모드가 적용되었습니다. 모든 카테고리에 엄격한 기준이 적용됩니다.\n"
+        except Exception:
+            pass
+
         recommendation_text = getattr(orig_report, 'recommendation', '')
         log.info(f"[GUI] 처방전 길이: {len(recommendation_text)}")
         
@@ -374,6 +385,7 @@ class SkinMeasurementCompareDialog(QDialog):
         
         report_text = f"""=== LLM AI 소견 (원본+복원 동시 분석) ===
 {adjustment_note}
+{strict_mode_note}
 【원본 이미지 종합 소견】
 {orig_report.overall_opinion}
 
@@ -677,6 +689,15 @@ class SkinMeasurementCompareDialog(QDialog):
                 append_with_font_local(["복원 LLM 피부건강지수", f"{ideal_llm_overall:.1f}"], bold_font)
             else:
                 append_with_font_local(["복원 LLM 피부건강지수", "-"], bold_font)
+            # 엄격한 평가 모드 표시
+            try:
+                from src.utils.config import load_config as _load_config
+                config = _load_config()
+                strict_mode_enabled = config.get("score_criteria", {}).get("엄격한 평가 모드", {}).get("enabled", False)
+                strict_mode_status = "적용됨" if strict_mode_enabled else "적용안됨"
+                append_with_font_local(["엄격한 평가 모드", strict_mode_status], bold_font)
+            except Exception:
+                pass
             append_with_font_local([])  # 빈 행
 
             # ── 테이블 데이터 추가 ─────────────────────────────────
