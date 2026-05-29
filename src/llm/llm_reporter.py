@@ -80,10 +80,9 @@ def _apply_score_correction(
             score_diff = abs(analyzer_score - llm_score)
             if score_diff >= score_difference_threshold:
                 log.info(
-                    f"[점수 보정] 동적 가중치 적용: 점수 차이 {score_diff:.1f} >= 임계값 {score_difference_threshold}, 5:5 비율 사용"
+                    f"[점수 보정] 점수 차이 {score_diff:.1f} >= 임계값 {score_difference_threshold}, 자체 분석기 점수 사용"
                 )
-                analyzer_weight = 0.5
-                llm_weight = 0.5
+                return analyzer_score
             else:
                 log.debug(
                     f"[점수 보정] 기존 가중치 사용: 점수 차이 {score_diff:.1f} < 임계값 {score_difference_threshold}"

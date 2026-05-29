@@ -79,7 +79,7 @@
       "dynamic_weighting": {
         "enabled": true,
         "score_difference_threshold": 15.0,
-        "_note": "동적 가중치 조정. score_correction과 독립적으로 작동. enabled=true이면 점수 차이가 score_difference_threshold 이상일 때 5:5 비율로 종합 점수 산출. 미만일 때는 기존 가중치(analyzer_weight, llm_weight) 사용. score_correction 비활성화 시에도 기본 5:5 비율로 작동."
+        "_note": "동적 가중치 조정. score_correction과 독립적으로 작동. enabled=true이면 점수 차이가 score_difference_threshold 이상일 때 자체 분석기 점수 사용. 미만일 때는 기존 가중치(analyzer_weight, llm_weight) 사용. score_correction 비활성화 시에도 기본 가중치로 작동."
       },
       "monitoring": {
         "warning_threshold": 20.0,
