@@ -594,7 +594,7 @@ class SkinMeasurementCompareDialog(QDialog):
 
             # 스타일 정의
             bold_font  = Font(name="맑은 고딕", size=11, bold=True)
-            small_font = Font(name="맑은 고딕", size=9, italic=True)
+            small_font = Font(name="맑은 고딕", size=9, italic=False)
 
             # 로컬 함수: ws를 캡처하여 append_with_font 호출
             def append_with_font_local(values: List[Any], font: Optional[Font] = None) -> int:
