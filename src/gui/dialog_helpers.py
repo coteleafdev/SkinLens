@@ -109,6 +109,7 @@ def show_skin_measurement_compare_dialog(
                         results_data = json.load(f)
                     gemini_analysis = results_data.get("llm_analysis", {})
                     if "original" in gemini_analysis and "restored" in gemini_analysis:
+                        log.info(f"[LLM JSON] modal=True: JSON에서 LLM 결과 읽음 (llm_analysis 키 존재)")
                         # Gemini 결과를 SkinGeminiReport 객체로 변환
                         from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
                         
@@ -151,7 +152,7 @@ def show_skin_measurement_compare_dialog(
                         )
                         log.debug(f"modal=True: Gemini 결과 로드 완료 ({results_json_path.name})")
                 except Exception as e:
-                    log.debug(f"modal=True: results.json 읽기 실패: {e}")
+                    log.warning(f"[LLM JSON] modal=True: JSON 읽기 실패: {e}")
             
             # 다이얼로그 생성
             log.debug(f"modal=True: 다이얼로그 생성 시작, llm_scores={llm_scores} (True=점수 제공, False=점수 미제공)")
@@ -399,6 +400,7 @@ def show_skin_measurement_compare_dialog(
                             results = json.load(f)
                         llm_analysis = results.get("llm_analysis", {})
                         if "original" in llm_analysis and "restored" in llm_analysis:
+                            log.info(f"[LLM JSON] modal=False: JSON에서 LLM 결과 읽음 (llm_analysis 키 존재)")
                             from src.llm.llm_formatters import SkinLLMReport, MetricOpinion
                             orig_data = llm_analysis["original"]
                             gemini_orig_result = SkinLLMReport(
@@ -436,7 +438,7 @@ def show_skin_measurement_compare_dialog(
                             )
                             log.debug("modal=False: JSON에서 LLM 결과 읽음")
                     except Exception as e:
-                        log.debug(f"modal=False: JSON 읽기 실패: {e}")
+                        log.warning(f"[LLM JSON] modal=False: JSON 읽기 실패: {e}")
                 # 빈 결과 확인
                 is_empty_result = False
                 if gemini_orig_result is not None and gemini_ideal_result is not None:

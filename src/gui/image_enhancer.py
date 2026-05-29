@@ -577,6 +577,7 @@ def _cli_body(args) -> int:
                                 log.warning(f"[경고] ProductRepository 초기화 실패: {e}")
                             
                             # 듀얼 이미지 분석 (product_repository 전달)
+                            log.info(f"[LLM 호출] 메인 프로세스에서 LLM API 호출 시작 (provide_scores={provide_scores}, 체크박스={'ON' if args.llm_scores else 'OFF'})")
                             llm_orig_result, llm_ideal_result = reporter.generate_report_from_dual_images(
                                 str(init_resolved),  # orig_image_path
                                 str(final_p),  # ideal_image_path
