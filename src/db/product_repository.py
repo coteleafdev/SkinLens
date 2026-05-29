@@ -469,7 +469,7 @@ class ProductRepository:
                 "efficacy": "모공 축소, 각질 제거, 피부결 개선",
                 "target_skin_types": ["oily", "combination"],
                 "target_concerns": ["모공", "거칠기", "블랙헤드"],
-                "target_prescription_items": ["M07", "M08"],  # 모공, 피부결
+                "target_prescription_items": ["M07"],  # 모공
             },
         ]
 
@@ -554,7 +554,7 @@ def load_sample_products(repo: ProductRepository) -> None:
             "efficacy": "모공 축소, 각질 제거, 피부결 개선",
             "target_skin_types": ["oily", "combination"],
             "target_concerns": ["모공", "거칠기", "블랙헤드"],
-            "target_prescription_items": ["M08", "M09"],  # 피부결, 모공
+            "target_prescription_items": ["M07"],  # 모공
         },
     ]
     
