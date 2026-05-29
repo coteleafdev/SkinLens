@@ -54,4 +54,4 @@ def get_db_path_from_env() -> str:
     Returns:
         데이터베이스 파일 경로 (기본값: "execution_history.db")
     """
-    return os.environ.get("EXECUTION_HISTORY_DB", "execution_history.db")
+    return os.environ.get("EXECUTION_HISTORY_DB", "results/execution_history.db")

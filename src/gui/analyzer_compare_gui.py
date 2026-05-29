@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (
 from src.scoring.skin_scoring import SkinAnalyzer, get_measurement_categories, REPORT_DISPLAY_NAMES
 
 
-_RESULTS_LOG_PATH = Path(__file__).resolve().with_name("results.log")
+_RESULTS_LOG_PATH = Path(__file__).resolve().parent.parent.parent / "results" / "logs" / "results.log"
 
 
 def _hard_exit(code: int = 0) -> None:

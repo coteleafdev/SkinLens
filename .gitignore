@@ -8,25 +8,19 @@ config/config.secrets.json
 # external/ 디렉토리는 Git LFS로 관리됨
 external/RestoreFormerPlusPlus/weights/
 external/CodeFormer/weights/
+results/weights/
 *.ckpt
 *.pth
 
 # 런타임 생성
-runtime/
 __pycache__/
 *.pyc
 *.db
 gui_debug.log
-execution_history.db
 
 # 정리된 디렉토리 (하위 호환성)
-data/
-logs/
-temp/
-backup/
 results/
-weights/
-*.xlsx
+backup/
 
 # Python 패키지
 *.egg-info/

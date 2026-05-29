@@ -193,11 +193,11 @@ class ExecutionHistoryDB:
         - 리소스 사용량 (메모리, CPU)
     """
 
-    def __init__(self, db_path: str = "execution_history.db", use_connection_pool: bool = False):
+    def __init__(self, db_path: str = "results/execution_history.db", use_connection_pool: bool = False):
         """데이터베이스 초기화.
 
         Args:
-            db_path: 데이터베이스 파일 경로 (기본: execution_history.db)
+            db_path: 데이터베이스 파일 경로 (기본: results/execution_history.db)
             use_connection_pool: 연결 풀 사용 여부 (기본: False)
         """
         self.db_path = db_path
@@ -1629,7 +1629,7 @@ class DBHandler(logging.Handler):
     config.json의 logging.db_logging 설정을 참조하여 동작합니다.
     """
 
-    def __init__(self, db_path: str = "execution_history.db"):
+    def __init__(self, db_path: str = "results/execution_history.db"):
         """DBHandler 초기화.
 
         Args:
@@ -1693,7 +1693,7 @@ class DBHandler(logging.Handler):
 
 # ── 유틸리티 함수 ─────────────────────────────────────────────────────────────
 
-def setup_db_logging(db_path: str = "execution_history.db") -> Optional[DBHandler]:
+def setup_db_logging(db_path: str = "results/execution_history.db") -> Optional[DBHandler]:
     """DB 로깅 핸들러 설정.
 
     Args:
@@ -1712,7 +1712,7 @@ def setup_db_logging(db_path: str = "execution_history.db") -> Optional[DBHandle
     return None
 
 
-def cleanup_logs_on_startup(db_path: str = "execution_history.db") -> int:
+def cleanup_logs_on_startup(db_path: str = "results/execution_history.db") -> int:
     """앱 시작 시 오래된 로그 정리.
 
     [참고] 현재는 사용하지 않습니다. 로그 저장 시 자동으로 롤링 방식으로 정리됩니다.
@@ -1747,7 +1747,7 @@ def cleanup_logs_on_startup(db_path: str = "execution_history.db") -> int:
 
 
 # 팩토리 함수
-def create_history_db(db_path: str = "execution_history.db") -> ExecutionHistoryDB:
+def create_history_db(db_path: str = "results/execution_history.db") -> ExecutionHistoryDB:
     """실행 이력 데이터베이스 생성 팩토리 함수.
 
     Args:
