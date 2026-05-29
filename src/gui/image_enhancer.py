@@ -991,12 +991,6 @@ def _cli() -> int:
 
     args = p.parse_args()
 
-    # --restore-score-popup 사용 시 자동으로 --llm-scores 활성화
-    # 비교 다이얼로그에서 메인 프로세스의 LLM 점수를 재사용하여 중복 API 호출 방지
-    if args.restore_score_popup and not args.llm_scores:
-        args.llm_scores = True
-        log.info("--restore-score-popup 사용으로 인해 --llm-scores 자동 활성화 (중복 LLM 호출 방지)")
-
     # 비동기 모드인 경우 asyncio.run으로 실행
     if args.async_mode:
         import asyncio
