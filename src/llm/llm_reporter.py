@@ -823,6 +823,58 @@ class LlmSkinReporter:
         try:
             # JSON 파싱
             response_json = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            log.error("[LLM] 단일 응답 JSON 파싱 실패: %s", e)
+            # JSON 복구 시도
+            recovered = False
+            
+            # 방법 1: 마지막 중괄호 찾기
+            try:
+                last_brace = response_text.rfind('}')
+                if last_brace > 0:
+                    recovered_text = response_text[:last_brace + 1]
+                    response_json = json.loads(recovered_text)
+                    log.warning("[LLM] JSON 복구 성공 (방법1): 마지막 불완전 부분 제거됨")
+                    recovered = True
+            except Exception:
+                pass
+            
+            # 방법 2: 문자열이 닫히지 않은 경우 처리
+            if not recovered:
+                try:
+                    quote_count = response_text.count('"')
+                    if quote_count % 2 != 0:
+                        recovered_text = response_text + '"'
+                        response_json = json.loads(recovered_text)
+                        log.warning("[LLM] JSON 복구 성공 (방법2): 마지막 따옴표 추가")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            # 방법 3: 마지막 완전한 객체 찾기
+            if not recovered:
+                try:
+                    brace_count = 0
+                    last_complete_pos = -1
+                    for i, char in enumerate(reversed(response_text)):
+                        if char == '}':
+                            brace_count += 1
+                        elif char == '{':
+                            brace_count -= 1
+                        if brace_count == 0:
+                            last_complete_pos = len(response_text) - i
+                            break
+                    
+                    if last_complete_pos > 0:
+                        recovered_text = response_text[:last_complete_pos]
+                        response_json = json.loads(recovered_text)
+                        log.warning("[LLM] JSON 복구 성공 (방법3): 마지막 완전한 객체 추출")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            if not recovered:
+                raise ValueError(f"[LLM] 단일 응답 JSON 파싱 실패: {e}")
             
             # metric_scores 및 metric_reasons 파싱
             metric_scores = response_json.get("metric_scores", {})
@@ -952,18 +1004,58 @@ class LlmSkinReporter:
             rj = json.loads(response_text)
         except json.JSONDecodeError as e:
             log.error("[RGP] JSON 파싱 실패: %s", e)
-            # JSON 복구 시도: 마지막 불완전한 부분 제거
+            # JSON 복구 시도: 여러 방법으로 복구
+            recovered = False
+            
+            # 방법 1: 마지막 중괄호 찾기
             try:
-                # 마지막 중괄호 찾기
                 last_brace = response_text.rfind('}')
                 if last_brace > 0:
                     recovered_text = response_text[:last_brace + 1]
                     rj = json.loads(recovered_text)
-                    log.warning("[RGP] JSON 복구 성공: 마지막 불완전 부분 제거됨")
-                else:
-                    raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
-            except Exception as recovery_error:
-                log.error("[RGP] JSON 복구 실패: %s", recovery_error)
+                    log.warning("[RGP] JSON 복구 성공 (방법1): 마지막 불완전 부분 제거됨")
+                    recovered = True
+            except Exception:
+                pass
+            
+            # 방법 2: 문자열이 닫히지 않은 경우 처리
+            if not recovered:
+                try:
+                    # 따옴표 균형 맞추기
+                    quote_count = response_text.count('"')
+                    if quote_count % 2 != 0:
+                        # 마지막 따옴표 추가
+                        recovered_text = response_text + '"'
+                        rj = json.loads(recovered_text)
+                        log.warning("[RGP] JSON 복구 성공 (방법2): 마지막 따옴표 추가")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            # 방법 3: 마지막 완전한 객체 찾기
+            if not recovered:
+                try:
+                    # 마지막 완전한 중괄호 쌍 찾기
+                    brace_count = 0
+                    last_complete_pos = -1
+                    for i, char in enumerate(reversed(response_text)):
+                        if char == '}':
+                            brace_count += 1
+                        elif char == '{':
+                            brace_count -= 1
+                        if brace_count == 0:
+                            last_complete_pos = len(response_text) - i
+                            break
+                    
+                    if last_complete_pos > 0:
+                        recovered_text = response_text[:last_complete_pos]
+                        rj = json.loads(recovered_text)
+                        log.warning("[RGP] JSON 복구 성공 (방법3): 마지막 완전한 객체 추출")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            if not recovered:
                 raise ValueError(f"[RGP] LLM 응답 JSON 파싱 실패: {e}")
 
         # ── reference_baseline 존재 여부 확인 ────────────────────
@@ -1092,6 +1184,58 @@ class LlmSkinReporter:
         try:
             # JSON 파싱
             response_json = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            log.error("[LLM] 듀얼 응답 JSON 파싱 실패: %s", e)
+            # JSON 복구 시도
+            recovered = False
+            
+            # 방법 1: 마지막 중괄호 찾기
+            try:
+                last_brace = response_text.rfind('}')
+                if last_brace > 0:
+                    recovered_text = response_text[:last_brace + 1]
+                    response_json = json.loads(recovered_text)
+                    log.warning("[LLM] JSON 복구 성공 (방법1): 마지막 불완전 부분 제거됨")
+                    recovered = True
+            except Exception:
+                pass
+            
+            # 방법 2: 문자열이 닫히지 않은 경우 처리
+            if not recovered:
+                try:
+                    quote_count = response_text.count('"')
+                    if quote_count % 2 != 0:
+                        recovered_text = response_text + '"'
+                        response_json = json.loads(recovered_text)
+                        log.warning("[LLM] JSON 복구 성공 (방법2): 마지막 따옴표 추가")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            # 방법 3: 마지막 완전한 객체 찾기
+            if not recovered:
+                try:
+                    brace_count = 0
+                    last_complete_pos = -1
+                    for i, char in enumerate(reversed(response_text)):
+                        if char == '}':
+                            brace_count += 1
+                        elif char == '{':
+                            brace_count -= 1
+                        if brace_count == 0:
+                            last_complete_pos = len(response_text) - i
+                            break
+                    
+                    if last_complete_pos > 0:
+                        recovered_text = response_text[:last_complete_pos]
+                        response_json = json.loads(recovered_text)
+                        log.warning("[LLM] JSON 복구 성공 (방법3): 마지막 완전한 객체 추출")
+                        recovered = True
+                except Exception:
+                    pass
+            
+            if not recovered:
+                raise ValueError(f"[LLM] 듀얼 응답 JSON 파싱 실패: {e}")
             
             # 원본 metric_opinions 파싱
             orig_metric_opinions = []
