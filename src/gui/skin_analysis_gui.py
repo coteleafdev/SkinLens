@@ -988,9 +988,13 @@ class SkinAnalysisWindow(QMainWindow):
                     # 산출 폴더에서 기준 이미지 찾기
                     out_dir = Path(self.edit_out.text().strip())
                     stem = orig.stem
+                    # 이미지별 폴더 구조로 경로 업데이트
+                    image_folder = out_dir / stem
                     # 기준 이미지 경로 우선순위 (skin_measurement_chart_dialog과 동일)
                     ideal_candidates = [
-                        out_dir / f"01_restored_{stem}.png",  # RESTORE_ONLY 모드 기본
+                        image_folder / f"01_restored_{stem}.png",  # RESTORE_ONLY 모드 기본
+                        image_folder / f"00_restored_{stem}.png",
+                        out_dir / f"01_restored_{stem}.png",  # 하위 호환성
                         out_dir / f"00_restored_{stem}.png",
                         out_dir / "00_restored.png",
                         out_dir / "01_restored.png",
