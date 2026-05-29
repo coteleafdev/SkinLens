@@ -28,6 +28,7 @@ from __future__ import annotations
 # 모듈 경로 추가: 프로젝트 루트를 Python 경로에 추가
 import sys
 import logging
+import shutil
 from pathlib import Path
 
 log = logging.getLogger(__name__)
