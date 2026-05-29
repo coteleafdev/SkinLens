@@ -730,6 +730,7 @@ class LlmSkinReporter:
         # 처방전 계산 (피부 평가 점수 기반)
         from src.prescription.prescription_calculator import create_prescription
 
+        log.info(f"[LLM] 처방전 계산 입력: orig_measurements_report keys={list(orig_measurements_report.keys())[:10]}")
         full_prescription = create_prescription(
             skin_assessment_scores=orig_measurements_report,
             pcr_result=None,  # PCR 데이터가 없으면 None

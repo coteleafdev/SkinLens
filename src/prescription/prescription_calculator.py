@@ -628,8 +628,10 @@ def create_prescription(
             assessment: {mix_code: percentage}
         }
     """
+    log.info(f"[처방전] create_prescription 호출: skin_assessment_scores={type(skin_assessment_scores)}")
     # 피부 평가 기반 처방 (M01-M10)
     assessment_recipe = calculate_skin_assessment_recipe(skin_assessment_scores)
+    log.info(f"[처방전] assessment_recipe 결과: {assessment_recipe}")
 
     # 설문 연동: 피부타입별 믹스 (향후 구현 예정)
     skin_recipe = {}
