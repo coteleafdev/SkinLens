@@ -542,10 +542,7 @@ class LlmSkinReporter:
                         f"(시도 {attempt + 1}/{self.max_retries + 1})"
                     )
                 else:
-                    log.info(
-                        "[RGP] LLM 호출 시도 %d/%d",
-                        attempt + 1, self.max_retries + 1,
-                    )
+                    log.info("[RGP] LLM API 호출 시작")
 
                 response_text = self._call_llm(
                     system_prompt,
