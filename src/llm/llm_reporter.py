@@ -396,12 +396,23 @@ class LlmSkinReporter:
                 # 응답 완전성 검사
                 if _is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning("[LLM] 응답이 짤린 것으로 감지됨. max_tokens 증가 후 재요청")
+                        log.warning(
+                            "[LLM] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text),
+                            int(current_max_tokens * 1.5)
+                        )
                         current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
                         time.sleep(self.retry_delay)
                         continue
                     else:
-                        log.error("[LLM] 응답이 짤린 상태로 최대 재시도 도달")
+                        log.error(
+                            "[LLM] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text)
+                        )
 
                 # 응답 파싱
                 report: SkinLLMReport = self._parse_single_response(
@@ -418,7 +429,14 @@ class LlmSkinReporter:
                 # 응답이 짤렸는지 확인
                 if _is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning("[LLM] JSON 파싱 실패 및 응답 짤림 감지. max_tokens 증가 후 재요청")
+                        log.warning(
+                            "[LLM] JSON 파싱 실패 및 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d, 에러=%s",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text),
+                            int(current_max_tokens * 1.5),
+                            str(e)
+                        )
                         current_max_tokens = int(current_max_tokens * 1.5)
                         time.sleep(self.retry_delay)
                         continue
@@ -598,12 +616,23 @@ class LlmSkinReporter:
                 # 응답 완전성 검사
                 if self._is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning("[RGP] 응답이 짤린 것으로 감지됨. max_tokens 증가 후 재요청")
+                        log.warning(
+                            "[RGP] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text),
+                            int(current_max_tokens * 1.5)
+                        )
                         current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
                         time.sleep(self.retry_delay)
                         continue
                     else:
-                        log.error("[RGP] 응답이 짤린 상태로 최대 재시도 도달")
+                        log.error(
+                            "[RGP] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text)
+                        )
 
                 report = self._parse_reference_guided_response(
                     response_text,
@@ -619,7 +648,14 @@ class LlmSkinReporter:
                 # 응답이 짤렸는지 확인
                 if self._is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning("[RGP] JSON 파싱 실패 및 응답 짤림 감지. max_tokens 증가 후 재요청")
+                        log.warning(
+                            "[RGP] JSON 파싱 실패 및 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d, 에러=%s",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text),
+                            int(current_max_tokens * 1.5),
+                            str(e)
+                        )
                         current_max_tokens = int(current_max_tokens * 1.5)
                         time.sleep(self.retry_delay)
                         continue
@@ -859,12 +895,23 @@ class LlmSkinReporter:
                 # 응답 완전성 검사
                 if _is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning("[LLM] 응답이 짤린 것으로 감지됨. max_tokens 증가 후 재요청")
+                        log.warning(
+                            "[LLM] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text),
+                            int(current_max_tokens * 1.5)
+                        )
                         current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
                         time.sleep(self.retry_delay)
                         continue
                     else:
-                        log.error("[LLM] 응답이 짤린 상태로 최대 재시도 도달")
+                        log.error(
+                            "[LLM] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text)
+                        )
 
                 # 응답 파싱
                 return self._parse_dual_response(
@@ -882,7 +929,14 @@ class LlmSkinReporter:
                 # 응답이 짤렸는지 확인
                 if _is_response_truncated(response_text):
                     if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning("[LLM] JSON 파싱 실패 및 응답 짤림 감지. max_tokens 증가 후 재요청")
+                        log.warning(
+                            "[LLM] JSON 파싱 실패 및 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d, 에러=%s",
+                            attempt + 1,
+                            current_max_tokens,
+                            len(response_text),
+                            int(current_max_tokens * 1.5),
+                            str(e)
+                        )
                         current_max_tokens = int(current_max_tokens * 1.5)
                         time.sleep(self.retry_delay)
                         continue
