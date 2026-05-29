@@ -824,11 +824,17 @@ class LlmSkinReporter:
             # JSON 파싱
             response_json = json.loads(response_text)
             
+            # metric_scores 및 metric_reasons 파싱
+            metric_scores = response_json.get("metric_scores", {})
+            metric_reasons = response_json.get("metric_reasons", {})
+            
             # metric_opinions 파싱
             metric_opinions = []
             for key, display, category, _ in _METRIC_META:
-                score = measurements_report.get(key, 0)
+                # LLM이 산출한 점수 우선, 없으면 시스템 점수 사용
+                score = metric_scores.get(key, measurements_report.get(key, 0))
                 opinion = response_json.get("metric_opinions", {}).get(key, "")
+                reason = metric_reasons.get(key, "")
                 
                 # 점수 조정 (소견 기반)
                 adjusted_score = _adjust_score_based_on_opinion(score, opinion)
@@ -841,6 +847,7 @@ class LlmSkinReporter:
                     score=adjusted_score,
                     grade=_grade_label(adjusted_score),
                     opinion=opinion,
+                    reason=reason,
                 ))
             
             # 종합 소견
@@ -1029,6 +1036,7 @@ class LlmSkinReporter:
                 score=final_score,
                 grade=_grade_label(final_score),
                 opinion=opinion_text,
+                reason=reason,
             ))
 
         # ── 종합 점수 ─────────────────────────────────────────────
@@ -1087,6 +1095,7 @@ class LlmSkinReporter:
             # 원본 metric_opinions 파싱
             orig_metric_opinions = []
             orig_metric_scores = response_json.get("original_metric_scores", {})
+            orig_metric_reasons = response_json.get("original_metric_reasons", {})
             for key, display, category, _ in _METRIC_META:
                 # LLM이 측정한 점수를 항상 우선 사용
                 if key in orig_metric_scores:
@@ -1095,6 +1104,7 @@ class LlmSkinReporter:
                     # LLM 점수가 없으면 원본 측정 점수를 폴백으로 사용
                     score = orig_measurements_report.get(key, 0)
                 opinion = response_json.get("original_metric_opinions", {}).get(key, "")
+                reason = orig_metric_reasons.get(key, "")
                 
                 orig_metric_opinions.append(MetricOpinion(
                     key=key,
@@ -1103,11 +1113,13 @@ class LlmSkinReporter:
                     score=score,
                     grade=_grade_label(score),
                     opinion=opinion,
+                    reason=reason,
                 ))
             
             # 복원 metric_opinions 파싱
             ideal_metric_opinions = []
             ideal_metric_scores = response_json.get("restored_metric_scores", {})
+            ideal_metric_reasons = response_json.get("restored_metric_reasons", {})
             for key, display, category, _ in _METRIC_META:
                 # LLM이 측정한 점수를 항상 우선 사용
                 if key in ideal_metric_scores:
@@ -1116,6 +1128,7 @@ class LlmSkinReporter:
                     # LLM 점수가 없으면 복원 측정 점수를 폴백으로 사용
                     score = ideal_measurements_report.get(key, 0)
                 opinion = response_json.get("restored_metric_opinions", {}).get(key, "")
+                reason = ideal_metric_reasons.get(key, "")
                 
                 ideal_metric_opinions.append(MetricOpinion(
                     key=key,
@@ -1124,6 +1137,7 @@ class LlmSkinReporter:
                     score=score,
                     grade=_grade_label(score),
                     opinion=opinion,
+                    reason=reason,
                 ))
             
             # 종합 소견

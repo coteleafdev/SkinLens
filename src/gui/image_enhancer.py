@@ -686,6 +686,7 @@ def _cli_body(args) -> int:
                                         "category": m.category,
                                         "score": m.score,
                                         "opinion": m.opinion,
+                                        "reason": m.reason,
                                         "grade": m.grade
                                     }
                                     for m in llm_orig_result.metric_opinions
@@ -705,6 +706,7 @@ def _cli_body(args) -> int:
                                         "category": m.category,
                                         "score": m.score,
                                         "opinion": m.opinion,
+                                        "reason": m.reason,
                                         "grade": m.grade
                                     }
                                     for m in llm_ideal_result.metric_opinions

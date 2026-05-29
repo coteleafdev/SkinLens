@@ -403,6 +403,8 @@ class SkinMeasurementCompareDialog(QDialog):
                     metric = orig_opinions_dict[key]
                     report_text += f"\n● {metric.display_name} ({metric.score:.1f}점 / {metric.grade})\n"
                     report_text += f"  {metric.opinion}\n"
+                    if metric.reason:
+                        report_text += f"  [근거: {metric.reason}]\n"
 
         # 복원 이미지 항목별 소견 추가 (테이블 순서와 동일하게)
         report_text += f"\n\n【복원 이미지 {measurement_count}개 항목별 LLM 소견】\n"
@@ -416,6 +418,8 @@ class SkinMeasurementCompareDialog(QDialog):
                     metric = ideal_opinions_dict[key]
                     report_text += f"\n● {metric.display_name} ({metric.score:.1f}점 / {metric.grade})\n"
                     report_text += f"  {metric.opinion}\n"
+                    if metric.reason:
+                        report_text += f"  [근거: {metric.reason}]\n"
 
         self.llm_report_text.setText(report_text)
 
@@ -707,6 +711,9 @@ class SkinMeasurementCompareDialog(QDialog):
                             elif not isinstance(opinion_text, str):
                                 opinion_text = str(opinion_text)
                             append_with_font_local([self._sanitize_cell_text(opinion_text)], small_font)
+                            # 근거 필드 추가
+                            if metric.reason:
+                                append_with_font_local([f"[근거: {metric.reason}"], small_font)
                             append_with_font_local([])  # 빈 행
 
             if self._last_llm_report_ideal:
@@ -729,7 +736,10 @@ class SkinMeasurementCompareDialog(QDialog):
                             elif not isinstance(opinion_text, str):
                                 opinion_text = str(opinion_text)
                             append_with_font_local([self._sanitize_cell_text(opinion_text)], small_font)
-                            append_with_font_local([])  # 빈 행)
+                            # 근거 필드 추가
+                            if metric.reason:
+                                append_with_font_local([f"[근거: {metric.reason}"], small_font)
+                            append_with_font_local([])  # 빈 행
 
             if self._last_llm_report_orig:
                 append_with_font_local(["관리 권고사항"], bold_font)

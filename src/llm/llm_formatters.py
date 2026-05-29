@@ -143,6 +143,7 @@ class MetricOpinion:
     score: float
     grade: str
     opinion: str          # LLM 생성 소견 (2~3문장)
+    reason: str = ""      # 점수 근거 (1~2문장)
 
 
 @dataclass
