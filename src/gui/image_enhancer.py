@@ -671,7 +671,7 @@ def _cli_body(args) -> int:
                             }
                         }
 
-                        # LLM 결과가 있으면 추가
+                        # LLM 결과가 있으면 추가 (provide_scores와 관계없이)
                         if llm_orig_result and llm_ideal_result:
                             # 원본 보고서
                             orig_dict = {
@@ -780,6 +780,7 @@ def _cli_body(args) -> int:
                                 if args.llm_scores:
                                     proc_args.append("--llm-scores")
                                 print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
+                                print(f"[DEBUG] JSON 파일 경로: {json_path}", flush=True)
                                 proc.setArguments(proc_args)
                                 proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
                                 proc.start()
