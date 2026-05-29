@@ -632,7 +632,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score":                 "산출 이유 (1~2문장)",
     "skin_type_score":                     "산출 이유 (1~2문장)"
   },
-  "ideal_metric_reasons": {
+  "ref_metric_reasons": {
     "melasma_score":                       "복원 이미지 점수 근거 (1~2문장)",
     "freckle_score":                       "복원 이미지 점수 근거 (1~2문장)",
     "redness_score":                       "복원 이미지 점수 근거 (1~2문장)",
@@ -672,7 +672,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": 75.0,
     "skin_type_score": 78.0
   },
-  "ideal_metric_scores": {
+  "ref_metric_scores": {
     "melasma_score": 75.0,
     "freckle_score": 70.0,
     "redness_score": 72.0,
@@ -712,7 +712,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "원본 소견",
     "skin_type_score": "원본 소견"
   },
-  "ideal_metric_opinions": {
+  "ref_metric_opinions": {
     "melasma_score": "복원 소견 (2~3문장)",
     "freckle_score": "복원 소견",
     "redness_score": "복원 소견",
@@ -733,7 +733,9 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "skin_type_score": "복원 소견"
   },
   "orig_overall_score": 74.5,
+  "ref_overall_score": 78.0,
   "orig_perceived_age": 38.0,
+  "ref_perceived_age": 36.0,
   "orig_overall_opinion": "종합 소견 5~8문장 (복원 기준선과 비교하여 원본 상태를 서술)",
   "recommendation": "관리 권고사항 (번호 목록)"
 }
@@ -877,7 +879,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": 75.0,
     "skin_type_score": 78.0
   },
-  "ideal_metric_scores": {
+  "ref_metric_scores": {
     "melasma_score": 70.0,
     "freckle_score": 82.0,
     "redness_score": 67.0,
@@ -917,7 +919,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "원본 이미지 점수 근거 (1~2문장)",
     "skin_type_score": "원본 이미지 점수 근거 (1~2문장)"
   },
-  "ideal_metric_reasons": {
+  "ref_metric_reasons": {
     "melasma_score": "복원 이미지 점수 근거 (1~2문장)",
     "freckle_score": "복원 이미지 점수 근거 (1~2문장)",
     "redness_score": "복원 이미지 점수 근거 (1~2문장)",
@@ -957,7 +959,7 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score": "원본 이미지 소견 텍스트 (2~3문장)",
     "skin_type_score": "원본 이미지 소견 텍스트 (2~3문장)"
   },
-  "ideal_metric_opinions": {
+  "ref_metric_opinions": {
     "melasma_score": "복원 이미지 소견 텍스트 (2~3문장)",
     "freckle_score": "복원 이미지 소견 텍스트 (2~3문장)",
     "redness_score": "복원 이미지 소견 텍스트 (2~3문장)",
@@ -978,7 +980,11 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "skin_type_score": "복원 이미지 소견 텍스트 (2~3문장)"
   },
   "orig_overall_opinion": "원본 이미지 종합 소견 5~8문장",
-  "ideal_overall_opinion": "복원 이미지 종합 소견 5~8문장",
+  "ref_overall_opinion": "복원 이미지 종합 소견 5~8문장",
+  "orig_overall_score": 74.5,
+  "ref_overall_score": 78.0,
+  "orig_perceived_age": 38.0,
+  "ref_perceived_age": 36.0,
   "recommendation": "관리 권고사항 (번호 목록 형식)"
 }
 ```

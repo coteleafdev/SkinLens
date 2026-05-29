@@ -1277,8 +1277,8 @@ class LlmSkinReporter:
             
             # 복원 metric_opinions 파싱
             ideal_metric_opinions = []
-            ideal_metric_scores = response_json.get("ideal_metric_scores", {})
-            ideal_metric_reasons = response_json.get("ideal_metric_reasons", {})
+            ideal_metric_scores = response_json.get("ref_metric_scores", {})
+            ideal_metric_reasons = response_json.get("ref_metric_reasons", {})
             for key, display, category, _ in _METRIC_META:
                 # LLM이 측정한 점수를 항상 우선 사용
                 if key in ideal_metric_scores:
@@ -1286,7 +1286,7 @@ class LlmSkinReporter:
                 else:
                     # LLM 점수가 없으면 복원 측정 점수를 폴백으로 사용
                     score = ideal_measurements_report.get(key, 0)
-                opinion = response_json.get("ideal_metric_opinions", {}).get(key, "")
+                opinion = response_json.get("ref_metric_opinions", {}).get(key, "")
                 reason = ideal_metric_reasons.get(key, "")
                 
                 ideal_metric_opinions.append(MetricOpinion(
@@ -1301,7 +1301,7 @@ class LlmSkinReporter:
             
             # 종합 소견
             orig_overall_opinion = response_json.get("orig_overall_opinion", "")
-            ideal_overall_opinion = response_json.get("ideal_overall_opinion", "")
+            ideal_overall_opinion = response_json.get("ref_overall_opinion", "")
             recommendation = response_json.get("recommendation", "")
 
             log.info(f"[LLM] 추출된 필드: original_overall_opinion={len(orig_overall_opinion)}, ideal_overall_opinion={len(ideal_overall_opinion)}, recommendation={len(recommendation)}")
@@ -1309,12 +1309,12 @@ class LlmSkinReporter:
             # 점수 미제공 모드인 경우 응답에서 점수 추출
             if "orig_overall_score" in response_json:
                 llm_orig_overall_score = response_json["orig_overall_score"]
-            if "ideal_overall_score" in response_json:
-                llm_ideal_overall_score = response_json["ideal_overall_score"]
+            if "ref_overall_score" in response_json:
+                llm_ideal_overall_score = response_json["ref_overall_score"]
             if "orig_perceived_age" in response_json:
                 orig_perceived_age = response_json["orig_perceived_age"]
-            if "ideal_perceived_age" in response_json:
-                ideal_perceived_age = response_json["ideal_perceived_age"]
+            if "ref_perceived_age" in response_json:
+                ideal_perceived_age = response_json["ref_perceived_age"]
             
             # 점수 보정 적용
             try:
