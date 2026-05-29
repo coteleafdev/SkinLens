@@ -140,6 +140,39 @@ def _image_to_base64(image_path: Path) -> str:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
+def _convert_scores_to_int(analysis_result: Dict[str, Any]) -> Dict[str, Any]:
+    """분석 결과의 점수를 정수로 변환하여 출력 JSON에 기록.
+
+    내부 계산은 float로 유지하되, 고객에게 제공되는 출력 JSON에서는
+    모든 점수를 정수로 표시합니다.
+
+    Args:
+        analysis_result: SkinAnalyzer.analyze_all() 반환값
+
+    Returns:
+        점수가 정수로 변환된 분석 결과 (새 딕셔너리)
+    """
+    import copy
+    result = copy.deepcopy(analysis_result)
+
+    # 종합 점수 변환
+    if "overall_score" in result:
+        result["overall_score"] = int(round(float(result["overall_score"])))
+    if "overall_score_report" in result:
+        result["overall_score_report"] = int(round(float(result["overall_score_report"])))
+    if "perceived_age" in result:
+        result["perceived_age"] = int(round(float(result["perceived_age"])))
+
+    # 측정 항목 점수 변환
+    for key in ["measurements", "measurements_report"]:
+        if key in result and isinstance(result[key], dict):
+            for metric_key, value in result[key].items():
+                if isinstance(value, (int, float)):
+                    result[key][metric_key] = int(round(float(value)))
+
+    return result
+
+
 def run_analysis_pipeline(
     input_image: Path,
     output_dir: Path,
@@ -458,19 +491,26 @@ def run_analysis_pipeline(
                     survey_info=survey_info,
                 )
 
-            analysis_result["llm_report"] = llm_result
+            # LLM 보고서를 딕셔너리로 변환 (점수는 정수로 변환)
+            from src.llm.llm_utils import report_to_dict
             if isinstance(llm_result, tuple):
                 # 듀얼 이미지 모드: (orig_report, ideal_report)
                 orig_report, ideal_report = llm_result
+                analysis_result["llm_report"] = {
+                    "original": report_to_dict(orig_report),
+                    "ideal": report_to_dict(ideal_report),
+                }
                 if hasattr(orig_report, 'model'):
                     analysis_result["llm_model"] = orig_report.model
                 if hasattr(orig_report, 'llm_stats'):
                     analysis_result["llm_stats"] = orig_report.llm_stats
-            elif hasattr(llm_result, 'model'):
+            else:
                 # 단일 이미지 모드
-                analysis_result["llm_model"] = llm_result.model
-            if hasattr(llm_result, 'llm_stats'):
-                analysis_result["llm_stats"] = llm_result.llm_stats
+                analysis_result["llm_report"] = report_to_dict(llm_result)
+                if hasattr(llm_result, 'model'):
+                    analysis_result["llm_model"] = llm_result.model
+                if hasattr(llm_result, 'llm_stats'):
+                    analysis_result["llm_stats"] = llm_result.llm_stats
             log.info("LLM (Gemini) AI 소견 작성 완료")
         except Exception as e:
             log.warning("LLM (Gemini) AI 소견 작성 실패: %s", e)
@@ -564,7 +604,10 @@ def run_analysis_pipeline(
     
     # 10. 에러 정보 (정상적인 경우)
     error_info = None
-    
+
+    # 점수를 정수로 변환 (출력 JSON용)
+    analysis_result_int = _convert_scores_to_int(analysis_result)
+
     result = {
         "input_image": str(input_image),
         "restored_image": str(restored_image),
@@ -603,7 +646,7 @@ def run_analysis_pipeline(
             "region": region or "",
         },
         "lateral_images": lateral_images or [{"angle": "front", "path": str(input_image)}],
-        "analysis_result": analysis_result,
+        "analysis_result": analysis_result_int,  # 정수 변환된 분석 결과
     }
     
     # URL 기반 이미지 경로 (서버 환경용)

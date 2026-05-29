@@ -134,7 +134,7 @@ class SkinMeasurementCompareDialog(QDialog):
         head = QLabel(
             f"<b>원본</b> {orig_path.name} &nbsp;|&nbsp; "
             f"<b>기준</b> {ideal_path.name}<br>"
-            f"피부건강지수: 원본 <b>{rov:.1f}</b> · 기준 <b>{riv:.1f}</b>점<br>"
+            f"피부건강지수: 원본 <b>{int(round(rov))}</b> · 기준 <b>{int(round(riv))}</b>점<br>"
             f"인지나이: 원본 <b>{o_age}</b>세 · 기준 <b>{i_age}</b>세<br>"
             f"항목 요약: "
             f"<span style='color:#78c8a0'>개선 {n_improved}개</span> &nbsp; "
@@ -184,15 +184,15 @@ class SkinMeasurementCompareDialog(QDialog):
                 
                 # 원본 점수 (없으면 "N/A")
                 if mo.get(key) is not None:
-                    item_orig = QTableWidgetItem(f"{vo:.1f}")
+                    item_orig = QTableWidgetItem(f"{int(round(vo))}")
                 else:
                     item_orig = QTableWidgetItem("N/A")
                     item_orig.setBackground(QColor(240, 240, 240))
                 self.table.setItem(row, 1, item_orig)
-                
+
                 # 기준 점수 (없으면 "N/A")
                 if mi.get(key) is not None:
-                    item_ideal = QTableWidgetItem(f"{vi:.1f}")
+                    item_ideal = QTableWidgetItem(f"{int(round(vi))}")
                 else:
                     item_ideal = QTableWidgetItem("N/A")
                     item_ideal.setBackground(QColor(240, 240, 240))
@@ -210,7 +210,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 
                 # 차이 (초기에는 복원-원본 차이만 표시, 나중에 원본/복원 LLM 차이로 업데이트)
                 diff = vi - vo
-                item_diff = QTableWidgetItem(f"{diff:+.1f}")
+                item_diff = QTableWidgetItem(f"{int(round(diff)):+d}")
                 if diff > 0:
                     item_diff.setForeground(QColor(0, 150, 0))
                 elif diff < 0:
@@ -366,7 +366,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 match_reason = product.get('match_reason', '')
 
                 product_text += f"\n{i}. {product_name} ({category})\n"
-                product_text += f"   매칭 점수: {match_score:.1f}\n"
+                product_text += f"   매칭 점수: {int(round(match_score))}\n"
                 product_text += f"   주요 성분: {', '.join(key_ingredients)}\n"
                 product_text += f"   효능: {efficacy}\n"
                 product_text += f"   추천 이유: {match_reason}\n"
@@ -379,10 +379,10 @@ class SkinMeasurementCompareDialog(QDialog):
         
         # 복원 LLM 점수 표시
         if ideal_has_llm:
-            ideal_llm_score_text = f"- 기준 LLM 측정 피부건강지수: {ideal_report.overall_score:.1f}점"
+            ideal_llm_score_text = f"- 기준 LLM 측정 피부건강지수: {int(round(ideal_report.overall_score))}점"
         else:
             ideal_llm_score_text = "- 기준 LLM 측정 피부건강지수: -"
-        
+
         report_text = f"""=== LLM AI 소견 (원본+기준 동시 분석) ===
 {adjustment_note}
 {strict_mode_note}
@@ -396,7 +396,7 @@ class SkinMeasurementCompareDialog(QDialog):
 {recommendation_text}
 {product_text}
 【분석 메타데이터】
-- 원본 LLM 측정 피부건강지수: {orig_report.overall_score:.1f}점
+- 원본 LLM 측정 피부건강지수: {int(round(orig_report.overall_score))}점
 {ideal_llm_score_text}
 - 원본 인지나이: {orig_report.perceived_age}세
 - 기준 인지나이: {ideal_report.perceived_age}세
@@ -413,7 +413,7 @@ class SkinMeasurementCompareDialog(QDialog):
             for key in keys:
                 if key in orig_opinions_dict:
                     metric = orig_opinions_dict[key]
-                    report_text += f"\n● {metric.display_name} ({metric.score:.1f}점 / {metric.grade})\n"
+                    report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
                     report_text += f"  {metric.opinion}\n"
                     if metric.reason:
                         report_text += f"  [근거: {metric.reason}]\n"
@@ -428,7 +428,7 @@ class SkinMeasurementCompareDialog(QDialog):
             for key in keys:
                 if key in ideal_opinions_dict:
                     metric = ideal_opinions_dict[key]
-                    report_text += f"\n● {metric.display_name} ({metric.score:.1f}점 / {metric.grade})\n"
+                    report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
                     report_text += f"  {metric.opinion}\n"
                     if metric.reason:
                         report_text += f"  [근거: {metric.reason}]\n"
@@ -459,7 +459,7 @@ class SkinMeasurementCompareDialog(QDialog):
             self._update_table_with_llm_overall_both(orig_report.overall_score, ideal_report.overall_score)
         else:
             # 복원 LLM 점수가 없으면 원본만 표시
-            self.llm_overall_label.setText(f"LLM 피부건강지수 - 원본: {orig_report.overall_score:.1f}점 / 기준: —")
+            self.llm_overall_label.setText(f"LLM 피부건강지수 - 원본: {int(round(orig_report.overall_score))}점 / 기준: —")
 
     def _on_llm_error(self, error_msg: str) -> None:
         """LLM 오류 처리"""
@@ -526,7 +526,7 @@ class SkinMeasurementCompareDialog(QDialog):
             # 원본 LLM 점수 설정
             llm_orig_item = self.table.item(r, 3)
             if llm_orig_item and orig_score is not None:
-                llm_orig_item.setText(f"{orig_score:.1f}")
+                llm_orig_item.setText(f"{int(round(orig_score))}")
                 # 점수를 제공하는 경우에만 조정 여부에 따라 배경색 변경
                 if self._llm_scores and orig_base_score is not None and abs(orig_score - orig_base_score) > 0.1:
                     llm_orig_item.setBackground(QColor(255, 255, 200))  # 조정된 경우 노란색
@@ -536,7 +536,7 @@ class SkinMeasurementCompareDialog(QDialog):
             # 복원 LLM 점수 설정
             llm_ideal_item = self.table.item(r, 4)
             if llm_ideal_item and ideal_score is not None:
-                llm_ideal_item.setText(f"{ideal_score:.1f}")
+                llm_ideal_item.setText(f"{int(round(ideal_score))}")
                 # 점수를 제공하는 경우에만 조정 여부에 따라 배경색 변경
                 if self._llm_scores and ideal_base_score is not None and abs(ideal_score - ideal_base_score) > 0.1:
                     llm_ideal_item.setBackground(QColor(255, 255, 200))  # 조정된 경우 노란색
@@ -547,7 +547,7 @@ class SkinMeasurementCompareDialog(QDialog):
             diff_item = self.table.item(r, 5)
             if diff_item and orig_score is not None and ideal_score is not None:
                 llm_diff = ideal_score - orig_score
-                diff_item.setText(f"{llm_diff:+.1f}")
+                diff_item.setText(f"{int(round(llm_diff)):+d}")
                 if llm_diff > 0:
                     diff_item.setForeground(QColor(0, 150, 0))
                 elif llm_diff < 0:
@@ -565,7 +565,7 @@ class SkinMeasurementCompareDialog(QDialog):
             orig_overall_score: 원본 이미지 LLM 피부건강지수
             ideal_overall_score: 기준 이미지 LLM 피부건강지수
         """
-        self.llm_overall_label.setText(f"LLM 피부건강지수 - 원본: {orig_overall_score:.1f}점 / 기준: {ideal_overall_score:.1f}점")
+        self.llm_overall_label.setText(f"LLM 피부건강지수 - 원본: {int(round(orig_overall_score))}점 / 기준: {int(round(ideal_overall_score))}점")
 
         # 테이블에는 피부건강지수를 표시하지 않음 (항목별 점수만 표시)
         # 피부건강지수는 라벨에만 표시하여 항목별 점수와 혼동 방지
@@ -680,13 +680,13 @@ class SkinMeasurementCompareDialog(QDialog):
             # 메타 정보 행 추가
             append_with_font_local(["원본 이미지", str(self._orig_path)], bold_font)
             append_with_font_local(["기준 이미지", str(self._ideal_path)], bold_font)
-            append_with_font_local(["원본 피부건강지수", f"{orig_overall:.1f}"], bold_font)
-            append_with_font_local(["기준 피부건강지수", f"{ideal_overall:.1f}"], bold_font)
+            append_with_font_local(["원본 피부건강지수", f"{int(round(orig_overall))}"], bold_font)
+            append_with_font_local(["기준 피부건강지수", f"{int(round(ideal_overall))}"], bold_font)
             if orig_llm_overall is not None:
-                append_with_font_local(["원본 LLM 피부건강지수", f"{orig_llm_overall:.1f}"], bold_font)
+                append_with_font_local(["원본 LLM 피부건강지수", f"{int(round(orig_llm_overall))}"], bold_font)
             # 기준 LLM 측정이 없으면 '-' 표시
             if ideal_has_llm and ideal_llm_overall is not None:
-                append_with_font_local(["기준 LLM 피부건강지수", f"{ideal_llm_overall:.1f}"], bold_font)
+                append_with_font_local(["기준 LLM 피부건강지수", f"{int(round(ideal_llm_overall))}"], bold_font)
             else:
                 append_with_font_local(["기준 LLM 피부건강지수", "-"], bold_font)
             # 엄격한 평가 모드 표시
@@ -733,7 +733,7 @@ class SkinMeasurementCompareDialog(QDialog):
                     for key in keys:
                         if key in orig_opinions_dict:
                             metric = orig_opinions_dict[key]
-                            append_with_font_local([f"{metric.display_name} ({metric.score:.1f}점 / {metric.grade})"], small_font)
+                            append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
                             # metric.opinion이 dict인 경우 문자열 추출
                             opinion_text = metric.opinion
                             if isinstance(opinion_text, dict):
@@ -759,7 +759,7 @@ class SkinMeasurementCompareDialog(QDialog):
                     for key in keys:
                         if key in ideal_opinions_dict:
                             metric = ideal_opinions_dict[key]
-                            append_with_font_local([f"{metric.display_name} ({metric.score:.1f}점 / {metric.grade})"], small_font)
+                            append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
                             # metric.opinion이 dict인 경우 문자열 추출
                             opinion_text = metric.opinion
                             if isinstance(opinion_text, dict):
@@ -796,7 +796,7 @@ class SkinMeasurementCompareDialog(QDialog):
                             match_score_float = 0.0
 
                         append_with_font_local([f"{i}. {product_name} ({category})"], small_font)
-                        append_with_font_local([f"매칭 점수: {match_score_float:.1f}"], small_font)
+                        append_with_font_local([f"매칭 점수: {int(round(match_score_float))}"], small_font)
                         append_with_font_local([f"주요 성분: {', '.join(key_ingredients)}"], small_font)
                         append_with_font_local([f"효능: {efficacy}"], small_font)
                         append_with_font_local([f"추천 이유: {match_reason}"], small_font)

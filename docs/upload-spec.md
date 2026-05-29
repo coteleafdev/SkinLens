@@ -54,6 +54,7 @@
   "age_group": "30s",
   "ethnicity": "korean",
   "ethnicity_other": null,
+  "country": "korea",
 
   "skin_types":      ["combination", "sensitive"],
   "skin_interests":  ["pore_care", "wrinkle"],
@@ -102,6 +103,11 @@
 
 `korean` · `east_asian` · `southeast_asian` · `south_asian` · `caucasian` · `african` · `hispanic` · `other`
 → `other` 일 때 `ethnicity_other`에 자유 입력
+
+#### `country`
+
+`korea` · `usa` · `japan` · `china` · `uk` · `canada` · `australia` · `germany` · `france` · `other`
+→ ISO 3166-1 alpha-2 코드 또는 국가명 영문 소문자
 
 #### `skin_types` (멀티, 1개 이상)
 

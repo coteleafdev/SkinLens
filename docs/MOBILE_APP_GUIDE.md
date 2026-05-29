@@ -306,7 +306,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
         "jawline_blur_score": 55,
         "cheek_sagging_score": 60,
         "skin_type_score": 50,
-        "overall_score": 62.5
+        "overall_score": 63
       },
       "restored": {
         "melasma_score": 70,
@@ -327,7 +327,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
         "jawline_blur_score": 60,
         "cheek_sagging_score": 65,
         "skin_type_score": 55,
-        "overall_score": 69.5
+        "overall_score": 70
       }
     },
     "prescription": {
@@ -348,7 +348,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
             "category": "트러블 케어",
             "key_ingredients": ["나이아신아마이드", "살리실산", "티트리 오일"],
             "efficacy": "여드름 억제, 모공 관리, 피부 진정",
-            "match_score": 0.95,
+            "match_score": 1,
             "match_reason": "설문의 피부 고민사항(여드름)과 측정 점수(acne_score: 50) 기반 매칭"
           }
         ],
@@ -382,6 +382,15 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
 - 70~80: 양호
 - 60~70: 집중케어 추천
 - 60 미만: 개선 필요
+
+**점수 표시 정책:**
+- **출력 JSON**: 모든 점수는 정수로 표시됩니다 (소수점 없음)
+  - `internal_analysis.original.overall_score`: 정수 (예: 63)
+  - `internal_analysis.original.*_score`: 정수 (예: 56, 80, 72)
+  - `internal_analysis.restored.overall_score`: 정수 (예: 70)
+  - `llm_analysis.*.match_score`: 정수 (예: 1)
+- **내부 계산**: float로 유지 (정밀도 보장)
+- **변환 위치**: 서버 파이프라인에서 출력 JSON 생성 시 정수로 변환
 
 #### 5.2.2 prescription
 

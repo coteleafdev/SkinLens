@@ -37,6 +37,20 @@ AI 기반 피부 분석 및 복원 파이프라인 프로젝트입니다. Restor
 - **보안 기능**: JWT 인증 (시크릿 키 검증), 역할 기반 접근 제어, 감사 로그, 속도 제한 (분석 엔드포인트 3/분)
 - **DB 관리**: Health Check, 자동 백업, 마이그레이션, 아카이빙, 연결 풀링, 트랜잭션 관리
 
+### 점수 표시 정책
+
+- **출력 JSON**: 모든 점수는 정수로 표시됩니다 (소수점 없음)
+  - `internal_analysis.original.overall_score`: 정수 (예: 65)
+  - `internal_analysis.original.*_score`: 정수 (예: 56, 72, 68)
+  - `llm_analysis.original.overall_score`: 정수 (예: 65)
+  - `llm_analysis.*.match_score`: 정수 (예: 1)
+- **내부 계산**: float로 유지 (정밀도 보장)
+- **GUI 표시**: 18항목 비교창 및 모든 점수 표시는 정수로 표시
+- **변환 위치**:
+  - CLI/서버: `src/cli/skin_analysis_cli.py`의 `_convert_scores_to_int()` 함수
+  - LLM 보고서: `src/llm/llm_utils.py`의 `report_to_dict()` 함수
+  - GUI: `src/gui/compare_dialog.py`의 표시 로직
+
 ### 기술 스택
 
 - **Deep Learning**: PyTorch, Transformers

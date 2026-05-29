@@ -43,19 +43,31 @@ def log_report(report: SkinLLMReport) -> None:
 
 
 def report_to_dict(report: SkinLLMReport) -> Dict[str, Any]:
-    """JSON 직렬화용 딕셔너리 변환"""
+    """JSON 직렬화용 딕셔너리 변환 (점수는 정수로 변환)"""
+    # matched_products의 match_score를 정수로 변환
+    matched_products_int = []
+    for product in report.matched_products:
+        product_copy = product.copy()
+        if "match_score" in product_copy:
+            try:
+                product_copy["match_score"] = int(round(float(product_copy["match_score"])))
+            except (TypeError, ValueError):
+                pass
+        matched_products_int.append(product_copy)
+
     return {
-        "overall_score": report.overall_score,
-        "perceived_age": report.perceived_age,
+        "overall_score": int(round(report.overall_score)),
+        "perceived_age": int(round(report.perceived_age)),
         "overall_opinion": report.overall_opinion,
         "recommendation": report.recommendation,
         "product_recommendations": report.product_recommendations,
+        "matched_products": matched_products_int,
         "metric_opinions": [
             {
                 "key": mo.key,
                 "display_name": mo.display_name,
                 "category": mo.category,
-                "score": mo.score,
+                "score": int(round(mo.score)),
                 "grade": mo.grade,
                 "opinion": mo.opinion,
             }
