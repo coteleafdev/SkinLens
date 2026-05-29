@@ -354,7 +354,7 @@ class SkinMeasurementCompareDialog(QDialog):
         # recommendation이 리스트인 경우 문자열로 변환
         if isinstance(recommendation_text, list):
             recommendation_text = '\n'.join(recommendation_text)
-        log.info(f"[GUI] 처방전 길이: {len(recommendation_text)}")
+        log.info(f"[GUI] 처방전 길이: {len(recommendation_text)}, 내용: {recommendation_text[:100] if recommendation_text else 'EMPTY'}")
         
         # 제품 추천 정보 추출
         matched_products = getattr(orig_report, 'matched_products', [])
@@ -398,6 +398,7 @@ class SkinMeasurementCompareDialog(QDialog):
 
 【관리 권고사항】
 {recommendation_text}
+
 {product_text}
 【분석 메타데이터】
 - 원본 LLM 측정 피부건강지수: {int(round(orig_report.overall_score))}점
