@@ -108,11 +108,11 @@ flowchart TD
 | **4. 이미지 전처리** | - _stage_pipeline_input_rgb()<br>- RGB 변환<br>- 리사이징 (config.json input_resize)<br>- 1024×1365 → LANCZOS 리샘플링<br>- 00_input_{stem}.png 저장 |
 | **5. 복원 처리** | - 다중 이미지 복원 병렬 처리 (ThreadPoolExecutor, max_workers=3)<br>- 정면/좌45°/우45° 동시 복원<br>- RestorerRegistry에서 복원 백엔드 선택 (codeformer_v1, restoreformer_v1)<br>- 전처리 훅 호출 (preprocess)<br>- CodeFormer/RestoreFormer++ 복원<br>- fidelity/upscale/bg_upsampler: config.json에서 로드<br>- 후처리 훅 호출 (postprocess)<br>- 복원 이미지 저장 |
 | **6. 피부 분석** | - AnalyzerRegistry에서 분석기 선택 (6개 분석기)<br>- SkinAnalyzerV3.analyze_all_multi_v3()<br>- 다중 뷰 분석 (정면 + 좌45° + 우45°)<br>- 얼굴 검출 (MediaPipe / Haar Cascade)<br>- 18개 측정항목 분석:<br>  • 기미, 주근깨, 색소 자국<br>  • 홍조, 염증후 홍반, 여드름<br>  • 주름 (눈가/인중/미세/깊은)<br>  • 모공 (크기/늘어짐), 거칠기<br>  • 피부톤, 칙칙함, 불균형<br>  • 턱선 흐림, 볼 처짐, 건조도<br>- 각도별 특화 항목 가중치 적용:<br>  • 측면 특화 (front: 20%, left: 40%, right: 40%): 모공 처짐, 눈가 주름, 턱선 흐림, 볼 처짐<br>  • 정면 특화 (front: 70%, left: 15%, right: 15%): 기미, 홍조, 피부 톤, 칙칙함, 톤 불균일, 인중 주름<br>  • 최대값 기반: 여드름, 여드름 후 색소<br>  • 기본값 (33% each): 기타 항목<br>- 각도별 개별 결과 포함 (`angle_results`)<br>- 직교 신호 분해 (10개 내부 신호)<br>- 가중치 체계 적용 (레이어A/레이어B/레거시)<br>- 점수 계산 (0-100) |
-| **7. 처방 계산** | - PrescriptionCalculator로 처방전 생성<br>- AGE_GROUP_MAPPING으로 나이대 그룹 매핑 (config.json에서 로드)<br>- PCR (Prescription Calculator Rules) 규칙 적용<br>- total/beneficial/trouble/harmful 계산<br>- 믹스 코드 계산 (M01~M10)<br>- base 비율 계산 (중복 제거)<br>- 처방 항목 생성 |
+| **7. 처방 계산** | - PrescriptionCalculator로 처방전 생성<br>- **설문 정보 추출:** survey에서 skin_type, concerns 추출<br>- **피부 타입별 믹스:** _calculate_skin_type_mix() 호출<br>  • oily → M03 (유분 조절)<br>  • dry → M09 (수분 케어)<br>  • combination → M03 + M09 (유분 조절 + 수분 케어)<br>  • sensitive → M09 (수분 케어)<br>- **고민사항별 믹스:** _calculate_concern_mix() 호출<br>  • 색소 (melasma, freckle) → M05<br>  • 홍조 (redness, red_marks) → M06<br>  • 트러블 (acne, pimple) → M10<br>  • 모공 (pore, pore_sebum, pore_care) → M07<br>  • 주름 (wrinkle, eye_wrinkle, nasolabial) → M02<br>  • 텍스처 (texture, roughness) → M08<br>  • 톤 (tone, dullness, uneven_tone) → M01<br>  • 탄력 (elasticity, sagging, jawline) → M04<br>  • 노화 (aging) → M02 + M04<br>- **피부 평가 기반 처방:** calculate_skin_assessment_recipe() 호출<br>- **PCR 기반 처방:** calculate_pcr_recipe() 호출 (현재 비어있음)<br>- **믹스 합산:** assessment + pcr + skin + care (중복 시 최대값 사용)<br>- **베이스 비율 계산:** 100 - 총믹스합<br>- 처방 항목 생성: {base, skin, care, pcr, assessment} |
 | **8. 제품 매칭** | - ProductRepository에서 맞춤형 화장품 조회<br>- 설문(survey)의 피부 고민사항 매칭 (+0.5 점)<br>- 피부 타입 매칭 (+0.3 점)<br>- 측정 점수 기반 매칭 (+0.2 점)<br>- match_score 계산 및 정렬<br>- 상위 3개 제품 선정<br>- 성분 정보 문자열 생성<br>- product_recommendations 구조 생성 |
 | **9. Gemini 소견 생성** | - LLMRegistry에서 LLM 선택 (gemini_v1)<br>- llm_report=true인 경우<br>- 분석 결과를 Gemini API에 전송<br>- 맞춤형 화장품 성분 정보 포함 (제품 매칭 성공 시)<br>- **설문 정보(survey) 포함** ← 신규<br>- 듀얼 이미지 소견 (원본/복원 비교)<br>- 한국어 소견서 생성<br>- 개선 제안 제시<br>- 맞춤형 화장품 추천 포함 |
 | **10. 입력 JSON → LLM → 출력 JSON** | - input_json["survey"]에서 설문 정보 추출<br>- LLM 프롬프트에 survey_info 포함<br>- Gemini API 호출 (설문 정보 포함)<br>- 개인화된 소견 생성 (성별, 연령, 피부 타입, 고민사항, 알레르지 반영)<br>- 출력 JSON의 llm_report에 개인화된 소견 저장<br>- LLM API 통계(llm_stats) 저장 |
-| **11. 출력 JSON 생성** | {<br>  "input_image": "/path/to/original.png",<br>  "restored_image": "/path/to/restored.png",<br>  "metadata": {<br>    "analyzers": {"pigmentation": "pigmentation_v1", ...},<br>    "restorer": {"name": "codeformer_v1", "config": {...}},<br>    "llm": {"name": "gemini_v1", "model": "models/gemini-2.5-pro"}<br>  },<br>  "input_json": {survey, client_meta},<br>  "internal_analysis": {<br>    "original": {<br>      "melasma_score": 56,<br>      "redness_score": 72,<br>      ... (18개 항목)<br>      "overall_score": 65<br>    },<br>    "restored": { ... }<br>  },<br>  "prescription": {<br>    "mix_codes": {<br>      "M01": {"base": 10.0, "items": ["나이아신아마이드", "비타민 C"]}<br>    }<br>  },<br>  "llm_report": {<br>    "overall_score": 74.5,<br>    "perceived_age": 38.0,<br>    "metric_opinions": {...},<br>    "overall_opinion": "고객님의 피부는 전반적으로 양호한 상태입니다...",<br>    "recommendation": "여드름 관리를 위해...",<br>    "matched_products": [...],<br>    "strict_evaluation_mode": true,<br>    "llm_stats": {...}<br>  }<br>} |
+| **11. 출력 JSON 생성** | {<br>  "input_image": "/path/to/original.png",<br>  "restored_image": "/path/to/restored.png",<br>  "metadata": {<br>    "analyzers": {"pigmentation": "pigmentation_v1", ...},<br>    "restorer": {"name": "codeformer_v1", "config": {...}},<br>    "llm": {"name": "gemini_v1", "model": "models/gemini-2.5-pro"}<br>  },<br>  "input_json": {survey, client_meta},<br>  "internal_analysis": {<br>    "original": {<br>      "melasma_score": 56,<br>      "redness_score": 72,<br>      ... (18개 항목)<br>      "overall_score": 65<br>    },<br>    "restored": { ... }<br>  },<br>  "prescription": {<br>    "base": {"percentage": 85.0},<br>    "skin": {"M03": 1.0, "M09": 1.0},<br>    "care": {"M10": 2.0, "M06": 2.0, "M07": 2.0},<br>    "pcr": {},<br>    "assessment": {...}<br>  },<br>  "llm_report": {<br>    "overall_score": 74.5,<br>    "perceived_age": 38.0,<br>    "metric_opinions": {...},<br>    "overall_opinion": "고객님의 피부는 전반적으로 양호한 상태입니다...",<br>    "recommendation": "여드름 관리를 위해...",<br>    "matched_products": [...],<br>    "strict_evaluation_mode": true,<br>    "llm_stats": {...}<br>  }<br>} |
 | **12. 아티팩트 정리** | - results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v3/analysis/jobs/{job_id}/artifacts/...) |
 | **13. 로컬 DB 저장** | - SkinAnalysisDB.save_analysis()<br>- analyses 테이블 INSERT:<br>  • customer_id<br>  • original_image_path<br>  • restored_image_path<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta<br>  • original_filename<br>  • overall_score_original<br>  • overall_score_restored |
 | **14. Supabase 동기화** | - SupabaseSync.sync()<br>- 이미지 업로드 (Storage):<br>  • original.png → skin-images/{customer_id}/{date}_{id}/<br>  • restored.png → skin-images/{customer_id}/{date}_{id}/<br>- DB upsert (skin_analyses 테이블):<br>  • local_id<br>  • customer_id<br>  • original_filename<br>  • storage_original<br>  • storage_restored<br>  • overall_score_original<br>  • overall_score_restored<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta |
@@ -291,7 +291,80 @@ resize_wh = tuple(config.get("restoration", {}).get("input_resize", [1024, 1365]
 }
 ```
 
-### 7. Gemini 소견 생성
+### 7. 처방 계산
+
+**처방전 로직:** `PrescriptionCalculator.create_prescription()`
+
+**처리 과정:**
+1. **설문 정보 추출:** survey에서 skin_type, concerns 추출
+2. **피부 타입별 믹스:** `_calculate_skin_type_mix()` 호출
+   - oily → M03 (유분 조절, 2.0%)
+   - dry → M09 (수분 케어, 2.0%)
+   - combination → M03 + M09 (유분 조절 + 수분 케어, 1.0% + 1.0%)
+   - sensitive → M09 (수분 케어, 2.0%)
+3. **고민사항별 믹스:** `_calculate_concern_mix()` 호출
+   - 색소 (melasma, freckle, pigmentation) → M05 (색소침착 케어, 2.0%)
+   - 홍조 (redness, red_marks) → M06 (홍조 케어, 2.0%)
+   - 트러블 (acne, pimple) → M10 (트러블 케어, 2.0%)
+   - 모공 (pore, pore_sebum, pore_care) → M07 (모공 케어, 2.0%)
+   - 주름 (wrinkle, eye_wrinkle, nasolabial) → M02 (주름 케어, 2.0%)
+   - 텍스처 (texture, roughness) → M08 (피부결 케어, 2.0%)
+   - 톤 (tone, dullness, uneven_tone) → M01 (톤&밝기 케어, 2.0%)
+   - 탄력 (elasticity, sagging, jawline) → M04 (탄력&처짐 케어, 2.0%)
+   - 노화 (aging) → M02 + M04 (주름 + 탄력, 1.5% + 1.5%)
+4. **피부 평가 기반 처방:** `calculate_skin_assessment_recipe()` 호출
+   - 측정항목 점수 → 믹스 코드 매핑 (config.json)
+   - 가장 낮은 점수 기준으로 처방 비율 결정
+   - 점수 기준: good_threshold(76) 이상 0%, critical_threshold(40) 미만 max_percentage(3.0%)
+5. **PCR 기반 처방:** `calculate_pcr_recipe()` 호출 (현재 비어있음)
+6. **믹스 합산:** assessment + pcr + skin + care
+   - 동일 믹스 코드가 있으면 최대값 사용 (중복 합산 방지)
+7. **베이스 비율 계산:** 100 - 총믹스합
+8. **처방 항목 생성:** {base, skin, care, pcr, assessment}
+
+**처방전 구조:**
+```json
+{
+  "base": {"percentage": 85.0},
+  "skin": {
+    "M03": 1.0,
+    "M09": 1.0
+  },
+  "care": {
+    "M10": 2.0,
+    "M06": 2.0,
+    "M07": 2.0
+  },
+  "pcr": {},
+  "assessment": {
+    "M01": 1.5,
+    "M02": 2.0,
+    "M05": 1.0
+  }
+}
+```
+
+**설문 정보 활용:**
+- `skin_types[0]`: 피부 타입별 믹스 결정
+- `skin_concerns`: 고민사항별 믹스 결정 (복수 선택 가능)
+
+### 8. 제품 매칭
+
+**조건:** ProductTable에 제품 데이터가 있는 경우
+
+**처리 과정:**
+1. 설문(survey)에서 피부 고민사항 추출 (예: 여드름, 홍조)
+2. 설문(survey)에서 피부 타입 추출 (예: combination, sensitive)
+3. ProductRepository에서 제품 조회
+4. 고민사항 매칭 (+0.5 점)
+5. 피부 타입 매칭 (+0.3 점)
+6. 측정 점수 기반 매칭 (+0.2 점, 점수 < 60인 항목)
+7. match_score 계산 및 정렬
+8. 상위 3개 제품 선정
+9. 성분 정보 문자열 생성
+10. product_recommendations 구조 생성
+
+### 9. Gemini 소견 생성
 
 **조건:** `llm_report=true`
 

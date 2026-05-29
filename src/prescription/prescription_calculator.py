@@ -690,14 +690,68 @@ def _calculate_skin_type_mix(skin_type: str) -> Dict[str, float]:
 
 
 def _calculate_concern_mix(concerns: List[str]) -> Dict[str, float]:
-    """관심사별 믹스 계산 (향후 구현 예정)
+    """관심사별 믹스 계산
 
     Args:
-        concerns: ["pigmentation", "redness", "pore", "wrinkle", "texture", "tone", "elasticity", "aging", "acne"] 중 복수 선택
+        concerns: 설문의 skin_concerns 필드 (예: ["acne", "red_marks", "pore_sebum", "pore_care", "wrinkle"])
 
     Returns:
         {mix_code: percentage} 딕셔너리
     """
-    # 향후 config.json의 measurement_to_mix_code_mapping 참조하여 구현
-    # 현재는 빈 딕셔너리 반환
-    return {}
+    # 관심사별 믹스 매핑 (upload-spec.md 기반)
+    concern_mapping = {
+        # 색소 관련
+        "pigmentation": {"M05": 2.0},  # 색소침착 케어
+        "melasma": {"M05": 2.0},  # 기미
+        "freckle": {"M05": 2.0},  # 주근깨
+
+        # 홍조 관련
+        "redness": {"M06": 2.0},  # 홍조 케어
+        "red_marks": {"M06": 2.0},  # 붉은 자국
+
+        # 트러블 관련
+        "acne": {"M10": 2.0},  # 트러블 케어
+        "pimple": {"M10": 2.0},  # 여드름
+
+        # 모공 관련
+        "pore": {"M07": 2.0},  # 모공 케어
+        "pore_sebum": {"M07": 2.0},  # 모공/피지
+        "pore_care": {"M07": 2.0},  # 모공 케어
+
+        # 주름 관련
+        "wrinkle": {"M02": 2.0},  # 주름 케어
+        "eye_wrinkle": {"M02": 2.0},  # 눈가 주름
+        "nasolabial": {"M02": 2.0},  # 팔자 주름
+
+        # 텍스처 관련
+        "texture": {"M08": 2.0},  # 피부결 케어
+        "roughness": {"M08": 2.0},  # 거칠기
+
+        # 톤 관련
+        "tone": {"M01": 2.0},  # 톤&밝기 케어
+        "dullness": {"M01": 2.0},  # 칙칙함
+        "uneven_tone": {"M01": 2.0},  # 톤 불균일
+
+        # 탄력 관련
+        "elasticity": {"M04": 2.0},  # 탄력&처짐 케어
+        "sagging": {"M04": 2.0},  # 처짐
+        "jawline": {"M04": 2.0},  # 턱선
+
+        # 노화 관련
+        "aging": {"M02": 1.5, "M04": 1.5},  # 주름 + 탄력
+    }
+
+    # 관심사별 믹스 합산
+    care_recipe: Dict[str, float] = {}
+
+    for concern in concerns:
+        if concern in concern_mapping:
+            mix_codes = concern_mapping[concern]
+            for mix_code, percentage in mix_codes.items():
+                if mix_code in care_recipe:
+                    # 동일 믹스 코드가 있으면 최대값 사용
+                    care_recipe[mix_code] = max(care_recipe[mix_code], percentage)
+                else:
+                    care_recipe[mix_code] = percentage
+
+    return care_recipe

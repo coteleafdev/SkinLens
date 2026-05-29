@@ -453,6 +453,8 @@ class LlmSkinReporter:
         provide_scores: bool = True,
         product_info: Optional[str] = None,
         survey_info: Optional[str] = None,
+        skin_type: Optional[str] = None,
+        concerns: Optional[List[str]] = None,
     ) -> SkinLLMReport:
         """복원 이미지를 레퍼런스로 사용하여 원본 점수 정확도를 높인 보고서 반환.
 
@@ -493,6 +495,8 @@ class LlmSkinReporter:
             age_group_statistics=None,
             age=30,
             gender="female",
+            skin_type=skin_type,
+            concerns=concerns,
         )
         prescription_info = json.dumps(full_prescription, ensure_ascii=False)
 
@@ -621,7 +625,9 @@ class LlmSkinReporter:
             pcr_result=None,  # PCR 데이터가 없으면 None
             age_group_statistics=None,
             age=30,
-            gender="female"
+            gender="female",
+            skin_type=skin_type,
+            concerns=concerns,
         )
         log.info(f"[LLM] 처방전 계산 결과: {full_prescription}")
 

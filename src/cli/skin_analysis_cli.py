@@ -397,10 +397,25 @@ def run_analysis_pipeline(
     
     # ── 설문 JSON 로드 ───────────────────────────────────────────────
     survey_info = None
+    skin_type = None
+    concerns = None
     if input_json:
         try:
             survey = input_json.get("survey", {})
             survey_info = json.dumps(survey, ensure_ascii=False)
+
+            # 피부 타입 추출 (첫 번째 값 사용)
+            skin_types = survey.get("skin_types", [])
+            if skin_types:
+                # skin_types 배열에서 첫 번째 값 사용 (예: "combination", "sensitive")
+                skin_type = skin_types[0]
+                log.info(f"피부 타입 추출: {skin_type}")
+
+            # 고민사항 추출
+            concerns = survey.get("skin_concerns", [])
+            if concerns:
+                log.info(f"고민사항 추출: {concerns}")
+
             log.info("설문 정보 로드 완료")
         except Exception as e:
             log.warning(f"설문 정보 로드 실패: {e}")
@@ -429,6 +444,8 @@ def run_analysis_pipeline(
                     ideal_perceived_age=float(rest_analysis.get("perceived_age", 0)),
                     provide_scores=args.llm_scores,  # [FIX] GUI와 동일하게 args.llm_scores 사용 (기본 False)
                     survey_info=survey_info,
+                    skin_type=skin_type,
+                    concerns=concerns,
                 )
             else:
                 # 단일 이미지 모드: 원본 이미지 소견 작성
