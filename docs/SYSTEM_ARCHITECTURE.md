@@ -68,7 +68,7 @@ graph TB
 3. **처방전 계산** (PrescriptionCalculator)
    - 피부 평가 점수 기반 처방
    - AGE_GROUP_MAPPING 적용
-   - 믹스 코드 생성 (M01-M14)
+   - 믹스 코드 생성 (M01-M10)
 
 4. **제품 매칭** (ProductRepository)
    - 처방전 + 설문 응답 기반 제품 매칭

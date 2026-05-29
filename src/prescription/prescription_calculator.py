@@ -372,8 +372,8 @@ def get_age_group(age: int) -> int:
 PCR_PRESCRIPTION_RULES_DEFAULT: Dict[str, List[Tuple[float, float, Optional[str], float]]] = {
     "total": [
         (float('-inf'), 0, None, 0.0),
-        (0, -10, "M14", 1.5),
-        (-10, -20, "M14", 2.0),
+        (0, -10, "M10", 1.5),
+        (-10, -20, "M10", 2.0),
         (-20, -30, "M18", 2.5),
         (-30, float('-inf'), "M18", 3.0),
     ],
@@ -591,7 +591,7 @@ def create_prescription(
 
     문서 흐름도 기준:
     - 1단계: 설문 조사 (피부타입별 믹스, 관심별 믹스) - 향후 구현 예정
-    - 2단계: 피부 분석 (M01-M14 믹스)
+    - 2단계: 피부 분석 (M01-M10 믹스)
     - 3단계: 마이크로바이옴 분석 (PCR 믹스)
     - 4단계: 베이스 비율 계산 (100 - 총믹스합)
 
@@ -620,7 +620,7 @@ def create_prescription(
             assessment: {mix_code: percentage}
         }
     """
-    # 피부 평가 기반 처방 (M01-M14)
+    # 피부 평가 기반 처방 (M01-M10)
     assessment_recipe = calculate_skin_assessment_recipe(skin_assessment_scores)
 
     # 설문 연동: 피부타입별 믹스 (향후 구현 예정)

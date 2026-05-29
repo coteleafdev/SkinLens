@@ -191,7 +191,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
    - PrescriptionCalculator로 처방전 생성
    - AGE_GROUP_MAPPING으로 나이대 그룹 매핑
    - PCR 규칙 적용 (total/beneficial/trouble/harmful)
-   - 믹스 코드 계산 (M01~M14)
+   - 믹스 코드 계산 (M01~M10)
 
 6. **제품 매칭**
    - ProductRepository에서 맞춤형 화장품 조회
@@ -334,7 +334,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
       "mix_codes": {
         "M01": {"base": 10.0, "items": ["나이아신아마이드", "비타민 C"]},
         "M02": {"base": 15.0, "items": ["레티놀", "펩타이드"]},
-        "M14": {"base": 8.0, "items": ["살리실산", "티트리 오일"]}
+        "M10": {"base": 8.0, "items": ["살리실산", "티트리 오일"]}
       },
       "recommendation": "측정된 피부 상태를 기반으로 맞춤형 처방전을 생성했습니다."
     },
