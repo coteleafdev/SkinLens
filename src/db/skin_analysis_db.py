@@ -579,6 +579,7 @@ class SkinAnalysisDB:
                 "efficacy": "모공 축소, 각질 제거, 피부결 개선",
                 "target_skin_types": ["oily", "combination"],
                 "target_concerns": ["모공", "거칠기", "블랙헤드"],
+                "target_prescription_items": ["M07", "M08"],  # 모공, 피부결
             },
         ]
         
@@ -586,8 +587,8 @@ class SkinAnalysisDB:
             try:
                 cursor.execute("""
                     INSERT OR REPLACE INTO products
-                    (product_id, product_name, category, key_ingredients, efficacy, target_skin_types, target_concerns)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (product_id, product_name, category, key_ingredients, efficacy, target_skin_types, target_concerns, target_prescription_items)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     product_data["product_id"],
                     product_data["product_name"],
@@ -596,6 +597,7 @@ class SkinAnalysisDB:
                     product_data["efficacy"],
                     json.dumps(product_data["target_skin_types"], ensure_ascii=False),
                     json.dumps(product_data["target_concerns"], ensure_ascii=False),
+                    json.dumps(product_data.get("target_prescription_items", []), ensure_ascii=False),
                 ))
                 log.info(f"샘플 제품 로드 완료: {product_data['product_name']}")
             except Exception as e:
