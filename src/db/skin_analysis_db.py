@@ -552,6 +552,7 @@ class SkinAnalysisDB:
                 "efficacy": "홍조 완화, 피부 진정, 장벽 강화",
                 "target_skin_types": ["sensitive", "combination", "dry"],
                 "target_concerns": ["홍조", "민감성", "붉은기"],
+                "target_prescription_items": ["M06"],  # 홍조
             },
             {
                 "product_id": "P003",
@@ -561,6 +562,7 @@ class SkinAnalysisDB:
                 "efficacy": "색소 침착 개선, 피부 톤 밝기",
                 "target_skin_types": ["all", "combination", "dry"],
                 "target_concerns": ["색소침착", "기미", "주근깨", "칙칙함"],
+                "target_prescription_items": ["M01", "M05"],  # 광채, 색소침착
             },
             {
                 "product_id": "P004",
@@ -570,6 +572,7 @@ class SkinAnalysisDB:
                 "efficacy": "주름 개선, 탄력 증진, 보습",
                 "target_skin_types": ["mature", "dry", "combination"],
                 "target_concerns": ["주름", "탄력", "건조"],
+                "target_prescription_items": ["M02"],  # 주름
             },
             {
                 "product_id": "P005",
