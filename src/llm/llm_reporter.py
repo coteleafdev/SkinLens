@@ -1327,11 +1327,10 @@ class LlmSkinReporter:
                 dynamic_weighting_enabled = dynamic_weighting_config.get("enabled", False)
                 score_difference_threshold = dynamic_weighting_config.get("score_difference_threshold", 15.0)
                 
-                # 오탐 방지 설정 (자체 분석기 내 원본-복원 점수 차이 기반)
+                # 오탐 방지 설정 (자체 분석기와 LLM의 원본-복원 차이 쌍 비교 기반)
                 anomaly_detection_config = score_correction_config.get("anomaly_detection", {})
                 anomaly_detection_enabled = anomaly_detection_config.get("enabled", False)
-                orig_ideal_diff_threshold = anomaly_detection_config.get("orig_ideal_diff_threshold", 15.0)
-                analyzer_llm_diff_threshold = anomaly_detection_config.get("analyzer_llm_diff_threshold", 15.0)
+                diff_comparison_threshold = anomaly_detection_config.get("diff_comparison_threshold", 15.0)
                 
                 if score_correction_enabled:
                     correction_mode = score_correction_config.get("mode", "hybrid")
@@ -1340,7 +1339,7 @@ class LlmSkinReporter:
                     
                     log.info(f"[점수 보정] 활성화: mode={correction_mode}, analyzer_weight={analyzer_weight}, llm_weight={llm_weight}, dynamic_weighting={dynamic_weighting_enabled}")
                     if anomaly_detection_enabled:
-                        log.info(f"[오탐 방지] 활성화: orig_ideal_diff_threshold={orig_ideal_diff_threshold}, analyzer_llm_diff_threshold={analyzer_llm_diff_threshold}")
+                        log.info(f"[오탐 방지] 활성화: diff_comparison_threshold={diff_comparison_threshold}")
                     
                     # 종합 점수 모니터링
                     _monitor_score_difference(orig_overall_score, llm_orig_overall_score, "종합 점수 (원본)")
@@ -1360,27 +1359,34 @@ class LlmSkinReporter:
                     
                     # 개별 항목 점수 보정
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
+                        # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
+                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ideal_metric_scores:
+                            orig_analyzer_score = orig_measurements_report.get(key, 0)
+                            ideal_analyzer_score = ideal_measurements_report.get(key, 0)
+                            orig_llm_score = orig_metric_scores[key]
+                            ideal_llm_score = ideal_metric_scores[key]
+                            
+                            # 자체 분석기 원본-복원 차이
+                            analyzer_diff = abs(orig_analyzer_score - ideal_analyzer_score)
+                            # LLM 원본-복원 차이
+                            llm_diff = abs(orig_llm_score - ideal_llm_score)
+                            # 차이 비교: 자체 분석기 차이 - LLM 차이
+                            diff_comparison = analyzer_diff - llm_diff
+                            
+                            if diff_comparison >= diff_comparison_threshold:
+                                log.info(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} >= 임계값 {diff_comparison_threshold}, LLM 오탐으로 간주하여 자체 분석기 점수 사용")
+                                orig_metric_opinions[i].score = orig_analyzer_score
+                                orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
+                                ideal_metric_opinions[i].score = ideal_analyzer_score
+                                ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
+                                continue
+                            else:
+                                log.debug(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} < 임계값 {diff_comparison_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
+                        
                         # 원본 점수 보정
                         if key in orig_metric_scores:
                             analyzer_score = orig_measurements_report.get(key, 0)
                             llm_score = orig_metric_scores[key]
-                            
-                            # 오탐 방지: 이중 조건 확인
-                            # 1. 자체 분석기 원본-복원 차이 >= 임계값
-                            # 2. 자체 분석기와 LLM 점수 차이 >= 임계값
-                            if anomaly_detection_enabled and key in ideal_measurements_report:
-                                orig_analyzer_score = orig_measurements_report.get(key, 0)
-                                ideal_analyzer_score = ideal_measurements_report.get(key, 0)
-                                orig_ideal_diff = abs(orig_analyzer_score - ideal_analyzer_score)
-                                analyzer_llm_diff = abs(analyzer_score - llm_score)
-                                
-                                if orig_ideal_diff >= orig_ideal_diff_threshold and analyzer_llm_diff >= analyzer_llm_diff_threshold:
-                                    log.info(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} AND 자체-LLM 차이 {analyzer_llm_diff:.1f} >= {analyzer_llm_diff_threshold}, 자체 분석기 점수 사용")
-                                    orig_metric_opinions[i].score = orig_analyzer_score
-                                    orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
-                                    continue
-                                elif orig_ideal_diff >= orig_ideal_diff_threshold:
-                                    log.debug(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} BUT 자체-LLM 차이 {analyzer_llm_diff:.1f} < {analyzer_llm_diff_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
                             
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (원본)")
@@ -1398,23 +1404,6 @@ class LlmSkinReporter:
                             analyzer_score = ideal_measurements_report.get(key, 0)
                             llm_score = ideal_metric_scores[key]
                             
-                            # 오탐 방지: 이중 조건 확인
-                            # 1. 자체 분석기 원본-복원 차이 >= 임계값
-                            # 2. 자체 분석기와 LLM 점수 차이 >= 임계값
-                            if anomaly_detection_enabled and key in orig_measurements_report:
-                                orig_analyzer_score = orig_measurements_report.get(key, 0)
-                                ideal_analyzer_score = ideal_measurements_report.get(key, 0)
-                                orig_ideal_diff = abs(orig_analyzer_score - ideal_analyzer_score)
-                                analyzer_llm_diff = abs(analyzer_score - llm_score)
-                                
-                                if orig_ideal_diff >= orig_ideal_diff_threshold and analyzer_llm_diff >= analyzer_llm_diff_threshold:
-                                    log.info(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} AND 자체-LLM 차이 {analyzer_llm_diff:.1f} >= {analyzer_llm_diff_threshold}, 자체 분석기 점수 사용")
-                                    ideal_metric_opinions[i].score = ideal_analyzer_score
-                                    ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
-                                    continue
-                                elif orig_ideal_diff >= orig_ideal_diff_threshold:
-                                    log.debug(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} BUT 자체-LLM 차이 {analyzer_llm_diff:.1f} < {analyzer_llm_diff_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
-                            
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (복원)")
                             
@@ -1431,7 +1420,7 @@ class LlmSkinReporter:
                     llm_weight = score_correction_config.get("llm_weight", 0.3)
                     log.info(f"[동적 가중치] 듀얼 모드 독립 작동: score_difference_threshold={score_difference_threshold}, 기본 가중치=자체{analyzer_weight}:LLM{llm_weight}")
                     if anomaly_detection_enabled:
-                        log.info(f"[오탐 방지] 활성화: orig_ideal_diff_threshold={orig_ideal_diff_threshold}, analyzer_llm_diff_threshold={analyzer_llm_diff_threshold}")
+                        log.info(f"[오탐 방지] 활성화: diff_comparison_threshold={diff_comparison_threshold}")
                     
                     # 종합 점수 모니터링
                     _monitor_score_difference(orig_overall_score, llm_orig_overall_score, "종합 점수 (원본)")
@@ -1451,27 +1440,34 @@ class LlmSkinReporter:
                     
                     # 개별 항목 점수 보정
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
+                        # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
+                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ideal_metric_scores:
+                            orig_analyzer_score = orig_measurements_report.get(key, 0)
+                            ideal_analyzer_score = ideal_measurements_report.get(key, 0)
+                            orig_llm_score = orig_metric_scores[key]
+                            ideal_llm_score = ideal_metric_scores[key]
+                            
+                            # 자체 분석기 원본-복원 차이
+                            analyzer_diff = abs(orig_analyzer_score - ideal_analyzer_score)
+                            # LLM 원본-복원 차이
+                            llm_diff = abs(orig_llm_score - ideal_llm_score)
+                            # 차이 비교: 자체 분석기 차이 - LLM 차이
+                            diff_comparison = analyzer_diff - llm_diff
+                            
+                            if diff_comparison >= diff_comparison_threshold:
+                                log.info(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} >= 임계값 {diff_comparison_threshold}, LLM 오탐으로 간주하여 자체 분석기 점수 사용")
+                                orig_metric_opinions[i].score = orig_analyzer_score
+                                orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
+                                ideal_metric_opinions[i].score = ideal_analyzer_score
+                                ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
+                                continue
+                            else:
+                                log.debug(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} < 임계값 {diff_comparison_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
+                        
                         # 원본 점수 보정
                         if key in orig_metric_scores:
                             analyzer_score = orig_measurements_report.get(key, 0)
                             llm_score = orig_metric_scores[key]
-                            
-                            # 오탐 방지: 이중 조건 확인
-                            # 1. 자체 분석기 원본-복원 차이 >= 임계값
-                            # 2. 자체 분석기와 LLM 점수 차이 >= 임계값
-                            if anomaly_detection_enabled and key in ideal_measurements_report:
-                                orig_analyzer_score = orig_measurements_report.get(key, 0)
-                                ideal_analyzer_score = ideal_measurements_report.get(key, 0)
-                                orig_ideal_diff = abs(orig_analyzer_score - ideal_analyzer_score)
-                                analyzer_llm_diff = abs(analyzer_score - llm_score)
-                                
-                                if orig_ideal_diff >= orig_ideal_diff_threshold and analyzer_llm_diff >= analyzer_llm_diff_threshold:
-                                    log.info(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} AND 자체-LLM 차이 {analyzer_llm_diff:.1f} >= {analyzer_llm_diff_threshold}, 자체 분석기 점수 사용")
-                                    orig_metric_opinions[i].score = orig_analyzer_score
-                                    orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
-                                    continue
-                                elif orig_ideal_diff >= orig_ideal_diff_threshold:
-                                    log.debug(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} BUT 자체-LLM 차이 {analyzer_llm_diff:.1f} < {analyzer_llm_diff_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
                             
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (원본)")
@@ -1489,23 +1485,6 @@ class LlmSkinReporter:
                             analyzer_score = ideal_measurements_report.get(key, 0)
                             llm_score = ideal_metric_scores[key]
                             
-                            # 오탐 방지: 이중 조건 확인
-                            # 1. 자체 분석기 원본-복원 차이 >= 임계값
-                            # 2. 자체 분석기와 LLM 점수 차이 >= 임계값
-                            if anomaly_detection_enabled and key in orig_measurements_report:
-                                orig_analyzer_score = orig_measurements_report.get(key, 0)
-                                ideal_analyzer_score = ideal_measurements_report.get(key, 0)
-                                orig_ideal_diff = abs(orig_analyzer_score - ideal_analyzer_score)
-                                analyzer_llm_diff = abs(analyzer_score - llm_score)
-                                
-                                if orig_ideal_diff >= orig_ideal_diff_threshold and analyzer_llm_diff >= analyzer_llm_diff_threshold:
-                                    log.info(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} AND 자체-LLM 차이 {analyzer_llm_diff:.1f} >= {analyzer_llm_diff_threshold}, 자체 분석기 점수 사용")
-                                    ideal_metric_opinions[i].score = ideal_analyzer_score
-                                    ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
-                                    continue
-                                elif orig_ideal_diff >= orig_ideal_diff_threshold:
-                                    log.debug(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} BUT 자체-LLM 차이 {analyzer_llm_diff:.1f} < {analyzer_llm_diff_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
-                            
                             # 개별 항목 점수 차이 모니터링
                             _monitor_score_difference(analyzer_score, llm_score, f"{display} (복원)")
                             
@@ -1522,37 +1501,33 @@ class LlmSkinReporter:
                     _monitor_score_difference(ideal_overall_score, llm_ideal_overall_score, "종합 점수 (복원)")
                     
                     if anomaly_detection_enabled:
-                        log.info(f"[오탐 방지] 활성화: orig_ideal_diff_threshold={orig_ideal_diff_threshold}, analyzer_llm_diff_threshold={analyzer_llm_diff_threshold}")
+                        log.info(f"[오탐 방지] 활성화: diff_comparison_threshold={diff_comparison_threshold}")
                     
                     # 개별 항목 점수 차이 모니터링 및 오탐 방지
                     for i, (key, display, category, _) in enumerate(_METRIC_META):
-                        # 오탐 방지: 이중 조건 확인
-                        # 1. 자체 분석기 원본-복원 차이 >= 임계값
-                        # 2. 자체 분석기와 LLM 점수 차이 >= 임계값
-                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report:
+                        # 오탐 방지: 자체 분석기와 LLM의 원본-복원 차이 쌍 비교
+                        if anomaly_detection_enabled and key in orig_measurements_report and key in ideal_measurements_report and key in orig_metric_scores and key in ideal_metric_scores:
                             orig_analyzer_score = orig_measurements_report.get(key, 0)
                             ideal_analyzer_score = ideal_measurements_report.get(key, 0)
-                            orig_ideal_diff = abs(orig_analyzer_score - ideal_analyzer_score)
+                            orig_llm_score = orig_metric_scores[key]
+                            ideal_llm_score = ideal_metric_scores[key]
                             
-                            # 원본 LLM 점수 확인
-                            if key in orig_metric_scores:
-                                analyzer_llm_diff = abs(orig_analyzer_score - orig_metric_scores[key])
-                                if orig_ideal_diff >= orig_ideal_diff_threshold and analyzer_llm_diff >= analyzer_llm_diff_threshold:
-                                    log.info(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} AND 자체-LLM 차이 {analyzer_llm_diff:.1f} >= {analyzer_llm_diff_threshold}, 자체 분석기 점수 사용")
-                                    orig_metric_opinions[i].score = orig_analyzer_score
-                                    orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
-                                elif orig_ideal_diff >= orig_ideal_diff_threshold:
-                                    log.debug(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} BUT 자체-LLM 차이 {analyzer_llm_diff:.1f} < {analyzer_llm_diff_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
+                            # 자체 분석기 원본-복원 차이
+                            analyzer_diff = abs(orig_analyzer_score - ideal_analyzer_score)
+                            # LLM 원본-복원 차이
+                            llm_diff = abs(orig_llm_score - ideal_llm_score)
+                            # 차이 비교: 자체 분석기 차이 - LLM 차이
+                            diff_comparison = analyzer_diff - llm_diff
                             
-                            # 복원 LLM 점수 확인
-                            if key in ideal_metric_scores:
-                                analyzer_llm_diff = abs(ideal_analyzer_score - ideal_metric_scores[key])
-                                if orig_ideal_diff >= orig_ideal_diff_threshold and analyzer_llm_diff >= analyzer_llm_diff_threshold:
-                                    log.info(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} AND 자체-LLM 차이 {analyzer_llm_diff:.1f} >= {analyzer_llm_diff_threshold}, 자체 분석기 점수 사용")
-                                    ideal_metric_opinions[i].score = ideal_analyzer_score
-                                    ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
-                                elif orig_ideal_diff >= orig_ideal_diff_threshold:
-                                    log.debug(f"[오탐 방지] {display}: 원본-복원 차이 {orig_ideal_diff:.1f} >= {orig_ideal_diff_threshold} BUT 자체-LLM 차이 {analyzer_llm_diff:.1f} < {analyzer_llm_diff_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
+                            if diff_comparison >= diff_comparison_threshold:
+                                log.info(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} >= 임계값 {diff_comparison_threshold}, LLM 오탐으로 간주하여 자체 분석기 점수 사용")
+                                orig_metric_opinions[i].score = orig_analyzer_score
+                                orig_metric_opinions[i].grade = _grade_label(orig_analyzer_score)
+                                ideal_metric_opinions[i].score = ideal_analyzer_score
+                                ideal_metric_opinions[i].grade = _grade_label(ideal_analyzer_score)
+                                continue
+                            else:
+                                log.debug(f"[오탐 방지] {display}: 자체 분석기 차이 {analyzer_diff:.1f} - LLM 차이 {llm_diff:.1f} = {diff_comparison:.1f} < 임계값 {diff_comparison_threshold}, LLM 정상 동작으로 간주하여 LLM 점수 사용")
                         
                         # 점수 차이 모니터링
                         if key in orig_metric_scores:

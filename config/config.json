@@ -88,9 +88,8 @@
       },
       "anomaly_detection": {
         "enabled": true,
-        "orig_ideal_diff_threshold": 15.0,
-        "analyzer_llm_diff_threshold": 15.0,
-        "_note": "자체 분석기 내 원본-복원 점수 차이 기반 오탐 방지. enabled=true이면 원본과 복원 점수 차이가 orig_ideal_diff_threshold 이상이고, 자체 분석기와 LLM 점수 차이도 analyzer_llm_diff_threshold 이상인 항목만 LLM 오탐으로 간주하여 자체 분석기 점수만 사용. LLM이 정상 동작하는 경우(자체 분석기와 LLM 점수 차이가 작은 경우)에는 LLM 점수 사용."
+        "diff_comparison_threshold": 15.0,
+        "_note": "자체 분석기와 LLM의 원본-복원 점수 차이 쌍 비교 기반 오탐 방지. enabled=true이면 자체 분석기의 원본-복원 차이와 LLM의 원본-복원 차이를 비교하여 LLM 오탐 판단. 자체 분석기 차이 - LLM 차이 >= diff_comparison_threshold 이상이면 LLM이 오탐을 했다고 간주하여 자체 분석기 점수 사용. LLM이 원본-복원 차이를 제대로 반영하지 못한 경우(복원 이미지 기준으로 원본 점수를 과대평가)를 감지."
       },
       "_note": "점수 보정 설정. enabled=true이면 활성화. mode: 'analyzer'(자체 분석기만), 'llm'(LLM만), 'hybrid'(하이브리드). 가중치 합계는 1.0이어야 함."
     },
