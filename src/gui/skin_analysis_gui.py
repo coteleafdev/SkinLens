@@ -881,6 +881,9 @@ class SkinAnalysisWindow(QMainWindow):
 
         args.extend(["--out-dir", self.edit_out.text().strip()])
 
+        # JSON 저장 활성화 (GUI 모드에서도 결과 JSON 저장)
+        args.append("--save-json")
+
         if self.chk_restore_only.isChecked():
             args.append("--restore-only")
         if not self.chk_restore.isChecked():

@@ -766,30 +766,32 @@ def _cli_body(args) -> int:
                         # JSON 파일 저장 (CLI와 동일하게 results 폴더)
                         # 입력 이미지의 파일명을 사용하여 고객별 결과 누적
                         # 스테이징된 파일명(00_input_*)이 있으면 우선 사용
-                        staged_files = list(args.out_dir.glob("00_input_*.png"))
-                        if staged_files:
-                            input_filename = staged_files[0].stem  # 확장자 제거 (예: 00_input_색소침착_트러블_홍조)
-                        else:
-                            input_filename = Path(init_resolved).stem  # 원본 파일명
-                        json_path = args.out_dir / f"{input_filename}.json"
-                        json_path.parent.mkdir(parents=True, exist_ok=True)
-                        with open(json_path, "w", encoding="utf-8") as f:
-                            f.write(json_output)
-                        log.info(f"[완료] JSON 저장 완료: {json_path}")
+                        if args.save_json:
+                            staged_files = list(args.out_dir.glob("00_input_*.png"))
+                            if staged_files:
+                                input_filename = staged_files[0].stem  # 확장자 제거 (예: 00_input_색소침착_트러블_홍조)
+                            else:
+                                input_filename = Path(init_resolved).stem  # 원본 파일명
+                            json_path = args.out_dir / f"{input_filename}.json"
+                            json_path.parent.mkdir(parents=True, exist_ok=True)
+                            with open(json_path, "w", encoding="utf-8") as f:
+                                f.write(json_output)
+                            log.info(f"[완료] JSON 저장 완료: {json_path}")
                         
-                        # DB에 분석 결과 저장
-                        try:
-                            from src.db.skin_analysis_db import SkinAnalysisDB
-                            db = SkinAnalysisDB(db_path=str(args.out_dir / "skin_analysis.db"))
-                            db.save_analysis(
-                                original_path=init_resolved,
-                                restored_path=final_p,
-                                json_result=result_json
-                            )
-                        except Exception as e:
-                            log.warning(f"[경고] DB 저장 실패: {e}")
-                            import traceback
-                            traceback.print_exc()
+                        # DB에 분석 결과 저장 (JSON 저장 시에만)
+                        if args.save_json:
+                            try:
+                                from src.db.skin_analysis_db import SkinAnalysisDB
+                                db = SkinAnalysisDB(db_path=str(args.out_dir / "skin_analysis.db"))
+                                db.save_analysis(
+                                    original_path=init_resolved,
+                                    restored_path=final_p,
+                                    json_result=result_json
+                                )
+                            except Exception as e:
+                                log.warning(f"[경고] DB 저장 실패: {e}")
+                                import traceback
+                                traceback.print_exc()
 
                         # 점수 팝업 표시 생략, 측정항목 비교는 GUI 모드에서만 실행
                         # CLI에서는 --no-restore-score-popup 옵션으로 건너뜀
@@ -1017,6 +1019,10 @@ def _cli() -> int:
     p.add_argument(
         "--output-json", type=Path, default=None,
         help="결과 JSON 출력 파일 경로 (지정하지 않으면 stdout)",
+    )
+    p.add_argument(
+        "--save-json", action="store_true", default=True,
+        help="결과 JSON을 out-dir에 저장 (기본 True)",
     )
     p.add_argument(
         "--debug", action="store_true",
