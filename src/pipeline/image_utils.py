@@ -138,7 +138,8 @@ def _postprocess_image(image_path: Path) -> Path:
     from src.config.config_manager import ConfigManager
     
     config_mgr = ConfigManager.get_instance()
-    post_processing_config = config_mgr.get("post_processing", {})
+    config = config_mgr.get_config()
+    post_processing_config = config.get("post_processing", {})
     
     # 후처리 비활성화면 원본 반환
     if not post_processing_config.get("enabled", False):
