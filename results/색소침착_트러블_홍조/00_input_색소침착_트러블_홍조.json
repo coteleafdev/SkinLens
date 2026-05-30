@@ -26,14 +26,14 @@
       "config": {
         "model": "models/gemini-2.5-pro",
         "provider": "gemini",
-        "timeout_sec": 300,
+        "timeout_sec": 600,
         "max_retries": 3
       }
     }
   },
   "execution_time": {
-    "total_sec": 76.71,
-    "llm_sec": 58.88
+    "total_sec": 286.07,
+    "llm_sec": 268.8
   },
   "internal_analysis": {
     "original": {
@@ -173,49 +173,49 @@
   },
   "llm_analysis": {
     "original": {
-      "raw_response": "{\n  \"strict_evaluation_mode\": true,\n  \"reference_baseline\": {\n    \"주름\": \"복원 이미지에서는 눈가와 팔자 주름이 거의 보이지 않는 매끄러운 상태이며, 이마에도 주름이 관찰되지 않습니다.\",\n    \"모공\": \"코와 양 볼 안쪽을 중심으로 약간의 크기가 있는 원형 모공이 분포하며, 모공 처짐은 거의 없는 상태입니다.\",\n    \"색소\": \"트러블 색소나 주근깨는 대부분 제거되었으나, 양쪽 광대 부위에 옅고 넓은 형태의 기저 기미가 희미하게 관찰됩니다.\",\n    \"탄력\": \"턱선은 비교적 명확하게 유지되고 있으며, 볼 처짐 현상은 거의 보이지 않아 양호한 탄력 상태를 보입니다.\",\n    \"홍조\": \"염증성 병변이 제거되어 전반적인 붉은 기운 없이 균일한 피부톤을 보이며, 국소적인 홍조도 관찰되지 않습니다.\",\n    \"트러블\": \"염증성 여드름이나 비염증성 트러블 없이 깨끗하게 정돈된 피부 상태를 보여줍니다.\",\n    \"피부결\": \"트러블이 제거된 피부 표면은 모공으로 인한 요철 외에는 비교적 매끄러운 상태를 유지하고 있습니다.\",\n    \"톤\": \"전반적으로 중간 톤의 밝기를 가지고 있으며, 붉은 기운이 없어 본연의 피부 톤이 잘 드러납니다.\",\n    \"피부 타입\": \"T존에 약간의 유분감이 보이나 볼 부위는 적절한 유수분 밸런스를 유지하는 복합성 피부 타입으로 추정됩니다.\"\n  },\n  \"score_reasons\": {\n    \"melasma_score\": \"원본 이미지에서는 트러블 자국과 주근깨가 많아 기미가 명확히 보이지 않으나, 광대 주변에 옅은 기미가 있는 것으로 판단되어 점수가 산출되었습니다.\",\n    \"freckle_score\": \"코와 양 볼에 걸쳐 30개 이상의 짙은 주근깨가 넓게 분포하고 있어 개선이 필요한 상태입니다.\",\n    \"redness_score\": \"얼굴 전반에 염증성 트러블로 인한 붉은 기운이 넓게 퍼져 있어 집중적인 진정 관리가 필요합니다.\",\n    \"post_inflammatory_erythema_score\": \"뺨과 턱 주변으로 10개 이상의 선명한 여드름 염증 후 붉은 자국이 남아있어 피부 톤을 심하게 저해하고 있습니다.\",\n    \"acne_score\": \"얼굴 전체에 20개 이상의 염증을 동반한 붉은 여드름이 발생하여 매우 집중적인 트러블 케어가 시급한 상태입니다.\",\n    \"post_acne_pigment_score\": \"오래된 여드름으로 인한 갈색 색소 침착 자국이 10개 이상 관찰되어 피부가 전체적으로 지저분해 보입니다.\",\n    \"pore_size_score\": \"코와 주변 볼에 보통 크기의 모공이 분포하고 있어 모공 관리를 시작하는 것이 좋습니다.\",\n    \"pore_sagging_score\": \"모공이 대부분 원형을 유지하고 있어 처짐 현상은 아직 경미한 수준으로 판단됩니다.\",\n    \"eye_wrinkle_score\": \"눈을 감고 있음에도 눈꼬리 주변으로 얕고 미세한 주름이 여러 개 관찰됩니다.\",\n    \"nasolabial_wrinkle_score\": \"팔자 부위에 깊은 주름은 없으나, 그림자가 지는 형태로 초기 주름선이 형성되고 있습니다.\",\n    \"fine_deep_wrinkle_score\": \"이마나 미간 등 다른 부위에는 특별히 눈에 띄는 깊은 주름이 관찰되지 않습니다.\",\n    \"roughness_score\": \"다수의 염증성 트러블과 각질로 인해 피부 표면이 매우 거칠고 요철이 심한 상태입니다.\",\n    \"skin_tone_score\": \"전반적인 붉은 기와 색소 침착으로 인해 본래의 피부 톤보다 어둡게 보입니다.\",\n    \"dullness_score\": \"염증과 색소 문제, 거친 피부결로 인해 피부의 맑은 빛을 잃고 칙칙함이 두드러집니다.\",\n    \"uneven_tone_score\": \"붉은 트러블 자국과 갈색 색소 침착, 주근깨가 혼재하여 피부 톤이 매우 불균일합니다.\",\n    \"jawline_blur_score\": \"턱선은 무너짐 없이 비교적 선명하게 유지되고 있어 탄력 상태는 양호합니다.\",\n    \"cheek_sagging_score\": \"볼 부위의 꺼짐이나 처짐 현상 없이 탄력이 잘 유지되고 있는 상태입니다.\",\n    \"skin_type_score\": \"과도한 염증성 트러블은 유수분 밸런스가 심하게 무너졌음을 의미하며, 지성 트러블 피부 관리가 필요합니다.\"\n  },\n  \"ref_metric_reasons\": {\n    \"melasma_score\": \"복원 이미지에서 양쪽 광대 부위에 옅고 흐릿한 기미가 확인되어 점수가 산출되었습니다.\",\n    \"freckle_score\": \"복원 과정에서 대부분의 주근깨가 제거되어 매우 깨끗한 상태를 보입니다.\",\n    \"redness_score\": \"염증이 모두 제거되어 홍조 없이 균일하고 안정된 피부 톤을 보여줍니다.\",\n    \"post_inflammatory_erythema_score\": \"염증 후 붉은 자국이 모두 제거되어 깨끗한 피부 상태를 나타냅니다.\",\n    \"acne_score\": \"활성 여드름이 전혀 관찰되지 않는 매우 우수한 상태입니다.\",\n    \"post_acne_pigment_score\": \"여드름 후 색소 침착이 모두 제거되어 맑은 피부를 보여줍니다.\",\n    \"pore_size_score\": \"코와 주변 볼에 보통 크기의 모공이 분포하고 있는 것이 확인됩니다.\",\n    \"pore_sagging_score\": \"모공이 전반적으로 원형을 유지하고 있어 처짐 현상은 거의 없는 것으로 판단됩니다.\",\n    \"eye_wrinkle_score\": \"눈꼬리 주변으로 매우 얕은 수준의 미세 주름이 관찰됩니다.\",\n    \"nasolabial_wrinkle_score\": \"팔자 부위에 희미한 음영이 보여 초기 주름의 가능성을 시사합니다.\",\n    \"fine_deep_wrinkle_score\": \"이마를 포함한 얼굴 전체에 깊은 주름 없이 매끄러운 상태를 유지하고 있습니다.\",\n    \"roughness_score\": \"트러블이 제거된 피부 표면은 모공 외에는 비교적 매끄러운 편입니다.\",\n    \"skin_tone_score\": \"붉은 기가 제거되어 본연의 보통 밝기 피부 톤이 드러납니다.\",\n    \"dullness_score\": \"피부가 전반적으로 맑지만, 약간의 칙칙함이 남아있는 상태입니다.\",\n    \"uneven_tone_score\": \"기저의 옅은 기미를 제외하면 전반적으로 매우 균일한 피부 톤을 보입니다.\",\n    \"jawline_blur_score\": \"턱선이 흐트러짐 없이 선명하게 유지되고 있어 탄력이 좋은 상태입니다.\",\n    \"cheek_sagging_score\": \"볼 부위의 탄력이 잘 유지되어 처짐 현상이 관찰되지 않습니다.\",\n    \"skin_type_score\": \"T존의 유분감을 제외하면 전반적으로 유수분 밸런스가 양호한 복합성 피부로 보입니다.\"\n  },\n  \"orig_metric_scores\": {\n    \"melasma_score\": 75.0,\n    \"freckle_score\": 35.0,\n    \"redness_score\": 30.0,\n    \"post_inflammatory_erythema_score\": 25.0,\n    \"acne_score\": 25.0,\n    \"post_acne_pigment_score\": 40.0,\n    \"pore_size_score\": 65.0,\n    \"pore_sagging_score\": 80.0,\n    \"eye_wrinkle_score\": 82.0,\n    \"nasolabial_wrinkle_score\": 80.0,\n    \"fine_deep_wrinkle_score\": 85.0,\n    \"roughness_score\": 50.0,\n    \"skin_tone_score\": 65.0,\n    \"dullness_score\": 65.0,\n    \"uneven_tone_score\": 30.0,\n    \"jawline_blur_score\": 85.0,\n    \"cheek_sagging_score\": 90.0,\n    \"skin_type_score\": 55.0\n  },\n  \"ref_metric_scores\": {\n    \"melasma_score\": 78.0,\n    \"freckle_score\": 85.0,\n    \"redness_score\": 90.0,\n    \"post_inflammatory_erythema_score\": 90.0,\n    \"acne_score\": 90.0,\n    \"post_acne_pigment_score\": 85.0,\n    \"pore_size_score\": 68.0,\n    \"pore_sagging_score\": 90.0,\n    \"eye_wrinkle_score\": 85.0,\n    \"nasolabial_wrinkle_score\": 82.0,\n    \"fine_deep_wrinkle_score\": 88.0,\n    \"roughness_score\": 70.0,\n    \"skin_tone_score\": 70.0,\n    \"dullness_score\": 78.0,\n    \"uneven_tone_score\": 80.0,\n    \"jawline_blur_score\": 88.0,\n    \"cheek_sagging_score\": 90.0,\n    \"skin_type_score\": 80.0\n  },\n  \"orig_metric_opinions\": {\n    \"melasma_score\": \"고객님의 피부는 다수의 트러블 자국과 주근깨 아래로 광대 부위에 옅은 기미가 자리 잡고 있습니다.\",\n    \"freckle_score\": \"코와 양 볼에 걸쳐 30개 이상의 주근깨가 짙고 넓게 분포하여 색소 관리가 필요합니다.\",\n    \"redness_score\": \"얼굴 전반에 퍼진 염증성 트러블로 인해 피부 전체가 붉게 보여 민감해진 상태입니다.\",\n    \"post_inflammatory_erythema_score\": \"뺨과 턱 주변으로 10개 이상의 선명한 여드름 후 붉은 자국이 남아 피부 톤을 저해하고 있습니다.\",\n    \"acne_score\": \"얼굴 전체에 20개 이상의 염증성 여드름이 발생하여 매우 집중적인 트러블 케어가 시급합니다.\",\n    \"post_acne_pigment_score\": \"오래된 여드름으로 인한 갈색 색소 침착이 10개 이상 관찰되어 피부를 얼룩덜룩하게 만듭니다.\",\n    \"pore_size_score\": \"코와 나비존을 중심으로 모공이 다소 넓어져 있어 피지 조절과 모공 관리가 필요합니다.\",\n    \"pore_sagging_score\": \"다행히 모공의 형태가 대부분 원형을 유지하고 있어 모공 처짐은 아직 심하지 않은 상태입니다.\",\n    \"eye_wrinkle_score\": \"눈을 감은 상태에서도 눈꼬리 주변으로 여러 개의 얕은 잔주름이 관찰되어 초기 관리가 중요합니다.\",\n    \"nasolabial_wrinkle_score\": \"팔자 부위에 옅은 그림자가 드리워져 있어 피부 탄력 저하로 인한 초기 주름이 시작되고 있습니다.\",\n    \"fine_deep_wrinkle_score\": \"이마나 미간 등 다른 부위에는 특별히 눈에 띄는 깊은 주름 없이 양호한 상태를 유지하고 있습니다.\",\n    \"roughness_score\": \"다수의 염증성 트러블과 탈락되지 못한 각질로 인해 피부 표면이 매우 거칠게 느껴집니다.\",\n    \"skin_tone_score\": \"전반적인 붉은 기와 색소 침착 문제로 인해 본래의 피부 톤보다 어둡고 칙칙해 보입니다.\",\n    \"dullness_score\": \"염증, 색소, 거친 피부결의 복합적인 문제로 피부가 맑은 기운을 잃고 전반적으로 어둡습니다.\",\n    \"uneven_tone_score\": \"붉은 트러블 자국, 갈색 색소, 주근깨가 혼재하여 피부 톤이 매우 불균일하고 지저분해 보입니다.\",\n    \"jawline_blur_score\": \"턱선은 무너짐 없이 비교적 선명하게 유지되어 피부의 구조적 탄력은 양호한 편입니다.\",\n    \"cheek_sagging_score\": \"볼 부위의 꺼짐이나 처짐 현상 없이 탄력이 잘 유지되고 있어 노화 진행은 더딘 편입니다.\",\n    \"skin_type_score\": \"현재 피부는 과도한 피지 분비와 염증 반응으로 유수분 밸런스가 완전히 무너진 상태입니다.\"\n  },\n  \"orig_overall_score\": 59.3,\n  \"ref_overall_score\": 82.6,\n  \"orig_perceived_age\": 28.0,\n  \"ref_perceived_age\": 26.0,\n  \"orig_overall_opinion\": \"고객님의 현재 피부는 얼굴 전체에 발생한 심각한 수준의 염증성 여드름과 그로 인한 붉고 갈색의 자국들이 가장 시급하게 해결해야 할 문제입니다. 또한 코와 뺨에 넓게 퍼진 주근깨가 더해져 피부 톤이 매우 불균일하고 거칠어 보입니다. 하지만 복원된 이미지를 통해 확인된 고객님의 본래 피부는 주름이나 탄력 저하와 같은 구조적 노화가 거의 진행되지 않은 건강한 상태입니다. 따라서 현재의 염증과 색소 문제만 집중적으로 관리한다면 빠르고 효과적으로 깨끗하고 건강한 피부를 되찾을 수 있을 것입니다.\",\n  \"recommendation\": [\n    \"살리실산(BHA)이나 티트리 성분이 함유된 클렌저와 스팟 제품을 사용하여 염증성 트러블을 집중적으로 케어하십시오.\",\n    \"비타민 C, 나이아신아마이드 성분의 브라이트닝 에센스를 사용하여 붉고 갈색의 트러블 자국과 주근깨를 함께 관리하는 것이 효과적입니다.\",\n    \"자외선은 색소 침착을 악화시키므로 외출 시 반드시 SPF 30 이상의 자외선 차단제를 꼼꼼히 바르는 습관이 중요합니다.\"\n  ]\n}",
-      "overall_opinion": "고객님의 현재 피부는 얼굴 전체에 발생한 심각한 수준의 염증성 여드름과 그로 인한 붉고 갈색의 자국들이 가장 시급하게 해결해야 할 문제입니다. 또한 코와 뺨에 넓게 퍼진 주근깨가 더해져 피부 톤이 매우 불균일하고 거칠어 보입니다. 하지만 복원된 이미지를 통해 확인된 고객님의 본래 피부는 주름이나 탄력 저하와 같은 구조적 노화가 거의 진행되지 않은 건강한 상태입니다. 따라서 현재의 염증과 색소 문제만 집중적으로 관리한다면 빠르고 효과적으로 깨끗하고 건강한 피부를 되찾을 수 있을 것입니다.",
-      "overall_score": 59,
-      "perceived_age": 28,
+      "raw_response": "{\n  \"reference_baseline\": {\n    \"주름\": \"복원 이미지에서는 눈가에 미세한 잔주름이 희미하게 관찰되며, 팔자 주름은 깊지 않고 자연스러운 수준입니다. 이마에는 눈에 띄는 깊은 주름 없이 매끄러운 편으로, 전반적인 주름 상태는 양호합니다.\",\n    \"모공\": \"코와 나비존을 중심으로 모공이 관찰되나 크기가 크지 않고 균일한 편입니다. 볼 바깥쪽으로 갈수록 모공은 거의 보이지 않으며, 모공의 세로 늘어짐 현상은 미미하여 탄력 저하가 심각하지 않은 상태입니다.\",\n    \"색소\": \"양쪽 광대 부위에 일부 옅은 갈색 색소 침착이 보이나, 경계가 불분명하고 넓게 퍼진 기미 형태는 아닙니다. 전반적으로 피부 톤을 저해할 정도의 짙은 색소는 관찰되지 않습니다.\",\n    \"탄력\": \"턱선이 무너지지 않고 비교적 명확하게 유지되고 있습니다. 볼 부위의 처짐이나 꺼짐 현상도 두드러지지 않아 피부 지지 구조가 안정적인 상태로 판단됩니다.\",\n    \"홍조\": \"복원된 이미지에서는 염증성 붉은 기운이나 혈관 확장이 거의 보이지 않습니다. 피부 톤이 전반적으로 균일하며, 국소적인 홍조나 발적 현상은 없는 안정된 상태입니다.\"\n  },\n  \"score_reasons\": {\n    \"melasma_score\": \"원본 이미지는 염증 후 색소침착(PIH)과 기미가 혼재되어 있어, 복원 이미지보다 색소 범위가 넓고 짙어 보이므로 점수가 하향 조정되었습니다.\",\n    \"freckle_score\": \"원본 이미지의 염증성 병변과 붉은 자국들이 주근깨의 명확한 관찰을 방해하며, 전반적인 색소 불균일성을 증가시켜 점수가 하향 조정되었습니다.\",\n    \"redness_score\": \"복원 이미지와 달리, 원본 이미지는 양 볼과 턱, 코 주변에 염증성 여드름으로 인한 붉은 기가 광범위하게 분포하여 점수가 대폭 하향 조정되었습니다.\",\n    \"post_inflammatory_erythema_score\": \"여드름이 있었던 자리를 따라 붉은 자국(PIE)이 다수 관찰됩니다. 이는 피부의 염증 반응이 아직 완전히 회복되지 않았음을 의미하며, 이로 인해 점수가 낮게 책정되었습니다.\",\n    \"acne_score\": \"복원 이미지에서는 보이지 않던 다수의 염증성 구진(papule)이 양 볼과 턱에 걸쳐 활발하게 나타나고 있어, 점수가 대폭 하향 조정되었습니다.\",\n    \"post_acne_pigment_score\": \"염증 반응 후 남은 갈색의 색소침착(PIH)이 얼굴 전반에 산재해 있어 피부 톤을 칙칙하고 지저분하게 보이게 하므로 점수가 하향 조정되었습니다.\",\n    \"pore_size_score\": \"활발한 피지 분비와 지속적인 염증으로 인해 모공 주변의 탄력이 저하되고, 이로 인해 복원 이미지보다 모공이 더 넓어 보여 점수가 하향 조정되었습니다.\",\n    \"pore_sagging_score\": \"피부 염증과 열감이 모공 주변 콜라겐을 손상시켜, 복원 이미지에 비해 모공이 아래로 미세하게 처져 보이는 경향이 있어 점수가 하향 조정되었습니다.\",\n    \"eye_wrinkle_score\": \"피부 전반의 건조함과 염증이 눈가 피부의 건강에도 영향을 미쳐, 복원 이미지보다 미세 주름이 좀 더 부각되어 보이므로 점수가 소폭 하향되었습니다.\",\n    \"nasolabial_wrinkle_score\": \"원본 이미지의 그림자 및 염증으로 인한 피부 요철이 팔자주름 부위의 음영을 더 깊어 보이게 만들어 점수가 소폭 하향 조정되었습니다.\",\n    \"fine_deep_wrinkle_score\": \"\",\n    \"roughness_score\": \"활성 여드름 병변과 각질 탈락 주기의 이상으로 인해 피부 표면이 매끄럽지 않고 요철이 느껴져, 피부결 점수가 하향 조정되었습니다.\",\n    \"skin_tone_score\": \"염증으로 인한 붉은 기와 갈색 색소침착이 혼재하여 전체적인 피부 톤이 어둡고 칙칙해 보이므로 점수가 하향 조정되었습니다.\",\n    \"dullness_score\": \"\",\n    \"uneven_tone_score\": \"붉은 여드름 병변, 붉은 자국, 갈색 색소침착이 복합적으로 나타나 피부 톤이 매우 불균일한 상태이므로 점수가 하향 조정되었습니다.\",\n    \"jawline_blur_score\": \"\",\n    \"cheek_sagging_score\": \"\",\n    \"skin_type_score\": \"T존과 볼 부위의 번들거림으로 미루어 볼 때, 피지 분비가 과도한 지성 피부 타입으로 판단됩니다. 이는 트러블 발생의 주요 원인이 될 수 있습니다.\"\n  },\n  \"ref_metric_reasons\": {\n    \"melasma_score\": \"광대 부위에 옅은 색소가 일부 관찰되나, 그 범위가 좁고 농도가 옅어 양호한 상태입니다.\",\n    \"freckle_score\": \"주근깨가 거의 보이지 않으며, 색소 침착이 미미하여 깨끗한 피부 상태에 가깝습니다.\",\n    \"redness_score\": \"피부 전반에 걸쳐 붉은 기운이나 혈관 확장이 보이지 않아 매우 안정적인 피부 상태로 판단됩니다.\",\n    \"post_inflammatory_erythema_score\": \"염증 후 발생한 붉은 자국이 거의 관찰되지 않아 피부 회복력이 양호한 것으로 보입니다.\",\n    \"acne_score\": \"활성 염증이나 면포성 여드름이 전혀 보이지 않는 매우 우수한 상태입니다.\",\n    \"post_acne_pigment_score\": \"여드름으로 인한 갈색 색소침착이 거의 없어 피부 톤이 균일하고 깨끗합니다.\",\n    \"pore_size_score\": \"코 주변에 모공이 보이지만 크기가 작고, 볼 부위의 모공은 거의 눈에 띄지 않아 양호한 편입니다.\",\n    \"pore_sagging_score\": \"모공의 형태가 원형을 잘 유지하고 있으며, 세로로 늘어진 현상이 없어 모공 탄력이 양호합니다.\",\n    \"eye_wrinkle_score\": \"눈을 감았을 때 눈가에 잡히는 미세한 선이 거의 없어 탄력이 좋은 상태입니다.\",\n    \"nasolabial_wrinkle_score\": \"팔자 부위의 꺼짐이나 주름선이 깊지 않고 자연스러운 상태를 유지하고 있습니다.\",\n    \"fine_deep_wrinkle_score\": \"얼굴 전반에 걸쳐 깊은 주름이나 잔주름이 거의 관찰되지 않아 우수한 상태입니다.\",\n    \"roughness_score\": \"피부 표면의 요철 없이 매끄러운 피부결을 가지고 있어 양호한 상태입니다.\",\n    \"skin_tone_score\": \"일부 옅은 색소를 제외하면 피부 톤이 맑고 균일한 편에 속합니다.\",\n    \"dullness_score\": \"피부가 칙칙하지 않고 건강한 광채를 유지하고 있어 우수한 상태입니다.\",\n    \"uneven_tone_score\": \"전체적인 피부 톤이 고르고 안정적이어서 양호한 상태로 평가됩니다.\",\n    \"jawline_blur_score\": \"턱선이 선명하고 무너짐이 없어 피부 탄력이 우수함을 보여줍니다.\",\n    \"cheek_sagging_score\": \"볼 부위의 처짐 없이 탄탄한 볼륨감을 유지하고 있어 우수한 상태입니다.\",\n    \"skin_type_score\": \"과도한 유분이나 건조함 없이 유수분 밸런스가 잘 맞는 건강한 피부 상태로 보입니다.\"\n  },\n  \"orig_metric_scores\": {\n    \"melasma_score\": 68.0,\n    \"freckle_score\": 70.0,\n    \"redness_score\": 52.0,\n    \"post_inflammatory_erythema_score\": 55.0,\n    \"acne_score\": 50.0,\n    \"post_acne_pigment_score\": 60.0,\n    \"pore_size_score\": 62.0,\n    \"pore_sagging_score\": 65.0,\n    \"eye_wrinkle_score\": 78.0,\n    \"nasolabial_wrinkle_score\": 75.0,\n    \"fine_deep_wrinkle_score\": 80.0,\n    \"roughness_score\": 63.0,\n    \"skin_tone_score\": 60.0,\n    \"dullness_score\": 65.0,\n    \"uneven_tone_score\": 54.0,\n    \"jawline_blur_score\": 82.0,\n    \"cheek_sagging_score\": 79.0,\n    \"skin_type_score\": 68.0\n  },\n  \"ref_metric_scores\": {\n    \"melasma_score\": 80.0,\n    \"freckle_score\": 85.0,\n    \"redness_score\": 88.0,\n    \"post_inflammatory_erythema_score\": 86.0,\n    \"acne_score\": 90.0,\n    \"post_acne_pigment_score\": 85.0,\n    \"pore_size_score\": 75.0,\n    \"pore_sagging_score\": 78.0,\n    \"eye_wrinkle_score\": 82.0,\n    \"nasolabial_wrinkle_score\": 80.0,\n    \"fine_deep_wrinkle_score\": 84.0,\n    \"roughness_score\": 78.0,\n    \"skin_tone_score\": 79.0,\n    \"dullness_score\": 82.0,\n    \"uneven_tone_score\": 80.0,\n    \"jawline_blur_score\": 85.0,\n    \"cheek_sagging_score\": 83.0,\n    \"skin_type_score\": 80.0\n  },\n  \"orig_metric_opinions\": {\n    \"melasma_score\": \"양 볼을 중심으로 옅은 기미와 함께 염증 후 색소침착이 혼재되어 있습니다. 자외선 노출 시 더욱 짙어질 수 있으므로, 항산화 성분이 포함된 미백 기능성 제품과 자외선 차단제 사용이 필수적입니다.\",\n    \"freckle_score\": \"주근깨 자체는 많지 않으나, 다른 색소 문제들과 겹쳐 피부가 전체적으로 얼룩덜룩해 보입니다. 꾸준한 미백 관리를 통해 전체적인 피부 톤을 맑게 개선하는 것이 중요합니다.\",\n    \"redness_score\": \"현재 피부의 가장 시급한 문제로, 양 볼과 턱 주변에 염증을 동반한 붉은 기가 광범위하게 나타납니다. 피부 장벽 강화와 진정 관리에 집중하여 민감도를 낮추는 것이 최우선 과제입니다.\",\n    \"post_inflammatory_erythema_score\": \"여드름이 지나간 자리에 붉은 자국(PIE)이 다수 남아있습니다. 이는 아직 피부 속 염증이 완전히 가라앉지 않았다는 신호로, 추가적인 색소침착을 막기 위해 진정 및 재생 관리가 필요합니다.\",\n    \"acne_score\": \"양 볼과 턱 라인을 따라 다수의 염증성 여드름이 활발하게 진행 중으로, 즉각적인 개선이 필요합니다. 과도한 피지 분비와 모공 막힘이 주된 원인으로 보이므로, 항염 및 각질 케어 기능이 있는 제품 사용이 권장됩니다.\",\n    \"post_acne_pigment_score\": \"붉은 자국과 함께 갈색의 염증 후 색소침착(PIH)이 얼굴 곳곳에 남았습니다. 피부 턴오버 주기를 촉진하고 멜라닌 생성을 억제하는 성분을 활용하여 꾸준히 관리해야 합니다.\",\n    \"pore_size_score\": \"과다한 피지 분비와 반복되는 염증으로 인해 모공이 확장된 상태입니다. 피지 조절과 함께 모공 속 노폐물을 부드럽게 제거하여 모공이 더 넓어지는 것을 방지해야 합니다.\",\n    \"pore_sagging_score\": \"피부 염증으로 인한 열감이 모공 주변의 탄력을 저하시켜 모공이 다소 늘어져 보입니다. 피부 온도를 낮추는 쿨링 케어와 함께 탄력 개선에 도움을 주는 제품을 사용하는 것이 좋습니다.\",\n    \"eye_wrinkle_score\": \"눈가 피부의 탄력은 비교적 양호한 편이나, 피부 전반의 유수분 밸런스가 깨지면서 건조로 인한 잔주름이 생길 수 있습니다. 가벼운 제형의 아이크림으로 보습 관리를 시작하는 것을 추천합니다.\",\n    \"nasolabial_wrinkle_score\": \"팔자주름의 깊이는 나이에 비해 깊지 않은 양호한 상태입니다. 하지만 피부 트러블로 인해 전반적인 탄력이 저하되면 주름이 더 깊어질 수 있으므로 꾸준한 관리가 필요합니다.\",\n    \"fine_deep_wrinkle_score\": \"이마나 미간 등 다른 부위에서 깊은 주름은 관찰되지 않아, 피부의 기본적인 탄력 구조는 잘 유지되고 있습니다. 현재의 피부 문제를 해결하는 것이 노화 예방의 첫걸음입니다.\",\n    \"roughness_score\": \"여드름 병변과 탈락되지 못한 각질로 인해 피부 표면이 거칠고 매끄럽지 못합니다. 물리적 자극이 강한 스크럽보다는 저자극 필링 성분으로 부드럽게 피부결을 정돈하는 것이 효과적입니다.\",\n    \"skin_tone_score\": \"붉은 기와 갈색 색소침착이 뒤섞여 전체적인 피부 톤이 매우 어둡고 칙칙해 보입니다. 피부 염증을 먼저 완화시킨 후, 비타민 C 등 브라이트닝 성분을 활용한 케어가 필요합니다.\",\n    \"dullness_score\": \"피부 표면의 요철과 불균일한 색소 분포로 인해 피부가 빛을 고르게 반사하지 못하여 생기가 없어 보입니다. 피부결과 톤을 동시에 케어하여 맑은 안색을 되찾는 것이 중요합니다.\",\n    \"uneven_tone_score\": \"현재 피부의 붉은 톤, 어두운 톤이 혼재하여 톤 불균일이 심각한 수준입니다. 이는 가장 눈에 띄는 피부 고민 중 하나로, 진정-미백-재생의 단계적 접근이 필요합니다.\",\n    \"jawline_blur_score\": \"턱선은 날렵하게 잘 유지되고 있어 피부의 심부 탄력은 우수한 상태입니다. 현재의 피부 표면 문제를 개선하면 더욱 건강하고 정돈된 인상을 줄 수 있습니다.\",\n    \"cheek_sagging_score\": \"볼 처짐 현상은 거의 관찰되지 않으며, 얼굴의 볼륨감도 적절하게 유지되고 있습니다. 피부의 지지 구조가 튼튼하므로, 염증 관리에 집중하면 빠른 개선을 기대할 수 있습니다.\",\n    \"skin_type_score\": \"피지 분비가 왕성한 지성 피부 타입으로 판단되며, 이는 현재 겪고 있는 트러블의 주요 원인입니다. 유분은 조절하되 수분은 충분히 공급하여 유수분 밸런스를 맞추는 것이 핵심입니다.\"\n  },\n  \"orig_overall_score\": 65.9,\n  \"orig_perceived_age\": 32.0,\n  \"orig_overall_opinion\": \"현재 고객님의 피부는 턱선이나 볼의 탄력 등 기본적인 피부 구조는 매우 양호한 상태를 유지하고 있습니다. 하지만 피부 표면에서는 활발한 염증성 여드름과 그로 인한 붉은 자국, 색소침착이 가장 시급하게 해결해야 할 문제로 보입니다. 이러한 염증 반응은 피부를 민감하게 만들고, 피부결을 거칠게 하며, 전체적인 톤을 칙칙하고 불균일하게 만드는 주된 원인이 되고 있습니다. 따라서 현재 스킨케어의 최우선 목표는 피부 진정과 항염 관리에 두어야 합니다. 자극적인 케어는 피하고, 무너진 피부 장벽을 강화하면서 트러블을 완화하는 데 집중해야 합니다. 염증이 완화된 이후에는 색소침착 개선을 위한 미백 관리를 병행하는 단계적인 접근이 매우 효과적일 것입니다.\",\n  \"recommendation\": [\n    \"1. **저자극 약산성 클렌저 사용**: 알칼리성 클렌저는 피부 장벽을 손상시켜 트러블을 악화시킬 수 있습니다. 피부의 pH 밸런스를 유지해 주는 약산성 폼 클렌저로 부드럽게 세안하여 자극을 최소화하세요.\",\n    \"2. **항염 및 진정 성분 활용**: 살리실산(BHA), 티트리, 나이아신아마이드, 병풀추출물(시카) 등이 함유된 세럼이나 앰플을 사용하여 염증을 완화하고 과도한 피지 분비를 조절하는 것이 중요합니다.\",\n    \"3. **유분감 적은 수분 크림으로 보습**: 지성 피부라도 속건조를 방치하면 피지 분비가 더 심해질 수 있습니다. 젤 타입이나 가벼운 로션 제형의 오일프리 수분 크림을 사용하여 유수분 밸런스를 맞춰주세요.\",\n    \"4. **논코메도제닉 자외선 차단제 필수**: 자외선은 염증을 악화시키고 여드름 자국을 더욱 짙은 색소침착으로 만듭니다. 모공을 막지 않는 논코메도제닉(Non-comedogenic) 테스트를 완료한 자외선 차단제를 매일 사용하는 습관을 들이세요.\",\n    \"5. **물리적 자극 최소화**: 여드름을 손으로 짜거나 강한 스크럽 제품을 사용하는 행위는 염증을 심화시키고 흉터를 남길 수 있습니다. 최대한 손대지 않고, 각질 제거는 AHA, BHA 등 화학적 각질제거제를 주 1~2회 사용하는 것이 안전합니다.\"\n  ]\n}",
+      "overall_opinion": "현재 고객님의 피부는 턱선이나 볼의 탄력 등 기본적인 피부 구조는 매우 양호한 상태를 유지하고 있습니다. 하지만 피부 표면에서는 활발한 염증성 여드름과 그로 인한 붉은 자국, 색소침착이 가장 시급하게 해결해야 할 문제로 보입니다. 이러한 염증 반응은 피부를 민감하게 만들고, 피부결을 거칠게 하며, 전체적인 톤을 칙칙하고 불균일하게 만드는 주된 원인이 되고 있습니다. 따라서 현재 스킨케어의 최우선 목표는 피부 진정과 항염 관리에 두어야 합니다. 자극적인 케어는 피하고, 무너진 피부 장벽을 강화하면서 트러블을 완화하는 데 집중해야 합니다. 염증이 완화된 이후에는 색소침착 개선을 위한 미백 관리를 병행하는 단계적인 접근이 매우 효과적일 것입니다.",
+      "overall_score": 66,
+      "perceived_age": 32,
       "metric_scores_raw": {
-        "melasma_score": 75.0,
-        "freckle_score": 35.0,
-        "redness_score": 30.0,
-        "post_inflammatory_erythema_score": 25.0,
-        "acne_score": 25.0,
-        "post_acne_pigment_score": 40.0,
-        "pore_size_score": 65.0,
-        "pore_sagging_score": 80.0,
-        "eye_wrinkle_score": 82.0,
-        "nasolabial_wrinkle_score": 80.0,
-        "fine_deep_wrinkle_score": 85.0,
-        "roughness_score": 50.0,
-        "skin_tone_score": 65.0,
+        "melasma_score": 68.0,
+        "freckle_score": 70.0,
+        "redness_score": 52.0,
+        "post_inflammatory_erythema_score": 55.0,
+        "acne_score": 50.0,
+        "post_acne_pigment_score": 60.0,
+        "pore_size_score": 62.0,
+        "pore_sagging_score": 65.0,
+        "eye_wrinkle_score": 78.0,
+        "nasolabial_wrinkle_score": 75.0,
+        "fine_deep_wrinkle_score": 80.0,
+        "roughness_score": 63.0,
+        "skin_tone_score": 60.0,
         "dullness_score": 65.0,
-        "uneven_tone_score": 30.0,
-        "jawline_blur_score": 85.0,
-        "cheek_sagging_score": 90.0,
-        "skin_type_score": 55.0
+        "uneven_tone_score": 54.0,
+        "jawline_blur_score": 82.0,
+        "cheek_sagging_score": 79.0,
+        "skin_type_score": 68.0
       },
       "metric_scores_adjusted": {
         "dullness_score": 65,
-        "eye_wrinkle_score": 82,
-        "nasolabial_wrinkle_score": 80,
-        "fine_deep_wrinkle_score": 85,
-        "jawline_blur_score": 85,
-        "melasma_score": 75,
-        "freckle_score": 35,
-        "post_acne_pigment_score": 40,
-        "redness_score": 30,
-        "post_inflammatory_erythema_score": 25,
-        "pore_size_score": 65,
-        "pore_sagging_score": 80,
-        "roughness_score": 50,
-        "skin_tone_score": 65,
-        "uneven_tone_score": 30,
-        "cheek_sagging_score": 90,
-        "acne_score": 25,
-        "skin_type_score": 55
+        "eye_wrinkle_score": 78,
+        "nasolabial_wrinkle_score": 75,
+        "fine_deep_wrinkle_score": 80,
+        "jawline_blur_score": 82,
+        "melasma_score": 68,
+        "freckle_score": 70,
+        "post_acne_pigment_score": 60,
+        "redness_score": 52,
+        "post_inflammatory_erythema_score": 55,
+        "pore_size_score": 62,
+        "pore_sagging_score": 65,
+        "roughness_score": 63,
+        "skin_tone_score": 60,
+        "uneven_tone_score": 54,
+        "cheek_sagging_score": 79,
+        "acne_score": 50,
+        "skin_type_score": 68
       },
       "metric_opinions": [
         {
@@ -223,188 +223,188 @@
           "display_name": "칙칙함",
           "category": "tone",
           "score": 65,
-          "opinion": "염증, 색소, 거친 피부결의 복합적인 문제로 피부가 맑은 기운을 잃고 전반적으로 어둡습니다. [산출근거: 염증과 색소 문제, 거친 피부결로 인해 피부의 맑은 빛을 잃고 칙칙함이 두드러집니다.]",
+          "opinion": "피부 표면의 요철과 불균일한 색소 분포로 인해 피부가 빛을 고르게 반사하지 못하여 생기가 없어 보입니다. 피부결과 톤을 동시에 케어하여 맑은 안색을 되찾는 것이 중요합니다.",
           "reason": "",
-          "grade": "60~70점"
+          "grade": "색소침착"
         },
         {
           "key": "eye_wrinkle_score",
           "display_name": "눈가 주름",
           "category": "wrinkle",
-          "score": 82,
-          "opinion": "눈을 감은 상태에서도 눈꼬리 주변으로 여러 개의 얕은 잔주름이 관찰되어 초기 관리가 중요합니다. [산출근거: 눈을 감고 있음에도 눈꼬리 주변으로 얕고 미세한 주름이 여러 개 관찰됩니다.]",
+          "score": 78,
+          "opinion": "눈가 피부의 탄력은 비교적 양호한 편이나, 피부 전반의 유수분 밸런스가 깨지면서 건조로 인한 잔주름이 생길 수 있습니다. 가벼운 제형의 아이크림으로 보습 관리를 시작하는 것을 추천합니다. [산출근거: 피부 전반의 건조함과 염증이 눈가 피부의 건강에도 영향을 미쳐, 복원 이미지보다 미세 주름이 좀 더 부각되어 보이므로 점수가 소폭 하향되었습니다.]",
           "reason": "",
-          "grade": "80~90점"
+          "grade": "알 수 없음"
         },
         {
           "key": "nasolabial_wrinkle_score",
           "display_name": "팔자 주름",
           "category": "wrinkle",
-          "score": 80,
-          "opinion": "팔자 부위에 옅은 그림자가 드리워져 있어 피부 탄력 저하로 인한 초기 주름이 시작되고 있습니다. [산출근거: 팔자 부위에 깊은 주름은 없으나, 그림자가 지는 형태로 초기 주름선이 형성되고 있습니다.]",
+          "score": 75,
+          "opinion": "팔자주름의 깊이는 나이에 비해 깊지 않은 양호한 상태입니다. 하지만 피부 트러블로 인해 전반적인 탄력이 저하되면 주름이 더 깊어질 수 있으므로 꾸준한 관리가 필요합니다. [산출근거: 원본 이미지의 그림자 및 염증으로 인한 피부 요철이 팔자주름 부위의 음영을 더 깊어 보이게 만들어 점수가 소폭 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "80~90점"
+          "grade": "알 수 없음"
         },
         {
           "key": "fine_deep_wrinkle_score",
           "display_name": "미세/깊은 주름",
           "category": "wrinkle",
-          "score": 85,
-          "opinion": "이마나 미간 등 다른 부위에는 특별히 눈에 띄는 깊은 주름 없이 양호한 상태를 유지하고 있습니다. [산출근거: 이마나 미간 등 다른 부위에는 특별히 눈에 띄는 깊은 주름이 관찰되지 않습니다.]",
+          "score": 80,
+          "opinion": "이마나 미간 등 다른 부위에서 깊은 주름은 관찰되지 않아, 피부의 기본적인 탄력 구조는 잘 유지되고 있습니다. 현재의 피부 문제를 해결하는 것이 노화 예방의 첫걸음입니다.",
           "reason": "",
-          "grade": "80~90점"
+          "grade": "알 수 없음"
         },
         {
           "key": "jawline_blur_score",
           "display_name": "턱선 흐림",
           "category": "elasticity",
-          "score": 85,
-          "opinion": "턱선은 무너짐 없이 비교적 선명하게 유지되어 피부의 구조적 탄력은 양호한 편입니다. [산출근거: 턱선은 무너짐 없이 비교적 선명하게 유지되고 있어 탄력 상태는 양호합니다.]",
+          "score": 82,
+          "opinion": "턱선은 날렵하게 잘 유지되고 있어 피부의 심부 탄력은 우수한 상태입니다. 현재의 피부 표면 문제를 개선하면 더욱 건강하고 정돈된 인상을 줄 수 있습니다.",
           "reason": "",
-          "grade": "80~90점"
+          "grade": "알 수 없음"
         },
         {
           "key": "melasma_score",
           "display_name": "기미",
           "category": "pigmentation",
-          "score": 75,
-          "opinion": "고객님의 피부는 다수의 트러블 자국과 주근깨 아래로 광대 부위에 옅은 기미가 자리 잡고 있습니다. [산출근거: 원본 이미지에서는 트러블 자국과 주근깨가 많아 기미가 명확히 보이지 않으나, 광대 주변에 옅은 기미가 있는 것으로 판단되어 점수가 산출되었습니다.]",
+          "score": 68,
+          "opinion": "양 볼을 중심으로 옅은 기미와 함께 염증 후 색소침착이 혼재되어 있습니다. 자외선 노출 시 더욱 짙어질 수 있으므로, 항산화 성분이 포함된 미백 기능성 제품과 자외선 차단제 사용이 필수적입니다. [산출근거: 원본 이미지는 염증 후 색소침착(PIH)과 기미가 혼재되어 있어, 복원 이미지보다 색소 범위가 넓고 짙어 보이므로 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "70~80점"
+          "grade": "색소침착"
         },
         {
           "key": "freckle_score",
           "display_name": "주근깨",
           "category": "pigmentation",
-          "score": 35,
-          "opinion": "코와 양 볼에 걸쳐 30개 이상의 주근깨가 짙고 넓게 분포하여 색소 관리가 필요합니다. [산출근거: 코와 양 볼에 걸쳐 30개 이상의 짙은 주근깨가 넓게 분포하고 있어 개선이 필요한 상태입니다.]",
+          "score": 70,
+          "opinion": "주근깨 자체는 많지 않으나, 다른 색소 문제들과 겹쳐 피부가 전체적으로 얼룩덜룩해 보입니다. 꾸준한 미백 관리를 통해 전체적인 피부 톤을 맑게 개선하는 것이 중요합니다. [산출근거: 원본 이미지의 염증성 병변과 붉은 자국들이 주근깨의 명확한 관찰을 방해하며, 전반적인 색소 불균일성을 증가시켜 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "post_acne_pigment_score",
           "display_name": "트러블 후 색소",
           "category": "pigmentation",
-          "score": 40,
-          "opinion": "오래된 여드름으로 인한 갈색 색소 침착이 10개 이상 관찰되어 피부를 얼룩덜룩하게 만듭니다. [산출근거: 오래된 여드름으로 인한 갈색 색소 침착 자국이 10개 이상 관찰되어 피부가 전체적으로 지저분해 보입니다.]",
+          "score": 60,
+          "opinion": "붉은 자국과 함께 갈색의 염증 후 색소침착(PIH)이 얼굴 곳곳에 남았습니다. 피부 턴오버 주기를 촉진하고 멜라닌 생성을 억제하는 성분을 활용하여 꾸준히 관리해야 합니다. [산출근거: 염증 반응 후 남은 갈색의 색소침착(PIH)이 얼굴 전반에 산재해 있어 피부 톤을 칙칙하고 지저분하게 보이게 하므로 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "redness_score",
           "display_name": "홍조",
           "category": "redness",
-          "score": 30,
-          "opinion": "얼굴 전반에 퍼진 염증성 트러블로 인해 피부 전체가 붉게 보여 민감해진 상태입니다. [산출근거: 얼굴 전반에 염증성 트러블로 인한 붉은 기운이 넓게 퍼져 있어 집중적인 진정 관리가 필요합니다.]",
+          "score": 52,
+          "opinion": "현재 피부의 가장 시급한 문제로, 양 볼과 턱 주변에 염증을 동반한 붉은 기가 광범위하게 나타납니다. 피부 장벽 강화와 진정 관리에 집중하여 민감도를 낮추는 것이 최우선 과제입니다. [산출근거: 복원 이미지와 달리, 원본 이미지는 양 볼과 턱, 코 주변에 염증성 여드름으로 인한 붉은 기가 광범위하게 분포하여 점수가 대폭 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "post_inflammatory_erythema_score",
           "display_name": "염증 후 홍반",
           "category": "redness",
-          "score": 25,
-          "opinion": "뺨과 턱 주변으로 10개 이상의 선명한 여드름 후 붉은 자국이 남아 피부 톤을 저해하고 있습니다. [산출근거: 뺨과 턱 주변으로 10개 이상의 선명한 여드름 염증 후 붉은 자국이 남아있어 피부 톤을 심하게 저해하고 있습니다.]",
+          "score": 55,
+          "opinion": "여드름이 지나간 자리에 붉은 자국(PIE)이 다수 남아있습니다. 이는 아직 피부 속 염증이 완전히 가라앉지 않았다는 신호로, 추가적인 색소침착을 막기 위해 진정 및 재생 관리가 필요합니다. [산출근거: 여드름이 있었던 자리를 따라 붉은 자국(PIE)이 다수 관찰됩니다. 이는 피부의 염증 반응이 아직 완전히 회복되지 않았음을 의미하며, 이로 인해 점수가 낮게 책정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "pore_size_score",
           "display_name": "모공 크기",
           "category": "pore",
-          "score": 65,
-          "opinion": "코와 나비존을 중심으로 모공이 다소 넓어져 있어 피지 조절과 모공 관리가 필요합니다. [산출근거: 코와 주변 볼에 보통 크기의 모공이 분포하고 있어 모공 관리를 시작하는 것이 좋습니다.]",
+          "score": 62,
+          "opinion": "과다한 피지 분비와 반복되는 염증으로 인해 모공이 확장된 상태입니다. 피지 조절과 함께 모공 속 노폐물을 부드럽게 제거하여 모공이 더 넓어지는 것을 방지해야 합니다. [산출근거: 활발한 피지 분비와 지속적인 염증으로 인해 모공 주변의 탄력이 저하되고, 이로 인해 복원 이미지보다 모공이 더 넓어 보여 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60~70점"
+          "grade": "색소침착"
         },
         {
           "key": "pore_sagging_score",
           "display_name": "모공 처짐",
           "category": "pore",
-          "score": 80,
-          "opinion": "다행히 모공의 형태가 대부분 원형을 유지하고 있어 모공 처짐은 아직 심하지 않은 상태입니다. [산출근거: 모공이 대부분 원형을 유지하고 있어 처짐 현상은 아직 경미한 수준으로 판단됩니다.]",
+          "score": 65,
+          "opinion": "피부 염증으로 인한 열감이 모공 주변의 탄력을 저하시켜 모공이 다소 늘어져 보입니다. 피부 온도를 낮추는 쿨링 케어와 함께 탄력 개선에 도움을 주는 제품을 사용하는 것이 좋습니다. [산출근거: 피부 염증과 열감이 모공 주변 콜라겐을 손상시켜, 복원 이미지에 비해 모공이 아래로 미세하게 처져 보이는 경향이 있어 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "80~90점"
+          "grade": "색소침착"
         },
         {
           "key": "roughness_score",
           "display_name": "피부결",
           "category": "texture",
-          "score": 50,
-          "opinion": "다수의 염증성 트러블과 탈락되지 못한 각질로 인해 피부 표면이 매우 거칠게 느껴집니다. [산출근거: 다수의 염증성 트러블과 각질로 인해 피부 표면이 매우 거칠고 요철이 심한 상태입니다.]",
+          "score": 63,
+          "opinion": "여드름 병변과 탈락되지 못한 각질로 인해 피부 표면이 거칠고 매끄럽지 못합니다. 물리적 자극이 강한 스크럽보다는 저자극 필링 성분으로 부드럽게 피부결을 정돈하는 것이 효과적입니다. [산출근거: 활성 여드름 병변과 각질 탈락 주기의 이상으로 인해 피부 표면이 매끄럽지 않고 요철이 느껴져, 피부결 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "skin_tone_score",
           "display_name": "피부 톤",
           "category": "tone",
-          "score": 65,
-          "opinion": "전반적인 붉은 기와 색소 침착 문제로 인해 본래의 피부 톤보다 어둡고 칙칙해 보입니다. [산출근거: 전반적인 붉은 기와 색소 침착으로 인해 본래의 피부 톤보다 어둡게 보입니다.]",
+          "score": 60,
+          "opinion": "붉은 기와 갈색 색소침착이 뒤섞여 전체적인 피부 톤이 매우 어둡고 칙칙해 보입니다. 피부 염증을 먼저 완화시킨 후, 비타민 C 등 브라이트닝 성분을 활용한 케어가 필요합니다. [산출근거: 염증으로 인한 붉은 기와 갈색 색소침착이 혼재하여 전체적인 피부 톤이 어둡고 칙칙해 보이므로 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60~70점"
+          "grade": "색소침착"
         },
         {
           "key": "uneven_tone_score",
           "display_name": "불균일 톤",
           "category": "tone",
-          "score": 30,
-          "opinion": "붉은 트러블 자국, 갈색 색소, 주근깨가 혼재하여 피부 톤이 매우 불균일하고 지저분해 보입니다. [산출근거: 붉은 트러블 자국과 갈색 색소 침착, 주근깨가 혼재하여 피부 톤이 매우 불균일합니다.]",
+          "score": 54,
+          "opinion": "현재 피부의 붉은 톤, 어두운 톤이 혼재하여 톤 불균일이 심각한 수준입니다. 이는 가장 눈에 띄는 피부 고민 중 하나로, 진정-미백-재생의 단계적 접근이 필요합니다. [산출근거: 붉은 여드름 병변, 붉은 자국, 갈색 색소침착이 복합적으로 나타나 피부 톤이 매우 불균일한 상태이므로 점수가 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "cheek_sagging_score",
           "display_name": "볼 처짐",
           "category": "elasticity",
-          "score": 90,
-          "opinion": "볼 부위의 꺼짐이나 처짐 현상 없이 탄력이 잘 유지되고 있어 노화 진행은 더딘 편입니다. [산출근거: 볼 부위의 꺼짐이나 처짐 현상 없이 탄력이 잘 유지되고 있는 상태입니다.]",
+          "score": 79,
+          "opinion": "볼 처짐 현상은 거의 관찰되지 않으며, 얼굴의 볼륨감도 적절하게 유지되고 있습니다. 피부의 지지 구조가 튼튼하므로, 염증 관리에 집중하면 빠른 개선을 기대할 수 있습니다.",
           "reason": "",
-          "grade": "90점 이상"
+          "grade": "알 수 없음"
         },
         {
           "key": "acne_score",
           "display_name": "트러블",
           "category": "trouble",
-          "score": 25,
-          "opinion": "얼굴 전체에 20개 이상의 염증성 여드름이 발생하여 매우 집중적인 트러블 케어가 시급합니다. [산출근거: 얼굴 전체에 20개 이상의 염증을 동반한 붉은 여드름이 발생하여 매우 집중적인 트러블 케어가 시급한 상태입니다.]",
+          "score": 50,
+          "opinion": "양 볼과 턱 라인을 따라 다수의 염증성 여드름이 활발하게 진행 중으로, 즉각적인 개선이 필요합니다. 과도한 피지 분비와 모공 막힘이 주된 원인으로 보이므로, 항염 및 각질 케어 기능이 있는 제품 사용이 권장됩니다. [산출근거: 복원 이미지에서는 보이지 않던 다수의 염증성 구진(papule)이 양 볼과 턱에 걸쳐 활발하게 나타나고 있어, 점수가 대폭 하향 조정되었습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         },
         {
           "key": "skin_type_score",
           "display_name": "피부 타입",
           "category": "skin_type",
-          "score": 55,
-          "opinion": "현재 피부는 과도한 피지 분비와 염증 반응으로 유수분 밸런스가 완전히 무너진 상태입니다. [산출근거: 과도한 염증성 트러블은 유수분 밸런스가 심하게 무너졌음을 의미하며, 지성 트러블 피부 관리가 필요합니다.]",
+          "score": 68,
+          "opinion": "피지 분비가 왕성한 지성 피부 타입으로 판단되며, 이는 현재 겪고 있는 트러블의 주요 원인입니다. 유분은 조절하되 수분은 충분히 공급하여 유수분 밸런스를 맞추는 것이 핵심입니다. [산출근거: T존과 볼 부위의 번들거림으로 미루어 볼 때, 피지 분비가 과도한 지성 피부 타입으로 판단됩니다. 이는 트러블 발생의 주요 원인이 될 수 있습니다.]",
           "reason": "",
-          "grade": "60점 미만"
+          "grade": "색소침착"
         }
       ]
     },
     "restored": {
       "raw_response": "",
       "overall_opinion": "[reference_guided 모드: 복원 보고서는 별도 생성하지 않음]",
-      "overall_score": 83,
-      "perceived_age": 26,
+      "overall_score": 0,
+      "perceived_age": 0,
       "metric_scores_raw": {},
       "metric_scores_adjusted": {
-        "dullness_score": 78,
-        "eye_wrinkle_score": 85,
-        "nasolabial_wrinkle_score": 82,
-        "fine_deep_wrinkle_score": 88,
-        "jawline_blur_score": 88,
-        "melasma_score": 78,
+        "dullness_score": 82,
+        "eye_wrinkle_score": 82,
+        "nasolabial_wrinkle_score": 80,
+        "fine_deep_wrinkle_score": 84,
+        "jawline_blur_score": 85,
+        "melasma_score": 80,
         "freckle_score": 85,
         "post_acne_pigment_score": 85,
-        "redness_score": 90,
-        "post_inflammatory_erythema_score": 90,
-        "pore_size_score": 68,
-        "pore_sagging_score": 90,
-        "roughness_score": 70,
-        "skin_tone_score": 70,
+        "redness_score": 88,
+        "post_inflammatory_erythema_score": 86,
+        "pore_size_score": 75,
+        "pore_sagging_score": 78,
+        "roughness_score": 78,
+        "skin_tone_score": 79,
         "uneven_tone_score": 80,
-        "cheek_sagging_score": 90,
+        "cheek_sagging_score": 83,
         "acne_score": 90,
         "skin_type_score": 80
       },
@@ -413,55 +413,55 @@
           "key": "dullness_score",
           "display_name": "칙칙함",
           "category": "tone",
-          "score": 78,
+          "score": 82,
           "opinion": "",
-          "reason": "피부가 전반적으로 맑지만, 약간의 칙칙함이 남아있는 상태입니다.",
-          "grade": "70~80점"
+          "reason": "피부가 칙칙하지 않고 건강한 광채를 유지하고 있어 우수한 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "eye_wrinkle_score",
           "display_name": "눈가 주름",
           "category": "wrinkle",
-          "score": 85,
+          "score": 82,
           "opinion": "",
-          "reason": "눈꼬리 주변으로 매우 얕은 수준의 미세 주름이 관찰됩니다.",
-          "grade": "80~90점"
+          "reason": "눈을 감았을 때 눈가에 잡히는 미세한 선이 거의 없어 탄력이 좋은 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "nasolabial_wrinkle_score",
           "display_name": "팔자 주름",
           "category": "wrinkle",
-          "score": 82,
+          "score": 80,
           "opinion": "",
-          "reason": "팔자 부위에 희미한 음영이 보여 초기 주름의 가능성을 시사합니다.",
-          "grade": "80~90점"
+          "reason": "팔자 부위의 꺼짐이나 주름선이 깊지 않고 자연스러운 상태를 유지하고 있습니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "fine_deep_wrinkle_score",
           "display_name": "미세/깊은 주름",
           "category": "wrinkle",
-          "score": 88,
+          "score": 84,
           "opinion": "",
-          "reason": "이마를 포함한 얼굴 전체에 깊은 주름 없이 매끄러운 상태를 유지하고 있습니다.",
-          "grade": "80~90점"
+          "reason": "얼굴 전반에 걸쳐 깊은 주름이나 잔주름이 거의 관찰되지 않아 우수한 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "jawline_blur_score",
           "display_name": "턱선 흐림",
           "category": "elasticity",
-          "score": 88,
+          "score": 85,
           "opinion": "",
-          "reason": "턱선이 흐트러짐 없이 선명하게 유지되고 있어 탄력이 좋은 상태입니다.",
-          "grade": "80~90점"
+          "reason": "턱선이 선명하고 무너짐이 없어 피부 탄력이 우수함을 보여줍니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "melasma_score",
           "display_name": "기미",
           "category": "pigmentation",
-          "score": 78,
+          "score": 80,
           "opinion": "",
-          "reason": "복원 이미지에서 양쪽 광대 부위에 옅고 흐릿한 기미가 확인되어 점수가 산출되었습니다.",
-          "grade": "70~80점"
+          "reason": "광대 부위에 옅은 색소가 일부 관찰되나, 그 범위가 좁고 농도가 옅어 양호한 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "freckle_score",
@@ -469,8 +469,8 @@
           "category": "pigmentation",
           "score": 85,
           "opinion": "",
-          "reason": "복원 과정에서 대부분의 주근깨가 제거되어 매우 깨끗한 상태를 보입니다.",
-          "grade": "80~90점"
+          "reason": "주근깨가 거의 보이지 않으며, 색소 침착이 미미하여 깨끗한 피부 상태에 가깝습니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "post_acne_pigment_score",
@@ -478,62 +478,62 @@
           "category": "pigmentation",
           "score": 85,
           "opinion": "",
-          "reason": "여드름 후 색소 침착이 모두 제거되어 맑은 피부를 보여줍니다.",
-          "grade": "80~90점"
+          "reason": "여드름으로 인한 갈색 색소침착이 거의 없어 피부 톤이 균일하고 깨끗합니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "redness_score",
           "display_name": "홍조",
           "category": "redness",
-          "score": 90,
+          "score": 88,
           "opinion": "",
-          "reason": "염증이 모두 제거되어 홍조 없이 균일하고 안정된 피부 톤을 보여줍니다.",
-          "grade": "90점 이상"
+          "reason": "피부 전반에 걸쳐 붉은 기운이나 혈관 확장이 보이지 않아 매우 안정적인 피부 상태로 판단됩니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "post_inflammatory_erythema_score",
           "display_name": "염증 후 홍반",
           "category": "redness",
-          "score": 90,
+          "score": 86,
           "opinion": "",
-          "reason": "염증 후 붉은 자국이 모두 제거되어 깨끗한 피부 상태를 나타냅니다.",
-          "grade": "90점 이상"
+          "reason": "염증 후 발생한 붉은 자국이 거의 관찰되지 않아 피부 회복력이 양호한 것으로 보입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "pore_size_score",
           "display_name": "모공 크기",
           "category": "pore",
-          "score": 68,
+          "score": 75,
           "opinion": "",
-          "reason": "코와 주변 볼에 보통 크기의 모공이 분포하고 있는 것이 확인됩니다.",
-          "grade": "60~70점"
+          "reason": "코 주변에 모공이 보이지만 크기가 작고, 볼 부위의 모공은 거의 눈에 띄지 않아 양호한 편입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "pore_sagging_score",
           "display_name": "모공 처짐",
           "category": "pore",
-          "score": 90,
+          "score": 78,
           "opinion": "",
-          "reason": "모공이 전반적으로 원형을 유지하고 있어 처짐 현상은 거의 없는 것으로 판단됩니다.",
-          "grade": "90점 이상"
+          "reason": "모공의 형태가 원형을 잘 유지하고 있으며, 세로로 늘어진 현상이 없어 모공 탄력이 양호합니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "roughness_score",
           "display_name": "피부결",
           "category": "texture",
-          "score": 70,
+          "score": 78,
           "opinion": "",
-          "reason": "트러블이 제거된 피부 표면은 모공 외에는 비교적 매끄러운 편입니다.",
-          "grade": "70~80점"
+          "reason": "피부 표면의 요철 없이 매끄러운 피부결을 가지고 있어 양호한 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "skin_tone_score",
           "display_name": "피부 톤",
           "category": "tone",
-          "score": 70,
+          "score": 79,
           "opinion": "",
-          "reason": "붉은 기가 제거되어 본연의 보통 밝기 피부 톤이 드러납니다.",
-          "grade": "70~80점"
+          "reason": "일부 옅은 색소를 제외하면 피부 톤이 맑고 균일한 편에 속합니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "uneven_tone_score",
@@ -541,17 +541,17 @@
           "category": "tone",
           "score": 80,
           "opinion": "",
-          "reason": "기저의 옅은 기미를 제외하면 전반적으로 매우 균일한 피부 톤을 보입니다.",
-          "grade": "80~90점"
+          "reason": "전체적인 피부 톤이 고르고 안정적이어서 양호한 상태로 평가됩니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "cheek_sagging_score",
           "display_name": "볼 처짐",
           "category": "elasticity",
-          "score": 90,
+          "score": 83,
           "opinion": "",
-          "reason": "볼 부위의 탄력이 잘 유지되어 처짐 현상이 관찰되지 않습니다.",
-          "grade": "90점 이상"
+          "reason": "볼 부위의 처짐 없이 탄탄한 볼륨감을 유지하고 있어 우수한 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "acne_score",
@@ -559,8 +559,8 @@
           "category": "trouble",
           "score": 90,
           "opinion": "",
-          "reason": "활성 여드름이 전혀 관찰되지 않는 매우 우수한 상태입니다.",
-          "grade": "90점 이상"
+          "reason": "활성 염증이나 면포성 여드름이 전혀 보이지 않는 매우 우수한 상태입니다.",
+          "grade": "알 수 없음"
         },
         {
           "key": "skin_type_score",
@@ -568,15 +568,17 @@
           "category": "skin_type",
           "score": 80,
           "opinion": "",
-          "reason": "T존의 유분감을 제외하면 전반적으로 유수분 밸런스가 양호한 복합성 피부로 보입니다.",
-          "grade": "80~90점"
+          "reason": "과도한 유분이나 건조함 없이 유수분 밸런스가 잘 맞는 건강한 피부 상태로 보입니다.",
+          "grade": "알 수 없음"
         }
       ]
     },
     "recommendation": [
-      "살리실산(BHA)이나 티트리 성분이 함유된 클렌저와 스팟 제품을 사용하여 염증성 트러블을 집중적으로 케어하십시오.",
-      "비타민 C, 나이아신아마이드 성분의 브라이트닝 에센스를 사용하여 붉고 갈색의 트러블 자국과 주근깨를 함께 관리하는 것이 효과적입니다.",
-      "자외선은 색소 침착을 악화시키므로 외출 시 반드시 SPF 30 이상의 자외선 차단제를 꼼꼼히 바르는 습관이 중요합니다."
+      "1. **저자극 약산성 클렌저 사용**: 알칼리성 클렌저는 피부 장벽을 손상시켜 트러블을 악화시킬 수 있습니다. 피부의 pH 밸런스를 유지해 주는 약산성 폼 클렌저로 부드럽게 세안하여 자극을 최소화하세요.",
+      "2. **항염 및 진정 성분 활용**: 살리실산(BHA), 티트리, 나이아신아마이드, 병풀추출물(시카) 등이 함유된 세럼이나 앰플을 사용하여 염증을 완화하고 과도한 피지 분비를 조절하는 것이 중요합니다.",
+      "3. **유분감 적은 수분 크림으로 보습**: 지성 피부라도 속건조를 방치하면 피지 분비가 더 심해질 수 있습니다. 젤 타입이나 가벼운 로션 제형의 오일프리 수분 크림을 사용하여 유수분 밸런스를 맞춰주세요.",
+      "4. **논코메도제닉 자외선 차단제 필수**: 자외선은 염증을 악화시키고 여드름 자국을 더욱 짙은 색소침착으로 만듭니다. 모공을 막지 않는 논코메도제닉(Non-comedogenic) 테스트를 완료한 자외선 차단제를 매일 사용하는 습관을 들이세요.",
+      "5. **물리적 자극 최소화**: 여드름을 손으로 짜거나 강한 스크럽 제품을 사용하는 행위는 염증을 심화시키고 흉터를 남길 수 있습니다. 최대한 손대지 않고, 각질 제거는 AHA, BHA 등 화학적 각질제거제를 주 1~2회 사용하는 것이 안전합니다."
     ],
     "matched_products": [
       {

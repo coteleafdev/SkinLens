@@ -27,9 +27,12 @@ results/api_jobs/
 results/exports/*.xlsx
 results/exports/*.csv
 results/logs/*.log
-results/images/*.jpg
-results/images/*.png
+runtime/results/api_jobs/
 backup/
+
+# 테스트용 이미지 (로컬 테스트용)
+assets/test_images/*.jpg
+assets/test_images/*.png
 
 # Python 패키지
 *.egg-info/
