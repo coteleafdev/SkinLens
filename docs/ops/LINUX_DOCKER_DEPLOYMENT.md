@@ -13,6 +13,52 @@
 
 ---
 
+## 아키텍처 개요
+
+```mermaid
+graph TB
+    subgraph "외부"
+        User[사용자]
+        Nginx[Nginx<br/>리버스 프록시]
+    end
+    
+    subgraph "Docker Host"
+        subgraph "Docker Compose"
+            SkinLens[SkinLens 컨테이너<br/>FastAPI + 분석 모델]
+            GPU[NVIDIA GPU<br/>복원 모델]
+            DB[(SQLite DB<br/>데이터베이스)]
+        end
+        
+        subgraph "모니터링"
+            Prometheus[Prometheus<br/>메트릭 수집]
+            Grafana[Grafana<br/>대시보드]
+        end
+    end
+    
+    subgraph "외부 API"
+        LLM[LLM API<br/>Google Gemini]
+    end
+    
+    User -->|HTTPS| Nginx
+    Nginx -->|HTTP| SkinLens
+    SkinLens -->|CUDA| GPU
+    SkinLens -->|SQLite| DB
+    SkinLens -->|REST API| LLM
+    SkinLens -->|Metrics| Prometheus
+    Prometheus -->|Query| Grafana
+    
+    style User fill:#e1f5ff
+    style Nginx fill:#fff4e1
+    style SkinLens fill:#e8f5e9
+    style GPU fill:#fce4ec
+    style DB fill:#f3e5f5
+    style Prometheus fill:#fff3e0
+    style Grafana fill:#e0f7fa
+    style LLM fill:#f1f8e9
+```
+
+---
+
 ## 시스템 요구사항
 
 ### 하드웨어
@@ -165,6 +211,29 @@ docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
 
 ## 4. SkinLens 배포
 
+### 4.0 배포 절차
+
+```mermaid
+flowchart TD
+    Start[시작] --> Update[시스템 업데이트]
+    Update --> InstallDocker[Docker 설치]
+    InstallDocker --> InstallCompose[Docker Compose 설치]
+    InstallCompose --> GPU{GPU 사용?}
+    GPU -->|예| InstallNVIDIA[NVIDIA Driver 설치]
+    GPU -->|아니오| Clone
+    InstallNVIDIA --> InstallToolkit[NVIDIA Container Toolkit 설치]
+    InstallToolkit --> Clone[소스 코드 클론]
+    Clone --> Env[환경 변수 설정]
+    Env --> Build[Docker 이미지 빌드]
+    Build --> Compose[Docker Compose 실행]
+    Compose --> Verify[상태 확인]
+    Verify --> Success[배포 완료]
+    
+    style Start fill:#e1f5ff
+    style Success fill:#e8f5e9
+    style GPU fill:#fff4e1
+```
+
 ### 4.1 소스 코드 클론
 
 ```bash
@@ -242,6 +311,32 @@ docker-compose ps
 
 ## 5. 컨테이너 운영
 
+### 5.0 컨테이너 라이프사이클
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: docker-compose create
+    Created --> Running: docker-compose up -d
+    Running --> Paused: docker-compose pause
+    Paused --> Running: docker-compose unpause
+    Running --> Stopped: docker-compose stop
+    Stopped --> Running: docker-compose start
+    Stopped --> [*]: docker-compose down
+    Running --> Restarting: docker-compose restart
+    Restarting --> Running
+    Running --> [*]: docker-compose kill
+    
+    note right of Running
+        정상 운영 상태
+        로그 모니터링 필요
+    end note
+    
+    note right of Stopped
+        중지 상태
+        데이터 보존됨
+    end note
+```
+
 ### 5.1 컨테이너 관리
 
 ```bash
@@ -290,6 +385,56 @@ docker-compose exec skinlens python -c "import torch; print(torch.cuda.is_availa
 ---
 
 ## 6. 리소스 모니터링
+
+### 6.0 모니터링 아키텍처
+
+```mermaid
+graph LR
+    subgraph "컨테이너"
+        SkinLens[SkinLens]
+    end
+    
+    subgraph "모니터링 도구"
+        DockerStats[docker stats]
+        NvidiaSMI[nvidia-smi]
+        SystemDF[docker system df]
+    end
+    
+    subgraph "수집"
+        Metrics[메트릭 수집]
+        Logs[로그 수집]
+    end
+    
+    subgraph "시각화"
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+    end
+    
+    subgraph "알림"
+        AlertManager[AlertManager]
+        Slack[Slack]
+    end
+    
+    SkinLens -->|CPU/Memory| DockerStats
+    SkinLens -->|GPU| NvidiaSMI
+    SkinLens -->|Disk| SystemDF
+    
+    DockerStats --> Metrics
+    NvidiaSMI --> Metrics
+    SystemDF --> Metrics
+    SkinLens --> Logs
+    
+    Metrics --> Prometheus
+    Prometheus --> Grafana
+    Prometheus --> AlertManager
+    AlertManager --> Slack
+    
+    style SkinLens fill:#e8f5e9
+    style Prometheus fill:#fff3e0
+    style Grafana fill:#e0f7fa
+    style AlertManager fill:#fce4ec
+    style Slack fill:#f3e5f5
+```
 
 ### 6.1 컨테이너 리소스 확인
 
@@ -379,6 +524,54 @@ docker-compose restart
 ---
 
 ## 8. 보안 설정
+
+### 8.0 보안 아키텍처
+
+```mermaid
+graph TB
+    subgraph "외부"
+        Internet[인터넷]
+        Hacker[해커]
+    end
+    
+    subgraph "방화벽"
+        UFW[UFW/Firewalld]
+    end
+    
+    subgraph "웹 서버"
+        Nginx[Nginx<br/>SSL/TLS]
+    end
+    
+    subgraph "Docker"
+        SkinLens[SkinLens<br/>컨테이너]
+    end
+    
+    subgraph "보안 계층"
+        Auth[JWT 인증]
+        RateLimit[속도 제한]
+        InputSanitize[입력 검증]
+    end
+    
+    Internet -->|HTTPS| Nginx
+    Hacker -->|공격 시도| UFW
+    UFW -->|허용된 트래픽만| Nginx
+    Nginx -->|프록시| SkinLens
+    
+    SkinLens --> Auth
+    SkinLens --> RateLimit
+    SkinLens --> InputSanitize
+    
+    Hacker -.->|차단됨| UFW
+    Hacker -.->|차단됨| RateLimit
+    
+    style Hacker fill:#ffcccc
+    style UFW fill:#fff4e1
+    style Nginx fill:#e8f5e9
+    style SkinLens fill:#e0f7fa
+    style Auth fill:#f3e5f5
+    style RateLimit fill:#fce4ec
+    style InputSanitize fill:#f1f8e9
+```
 
 ### 8.1 방화벽 설정
 
