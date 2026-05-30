@@ -45,7 +45,7 @@ from src.server.deps import (
     read_job_meta,
     set_main_loop,
 )
-from src.cli.execution_history import ExecutionHistoryDB
+from src.cli.execution_history import ExecutionHistoryDB, setup_db_logging
 from src.utils.config import get_db_path_from_env
 from src.utils.utils import _load_logging_level
 from src.db.skin_analysis_db import SkinAnalysisDB
@@ -64,6 +64,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
 )
+
+# DB 로깅 설정 (config.json의 db_logging.enabled 설정에 따름)
+setup_db_logging()
 
 log = logging.getLogger(__name__)
 

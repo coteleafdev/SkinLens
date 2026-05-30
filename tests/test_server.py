@@ -481,6 +481,60 @@ class TestServerHelpers:
             log_level = _load_logging_level(config_path)
             assert log_level == "INFO"
 
+    def test_db_handler_emit_when_enabled(self):
+        """DBHandler emit 테스트 (활성화 상태)."""
+        from src.cli.execution_history import DBHandler
+        import tempfile
+        from pathlib import Path
+        import logging
+
+        # 테스트용 DB 생성
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "test_logs.db"
+            handler = DBHandler(str(db_path))
+            handler.enabled = True
+
+            # 로그 레코드 생성
+            record = logging.LogRecord(
+                name="test",
+                level=logging.INFO,
+                pathname="test.py",
+                lineno=1,
+                msg="Test message",
+                args=(),
+                exc_info=None
+            )
+
+            # emit 호출 (예외가 발생하지 않아야 함)
+            handler.emit(record)
+
+    def test_db_handler_emit_when_disabled(self):
+        """DBHandler emit 테스트 (비활성화 상태)."""
+        from src.cli.execution_history import DBHandler
+        import tempfile
+        from pathlib import Path
+        import logging
+
+        # 테스트용 DB 생성
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "test_logs.db"
+            handler = DBHandler(str(db_path))
+            handler.enabled = False
+
+            # 로그 레코드 생성
+            record = logging.LogRecord(
+                name="test",
+                level=logging.INFO,
+                pathname="test.py",
+                lineno=1,
+                msg="Test message",
+                args=(),
+                exc_info=None
+            )
+
+            # emit 호출 (비활성화 상태에서는 아무것도 하지 않아야 함)
+            handler.emit(record)
+
 
 class TestFastAPIServerAsync:
     """Async client tests using httpx.AsyncClient for multi-file uploads."""
