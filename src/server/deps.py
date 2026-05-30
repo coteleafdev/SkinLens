@@ -32,7 +32,49 @@ from src.utils.config import get_db_path_from_env
 log = logging.getLogger(__name__)
 
 # ── Rate Limiter ───────────────────────────────────────────────────────────
-limiter = Limiter(key_func=get_remote_address)
+
+# 역할별 속도 제한 설정
+ROLE_RATE_LIMITS = {
+    "customer": "30/minute",
+    "admin": "100/minute",
+    "analyst": "60/minute",
+    "default": "30/minute",
+}
+
+
+def get_rate_limit_key(request: Any) -> str:
+    """속도 제한 키 생성 (IP + 역할 기반).
+
+    Args:
+        request: FastAPI Request 객체
+
+    Returns:
+        속도 제한 키 (예: "192.168.1.1:admin")
+    """
+    # IP 주소
+    ip = get_remote_address(request)
+
+    # 역할 확인 (헤더에서 토큰 추출)
+    try:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+            payload = jwt.decode(
+                token,
+                get_secret_key(),
+                algorithms=[pwd_context.hash_name],
+                options={"verify_signature": False}  # 역할만 확인하므로 서명 검증 스킵
+            )
+            role = payload.get("role", "default")
+            return f"{ip}:{role}"
+    except Exception:
+        pass
+
+    # 토큰이 없거나 파싱 실패 시 IP만 사용
+    return f"{ip}:default"
+
+
+limiter = Limiter(key_func=get_rate_limit_key)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

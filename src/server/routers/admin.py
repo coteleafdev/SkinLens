@@ -641,3 +641,74 @@ async def clear_cache(
             error_message=str(e)
         )
         raise HTTPException(status_code=500, detail="Failed to clear cache")
+
+
+# ── WebSocket 연결 관리 ───────────────────────────────────────────────────────
+
+@router.get("/v3/admin/websocket/stats")
+async def get_websocket_stats(
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """WebSocket 연결 통계 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        from src.server.routers.websocket import manager
+        stats = manager.get_connection_stats()
+        return stats
+    except Exception as e:
+        log.error("WebSocket 통계 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve WebSocket stats")
+
+
+# ── 작업 큐 관리 ─────────────────────────────────────────────────────────────
+
+@router.get("/v3/admin/job-queue/stats")
+async def get_job_queue_stats(
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """작업 큐 통계 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        from src.server.job_queue import get_job_queue
+        queue = get_job_queue()
+        stats = queue.get_queue_stats()
+        return stats
+    except Exception as e:
+        log.error("작업 큐 통계 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve job queue stats")
+
+
+@router.get("/v3/admin/job-queue/{job_id}")
+async def get_job_status(
+    job_id: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """작업 상태 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        from src.server.job_queue import get_job_queue
+        queue = get_job_queue()
+        status = queue.get_job_status(job_id)
+        if not status:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return status
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("작업 상태 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve job status")

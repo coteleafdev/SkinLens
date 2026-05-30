@@ -22,29 +22,72 @@ log = logging.getLogger(__name__)
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from src.server.deps import job_dir, read_job_meta, log
+from src.utils.config import load_config as _load_config
 
 router = APIRouter(prefix="/v3/ws", tags=["websocket"])
 
 
 # ── WebSocket 연결 관리자 ─────────────────────────────────────────────────
 
+# config.json에서 WebSocket 설정 로드
+_config = _load_config()
+_server_config = _config.get("server", {})
+_websocket_config = _server_config.get("websocket", {})
+_max_connections = _websocket_config.get("max_connections", 100)
+_connection_timeout = _websocket_config.get("connection_timeout", 300)
+
+
 class ConnectionManager:
-    """WebSocket 연결 관리자."""
+    """WebSocket 연결 관리자 (연결 수 제한, 타임아웃, 하트비트 포함)."""
 
-    def __init__(self) -> None:
+    def __init__(self, max_connections: int = _max_connections, connection_timeout: int = _connection_timeout) -> None:
+        """
+        Args:
+            max_connections: 최대 동시 연결 수
+            connection_timeout: 연결 타임아웃 (초)
+        """
         self.active_connections: Dict[str, WebSocket] = {}
+        self.connection_metadata: Dict[str, Dict] = {}  # 연결 메타데이터
+        self.max_connections = max_connections
+        self.connection_timeout = connection_timeout
+        self._monitor_task: Optional[asyncio.Task] = None
 
-    async def connect(self, job_id: str, websocket: WebSocket) -> None:
-        """작업 ID에 WebSocket 연결 등록."""
+    async def connect(self, job_id: str, websocket: WebSocket) -> bool:
+        """작업 ID에 WebSocket 연결 등록.
+
+        Returns:
+            연결 성공 여부 (연결 수 초과 시 False)
+        """
+        # 연결 수 제한 확인
+        if len(self.active_connections) >= self.max_connections:
+            log.warning("WebSocket 연결 거부: 최대 연결 수 초과 (job_id=%s, 현재=%d, 최대=%d)",
+                       job_id, len(self.active_connections), self.max_connections)
+            await websocket.close(code=1008, reason="Maximum connections exceeded")
+            return False
+
         await websocket.accept()
         self.active_connections[job_id] = websocket
-        log.info("WebSocket 연결: job_id=%s, 연결 수=%d", job_id, len(self.active_connections))
+        self.connection_metadata[job_id] = {
+            "connected_at": asyncio.get_event_loop().time(),
+            "last_heartbeat": asyncio.get_event_loop().time(),
+            "client_ip": websocket.client.host if websocket.client else "unknown",
+        }
+        log.info("WebSocket 연결: job_id=%s, 연결 수=%d, IP=%s",
+                 job_id, len(self.active_connections), self.connection_metadata[job_id]["client_ip"])
+
+        # 모니터링 태스크 시작 (이미 실행 중이면 스킵)
+        if self._monitor_task is None or self._monitor_task.done():
+            self._monitor_task = asyncio.create_task(self._monitor_connections())
+
+        return True
 
     def disconnect(self, job_id: str) -> None:
         """작업 ID 연결 해제."""
         if job_id in self.active_connections:
             del self.active_connections[job_id]
-            log.info("WebSocket 연결 해제: job_id=%s, 연결 수=%d", job_id, len(self.active_connections))
+        if job_id in self.connection_metadata:
+            del self.connection_metadata[job_id]
+        log.info("WebSocket 연결 해제: job_id=%s, 연결 수=%d", job_id, len(self.active_connections))
 
     async def send_progress(self, job_id: str, stage: str, percent: int, message: str) -> None:
         """진행률 메시지 전송."""
@@ -57,6 +100,9 @@ class ConnectionManager:
                     "percent": percent,
                     "message": message
                 })
+                # 하트비트 갱신
+                if job_id in self.connection_metadata:
+                    self.connection_metadata[job_id]["last_heartbeat"] = asyncio.get_event_loop().time()
             except Exception as e:
                 log.warning("WebSocket 진행률 전송 실패: job_id=%s, error=%s", job_id, e)
                 self.disconnect(job_id)
@@ -88,6 +134,46 @@ class ConnectionManager:
                 log.warning("WebSocket 에러 전송 실패: job_id=%s, error=%s", job_id, e)
             finally:
                 self.disconnect(job_id)
+
+    async def _monitor_connections(self) -> None:
+        """연결 상태 모니터링 (타임아웃 감지)."""
+        while True:
+            await asyncio.sleep(30)  # 30초마다 확인
+            current_time = asyncio.get_event_loop().time()
+            timeout_connections = []
+
+            for job_id, metadata in self.connection_metadata.items():
+                # 타임아웃 확인
+                if current_time - metadata["last_heartbeat"] > self.connection_timeout:
+                    timeout_connections.append(job_id)
+                    log.warning("WebSocket 타임아웃: job_id=%s, IP=%s",
+                               job_id, metadata["client_ip"])
+
+            # 타임아웃 연결 종료
+            for job_id in timeout_connections:
+                if job_id in self.active_connections:
+                    try:
+                        await self.active_connections[job_id].close(code=1000, reason="Connection timeout")
+                    except Exception as e:
+                        log.error("WebSocket 타임아웃 종료 실패: job_id=%s, error=%s", job_id, e)
+                    self.disconnect(job_id)
+
+    def get_connection_stats(self) -> Dict:
+        """연결 통계 반환."""
+        return {
+            "active_connections": len(self.active_connections),
+            "max_connections": self.max_connections,
+            "connection_timeout": self.connection_timeout,
+            "connections": [
+                {
+                    "job_id": job_id,
+                    "connected_at": metadata["connected_at"],
+                    "last_heartbeat": metadata["last_heartbeat"],
+                    "client_ip": metadata["client_ip"],
+                }
+                for job_id, metadata in self.connection_metadata.items()
+            ]
+        }
 
 
 # 전역 연결 관리자

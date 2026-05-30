@@ -31,6 +31,30 @@
       ".png",
       ".webp"
     ],
+    "request_logging": {
+      "enabled": true,
+      "slow_request_threshold": 5.0,
+      "_note": "요청 로깅 설정. slow_request_threshold: 느린 요청 기준 (초)"
+    },
+    "rate_limiting": {
+      "enabled": true,
+      "role_limits": {
+        "customer": "30/minute",
+        "admin": "100/minute",
+        "analyst": "60/minute",
+        "default": "30/minute"
+      },
+      "_note": "속도 제한 설정. 역할별로 다른 속도 제한 적용"
+    },
+    "websocket": {
+      "max_connections": 100,
+      "connection_timeout": 300,
+      "_note": "WebSocket 설정. max_connections: 최대 동시 연결 수, connection_timeout: 연결 타임아웃 (초)"
+    },
+    "job_queue": {
+      "max_workers": 4,
+      "_note": "작업 큐 설정. max_workers: 최대 동시 작업 수"
+    },
     "_note": "서버 관련 설정. 환경 변수로 오버라이드 가능."
   },
   "database": {

@@ -47,13 +47,14 @@ from src.server.deps import (
     set_main_loop,
 )
 from src.cli.execution_history import ExecutionHistoryDB, setup_db_logging
-from src.utils.config import get_db_path_from_env
+from src.utils.config import get_db_path_from_env, load_config as _load_config
 from src.utils.utils import _load_logging_level
 from src.db.skin_analysis_db import SkinAnalysisDB
 from src.recovery import RecoveryEngine, HealthMonitor
 from src.notification import AlertSystem
 from src.i18n import Translator
 from src.server.middleware import I18nMiddleware
+from src.server.middleware.request_logging import RequestLoggingMiddleware
 
 try:
     from watchdog.observers import Observer
@@ -284,6 +285,16 @@ app.add_middleware(
 # I18n Middleware
 translator = Translator()
 app.add_middleware(I18nMiddleware, translator=translator)
+
+# Request Logging Middleware (config.json에서 설정 로드)
+server_config = _load_config().get("server", {})
+request_logging_config = server_config.get("request_logging", {})
+slow_request_threshold = request_logging_config.get("slow_request_threshold", 5.0)
+if request_logging_config.get("enabled", True):
+    app.add_middleware(RequestLoggingMiddleware, slow_request_threshold=slow_request_threshold)
+    log.info("요청 로깅 미들웨어 활성화 (느린 요청 기준: %.1fs)", slow_request_threshold)
+else:
+    log.info("요청 로깅 미들웨어 비활성화")
 
 # ── 라우터 등록 ───────────────────────────────────────────────────────────
 app.include_router(jobs.router)
