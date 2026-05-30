@@ -435,6 +435,52 @@ class TestServerHelpers:
         result_dir = job_dir(job_id)
         assert job_id in str(result_dir)
 
+    def test_load_logging_level_from_config(self):
+        """config.json에서 로그 레벨 로드 테스트."""
+        from src.utils.utils import _load_logging_level
+        import tempfile
+        import json
+        from pathlib import Path
+
+        # 테스트용 config.json 생성
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / "config.json"
+            test_config = {
+                "logging": {
+                    "level": "DEBUG"
+                }
+            }
+            with open(config_path, "w") as f:
+                json.dump(test_config, f)
+
+            # 로그 레벨 로드
+            log_level = _load_logging_level(config_path)
+            assert log_level == "DEBUG"
+
+    def test_load_logging_level_default(self):
+        """config.json이 없을 때 기본값 INFO 반환 테스트."""
+        from src.utils.utils import _load_logging_level
+        from pathlib import Path
+
+        # 존재하지 않는 경로
+        log_level = _load_logging_level(Path("/nonexistent/config.json"))
+        assert log_level == "INFO"
+
+    def test_load_logging_level_invalid_config(self):
+        """잘못된 config.json일 때 기본값 INFO 반환 테스트."""
+        from src.utils.utils import _load_logging_level
+        import tempfile
+        from pathlib import Path
+
+        # 잘못된 JSON 파일 생성
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / "config.json"
+            with open(config_path, "w") as f:
+                f.write("invalid json")
+
+            log_level = _load_logging_level(config_path)
+            assert log_level == "INFO"
+
 
 class TestFastAPIServerAsync:
     """Async client tests using httpx.AsyncClient for multi-file uploads."""

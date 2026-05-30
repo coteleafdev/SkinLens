@@ -131,20 +131,22 @@ def apply_formatter_to_all_loggers():
 
 def _load_logging_level(config_path: Optional[Path] = None) -> str:
     """설정 파일에서 로그 레벨을 로드합니다.
-    
+
     Returns:
         로그 레벨 문자열 (DEBUG, INFO, WARNING, ERROR). 실패 시 "INFO".
     """
     import json
     from pathlib import Path as P
-    
+
+    logger = logging.getLogger(__name__)
+
     # 설정 파일 경로 결정
     if config_path:
         target = config_path
     else:
         # 프로젝트 루트의 config/config.json
         target = P(__file__).parent.parent.parent / "config" / "config.json"
-    
+
     try:
         if target.exists():
             with open(target, encoding="utf-8") as f:
@@ -152,7 +154,7 @@ def _load_logging_level(config_path: Optional[Path] = None) -> str:
             return config.get("logging", {}).get("level", "INFO")
     except Exception as e:
         logger.debug("config 로드 실패: %s", e)
-    
+
     return "INFO"
 
 

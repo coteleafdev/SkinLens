@@ -47,6 +47,7 @@ from src.server.deps import (
 )
 from src.cli.execution_history import ExecutionHistoryDB
 from src.utils.config import get_db_path_from_env
+from src.utils.utils import _load_logging_level
 from src.db.skin_analysis_db import SkinAnalysisDB
 from src.recovery import RecoveryEngine, HealthMonitor
 from src.notification import AlertSystem
@@ -56,8 +57,10 @@ from src.server.middleware import I18nMiddleware
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
 from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders
 
+# config.json에서 로그 레벨 로드
+_log_level = _load_logging_level()
 logging.basicConfig(
-    level=logging.INFO,
+    level=_log_level,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
 )
