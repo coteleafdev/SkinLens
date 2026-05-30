@@ -11,6 +11,11 @@
 
 SkinLens REST API 엔드포인트 상세 설명입니다.
 
+**참고 문서:**
+- 백엔드 개발자용 상세 가이드: `API_GUIDE.md`
+- 데이터 모델: `docs/db/DATA_MODEL.md`
+- 보안 가이드: `docs/ops/SECURITY_GUIDE.md`
+
 ---
 
 ## 기본 정보
@@ -27,11 +32,60 @@ SkinLens REST API 엔드포인트 상세 설명입니다.
 - `application/json`
 - `multipart/form-data` (이미지 업로드)
 
+**Swagger UI:**
+- 개발: `http://localhost:8000/docs`
+- OpenAPI: `http://localhost:8000/openapi.json`
+
 ---
 
-## 1. 분석 Job (Analysis Jobs)
+## 1. 인증 (Authentication)
 
-### 1.1 Job 생성
+### 1.1 로그인
+
+**POST** `/v3/auth/login`
+
+로그인 및 JWT 토큰 발급
+
+**Request Body:**
+```json
+{
+  "customer_id": "string",
+  "password": "string"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "access_token": "string",
+  "token_type": "bearer",
+  "customer_id": "string",
+  "role": "admin|analyst|customer",
+  "expires_in": 3600
+}
+```
+
+---
+
+### 1.2 내 정보 조회
+
+**GET** `/v3/auth/me`
+
+현재 인증된 사용자 정보 조회
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "string",
+  "role": "admin|analyst|customer"
+}
+```
+
+---
+
+## 2. 분석 Job (Analysis Jobs)
+
+### 2.1 Job 생성
 
 **POST** `/v3/analysis/jobs`
 
@@ -74,30 +128,13 @@ Content-Type: multipart/form-data
 }
 ```
 
-**Error Response (400 Bad Request):**
-```json
-{
-  "detail": "images[], image, image_url 중 하나를 반드시 제공해야 합니다."
-}
-```
-
 ---
 
-### 1.2 Job 상태 조회
+### 2.2 Job 상태 조회
 
 **GET** `/v3/analysis/jobs/{job_id}`
 
 Job 상태를 조회합니다.
-
-**Request Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
-
-**Path Parameters:**
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| job_id | string | Job ID |
 
 **Response (200 OK):**
 ```json
@@ -131,25 +168,13 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
-**Error Response (404 Not Found):**
-```json
-{
-  "detail": "job not found"
-}
-```
-
 ---
 
-### 1.3 Job 취소
+### 2.3 Job 취소
 
 **DELETE** `/v3/analysis/jobs/{job_id}`
 
 Job을 취소합니다.
-
-**Request Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
 
 **Response (200 OK):**
 ```json
@@ -161,48 +186,55 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 1.4 이미지 다운로드
+### 2.4 피부 타입 확인
 
-**GET** `/v3/analysis/jobs/{job_id}/artifacts/{filename}`
+**POST** `/v3/analysis/jobs/{job_id}/confirm-skin-type`
 
-분석 결과 이미지를 다운로드합니다.
+피부 타입 사용자 확인
 
-**Request Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
-
-**Path Parameters:**
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| job_id | string | Job ID |
-| filename | string | 파일명 |
-
-**Response (200 OK):**
-- Content-Type: `image/jpeg` 또는 `image/png`
-- Binary image data
-
-**Error Response (404 Not Found):**
+**Request Body:**
 ```json
 {
-  "detail": "image not found"
+  "skin_types": ["dry", "oily", "combination", "sensitive"]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "job_id": "uuid",
+  "skin_types": ["dry", "oily"],
+  "skin_type_source": "manual"
 }
 ```
 
 ---
 
-## 2. 고객 (Customer)
+### 2.5 이미지 다운로드
 
-### 2.1 내 정보 조회
+**GET** `/v3/analysis/jobs/{job_id}/artifacts/{filename}`
+
+분석 결과 이미지를 다운로드합니다.
+
+**파일명:**
+- `original.png`: 원본 이미지
+- `restored.png`: 복원 이미지
+- `comparison.png`: 비교 이미지
+- `results.json`: 분석 결과 JSON
+
+**Response (200 OK):**
+- Content-Type: `image/jpeg` 또는 `image/png`
+- Binary image data
+
+---
+
+## 3. 고객 (Customer)
+
+### 3.1 내 정보 조회
 
 **GET** `/v3/customer/my/info`
 
 내 고객 정보를 조회합니다.
-
-**Request Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
 
 **Response (200 OK):**
 ```json
@@ -220,16 +252,11 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 2.2 분석 이력 조회
+### 3.2 분석 이력 조회
 
 **GET** `/v3/customer/my/analyses`
 
 내 분석 이력을 조회합니다.
-
-**Request Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
 
 **Query Parameters:**
 | 필드 | 타입 | 필수 | 설명 |
@@ -256,18 +283,13 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## 3. 통계 (Stats)
+## 4. 통계 (Stats)
 
-### 3.1 분석 통계 조회
+### 4.1 분석 통계 조회
 
 **GET** `/v3/stats/analysis`
 
 분석 통계를 조회합니다.
-
-**Request Headers:**
-```
-Authorization: Bearer <jwt_token>
-```
 
 **Query Parameters:**
 | 필드 | 타입 | 필수 | 설명 |
@@ -293,9 +315,9 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## 4. 헬스체크 (Health)
+## 5. 헬스체크 (Health)
 
-### 4.1 서버 상태 확인
+### 5.1 서버 상태 확인
 
 **GET** `/health`
 
@@ -316,6 +338,8 @@ Authorization: Bearer <jwt_token>
 
 | 코드 | 설명 |
 |------|------|
+| 200 | OK - 성공 |
+| 201 | Created - 리소스 생성 |
 | 400 | Bad Request - 잘못된 요청 |
 | 401 | Unauthorized - 인증 실패 |
 | 403 | Forbidden - 권한 없음 |
@@ -323,24 +347,25 @@ Authorization: Bearer <jwt_token>
 | 429 | Too Many Requests - 요청 초과 |
 | 500 | Internal Server Error - 서버 에러 |
 
+**에러 응답 형식:**
+```json
+{
+  "detail": "에러 메시지"
+}
+```
+
 ---
 
 ## 속도 제한 (Rate Limiting)
 
 | 엔드포인트 | 제한 |
 |-----------|------|
+| POST /v3/auth/login | 5/분 |
 | POST /v3/analysis/jobs | 30/분 |
 | GET /v3/analysis/jobs/{job_id} | 60/분 |
 | GET /v3/customer/my/* | 60/분 |
 | GET /v3/stats/* | 30/분 |
-
----
-
-## 참고 문서
-
-- `DEPLOYMENT_GUIDE.md` - 배포 가이드
-- `SECURITY_GUIDE.md` - 보안 가이드
-- `DATA_MODEL.md` - 데이터 모델
+| 기타 엔드포인트 | 100/분 |
 
 ---
 
