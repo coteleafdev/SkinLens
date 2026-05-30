@@ -13,7 +13,7 @@
     "datefmt": "%H:%M:%S",
     "_note": "로그 레벨: DEBUG, INFO, WARNING, ERROR",
     "db_logging": {
-      "enabled": false,
+      "enabled": true,
       "retention_days": 7,
       "_note": "로그 DB 보관 기간 (일). 로그 저장 시 자동으로 오래된 로그 삭제 (롤링 방식). 0이면 보관하지 않음."
     }
