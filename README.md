@@ -228,7 +228,7 @@ SkinLens v1.0/
 
 ### 사전 요구사항
 
-- Python 3.8+
+- Python 3.8+ (**현재 개발 환경: Python 3.12**)
 - CUDA 11.8+ (GPU 사용 시)
 - 16GB+ RAM (GPU 사용 권장)
 

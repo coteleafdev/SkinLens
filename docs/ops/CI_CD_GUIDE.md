@@ -14,6 +14,8 @@
 
 ## 개요
 
+**현재 개발 환경**: Python 3.12
+
 SkinLens v1은 GitHub Actions를 사용하여 CI/CD 파이프라인을 구현합니다. 현재 다음 워크플로우가 구성되어 있습니다:
 
 - **test-all.yml**: 전체 테스트 실행 (모든 Python 버전)
