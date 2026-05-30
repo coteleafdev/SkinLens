@@ -479,11 +479,90 @@ SkinLens는 API 키, 데이터베이스 자격증명, 고객 정보 등 민감�
 #### 6.2.2 보안 강화 방안
 
 **1. 환경변수 사용 (권장)**
+
+**Linux/macOS:**
 ```bash
-# 서버 환경
+# 일시적 설정 (현재 세션만)
 export GEMINI_API_KEY="your_api_key"
 export SUPABASE_URL="https://xxx.supabase.co"
 export SUPABASE_KEY="your_service_role_key"
+
+# 영구적 설정 (~/.bashrc 또는 ~/.zshrc)
+echo 'export GEMINI_API_KEY="your_api_key"' >> ~/.bashrc
+echo 'export SUPABASE_URL="https://xxx.supabase.co"' >> ~/.bashrc
+echo 'export SUPABASE_KEY="your_service_role_key"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Windows (PowerShell):**
+```powershell
+# 일시적 설정 (현재 세션만)
+$env:GEMINI_API_KEY="your_api_key"
+$env:SUPABASE_URL="https://xxx.supabase.co"
+$env:SUPABASE_KEY="your_service_role_key"
+
+# 영구적 설정 (시스템 환경변수)
+[System.Environment]::SetEnvironmentVariable('GEMINI_API_KEY', 'your_api_key', 'User')
+[System.Environment]::SetEnvironmentVariable('SUPABASE_URL', 'https://xxx.supabase.co', 'User')
+[System.Environment]::SetEnvironmentVariable('SUPABASE_KEY', 'your_service_role_key', 'User')
+```
+
+**Windows (CMD):**
+```cmd
+# 일시적 설정 (현재 세션만)
+set GEMINI_API_KEY=your_api_key
+set SUPABASE_URL=https://xxx.supabase.co
+set SUPABASE_KEY=your_service_role_key
+
+# 영구적 설정 (시스템 환경변수)
+setx GEMINI_API_KEY "your_api_key"
+setx SUPABASE_URL "https://xxx.supabase.co"
+setx SUPABASE_KEY "your_service_role_key"
+```
+
+**Docker:**
+```bash
+# docker run
+docker run -e GEMINI_API_KEY="your_api_key" \
+           -e SUPABASE_URL="https://xxx.supabase.co" \
+           -e SUPABASE_KEY="your_service_role_key" \
+           skinlens:latest
+
+# docker-compose.yml
+environment:
+  - GEMINI_API_KEY=your_api_key
+  - SUPABASE_URL=https://xxx.supabase.co
+  - SUPABASE_KEY=your_service_role_key
+```
+
+**.env 파일 (개발 환경):**
+```bash
+# .env 파일 생성
+echo "GEMINI_API_KEY=your_api_key" > .env
+echo "SUPABASE_URL=https://xxx.supabase.co" >> .env
+echo "SUPABASE_KEY=your_service_role_key" >> .env
+
+# .env 파일 로드 (python-dotenv 필요)
+pip install python-dotenv
+python -c "from dotenv import load_dotenv; load_dotenv()"
+```
+
+**환경변수 확인:**
+```bash
+# Linux/macOS
+echo $GEMINI_API_KEY
+echo $SUPABASE_URL
+echo $SUPABASE_KEY
+
+# Windows PowerShell
+echo $env:GEMINI_API_KEY
+echo $env:SUPABASE_URL
+echo $env:SUPABASE_KEY
+
+# Windows CMD
+echo %GEMINI_API_KEY%
+echo %SUPABASE_URL%
+echo %SUPABASE_KEY%
 ```
 
 **2. secrets.json 파일 관리**
