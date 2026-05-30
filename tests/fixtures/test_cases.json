@@ -1,0 +1,56 @@
+{
+  "test_cases": [
+    {
+      "name": "정상 피부 테스트",
+      "customer_id": "test_normal_skin",
+      "image_file": "normal_skin.jpg",
+      "expected_results": {
+        "skin_type": "normal",
+        "trouble_score": {
+          "acne": "low",
+          "redness": "low",
+          "pigmentation": "low"
+        }
+      }
+    },
+    {
+      "name": "여드름 피부 테스트",
+      "customer_id": "test_acne_skin",
+      "image_file": "acne_skin.jpg",
+      "expected_results": {
+        "skin_type": "acne",
+        "trouble_score": {
+          "acne": "high",
+          "redness": "medium",
+          "pigmentation": "low"
+        }
+      }
+    },
+    {
+      "name": "색소침착 피부 테스트",
+      "customer_id": "test_pigmentation_skin",
+      "image_file": "pigmentation_skin.jpg",
+      "expected_results": {
+        "skin_type": "pigmentation",
+        "trouble_score": {
+          "acne": "low",
+          "redness": "low",
+          "pigmentation": "high"
+        }
+      }
+    },
+    {
+      "name": "노화 피부 테스트",
+      "customer_id": "test_aging_skin",
+      "image_file": "aging_skin.jpg",
+      "expected_results": {
+        "skin_type": "aging",
+        "trouble_score": {
+          "acne": "low",
+          "redness": "low",
+          "pigmentation": "medium"
+        }
+      }
+    }
+  ]
+}
