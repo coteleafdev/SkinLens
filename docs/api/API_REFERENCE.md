@@ -334,6 +334,376 @@ Job을 취소합니다.
 
 ---
 
+## 6. 관리자 (Admin)
+
+### 6.1 감사 로그 조회
+
+**GET** `/v3/admin/audit-logs`
+
+감사 로그를 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| actor_customer_id | string | 아니오 | 행동자 고객 ID |
+| target_customer_id | string | 아니오 | 대상 고객 ID |
+| days | integer | 아니오 | 기간 (일, 기본: 30) |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "logs": [
+    {
+      "id": "uuid",
+      "actor_customer_id": "ADMIN001",
+      "target_customer_id": "CUST001",
+      "endpoint": "/v3/analysis/jobs",
+      "method": "POST",
+      "user_role": "admin",
+      "success": true,
+      "created_at": "2026-05-30T10:00:00Z"
+    }
+  ],
+  "count": 100
+}
+```
+
+---
+
+### 6.2 DB 헬스체크
+
+**GET** `/v3/admin/health/db`
+
+데이터베이스 상태를 확인합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "status": "healthy",
+  "connection": "ok",
+  "latency_ms": 5.2,
+  "table_count": 10
+}
+```
+
+---
+
+### 6.3 로그 레벨 조회
+
+**GET** `/v3/admin/logging/level`
+
+현재 로그 레벨을 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "level": "DEBUG",
+  "persisted": false
+}
+```
+
+---
+
+### 6.4 로그 레벨 변경
+
+**PUT** `/v3/admin/logging/level`
+
+로그 레벨을 변경합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| level | string | 예 | 로그 레벨 (DEBUG, INFO, WARNING, ERROR) |
+| persist | boolean | 아니오 | config.json 저장 여부 (기본: false) |
+
+**Response (200 OK):**
+```json
+{
+  "level": "INFO",
+  "previous_level": "DEBUG",
+  "persisted": true
+}
+```
+
+---
+
+### 6.5 시스템 메트릭 조회
+
+**GET** `/v3/admin/metrics/system`
+
+시스템 메트릭을 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "cpu": {
+    "percent": 45.2,
+    "count": 8
+  },
+  "memory": {
+    "total_gb": 16.0,
+    "available_gb": 8.5,
+    "used_gb": 7.5,
+    "percent": 46.9
+  },
+  "disk": {
+    "total_gb": 500.0,
+    "used_gb": 200.0,
+    "free_gb": 300.0,
+    "percent": 40.0
+  },
+  "network": {
+    "bytes_sent": 1024000,
+    "bytes_recv": 2048000,
+    "packets_sent": 1000,
+    "packets_recv": 2000
+  },
+  "process": {
+    "pid": 12345,
+    "memory_percent": 2.5,
+    "cpu_percent": 1.2,
+    "num_threads": 8
+  },
+  "timestamp": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+### 6.6 API 키 생성
+
+**POST** `/v3/admin/api-keys`
+
+API 키를 생성합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| name | string | 예 | API 키 이름 |
+| owner_id | string | 예 | 소유자 ID |
+| description | string | 아니오 | 설명 |
+| scopes | string | 아니오 | 권한 범위 (JSON 문자열) |
+| expires_in_days | integer | 아니오 | 만료일수 |
+
+**Response (200 OK):**
+```json
+{
+  "id": "uuid",
+  "api_key": "64-char-hex-string",
+  "name": "Test Key",
+  "description": "Test API key",
+  "owner_id": "CUST001",
+  "scopes": ["read", "write"],
+  "expires_at": "2026-06-30T10:00:00Z",
+  "created_at": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+### 6.7 API 키 목록 조회
+
+**GET** `/v3/admin/api-keys`
+
+API 키 목록을 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| owner_id | string | 아니오 | 소유자 ID 필터 |
+| is_active | boolean | 아니오 | 활성 상태 필터 |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "api_keys": [
+    {
+      "id": "uuid",
+      "name": "Test Key",
+      "owner_id": "CUST001",
+      "scopes": ["read", "write"],
+      "is_active": true,
+      "expires_at": "2026-06-30T10:00:00Z",
+      "last_used_at": "2026-05-30T10:00:00Z",
+      "created_at": "2026-05-30T10:00:00Z"
+    }
+  ],
+  "count": 10
+}
+```
+
+---
+
+### 6.8 API 키 폐지
+
+**DELETE** `/v3/admin/api-keys/{key_id}`
+
+API 키를 폐지합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| reason | string | 아니오 | 폐지 사유 |
+
+**Response (200 OK):**
+```json
+{
+  "message": "API key revoked successfully",
+  "key_id": "uuid"
+}
+```
+
+---
+
+### 6.9 캐시 통계 조회
+
+**GET** `/v3/admin/cache/stats`
+
+캐시 통계를 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "metrics_cache": {
+    "valid": true,
+    "age_seconds": 15.5,
+    "ttl": 30,
+    "cached": true
+  },
+  "timestamp": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+### 6.10 캐시 초기화
+
+**POST** `/v3/admin/cache/clear`
+
+캐시를 초기화합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| cache_type | string | 아니오 | 초기화할 캐시 (all, metrics, config) |
+
+**Response (200 OK):**
+```json
+{
+  "message": "Cache cleared successfully",
+  "cleared_caches": ["metrics", "config"],
+  "timestamp": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+### 6.11 WebSocket 연결 통계
+
+**GET** `/v3/admin/websocket/stats`
+
+WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "active_connections": 5,
+  "max_connections": 100,
+  "connection_timeout": 300,
+  "connections": [
+    {
+      "job_id": "uuid",
+      "connected_at": 1234567890.0,
+      "last_heartbeat": 1234567900.0,
+      "client_ip": "192.168.1.1"
+    }
+  ]
+}
+```
+
+---
+
+### 6.12 작업 큐 통계
+
+**GET** `/v3/admin/job-queue/stats`
+
+작업 큐 통계를 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "queue_size": 10,
+  "running_jobs": 4,
+  "max_workers": 4,
+  "job_history_size": 100,
+  "running": true
+}
+```
+
+---
+
+### 6.13 작업 상태 조회
+
+**GET** `/v3/admin/job-queue/{job_id}`
+
+작업 상태를 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "job_id": "uuid",
+  "status": "running",
+  "priority": 2,
+  "retry_count": 0,
+  "max_retries": 3,
+  "error": null,
+  "created_at": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+## 7. WebSocket
+
+### 7.1 진행률 트래킹
+
+**WS** `/v3/ws/analyze/{job_id}`
+
+분석 진행률을 실시간으로 수신합니다.
+
+**메시지 형식:**
+```json
+{
+  "type": "progress",
+  "stage": "restore",
+  "percent": 30,
+  "message": "복원 중..."
+}
+```
+
+**완료 메시지:**
+```json
+{
+  "type": "complete",
+  "result": {
+    "overall_score": 75,
+    "measurements": {...}
+  }
+}
+```
+
+**에러 메시지:**
+```json
+{
+  "type": "error",
+  "error": "에러 메시지"
+}
+```
+
+---
+
 ## 에러 코드
 
 | 코드 | 설명 |
@@ -358,6 +728,15 @@ Job을 취소합니다.
 
 ## 속도 제한 (Rate Limiting)
 
+**역할별 속도 제한:**
+| 역할 | 제한 |
+|------|------|
+| customer | 30/분 |
+| admin | 100/분 |
+| analyst | 60/분 |
+| default (인증 없음) | 30/분 |
+
+**엔드포인트별 제한:**
 | 엔드포인트 | 제한 |
 |-----------|------|
 | POST /v3/auth/login | 5/분 |
@@ -365,7 +744,35 @@ Job을 취소합니다.
 | GET /v3/analysis/jobs/{job_id} | 60/분 |
 | GET /v3/customer/my/* | 60/분 |
 | GET /v3/stats/* | 30/분 |
-| 기타 엔드포인트 | 100/분 |
+| 기타 엔드포인트 | 역할별 제한 적용 |
+
+**속도 제한 초과 시:**
+- HTTP 429 Too Many Requests
+- Retry-After 헤더 포함
+
+---
+
+## 요청 로깅 (Request Logging)
+
+모든 API 요청은 자동으로 로깅됩니다.
+
+**로그 정보:**
+- 요청 ID (UUID)
+- HTTP 메서드
+- 경로
+- 쿼리 파라미터
+- 클라이언트 IP
+- User-Agent
+- 응답 상태 코드
+- 처리 시간
+
+**요청 ID:**
+- 응답 헤더 `X-Request-ID`로 제공
+- 요청 추적 및 디버깅에 사용
+
+**느린 요청 경고:**
+- 기준: 5초 이상 (config.json에서 설정 가능)
+- 로그 레벨: WARNING
 
 ---
 

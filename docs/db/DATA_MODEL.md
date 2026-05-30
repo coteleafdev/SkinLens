@@ -42,6 +42,51 @@ SkinLens 데이터베이스 스키마와 JSON 구조 설명입니다.
 
 ---
 
+**테이블: api_keys**
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER | Primary Key, Auto Increment |
+| key_hash | TEXT | API 키 SHA-256 해시 |
+| name | TEXT | API 키 이름 |
+| description | TEXT | 설명 (nullable) |
+| owner_id | TEXT | 소유자 ID |
+| scopes | TEXT | 권한 범위 (JSON) |
+| is_active | BOOLEAN | 활성 상태 |
+| expires_at | TIMESTAMP | 만료일 (nullable) |
+| last_used_at | TIMESTAMP | 마지막 사용 시간 (nullable) |
+| created_at | TIMESTAMP | 생성 시간 |
+| revoked_at | TIMESTAMP | 폐지 시간 (nullable) |
+| revoke_reason | TEXT | 폐지 사유 (nullable) |
+
+**인덱스:**
+- `idx_key_hash`: key_hash
+- `idx_owner_id`: owner_id
+- `idx_is_active`: is_active
+
+---
+
+**테이블: api_key_usage_logs**
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER | Primary Key, Auto Increment |
+| api_key_id | INTEGER | API 키 ID (FK) |
+| endpoint | TEXT | 요청 엔드포인트 |
+| method | TEXT | HTTP 메서드 |
+| ip_address | TEXT | 클라이언트 IP |
+| user_agent | TEXT | User-Agent |
+| success | BOOLEAN | 성공 여부 |
+| error_message | TEXT | 에러 메시지 (nullable) |
+| created_at | TIMESTAMP | 생성 시간 |
+
+**인덱스:**
+- `idx_api_key_id`: api_key_id
+- `idx_created_at`: created_at
+- `idx_endpoint`: endpoint
+
+---
+
 ### 1.2 Supabase (클라우드)
 
 **테이블: skin_analyses**
@@ -73,6 +118,51 @@ CREATE POLICY customer_access ON skin_analyses
 CREATE POLICY admin_access ON skin_analyses
   FOR ALL USING (auth.jwt()->>'role' = 'admin');
 ```
+
+---
+
+**테이블: api_keys**
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | UUID | Primary Key |
+| key_hash | TEXT | API 키 SHA-256 해시 |
+| name | TEXT | API 키 이름 |
+| description | TEXT | 설명 (nullable) |
+| owner_id | TEXT | 소유자 ID (FK) |
+| scopes | JSONB | 권한 범위 |
+| is_active | BOOLEAN | 활성 상태 |
+| expires_at | TIMESTAMPTZ | 만료일 (nullable) |
+| last_used_at | TIMESTAMPTZ | 마지막 사용 시간 (nullable) |
+| created_at | TIMESTAMPTZ | 생성 시간 |
+| revoked_at | TIMESTAMPTZ | 폐지 시간 (nullable) |
+| revoke_reason | TEXT | 폐지 사유 (nullable) |
+
+**인덱스:**
+- `idx_key_hash`: key_hash
+- `idx_owner_id`: owner_id
+- `idx_is_active`: is_active
+
+---
+
+**테이블: api_key_usage_logs**
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | UUID | Primary Key |
+| api_key_id | UUID | API 키 ID (FK) |
+| endpoint | TEXT | 요청 엔드포인트 |
+| method | TEXT | HTTP 메서드 |
+| ip_address | TEXT | 클라이언트 IP |
+| user_agent | TEXT | User-Agent |
+| success | BOOLEAN | 성공 여부 |
+| error_message | TEXT | 에러 메시지 (nullable) |
+| created_at | TIMESTAMPTZ | 생성 시간 |
+
+**인덱스:**
+- `idx_api_key_id`: api_key_id
+- `idx_created_at`: created_at
+- `idx_endpoint`: endpoint
 
 ---
 
