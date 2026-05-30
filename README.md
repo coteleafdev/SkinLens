@@ -66,7 +66,7 @@ AI 기반 피부 분석 및 복원 파이프라인 프로젝트입니다. Restor
 
 ## 프로젝트 전체 개요
 
-프로젝트의 전체적인 개요, 비전, 기술 스택 상세, 아키텍처, 로드맵 등을 포괄적으로 설명하는 문서는 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)를 참조하세요.
+프로젝트의 전체적인 개요, 비전, 기술 스택 상세, 아키텍처, 로드맵 등을 포괄적으로 설명하는 문서는 [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)를 참조하세요.
 
 이 문서는 다음 내용을 포함합니다:
 - 프로젝트 비전 및 목표
@@ -149,98 +149,71 @@ flowchart LR
 SkinLens v1.0/
 ├── src/                        # 소스 코드
 │   ├── cli/                    # CLI 모듈
-│   │   └── skin_analysis_cli.py    # CLI 진입점
 │   ├── config/                 # 설정 모듈
-│   │   ├── config_manager.py       # 설정 관리자
-│   │   └── roi_manager.py          # ROI 관리자
 │   ├── gui/                    # GUI 모듈
-│   │   ├── image_enhancer.py        # 메인 GUI
-│   │   ├── analyzer_compare_gui.py  # 비교 GUI
-│   │   └── compare_dialog.py        # 비교 다이얼로그
 │   ├── server/                 # FastAPI 서버
-│   │   ├── server.py               # API 서버
-│   │   └── deps.py                 # 서버 의존성
 │   ├── telegram/               # 텔레그램 모듈
-│   │   ├── bridge.py               # 통합 브리지
-│   │   ├── commands.py             # 명령 핸들러
-│   │   ├── monitors.py             # 모니터링 믹스인
-│   │   ├── notifier.py             # 알림 발송
-│   │   └── formatters.py           # 메시지 포맷터
 │   ├── skin/                   # 피부 분석 코어
-│   │   ├── core/                    # 핵심 분석 로직
-│   │   │   ├── face_detector.py      # 얼굴 감지
-│   │   │   └── image_utils.py        # 이미지 유틸리티
-│   │   ├── analyzers/              # 분석기 전략
-│   │   │   ├── pigmentation.py      # 색소 분석
-│   │   │   ├── redness.py           # 홍조 분석
-│   │   │   ├── pore.py              # 모공 분석
-│   │   │   ├── wrinkle_texture.py   # 주름/결 분석
-│   │   │   ├── tone_elasticity.py   # 톤/탄력 분석
-│   │   │   └── acne.py              # 여드름 분석
-│   │   ├── compose/                # 점수 조합
-│   │   │   └── score_composition.py # 점수 조합 로직
-│   │   └── strategies/             # 분석기 전략 패턴
 │   ├── pipeline/               # 파이프라인
-│   │   └── pipeline_core.py        # 복원 파이프라인
 │   ├── scoring/                # 점수 계산
-│   │   ├── skin_scoring.py         # 피부 점수 계산
-│   │   ├── _core.py                # 핵심 분석 로직
-│   │   └── _multi_view.py          # 다중 뷰 분석
 │   ├── llm/                    # LLM 모듈
-│   │   ├── llm_reporter.py         # LLM 소견 생성
-│   │   ├── llm_prompt_builder.py   # 프롬프트 빌더
-│   │   └── llm_providers.py        # LLM 제공자
 │   ├── db/                     # 데이터베이스
-│   │   ├── db_cli.py               # DB CLI
-│   │   └── repositories.py         # DB 리포지토리
-│   ├── restoration/             # 복원 모듈
-│   │   └── restoration_manager.py  # 복원 관리자
-│   ├── prescription/           # 처방전 모듈
-│   │   └── prescription_manager.py # 처방전 관리자
+│   ├── restoration/            # 복원 모듈
+│   ├── prescription/            # 처방전 모듈
 │   └── utils/                  # 공통 유틸리티
-│       └── ...
 ├── config/                     # 설정 파일
-│   ├── config.json             # 메인 설정
-│   └── config.secrets.json     # 비밀 설정 (API 키 등)
+│   └── config.json             # 메인 설정
 ├── external/                   # 외부 모델 (git 제외)
 │   ├── CodeFormer/              # CodeFormer 모델
 │   └── RestoreFormerPlusPlus/  # RestoreFormer++ 모델
 ├── docs/                       # 문서
-│   ├── *.md                    # 마크다운 문서
-│   ├── html/                   # HTML 문서
+│   ├── api/                    # API 문서
+│   │   ├── API_GUIDE.md
+│   │   └── API_DOCUMENTATION.md
+│   ├── user/                   # 사용자 가이드
+│   │   ├── USER_GUIDE.md
+│   │   ├── PRODUCT_PURCHASE_GUIDE.md
+│   │   ├── SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md
+│   │   └── MOBILE_APP_GUIDE.md
+│   ├── ops/                    # 운영 가이드
+│   │   ├── DEPLOYMENT_GUIDE.md
+│   │   ├── MONITORING_GUIDE.md
+│   │   ├── INCIDENT_RESPONSE_GUIDE.md
+│   │   ├── SERVER_TEST_GUIDE.md
+│   │   └── LINUX_DOCKER_DEPLOYMENT.md
+│   ├── design/                 # 설계 문서
+│   │   ├── SCORE_CORRECTION_DESIGN.md
+│   │   ├── SKIN_TYPE_AUTO_DETECTION_DESIGN.md
+│   │   └── ... (다른 DESIGN 문서들)
+│   ├── guides/                 # 기술 가이드
+│   │   ├── DEVELOPMENT_GUIDE.md
+│   │   ├── ARCHITECTURE_GUIDE.md
+│   │   ├── SKIN_SCORING_GUIDE.md
+│   │   ├── IMPROVEMENT_PLAN.md
+│   │   └── ... (다른 GUIDE 문서들)
+│   ├── html/                   # HTML 변환 문서
 │   └── db/                     # DB 문서
+├── scripts/                    # 유틸리티 스크립트
+│   ├── batch_report.py
+│   ├── bp_optimizer.py
+│   ├── score_bias_monitor.py
+│   ├── check_llm_models.py
+│   ├── monitors.py
+│   ├── deploy/                 # 배포 스크립트
+│   └── run_server_tests.bat
+├── tests/                      # 테스트
+│   ├── test_*.py
+│   └── README.md
+├── archive/                    # 아카이브 (git 제외)
+│   └── model-serving-refactor/ # 리팩토링/레거시 코드
 ├── results/                    # 결과 파일 (git 제외)
 │   ├── 이미지명/               # 분석 결과별 폴더
-│   │   ├── 00_input_이미지명.json
-│   │   ├── 00_input_이미지명.png
-│   │   └── 01_restored_이미지명.png
-│   ├── skin_analysis.db        # 통합 DB (서버 + 로컬)
-│   ├── execution_history.db    # 실행 기록 DB
 │   ├── api_jobs/               # 서버 API 작업
-│   │   └── {job_id}/
 │   ├── exports/                # 엑셀/CSV 내보내기
 │   ├── images/                 # 입력 이미지 저장소
 │   ├── logs/                   # 로그 파일
-│   │   ├── app/
-│   │   ├── server/
-│   │   ├── llm/
-│   │   └── error/
 │   └── weights/                # 모델 가중치
-│       ├── restoration/
-│       ├── detection/
-│       └── analysis/
-├── scripts/                    # 유틸리티 스크립트
-│   ├── batch_report.py         # 배치 리포트
-│   ├── bp_optimizer.py         # 백포인트 최적화
-│   ├── score_bias_monitor.py   # 점수 편향 모니터링
-│   ├── check_llm_models.py    # LLM 모델 확인
-│   ├── monitors.py             # 시스템 모니터링
-│   └── deploy/                # 배포 스크립트
-│       ├── deploy.ps1
-│       └── deploy.sh
-├── tests/                      # 테스트
-│   ├── test_*.py               # 단위/통합 테스트
-│   └── README.md               # 테스트 가이드
+├── logs/                       # 런타임 로그 (git 제외)
 ├── main.py                     # 메인 진입점
 ├── pyproject.toml              # 프로젝트 설정
 ├── requirements.txt            # 전체 의존성
@@ -396,15 +369,45 @@ pytest tests/test_server.py -v
 
 ## 문서
 
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md): 프로젝트 전체 개요 (비전, 아키텍처, 로드맵)
-- [ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md): 아키텍처 가이드 (Strategy Pattern, DB 구조)
-- [API 가이드](docs/API_GUIDE.md): FastAPI 서버 사용 가이드
-- [데이터 처리 흐름](docs/JSON_IO_FLOW.md): 데이터 처리 전체 흐름 (입력→분석→출력)
-- [데이터베이스 아키텍처](docs/DATABASE_ARCHITECTURE.md): DB 구조 및 관리 가이드
-- [피부 분석 문서](docs/skin_analysis_README.md): 피부 분석 상세 문서
-- [복원 엔진 추가 가이드](docs/RESTORATION_ENGINE_GUIDE.md): 새로운 복원 엔진 추가 방법
-- [코드 리뷰 이력](docs/CODE_REVIEW_HISTORY.md): 코드 리뷰 및 변경 이력
-- [테스트 가이드](tests/README.md): 테스트 실행 가이드
+### API 문서 (docs/api/)
+- [API_GUIDE.md](docs/api/API_GUIDE.md): FastAPI 서버 사용 가이드
+- [API_DOCUMENTATION.md](docs/api/API_DOCUMENTATION.md): API 엔드포인트 참조
+
+### 사용자 가이드 (docs/user/)
+- [USER_GUIDE.md](docs/user/USER_GUIDE.md): 사용자 매뉴얼
+- [PRODUCT_PURCHASE_GUIDE.md](docs/user/PRODUCT_PURCHASE_GUIDE.md): 제품 구매 가이드
+- [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](docs/user/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md): 세럼 처방 가이드
+- [MOBILE_APP_GUIDE.md](docs/user/MOBILE_APP_GUIDE.md): 모바일 앱 가이드
+
+### 운영 가이드 (docs/ops/)
+- [DEPLOYMENT_GUIDE.md](docs/ops/DEPLOYMENT_GUIDE.md): 배포 가이드
+- [MONITORING_GUIDE.md](docs/ops/MONITORING_GUIDE.md): 모니터링 가이드
+- [INCIDENT_RESPONSE_GUIDE.md](docs/ops/INCIDENT_RESPONSE_GUIDE.md): 장애 대응 가이드
+- [SERVER_TEST_GUIDE.md](docs/ops/SERVER_TEST_GUIDE.md): 서버 테스트 가이드
+- [LINUX_DOCKER_DEPLOYMENT.md](docs/ops/LINUX_DOCKER_DEPLOYMENT.md): 리눅스 Docker 배포 가이드
+
+### 설계 문서 (docs/design/)
+- [SCORE_CORRECTION_DESIGN.md](docs/design/SCORE_CORRECTION_DESIGN.md): 점수 보정 설계
+- [SKIN_TYPE_AUTO_DETECTION_DESIGN.md](docs/design/SKIN_TYPE_AUTO_DETECTION_DESIGN.md): 피부 타입 자동 감지 설계
+- ... (다른 DESIGN 문서들)
+
+### 기술 가이드 (docs/guides/)
+- [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md): 프로젝트 전체 개요 (비전, 아키텍처, 로드맵)
+- [DEVELOPMENT_GUIDE.md](docs/guides/DEVELOPMENT_GUIDE.md): 개발 가이드
+- [ARCHITECTURE_GUIDE.md](docs/guides/ARCHITECTURE_GUIDE.md): 아키텍처 가이드
+- [SKIN_SCORING_GUIDE.md](docs/guides/SKIN_SCORING_GUIDE.md): 스코어링 가이드
+- [IMPROVEMENT_PLAN.md](docs/guides/IMPROVEMENT_PLAN.md): 개선 계획
+- [JSON_IO_FLOW.md](docs/guides/JSON_IO_FLOW.md): 데이터 처리 흐름
+- [skin_analysis_README.md](docs/guides/skin_analysis_README.md): 피부 분석 상세 문서
+- [RESTORATION_ENGINE_GUIDE.md](docs/guides/RESTORATION_ENGINE_GUIDE.md): 복원 엔진 추가 가이드
+- [CODE_REVIEW_HISTORY.md](docs/guides/CODE_REVIEW_HISTORY.md): 코드 리뷰 이력
+- [PRESCRIPTION_GUIDE.md](docs/guides/PRESCRIPTION_GUIDE.md): 처방 가이드
+- [image_enhancer_guide.md](docs/guides/image_enhancer_guide.md): 이미지 인핸서 가이드
+- [llm_prompt_template.md](docs/guides/llm_prompt_template.md): LLM 프롬프트 템플릿
+- ... (다른 GUIDE 문서들)
+
+### 테스트 가이드
+- [tests/README.md](tests/README.md): 테스트 실행 가이드
 
 ## DB 관리
 
