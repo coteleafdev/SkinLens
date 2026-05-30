@@ -136,11 +136,11 @@ async def _run_job(job_id: str) -> None:
 
         if "input_image" in result:
             result["input_image_url"] = (
-                f"/v3/analysis/jobs/{job_id}/artifacts/{Path(result['input_image']).name}"
+                f"/analysis/jobs/{job_id}/artifacts/{Path(result['input_image']).name}"
             )
         if "restored_image" in result:
             result["restored_image_url"] = (
-                f"/v3/analysis/jobs/{job_id}/artifacts/{Path(result['restored_image']).name}"
+                f"/analysis/jobs/{job_id}/artifacts/{Path(result['restored_image']).name}"
             )
 
         artifacts = _canonicalize_artifacts(job_id, Path(meta["input_image_path"]).stem, result)
