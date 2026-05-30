@@ -678,6 +678,8 @@ def _cli_body(args) -> int:
                         result_json = {
                             "original_image": str(Path(init_resolved).resolve()),
                             "restored_image": str(final_p.resolve()),
+                            "original_image_url": f"file://{str(Path(init_resolved).resolve())}",
+                            "restored_image_url": f"file://{str(final_p.resolve())}",
                             "metadata": metadata,
                             "customer_info": {
                                 "customer_id": getattr(args, 'customer_id', None),
