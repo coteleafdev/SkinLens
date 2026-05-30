@@ -160,6 +160,13 @@ async def lifespan(app: FastAPI):
             "JWT_SECRET_KEY 환경변수가 기본값입니다. "
             "프로덕션 환경에서는 반드시 고유한 시크릿 키를 설정해야 합니다."
         )
+    # 캐시 초기화 - config.json 변경 반영
+    from src.scoring._breakpoints import _clear_breakpoints_cache
+    from src.llm.llm_metadata import clear_metadata_cache
+    _clear_breakpoints_cache()
+    clear_metadata_cache()
+    log.info("메타데이터 캐시 초기화 완료")
+    
     # 메인 이벤트 루프 저장 (ThreadPool에서 WebSocket 전달용)
     main_loop = asyncio.get_running_loop()
     set_main_loop(main_loop)
