@@ -197,7 +197,7 @@ class ProductRepository:
         Parameters
         ----------
         concerns : List[str]
-            피부 고민사항 목록 (예: ["여드름", "홍조"])
+            피부 고민사항 목록 (예: ["트러블", "홍조"])
 
         Returns
         -------
@@ -311,7 +311,7 @@ class ProductRepository:
                     # 점수가 낮을수록 문제가 심각하므로, 낮은 점수에 해당하는 고민사항과 매칭
                     if value < 60:
                         metric_concern_map = {
-                            "acne_score": "여드름",
+                            "acne_score": "트러블",
                             "redness_score": "홍조",
                             "melasma_score": "색소침착",
                             "pore_size_score": "모공",
@@ -426,10 +426,10 @@ class ProductRepository:
                 "product_name": "꼬드리브 트러블 케어 세럼",
                 "category": "트러블 케어",
                 "key_ingredients": ["나이아신아마이드", "살리실산", "티트리 오일"],
-                "efficacy": "여드름 억제, 모공 관리, 피부 진정",
+                "efficacy": "트러블 억제, 모공 관리, 피부 진정",
                 "target_skin_types": ["oily", "combination", "acne_prone"],
-                "target_concerns": ["여드름", "모공", "트러블"],
-                "target_prescription_items": ["M10"],  # 여드름
+                "target_concerns": ["트러블", "모공"],
+                "target_prescription_items": ["M10"],  # 트러블
             },
             {
                 "product_id": "P002",
@@ -511,10 +511,10 @@ def load_sample_products(repo: ProductRepository) -> None:
             "product_name": "CÔTELEAF 트러블 케어 세럼",
             "category": "트러블 케어",
             "key_ingredients": ["나이아신아마이드", "살리실산", "티트리 오일"],
-            "efficacy": "여드름 억제, 모공 관리, 피부 진정",
+            "efficacy": "트러블 억제, 모공 관리, 피부 진정",
             "target_skin_types": ["oily", "combination", "acne_prone"],
-            "target_concerns": ["여드름", "모공", "트러블"],
-            "target_prescription_items": ["M10"],  # 여드름
+            "target_concerns": ["트러블", "모공"],
+            "target_prescription_items": ["M10"],  # 트러블
         },
         {
             "product_id": "P002",
@@ -573,7 +573,7 @@ if __name__ == "__main__":
     
     # 테스트: 제품 매칭
     matched = repo.match_products(
-        concerns=["여드름", "홍조"],
+        concerns=["트러블", "홍조"],
         skin_type="combination",
         scores={"acne_score": 50, "redness_score": 67}
     )

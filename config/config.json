@@ -81,6 +81,58 @@
         "score_difference_threshold": 15.0,
         "_note": "동적 가중치 조정. score_correction과 독립적으로 작동. enabled=true이면 점수 차이가 score_difference_threshold 이상일 때 자체 분석기 점수 사용. 미만일 때는 기존 가중치(analyzer_weight, llm_weight) 사용. score_correction 비활성화 시에도 기본 가중치로 작동."
       },
+      "metric_trust_levels": {
+        "verified": [
+          "melasma_score",
+          "freckle_score",
+          "redness_score",
+          "acne_score",
+          "post_inflammatory_erythema_score",
+          "post_acne_pigment_score"
+        ],
+        "partially_verified": [
+          "pore_size_score",
+          "pore_sagging_score",
+          "eye_wrinkle_score",
+          "nasolabial_wrinkle_score",
+          "fine_deep_wrinkle_score"
+        ],
+        "unverified": [
+          "roughness_score",
+          "skin_tone_score",
+          "dullness_score",
+          "uneven_tone_score",
+          "jawline_blur_score",
+          "cheek_sagging_score",
+          "skin_type_score"
+        ],
+        "_note": "항목별 신뢰도 레벨 분류. verified: 검증 완료, partially_verified: 부분 검증, unverified: 미검증"
+      },
+      "trust_level_weights": {
+        "verified": {
+          "analyzer_weight": 0.7,
+          "llm_weight": 0.3,
+          "difference_threshold": 10.0
+        },
+        "partially_verified": {
+          "analyzer_weight": 0.5,
+          "llm_weight": 0.5,
+          "difference_threshold": 15.0
+        },
+        "unverified": {
+          "analyzer_weight": 0.3,
+          "llm_weight": 0.7,
+          "difference_threshold": 20.0
+        },
+        "_note": "신뢰도 레벨별 가중치 및 임계값 설정"
+      },
+      "consistency_scoring": {
+        "enabled": false,
+        "high_consistency_threshold": 90.0,
+        "low_consistency_threshold": 70.0,
+        "weight_adjustment": 0.1,
+        "_note": "일관성 점수 기반 가중치 조정. Phase 2에서 활성화 예정"
+      },
       "monitoring": {
         "warning_threshold": 20.0,
         "critical_threshold": 40.0,
@@ -91,7 +143,7 @@
         "diff_comparison_threshold": 15.0,
         "_note": "자체 분석기와 LLM의 원본-복원 점수 차이 쌍 비교 기반 오탐 방지. enabled=true이면 자체 분석기의 원본-복원 차이와 LLM의 원본-복원 차이를 비교하여 LLM 오탐 판단. 자체 분석기 차이 - LLM 차이 >= diff_comparison_threshold 이상이면 LLM이 오탐을 했다고 간주하여 자체 분석기 점수 사용. LLM이 원본-복원 차이를 제대로 반영하지 못한 경우(복원 이미지 기준으로 원본 점수를 과대평가)를 감지."
       },
-      "_note": "점수 보정 설정. enabled=true이면 활성화. mode: 'analyzer'(자체 분석기만), 'llm'(LLM만), 'hybrid'(하이브리드). 가중치 합계는 1.0이어야 함."
+      "_note": "점수 보정 설정. enabled=true이면 활성화. mode: 'analyzer'(자체 분석기만), 'llm'(LLM만), 'hybrid'(하이브리드), 'advanced'(신뢰도 기반 고급 보정). 가중치 합계는 1.0이어야 함."
     },
     "scoring_mode": "reference_guided",
     "_scoring_mode_note": "independent: 원본·복원 독립 분석(기존 방식) | reference_guided: 복원을 기준선으로 원본 역산(정확도 향상)",
@@ -1238,10 +1290,10 @@
         ]
       },
       "post_acne_pigment_score": {
-        "name_ko": "여드름 후 색소",
-        "name_en": "Post-Acne Pigment",
+        "name_ko": "트러블 후 색소",
+        "name_en": "Post-Trouble Pigment",
         "category": "pigmentation",
-        "description": "여드름 후 색소 침착",
+        "description": "트러블 후 색소 침착",
         "breakpoints": [
           [
             0,
@@ -1471,10 +1523,10 @@
         "breakpoints": "area_default"
       },
       "acne_score": {
-        "name_ko": "여드름",
-        "name_en": "Acne",
-        "category": "acne",
-        "description": "여드름",
+        "name_ko": "트러블",
+        "name_en": "Trouble",
+        "category": "trouble",
+        "description": "트러블",
         "breakpoints": [
           [
             0,
@@ -1793,9 +1845,9 @@
         ]
       },
       "acne": {
-        "name_ko": "여드름",
-        "name_en": "Acne",
-        "description": "여드름 관련 측정항목",
+        "name_ko": "트러블",
+        "name_en": "Trouble",
+        "description": "트러블 관련 측정항목",
         "measurements": [
           "acne_score"
         ],

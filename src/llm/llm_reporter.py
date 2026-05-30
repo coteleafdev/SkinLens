@@ -45,6 +45,99 @@ log = logging.getLogger(__name__)
 _METRIC_META: List[tuple[str, str, str, bool]] = _get_metric_meta()
 
 
+def _get_metric_trust_level(metric_key: str, config: dict) -> str:
+    """측정항목의 신뢰도 레벨 조회
+    
+    Args:
+        metric_key: 측정항목 키 (예: 'melasma_score')
+        config: LLM 설정 dict
+    
+    Returns:
+        신뢰도 레벨 ('verified', 'partially_verified', 'unverified')
+    """
+    metric_trust_levels = config.get("score_correction", {}).get("metric_trust_levels", {})
+    
+    for level, metrics in metric_trust_levels.items():
+        if metric_key in metrics:
+            return level
+    
+    # 기본값: 미검증
+    log.debug(f"[신뢰도 레벨] {metric_key}에 대한 신뢰도 레벨 없음, 기본값 'unverified' 사용")
+    return "unverified"
+
+
+def _apply_advanced_score_correction(
+    analyzer_score: float,
+    llm_score: float,
+    metric_key: str,
+    config: dict,
+    consistency_score: Optional[float] = None,
+) -> float:
+    """고급 점수 보정 로직 (신뢰도 기반)
+    
+    Args:
+        analyzer_score: 자체 분석기 점수
+        llm_score: LLM이 측정한 점수
+        metric_key: 측정항목 키
+        config: LLM 설정 dict
+        consistency_score: 일관성 점수 (선택적)
+    
+    Returns:
+        보정된 점수
+    """
+    # 1. 항목별 신뢰도 레벨 확인
+    trust_level = _get_metric_trust_level(metric_key, config)
+    
+    # 2. 신뢰도 레벨별 가중치 및 임계값 조회
+    trust_level_weights = config.get("score_correction", {}).get("trust_level_weights", {})
+    level_config = trust_level_weights.get(trust_level, {})
+    
+    analyzer_weight = level_config.get("analyzer_weight", 0.5)
+    llm_weight = level_config.get("llm_weight", 0.5)
+    difference_threshold = level_config.get("difference_threshold", 15.0)
+    
+    log.debug(f"[고급 보정] {metric_key}: 신뢰도={trust_level}, 가중치(분석기={analyzer_weight}, LLM={llm_weight}), 임계값={difference_threshold}")
+    
+    # 3. 일관성 점수 반영 (활성화된 경우)
+    consistency_config = config.get("score_correction", {}).get("consistency_scoring", {})
+    if consistency_config.get("enabled", False) and consistency_score is not None:
+        high_threshold = consistency_config.get("high_consistency_threshold", 90.0)
+        low_threshold = consistency_config.get("low_consistency_threshold", 70.0)
+        weight_adjustment = consistency_config.get("weight_adjustment", 0.1)
+        
+        if consistency_score >= high_threshold:
+            analyzer_weight = min(1.0, analyzer_weight + weight_adjustment)
+            llm_weight = max(0.0, llm_weight - weight_adjustment)
+            log.debug(f"[고급 보정] 일관성 점수 높음 ({consistency_score}): 분석기 가중치 +{weight_adjustment}")
+        elif consistency_score < low_threshold:
+            analyzer_weight = max(0.0, analyzer_weight - weight_adjustment)
+            llm_weight = min(1.0, llm_weight + weight_adjustment)
+            log.debug(f"[고급 보정] 일관성 점수 낮음 ({consistency_score}): 분석기 가중치 -{weight_adjustment}")
+    
+    # 4. 점수 차이 확인 및 처리
+    score_diff = abs(analyzer_score - llm_score)
+    if score_diff >= difference_threshold:
+        if trust_level == "verified":
+            log.info(f"[고급 보정] {metric_key}: 점수 차이 {score_diff:.1f} >= 임계값 {difference_threshold}, 분석기 점수 사용 (검증됨)")
+            return analyzer_score
+        elif trust_level == "unverified":
+            log.info(f"[고급 보정] {metric_key}: 점수 차이 {score_diff:.1f} >= 임계값 {difference_threshold}, LLM 점수 사용 (미검증)")
+            return llm_score
+        else:
+            # 부분 검증: 기본 가중치 적용
+            log.debug(f"[고급 보정] {metric_key}: 점수 차이 {score_diff:.1f} >= 임계값 {difference_threshold}, 기본 가중치 적용 (부분 검증)")
+    
+    # 5. 하이브리드 계산
+    total_weight = analyzer_weight + llm_weight
+    if abs(total_weight - 1.0) > 0.01:
+        analyzer_weight /= total_weight
+        llm_weight /= total_weight
+    
+    corrected_score = analyzer_score * analyzer_weight + llm_weight * llm_weight
+    log.debug(f"[고급 보정] {metric_key}: 분석기={analyzer_score}({analyzer_weight}) + LLM={llm_score}({llm_weight}) = {corrected_score}")
+    return corrected_score
+
+
 def _apply_score_correction(
     analyzer_score: float,
     llm_score: float,
@@ -54,22 +147,33 @@ def _apply_score_correction(
     dynamic_weighting: bool = False,
     score_difference_threshold: float = 15.0,
     prefer_llm_on_large_diff: bool = False,
+    metric_key: Optional[str] = None,
+    config: Optional[dict] = None,
 ) -> float:
     """점수 보정 로직
     
     Args:
         analyzer_score: 자체 분석기 점수
         llm_score: LLM이 측정한 점수
-        mode: 보정 모드 ('analyzer', 'llm', 'hybrid')
+        mode: 보정 모드 ('analyzer', 'llm', 'hybrid', 'advanced')
         analyzer_weight: 자체 분석기 가중치 (hybrid 모드에서만 사용)
         llm_weight: LLM 가중치 (hybrid 모드에서만 사용)
         dynamic_weighting: 동적 가중치 조정 활성화 여부
         score_difference_threshold: 동적 가중치 조정 임계값
         prefer_llm_on_large_diff: 점수 차이가 큰 경우 LLM 점수 우선 (복원 기반 모드용)
+        metric_key: 측정항목 키 (advanced 모드에서 필요)
+        config: LLM 설정 dict (advanced 모드에서 필요)
     
     Returns:
         보정된 점수
     """
+    if mode == "advanced":
+        if metric_key is None or config is None:
+            log.warning("[점수 보정] advanced 모드지만 metric_key 또는 config 없음, hybrid 모드로 대체")
+            mode = "hybrid"
+        else:
+            return _apply_advanced_score_correction(analyzer_score, llm_score, metric_key, config)
+    
     if mode == "analyzer":
         log.debug(f"[점수 보정] 자체 분석기 점수 사용: {analyzer_score}")
         return analyzer_score
@@ -1643,7 +1747,8 @@ class LlmSkinReporter:
                             corrected_score = _apply_score_correction(
                                 analyzer_score, llm_score,
                                 correction_mode, analyzer_weight, llm_weight,
-                                dynamic_weighting_enabled, score_difference_threshold
+                                dynamic_weighting_enabled, score_difference_threshold,
+                                metric_key=key, config=api_config
                             )
                             log.debug(f"[점수 보정] {display}: corrected_score={corrected_score}")
                             orig_metric_opinions[i].score = corrected_score
@@ -1665,7 +1770,8 @@ class LlmSkinReporter:
                             corrected_score = _apply_score_correction(
                                 analyzer_score, llm_score,
                                 correction_mode, analyzer_weight, llm_weight,
-                                dynamic_weighting_enabled, score_difference_threshold
+                                dynamic_weighting_enabled, score_difference_threshold,
+                                metric_key=key, config=api_config
                             )
                             ref_metric_opinions[i].score = corrected_score
                             ref_metric_opinions[i].grade = _grade_label(corrected_score)
@@ -1730,7 +1836,8 @@ class LlmSkinReporter:
                             corrected_score = _apply_score_correction(
                                 analyzer_score, llm_score,
                                 "hybrid", analyzer_weight, llm_weight,
-                                dynamic_weighting_enabled, score_difference_threshold
+                                dynamic_weighting_enabled, score_difference_threshold,
+                                metric_key=key, config=api_config
                             )
                             orig_metric_opinions[i].score = corrected_score
                             orig_metric_opinions[i].grade = _grade_label(corrected_score)
@@ -1746,7 +1853,8 @@ class LlmSkinReporter:
                             corrected_score = _apply_score_correction(
                                 analyzer_score, llm_score,
                                 "hybrid", analyzer_weight, llm_weight,
-                                dynamic_weighting_enabled, score_difference_threshold
+                                dynamic_weighting_enabled, score_difference_threshold,
+                                metric_key=key, config=api_config
                             )
                             ref_metric_opinions[i].score = corrected_score
                             ref_metric_opinions[i].grade = _grade_label(corrected_score)

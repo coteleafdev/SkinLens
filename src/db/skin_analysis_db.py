@@ -540,9 +540,9 @@ class SkinAnalysisDB:
                 "product_name": "CÔTELEAF 트러블 케어 세럼",
                 "category": "트러블 케어",
                 "key_ingredients": ["나이아신아마이드", "살리실산", "티트리 오일"],
-                "efficacy": "여드름 억제, 모공 관리, 피부 진정",
+                "efficacy": "트러블 억제, 모공 관리, 피부 진정",
                 "target_skin_types": ["oily", "combination", "acne_prone"],
-                "target_concerns": ["여드름", "모공", "트러블"],
+                "target_concerns": ["트러블", "모공"],
             },
             {
                 "product_id": "P002",

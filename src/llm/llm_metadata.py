@@ -34,8 +34,8 @@ def _get_metric_meta_fallback() -> List[Tuple[str, str, str, bool]]:
         ("redness_score",              "홍조",         "홍조",    True),
         ("post_inflammatory_erythema_score", "염증후 홍반",         "홍조",    True),
         # 트러블·흔적 (Acne & Marks)
-        ("acne_score",                 "여드름",              "트러블",  True),
-        ("post_acne_pigment_score",    "여드름 후 색소",      "트러블",  True),
+        ("acne_score",                 "트러블",              "트러블",  True),
+        ("post_acne_pigment_score",    "트러블 후 색소",      "트러블",  True),
         # 모공 (Pore)
         ("pore_size_score",            "모공 크기",           "모공",    True),
         ("pore_sagging_score",         "모공 처짐",           "모공",    True),
