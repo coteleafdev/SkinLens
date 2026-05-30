@@ -232,31 +232,13 @@ curl http://localhost:8000/v3/analysis/jobs
 
 ## 보안
 
-### 방화벽 설정
+보안 관련 상세 가이드는 `SECURITY_GUIDE.md`를 참조하세요.
 
-```bash
-# UFW (Ubuntu)
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
-```
-
-### API 키 관리
-
-- 환경 변수에 API 키 저장
-- `.env` 파일을 `.gitignore`에 추가
-- 정기적으로 API 키 교체
-
-### 파일 업로드 제한
-
-```json
-{
-  "server": {
-    "max_upload_bytes": 20971520,
-    "allowed_extensions": [".jpg", ".jpeg", ".png", ".webp"]
-  }
-}
-```
+**주요 항목:**
+- 방화벽 설정
+- API 키 관리
+- 파일 업로드 제한
+- HTTPS/SSL 설정
 
 ---
 
@@ -295,32 +277,14 @@ server {
 
 ## 트러블슈팅
 
-### 서버 시작 실패
+트러블슈팅 관련 상세 가이드는 `TROUBLESHOOTING_GUIDE.md`를 참조하세요.
 
-**문제:** 서버가 시작되지 않습니다.
-
-**해결:**
-1. 포트 충돌 확인: `netstat -tulpn | grep 8000`
-2. 로그 확인: `docker logs skinlens`
-3. 환경 변수 확인
-
-### GPU 인식 실패
-
-**문제:** GPU가 인식되지 않습니다.
-
-**해결:**
-1. NVIDIA 드라이버 설치 확인: `nvidia-smi`
-2. CUDA 설치 확인: `nvcc --version`
-3. PyTorch GPU 지원 확인: `python -c "import torch; print(torch.cuda.is_available())"`
-
-### 메모리 부족
-
-**문제:** OOM (Out of Memory) 에러 발생.
-
-**해결:**
-1. 배치 크기 감소
-2. 스왑 메모리 증설
-3. GPU 메모리 정리: `torch.cuda.empty_cache()`
+**주요 항목:**
+- 서버 시작 실패
+- GPU 인식 실패
+- 메모리 부족
+- 이미지 처리 문제
+- 데이터베이스 문제
 
 ---
 
