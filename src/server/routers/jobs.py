@@ -529,7 +529,39 @@ async def confirm_skin_type(
         analysis_result = json.load(f)
     
     # 피부 타입 검증 데이터 저장 (DB에 저장)
-    # TODO: DB 저장 로직 추가
+    try:
+        from src.utils.config import get_db_path_from_env
+        db = ExecutionHistoryDB(get_db_path_from_env())
+        
+        # 감사 로그 기록
+        customer_id = current_customer.get("sub") if current_customer else None
+        db.record_audit_log(
+            actor_customer_id=customer_id,
+            target_customer_id=customer_id,
+            endpoint=f"/v3/analysis/jobs/{job_id}/confirm-skin-type",
+            method="POST",
+            user_role=current_customer.get("role", "unknown") if current_customer else "unknown",
+            success=True,
+        )
+        
+        # 피부 타입 검증 데이터를 분석 통계에 기록
+        # 기존 score 정보가 있으면 업데이트
+        original_score = analysis_result.get("original_overall_score")
+        restored_score = analysis_result.get("restored_overall_score")
+        
+        if original_score is not None or restored_score is not None:
+            db.record_analysis_stat(
+                customer_id=customer_id,
+                success=True,
+                score_original=original_score,
+                score_restored=restored_score,
+                execution_time_sec=0.0,  # 피부 타입 확인은 실행 시간 없음
+            )
+        
+        log.info(f"[피부 타입 확인] job_id={job_id}, customer_id={customer_id}, skin_types={skin_types}")
+    except Exception as e:
+        log.warning(f"[피부 타입 확인] DB 저장 실패: {e}")
+        # DB 저장 실패해도 분석 결과 업데이트는 계속 진행
     
     # 분석 결과 업데이트
     if "skin_type_detection" in analysis_result:

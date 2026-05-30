@@ -121,14 +121,109 @@ def _preprocess_image(image_path: Path) -> Path:
 
 
 def _postprocess_image(image_path: Path) -> Path:
-    """이미지 후처리 더미 함수 (향후 확장성을 위해 추가).
+    """이미지 후처리 함수.
     
-    [EXTENSION 2026-05-16] 현재는 입력을 그대로 반환.
-    추후 색상 보정, 대비 조정, 아티팩트 제거 등 후처리 로직 추가 예정.
+    [EXTENSION 2026-05-30] config.json의 post_processing 설정에 따라 후처리 적용.
+    - 색상 보정: 밝기, 대비, 채도 조정
+    - 품질 개선: 샤픈, 노이즈 제거
+    - 아티팩트 제거: 가우시안/미디언 필터
     
-    TODO: 실제 후처리 로직이 추가될 때까지 더미로 유지
+    Args:
+        image_path: 후처리할 이미지 경로
+        
+    Returns:
+        후처리된 이미지 경로 (변경 없으면 원본 경로)
     """
-    return image_path
+    from PIL import Image, ImageEnhance, ImageFilter
+    from src.config.config_manager import ConfigManager
+    
+    config_mgr = ConfigManager.get_instance()
+    post_processing_config = config_mgr.get("post_processing", {})
+    
+    # 후처리 비활성화면 원본 반환
+    if not post_processing_config.get("enabled", False):
+        return image_path
+    
+    log.info(f"[후처리] 시작: {image_path.name}")
+    
+    try:
+        im = Image.open(image_path).convert("RGB")
+        modified = False
+        
+        # 색상 보정
+        color_config = post_processing_config.get("color_correction", {})
+        if color_config.get("enabled", False):
+            brightness = color_config.get("brightness_adjustment", 0.0)
+            contrast = color_config.get("contrast_adjustment", 0.0)
+            saturation = color_config.get("saturation_adjustment", 0.0)
+            
+            if brightness != 0.0:
+                enhancer = ImageEnhance.Brightness(im)
+                im = enhancer.enhance(1.0 + brightness)
+                modified = True
+                log.debug(f"[후처리] 밝기 조정: {brightness}")
+            
+            if contrast != 0.0:
+                enhancer = ImageEnhance.Contrast(im)
+                im = enhancer.enhance(1.0 + contrast)
+                modified = True
+                log.debug(f"[후처리] 대비 조정: {contrast}")
+            
+            if saturation != 0.0:
+                enhancer = ImageEnhance.Color(im)
+                im = enhancer.enhance(1.0 + saturation)
+                modified = True
+                log.debug(f"[후처리] 채도 조정: {saturation}")
+        
+        # 품질 개선
+        quality_config = post_processing_config.get("quality_enhancement", {})
+        if quality_config.get("enabled", False):
+            sharpen_amount = quality_config.get("sharpen_amount", 0.0)
+            denoise_strength = quality_config.get("denoise_strength", 0.0)
+            
+            if sharpen_amount > 0.0:
+                im = im.filter(ImageFilter.UnsharpMask(radius=2, percent=sharpen_amount * 100, threshold=3))
+                modified = True
+                log.debug(f"[후처리] 샤픈 적용: {sharpen_amount}")
+            
+            if denoise_strength > 0.0:
+                im = im.filter(ImageFilter.GaussianBlur(radius=denoise_strength))
+                modified = True
+                log.debug(f"[후처리] 노이즈 제거: {denoise_strength}")
+        
+        # 아티팩트 제거
+        artifact_config = post_processing_config.get("artifact_removal", {})
+        if artifact_config.get("enabled", False):
+            method = artifact_config.get("method", "none")
+            
+            if method == "gaussian":
+                im = im.filter(ImageFilter.GaussianBlur(radius=1))
+                modified = True
+                log.debug("[후처리] 가우시안 필터 적용")
+            elif method == "median":
+                im = im.filter(ImageFilter.MedianFilter(size=3))
+                modified = True
+                log.debug("[후처리] 미디언 필터 적용")
+        
+        # 변경된 경우에만 저장
+        if modified:
+            # 원본 파일을 백업
+            backup_path = image_path.with_suffix(image_path.suffix + ".bak")
+            import shutil
+            shutil.copy2(image_path, backup_path)
+            
+            # 후처리된 이미지 저장
+            im.save(image_path, "PNG")
+            log.info(f"[후처리] 완료: {image_path.name} (백업: {backup_path.name})")
+        else:
+            log.debug("[후처리] 변경 사항 없음, 원본 유지")
+        
+        return image_path
+        
+    except Exception as e:
+        log.error(f"[후처리] 실패: {e}", exc_info=True)
+        # 실패 시 원본 반환
+        return image_path
 
 
 def _ensure_match_resolution(path: Path, target_wh: tuple[int, int]) -> Path:
