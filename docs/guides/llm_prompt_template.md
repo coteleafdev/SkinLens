@@ -738,7 +738,9 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 
 ## CÔTELEAF 피부 분석 요청 (원본 vs 복원)
 
-첨부된 두 장의 얼굴 사진(원본, 복원)을 분석하여 각 이미지에 대한 18개 항목 점수(10~90 스케일)를 직접 산출하고 소견을 작성하시오.
+첨부된 두 장의 얼굴 사진(원본, 복원)을 분석하여 각 이미지에 대한 18개 항목 점수(10~90 스케일)를 직접 산출하십시오.
+- **원본 이미지**: 점수 + 소견 + 근거 작성
+- **복원 이미지**: 점수 + 근거 작성 (소견은 작성하지 않음)
 
 **점수 평가 기준**: SCORE_CRITERIA 섹션의 점수 기준을 참조하여 점수를 산출하십시오.
 
@@ -831,10 +833,11 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
 첨부된 두 장의 얼굴 사진(원본, 복원)과 위 측정 점수, 처방전 정보를 함께 참고하여 아래 JSON 형식으로 응답하시오.
 
 ### 소견 작성 가이드라인 (듀얼 이미지 모드)
-- **원본 이미지와 복원 이미지를 비교하여 각각에 대한 소견을 작성하시오.**
+- **원본 이미지**: 점수 + 소견 + 근거 작성
+- **복원 이미지**: 점수 + 근거 작성 (소견은 작성하지 않음, ref_metric_opinions 필드는 빈 문자열)
 - 원본 이미지 소견은 원본의 피부 상태를 기준으로 작성하시오.
-- 복원 이미지 소견은 복원 후의 피부 상태를 기준으로 작성하시오.
-- 두 이미지 간의 차이점을 명확히 구분하여 소견에 반영하시오.
+- 복원 이미지 근거는 복원 후의 피부 상태를 기준으로 작성하시오.
+- 두 이미지 간의 차이점을 명확히 구분하여 소견/근거에 반영하시오.
 - 종합 소견은 원본과 복원 이미지의 전반적 피부 상태를 비교하여 작성하시오.
 - 관리 권고사항은 복원 이미지의 상태를 기준으로 작성하되, 원본과의 차이를 고려하시오.
 - 소견 작성 시 "고객님" 표현을 사용하십시오.
@@ -950,6 +953,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "jawline_blur_score": "원본 이미지 소견 텍스트 (1문장)",
     "cheek_sagging_score": "원본 이미지 소견 텍스트 (1문장)",
     "skin_type_score": "원본 이미지 소견 텍스트 (1문장)"
+  },
+  "ref_metric_opinions": {
+    "melasma_score": "",
+    "freckle_score": "",
+    "redness_score": "",
+    "post_inflammatory_erythema_score": "",
+    "acne_score": "",
+    "post_acne_pigment_score": "",
+    "pore_size_score": "",
+    "pore_sagging_score": "",
+    "eye_wrinkle_score": "",
+    "nasolabial_wrinkle_score": "",
+    "fine_deep_wrinkle_score": "",
+    "roughness_score": "",
+    "skin_tone_score": "",
+    "dullness_score": "",
+    "uneven_tone_score": "",
+    "jawline_blur_score": "",
+    "cheek_sagging_score": "",
+    "skin_type_score": ""
   },
   "orig_overall_opinion": "원본 이미지 종합 소견 3~5문장",
   "ref_overall_opinion": "복원 이미지 종합 소견 3~5문장",

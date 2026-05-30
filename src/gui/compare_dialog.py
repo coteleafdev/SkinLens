@@ -424,7 +424,8 @@ class SkinMeasurementCompareDialog(QDialog):
                         report_text += f"  [근거: {metric.reason}]\n"
 
         # 기준 이미지 항목별 소견 추가 (테이블 순서와 동일하게)
-        report_text += f"\n\n【기준 이미지 {measurement_count}개 항목별 LLM 소견】\n"
+        # dual 모드와 reference_guided 모드 모두 복원 이미지 소견은 표시하지 않고 근거만 표시
+        report_text += f"\n\n【기준 이미지 {measurement_count}개 항목별 산출근거】\n"
         
         # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
         ideal_opinions_dict = {metric.key: metric for metric in ideal_report.metric_opinions}
@@ -434,7 +435,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 if key in ideal_opinions_dict:
                     metric = ideal_opinions_dict[key]
                     report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
-                    report_text += f"  {metric.opinion}\n"
+                    # 소견은 표시하지 않고 산출근거만 표시
                     if metric.reason:
                         report_text += f"  [근거: {metric.reason}]\n"
 
@@ -753,13 +754,9 @@ class SkinMeasurementCompareDialog(QDialog):
                                 append_with_font_local([f"[근거: {metric.reason}"], small_font)
                             append_with_font_local([])  # 빈 행
 
-            # reference_guided 모드에서는 기준 이미지 종합 소견 제외하지만 산출근거는 표시
+            # dual 모드와 reference_guided 모드 모두 기준 이미지 종합 소견 제외하지만 산출근거는 표시
             if self._last_llm_report_ideal:
-                if scoring_mode != "reference_guided":
-                    append_with_font_local(["기준 이미지 종합 소견"], bold_font)
-                    append_with_font_local([self._sanitize_cell_text(self._last_llm_report_ideal.overall_opinion)], small_font)
-                    append_with_font_local([])  # 빈 행
-
+                # 종합 소견은 표시하지 않음
                 append_with_font_local(["기준 이미지 항목별 산출근거"], bold_font)
                 # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
                 ideal_opinions_dict = {metric.key: metric for metric in self._last_llm_report_ideal.metric_opinions}
