@@ -215,6 +215,11 @@ def _create_error_json(
     input_image: Optional[Path] = None,
     output_dir: Optional[Path] = None,
     debug: bool = False,
+    customer_id: Optional[str] = None,
+    gender: Optional[str] = None,
+    age: Optional[int] = None,
+    race: Optional[str] = None,
+    region: Optional[str] = None,
 ) -> dict:
     """오류 정보를 JSON 형식으로 생성."""
     error_json = {
@@ -224,6 +229,13 @@ def _create_error_json(
         "timestamp": datetime.now().isoformat(),
         "input_image": str(input_image) if input_image else None,
         "output_dir": str(output_dir) if output_dir else None,
+        "customer_info": {
+            "customer_id": customer_id,
+            "gender": gender,
+            "age": age,
+            "race": race,
+            "region": region
+        }
     }
     
     if debug:
@@ -667,6 +679,13 @@ def _cli_body(args) -> int:
                             "original_image": str(Path(init_resolved).resolve()),
                             "restored_image": str(final_p.resolve()),
                             "metadata": metadata,
+                            "customer_info": {
+                                "customer_id": getattr(args, 'customer_id', None),
+                                "gender": getattr(args, 'gender', None),
+                                "age": getattr(args, 'age', None),
+                                "race": getattr(args, 'race', None),
+                                "region": getattr(args, 'region', None)
+                            },
                             "execution_time": {
                                 "total_sec": round(total_elapsed, 2),
                                 "llm_sec": round(llm_time, 2) if llm_time > 0 else None
@@ -850,6 +869,11 @@ def _cli_body(args) -> int:
                 input_image=init_resolved,
                 output_dir=args.out_dir,
                 debug=args.debug,
+                customer_id=getattr(args, 'customer_id', None),
+                gender=getattr(args, 'gender', None),
+                age=getattr(args, 'age', None),
+                race=getattr(args, 'race', None),
+                region=getattr(args, 'region', None),
             )
             json_output = json.dumps(error_json, indent=2, ensure_ascii=False)
 
@@ -1070,6 +1094,12 @@ def _cli() -> int:
         "--save-json", action="store_true", default=True,
         help="결과 JSON을 out-dir에 저장 (기본 True)",
     )
+    # 고객 정보 인자
+    p.add_argument("--customer-id", type=str, help="고객 ID")
+    p.add_argument("--gender", type=str, help="성별")
+    p.add_argument("--age", type=int, help="연령")
+    p.add_argument("--race", type=str, help="인종")
+    p.add_argument("--region", type=str, help="지역")
     p.add_argument(
         "--debug", action="store_true",
         help="디버그 모드 (오류 시 스택 트레이스 포함)",
