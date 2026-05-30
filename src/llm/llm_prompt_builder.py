@@ -300,6 +300,10 @@ _REFERENCE_GUIDED_PROMPT_FALLBACK = """\
 복원 이미지에서 각 카테고리의 실제 피부 구조를 파악하고
 `reference_baseline` 필드에 서술하십시오.
 
+**중요**: 복원 이미지의 18개 항목 점수(10~90 스케일)와 각 점수의 산출근거도 함께 산출하여
+`ref_metric_scores`와 `ref_metric_reasons` 필드에 기재하십시오.
+(복원 이미지의 각 항목별 소견은 작성하지 않습니다.)
+
 - **주름**: 눈가·팔자·이마 주름의 위치, 방향, 깊이
 - **모공**: 코·볼 영역의 분포, 크기 범위
 - **색소**: 기미·주근깨의 위치, 농도, 범위
@@ -375,6 +379,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "cheek_sagging_score":                 "",
     "skin_type_score":                     ""
   }},
+  "ref_metric_reasons": {{
+    "melasma_score":                       "복원 이미지 점수 근거 (1~2문장)",
+    "freckle_score":                       "",
+    "redness_score":                       "",
+    "post_inflammatory_erythema_score":    "",
+    "acne_score":                          "",
+    "post_acne_pigment_score":             "",
+    "pore_size_score":                     "",
+    "pore_sagging_score":                  "",
+    "eye_wrinkle_score":                   "",
+    "nasolabial_wrinkle_score":            "",
+    "fine_deep_wrinkle_score":             "",
+    "roughness_score":                     "",
+    "skin_tone_score":                     "",
+    "dullness_score":                      "",
+    "uneven_tone_score":                   "",
+    "jawline_blur_score":                  "",
+    "cheek_sagging_score":                 "",
+    "skin_type_score":                     ""
+  }},
   "orig_metric_scores": {{
     "melasma_score": 70.0,
     "freckle_score": 65.0,
@@ -394,6 +418,26 @@ Step 1(기준선)과 Step 2(보정)를 통합하여
     "jawline_blur_score": 80.0,
     "cheek_sagging_score": 75.0,
     "skin_type_score": 78.0
+  }},
+  "ref_metric_scores": {{
+    "melasma_score": 75.0,
+    "freckle_score": 70.0,
+    "redness_score": 72.0,
+    "post_inflammatory_erythema_score": 75.0,
+    "acne_score": 90.0,
+    "post_acne_pigment_score": 80.0,
+    "pore_size_score": 70.0,
+    "pore_sagging_score": 68.0,
+    "eye_wrinkle_score": 75.0,
+    "nasolabial_wrinkle_score": 72.0,
+    "fine_deep_wrinkle_score": 76.0,
+    "roughness_score": 73.0,
+    "skin_tone_score": 70.0,
+    "dullness_score": 78.0,
+    "uneven_tone_score": 70.0,
+    "jawline_blur_score": 82.0,
+    "cheek_sagging_score": 78.0,
+    "skin_type_score": 80.0
   }},
   "orig_metric_opinions": {{
     "melasma_score": "원본 소견 (Step 2 보정 내용 반영, 2~3문장)",

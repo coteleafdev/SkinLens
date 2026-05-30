@@ -530,6 +530,10 @@ pig_analyzer = AnalyzerRegistry.get_for_measurement("melasma_score")
 복원 이미지에서 각 카테고리의 실제 피부 구조를 파악하고
 `reference_baseline` 필드에 서술하십시오.
 
+**중요**: 복원 이미지의 18개 항목 점수(10~90 스케일)와 각 점수의 산출근거도 함께 산출하여
+`ref_metric_scores`와 `ref_metric_reasons` 필드에 기재하십시오.
+(복원 이미지의 각 항목별 소견은 작성하지 않습니다.)
+
 - **주름**: 눈가·팔자·이마 주름의 위치, 방향, 깊이
 - **모공**: 코·볼 영역의 분포, 크기 범위
 - **색소**: 기미·주근깨·여드름 후 색소의 위치, 농도, 범위
