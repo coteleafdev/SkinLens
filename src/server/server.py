@@ -81,7 +81,10 @@ log = logging.getLogger(__name__)
 
 # ── 핫 리로드 (config.json 변경 감지) ────────────────────────────────────────
 
-if WATCHDOG_AVAILABLE:
+# 환경 변수로 핫 리로드 제어 (기본: 비활성화)
+ENABLE_HOT_RELOAD = os.getenv("ENABLE_HOT_RELOAD", "false").lower() in ("true", "1", "yes")
+
+if WATCHDOG_AVAILABLE and ENABLE_HOT_RELOAD:
     class ConfigFileHandler(FileSystemEventHandler):
         """config.json 변경 감지 핸들러."""
 
@@ -120,8 +123,10 @@ if WATCHDOG_AVAILABLE:
         log.info("핫 리로드 활성화: %s 감시 중", config_path)
     else:
         log.warning("config.json을 찾을 수 없어 핫 리로드 비활성화")
-else:
+elif not WATCHDOG_AVAILABLE:
     log.info("watchdog 패키지가 설치되지 않아 핫 리로드 비활성화. pip install watchdog")
+else:
+    log.info("핫 리로드 비활성화 (ENABLE_HOT_RELOAD=%s). 활성화하려면 환경 변수 설정: ENABLE_HOT_RELOAD=true", ENABLE_HOT_RELOAD)
 
 
 # ── 백그라운드 태스크 ─────────────────────────────────────────────────────
