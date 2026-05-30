@@ -143,6 +143,7 @@ def _get_score_criteria() -> Dict[str, Tuple[int, int, str]]:
     """점수 기준을 동적으로 로드합니다.
     
     [OPTIMIZE 2026-05-24] 캐싱으로 중복 로드 방지.
+    [FIX 2026-05-30] config.json에서 점수 기준을 우선 로드하도록 수정.
     """
     global _score_criteria_cache
     
@@ -151,6 +152,29 @@ def _get_score_criteria() -> Dict[str, Tuple[int, int, str]]:
         log.debug(f"[LLM Metadata] 캐시된 점수 기준 사용: {len(_score_criteria_cache)}개 항목")
         return _score_criteria_cache
     
+    # config.json에서 점수 기준 로드 시도
+    try:
+        from src.skin.core.config_parser import get_llm_api_config
+        config = get_llm_api_config()
+        score_criteria = config.get("score_criteria", {})
+        if score_criteria:
+            # 점수 스케일 섹션에서 기준 추출
+            score_scale = score_criteria.get("점수 스케일", {})
+            if score_scale:
+                criteria = {}
+                # _grade_label 함수가 기대하는 구조: {grade_name: (min_score, max_score, label)}
+                for grade_name, range_info in score_scale.items():
+                    min_score = range_info.get("min", 0)
+                    max_score = range_info.get("max", 100)
+                    criteria[grade_name] = (min_score, max_score, grade_name)
+                if criteria:
+                    _score_criteria_cache = criteria
+                    log.debug(f"[LLM Metadata] config.json에서 점수 기준 로드: {len(criteria)}개 등급")
+                    return criteria
+    except Exception as e:
+        log.warning(f"config.json 점수 기준 로드 실패: {e}")
+    
+    # 폴백: llm_prompt_template.md에서 로드
     try:
         from src.skin.core.config_parser import load_prompt_template
         markdown = load_prompt_template()
@@ -162,7 +186,7 @@ def _get_score_criteria() -> Dict[str, Tuple[int, int, str]]:
     except Exception as e:
         log.warning(f"점수 기준 로드 실패, 폴백 사용: {e}")
     
-    # 폴백
+    # 최종 폴백
     criteria = _get_score_criteria_fallback()
     _score_criteria_cache = criteria  # 캐시 저장
     return criteria
