@@ -224,7 +224,12 @@ def analyze_pigmentation(
             freckle_count += 1
     freckle_score = _count_to_score(freckle_count, bp_freckle_count)
 
+    # TODO: PIH (Post-Inflammatory Hyperpigmentation) calculation not implemented
+    # Returning default score for now
+    pih_score = 100.0
+
     return {
         "melasma_score": round(_clamp(melasma_score), 1),
         "freckle_score": round(_clamp(freckle_score), 1),
+        "pih_score": round(_clamp(pih_score), 1),
     }

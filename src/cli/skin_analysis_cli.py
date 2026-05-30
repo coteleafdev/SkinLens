@@ -49,7 +49,8 @@ from src.pipeline.pipeline_core import (
 )
 from src.scoring.skin_scoring import SkinAnalyzer
 from src.llm.llm_skin_report import LlmSkinReporter
-from src.cli.execution_history import ExecutionHistoryDB, get_db_path_from_env, ResourceMonitor, PSUTIL_AVAILABLE
+from src.cli.execution_history import ExecutionHistoryDB, ResourceMonitor, PSUTIL_AVAILABLE
+from src.utils.config import get_db_path_from_env
 
 
 # 중앙 집중식 로깅 설정

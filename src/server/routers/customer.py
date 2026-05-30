@@ -19,7 +19,7 @@ from typing import Any, Dict
 
 log = logging.getLogger(__name__)
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
 
 from src.cli.execution_history import ExecutionHistoryDB
@@ -56,7 +56,7 @@ def _audit(db, cid, ep, method, role, request, *, ok: bool, error: str = ""):
     )
 
 
-@router.get("/trends")
+@router.get("/trends", response_model=None)
 async def get_my_score_trends(
     days: int = 30,
     limit: int = 100,
@@ -78,7 +78,7 @@ async def get_my_score_trends(
         raise HTTPException(status_code=500, detail="Failed to retrieve score trends")
 
 
-@router.get("/analysis")
+@router.get("/analysis", response_model=None)
 async def get_my_analysis_stats(
     days: int = 7,
     current_customer: Dict[str, Any] = Depends(get_current_customer),
@@ -99,7 +99,7 @@ async def get_my_analysis_stats(
         raise HTTPException(status_code=500, detail="Failed to retrieve analysis stats")
 
 
-@router.get("/errors")
+@router.get("/errors", response_model=None)
 async def get_my_errors(
     days: int = 30,
     limit: int = 100,
@@ -121,7 +121,7 @@ async def get_my_errors(
         raise HTTPException(status_code=500, detail="Failed to retrieve errors")
 
 
-@router.delete("/data")
+@router.delete("/data", response_model=None)
 async def delete_my_data(
     current_customer: Dict[str, Any] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
@@ -145,7 +145,6 @@ async def export_my_data(
     current_customer: Dict[str, Any] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
     request: Request = None,
-    background_tasks: BackgroundTasks = Depends(),
 ):
     """인증된 고객의 모든 데이터 내보내기 (ZIP)."""
     ep = "/v3/customer/my/data/export"
@@ -161,25 +160,24 @@ async def export_my_data(
 
         _audit(db, cid, ep, "GET", role, request, ok=True)
 
-        def _cleanup():
-            try:
-                shutil.rmtree(temp_dir)
-            except Exception as e:
-                log.warning(f"Failed to cleanup temp directory: {e}", exc_info=True)
-
-        background_tasks.add_task(_cleanup)
-        return FileResponse(
+        response = FileResponse(
             zip_file,
             media_type="application/zip",
             filename=f"customer_data_{cid}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
         )
+
+        # Cleanup temp directory after response is sent
+        import atexit
+        atexit.register(lambda: shutil.rmtree(temp_dir, ignore_errors=True))
+
+        return response
     except Exception as e:
         log.error("데이터 내보내기 실패: %s", e)
         _audit(db, cid, ep, "GET", role, request, ok=False, error=str(e))
         raise HTTPException(status_code=500, detail="Failed to export data")
 
 
-@router.get("/preferences")
+@router.get("/preferences", response_model=None)
 async def get_my_preferences(
     current_customer: Dict[str, Any] = Depends(get_current_customer),
     request: Request = None,
@@ -207,7 +205,7 @@ async def get_my_preferences(
         raise HTTPException(status_code=500, detail="Failed to retrieve preferences")
 
 
-@router.put("/preferences/language")
+@router.put("/preferences/language", response_model=None)
 async def set_my_language(
     language: str,
     current_customer: Dict[str, Any] = Depends(get_current_customer),
@@ -233,7 +231,7 @@ async def set_my_language(
         raise HTTPException(status_code=500, detail="Failed to update language")
 
 
-@router.put("/preferences/timezone")
+@router.put("/preferences/timezone", response_model=None)
 async def set_my_timezone(
     timezone: str,
     current_customer: Dict[str, Any] = Depends(get_current_customer),

@@ -36,9 +36,9 @@ from src.server.deps import (
     BACKUP_INTERVAL_H,
     CLEANUP_INTERVAL_H,
     MAX_JOB_AGE_H,
-    executor,
     get_active_jobs_count,
     get_secret_key,
+    get_shared_executor,
     jobs_root,
     limiter,
     log,
@@ -166,7 +166,7 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(_cleanup_expired_jobs())
     asyncio.create_task(_system_health_monitor())
     asyncio.create_task(_auto_backup_task())
-    
+
     # 자동 복구 엔진 초기화
     db = SkinAnalysisDB(db_path="results/skin_analysis.db")
     alert_system = AlertSystem()
@@ -174,7 +174,9 @@ async def lifespan(app: FastAPI):
     health_monitor = HealthMonitor(recovery_engine)
     asyncio.create_task(health_monitor.start_monitoring())
     log.info("자동 복구 엔진 시작 완료")
-    
+
+    # 공유 executor 초기화
+    executor = get_shared_executor()
     log.info("서버 시작 완료 (%s)", APP_NAME)
 
     yield

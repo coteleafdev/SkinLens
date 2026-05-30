@@ -33,6 +33,7 @@ from src.server.deps import (
     get_shared_executor,
     log,
     get_current_customer,
+    require_current_customer,
     download_image_to,
     _safe_filename,
     job_dir,
@@ -226,7 +227,7 @@ def _run_job_sync(job_id: str) -> None:
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────
 
-@router.post("/jobs", status_code=202)
+@router.post("/jobs", status_code=202, response_model=None)
 @limiter.limit("3/minute")
 async def create_job(
     request: Request,
@@ -421,7 +422,7 @@ async def create_job(
     return {"job_id": job_id, "status": meta["status"], "created_at": meta["created_at"]}
 
 
-@router.get("/jobs/{job_id}")
+@router.get("/jobs/{job_id}", response_model=None)
 def get_job(job_id: str) -> Dict[str, Any]:
     """Job 상태 조회."""
     try:
@@ -439,7 +440,7 @@ def get_job(job_id: str) -> Dict[str, Any]:
     }
 
 
-@router.get("/jobs/{job_id}/result")
+@router.get("/jobs/{job_id}/result", response_model=None)
 def get_job_result(job_id: str) -> Dict[str, Any]:
     """완료된 Job 의 분석 결과 반환."""
     try:
@@ -505,7 +506,7 @@ def download_artifact(job_id: str, name: str):
 
 # ── 피부 타입 감지 관련 엔드포인트 ─────────────────────────────────────────────
 
-@router.post("/jobs/{job_id}/confirm-skin-type")
+@router.post("/jobs/{job_id}/confirm-skin-type", response_model=None)
 async def confirm_skin_type(
     job_id: str,
     skin_types: List[str] = Form(...),
@@ -580,7 +581,7 @@ async def confirm_skin_type(
     }
 
 
-@router.post("/jobs/{job_id}/reclassify-skin-type")
+@router.post("/jobs/{job_id}/reclassify-skin-type", response_model=None)
 async def reclassify_skin_type(
     job_id: str,
     force_reclassification: bool = Form(True),

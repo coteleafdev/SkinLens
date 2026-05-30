@@ -206,8 +206,15 @@ def analyze_texture(
         coarseness = float(np.mean(lbp_vars))
         roughness_score = _area_to_score(coarseness, bp_roughness)
 
+    # TODO: dead_skin_score and smoothness_score calculation not implemented
+    # Returning default scores for now
+    dead_skin_score = 100.0
+    smoothness_score = 100.0
+
     return {
         "roughness_score": round(_clamp(roughness_score), 1),
+        "dead_skin_score": round(_clamp(dead_skin_score), 1),
+        "smoothness_score": round(_clamp(smoothness_score), 1),
     }
 
 

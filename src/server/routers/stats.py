@@ -24,6 +24,7 @@ from src.server.deps import (
     check_customer_access,
     filter_sensitive_data,
     get_current_customer,
+    require_current_customer,
     limiter,
     log,
     log_audit,
@@ -68,14 +69,14 @@ def _check_access_or_403(actor_id, target_id, user_role, endpoint, request, db):
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────
 
-@router.get("/analysis")
+@router.get("/analysis", response_model=None)
 @limiter.limit("30/minute")
 async def get_analysis_stats(
     days: int = 7,
     customer_id: Optional[str] = None,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """분석 통계 조회."""
     ep = "/v3/stats/analysis"
@@ -97,15 +98,15 @@ async def get_analysis_stats(
         raise HTTPException(status_code=500, detail="Failed to retrieve analysis stats")
 
 
-@router.get("/model-performance")
+@router.get("/model-performance", response_model=None)
 @limiter.limit("30/minute")
 async def get_model_performance(
     model_type: Optional[str] = None,
     hours: Optional[int] = None,
     limit: int = 100,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """모델 성능 조회."""
     ep = "/v3/stats/model-performance"
@@ -123,15 +124,15 @@ async def get_model_performance(
         raise HTTPException(status_code=500, detail="Failed to retrieve model performance")
 
 
-@router.get("/score-trends")
+@router.get("/score-trends", response_model=None)
 @limiter.limit("30/minute")
 async def get_score_trends(
     customer_id: Optional[str] = None,
     days: int = 30,
     limit: int = 100,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """점수 추이 조회."""
     ep = "/v3/stats/score-trends"
@@ -153,14 +154,14 @@ async def get_score_trends(
         raise HTTPException(status_code=500, detail="Failed to retrieve score trends")
 
 
-@router.get("/llm-api")
+@router.get("/llm-api", response_model=None)
 @limiter.limit("30/minute")
 async def get_llm_api_stats(
     customer_id: Optional[str] = None,
     days: int = 30,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """LLM API 통계 조회."""
     ep = "/v3/stats/llm-api"
@@ -182,14 +183,14 @@ async def get_llm_api_stats(
         raise HTTPException(status_code=500, detail="Failed to retrieve LLM API stats")
 
 
-@router.get("/image-metadata")
+@router.get("/image-metadata", response_model=None)
 @limiter.limit("30/minute")
 async def get_image_metadata(
     analysis_id: Optional[int] = None,
     image_type: Optional[str] = None,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """이미지 메타데이터 조회."""
     ep = "/v3/stats/image-metadata"
@@ -207,16 +208,16 @@ async def get_image_metadata(
         raise HTTPException(status_code=500, detail="Failed to retrieve image metadata")
 
 
-@router.get("/errors")
+@router.get("/errors", response_model=None)
 @limiter.limit("30/minute")
 async def get_errors(
     resolved: Optional[bool] = None,
     severity: Optional[str] = None,
     days: int = 30,
     limit: int = 100,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """에러 조회."""
     ep = "/v3/stats/errors"
@@ -234,14 +235,14 @@ async def get_errors(
         raise HTTPException(status_code=500, detail="Failed to retrieve errors")
 
 
-@router.post("/errors/{error_id}/resolve")
+@router.post("/errors/{error_id}/resolve", response_model=None)
 @limiter.limit("10/minute")
 async def resolve_error(
     error_id: int,
     resolution_note: str = Form(...),
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """에러 해결 표시 (관리자 전용)."""
     ep = f"/v3/stats/errors/{error_id}/resolve"
@@ -265,14 +266,14 @@ async def resolve_error(
         raise HTTPException(status_code=500, detail="Failed to resolve error")
 
 
-@router.get("/system-health")
+@router.get("/system-health", response_model=None)
 @limiter.limit("30/minute")
 async def get_system_health(
     hours: int = 24,
     limit: int = 100,
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """시스템 헬스 조회."""
     ep = "/v3/stats/system-health"
@@ -290,12 +291,12 @@ async def get_system_health(
         raise HTTPException(status_code=500, detail="Failed to retrieve system health")
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=None)
 @limiter.limit("10/minute")
 async def get_stats_summary(
+    request: Request = None,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
-    request: Request = None,
 ):
     """전체 통계 요약."""
     ep = "/v3/stats/summary"

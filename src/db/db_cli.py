@@ -15,11 +15,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.cli.execution_history import (
     ExecutionHistoryDB,
-    get_db_path_from_env,
     archive_old_data,
     DBMigrationManager,
     create_readonly_replica,
 )
+from src.utils.config import get_db_path_from_env
 
 
 @click.group()

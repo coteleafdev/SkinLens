@@ -231,11 +231,9 @@ def test_analyze_elasticity_returns_required_keys():
     """elasticity analyzer가 올바른 키를 반환하는지 검증."""
     face = make_dummy_face()
     regions = make_dummy_regions()
-    eye_wrinkle_score = 50.0
 
     result = analyze_elasticity(
         face, regions,
-        eye_wrinkle_score=eye_wrinkle_score,
         bp_jawline=[(0.0, 0), (5.0, 20), (12.0, 40)],
     )
 

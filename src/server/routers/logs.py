@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 
 log = logging.getLogger(__name__)
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
 from src.cli.execution_history import ExecutionHistoryDB
@@ -26,12 +26,11 @@ router = APIRouter(prefix="/v3/logs", tags=["logs"])
 _VALID_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR")
 
 
-@router.get("/download")
+@router.get("/download", response_model=None)
 async def download_logs(
     level: Optional[str] = None,
     hours: Optional[int] = None,
     format: str = "csv",
-    background_tasks: BackgroundTasks = Depends(),
     current_customer: Dict[str, Any] = Depends(get_current_customer),
     db: ExecutionHistoryDB = Depends(get_db),
 ):
@@ -67,15 +66,13 @@ async def download_logs(
         media_type = "text/csv" if format == "csv" else "application/json"
         filename   = f"logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format}"
 
-        def _cleanup():
-            try:
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
-            except Exception as e:
-                log.warning(f"Failed to cleanup temp file: {e}", exc_info=True)
+        response = FileResponse(path=temp_path, media_type=media_type, filename=filename)
 
-        background_tasks.add_task(_cleanup)
-        return FileResponse(path=temp_path, media_type=media_type, filename=filename)
+        # Cleanup temp file after response is sent
+        import atexit
+        atexit.register(lambda: os.unlink(temp_path) if os.path.exists(temp_path) else None)
+
+        return response
 
     except HTTPException:
         raise
@@ -84,7 +81,7 @@ async def download_logs(
         raise HTTPException(status_code=500, detail="Failed to download logs")
 
 
-@router.get("")
+@router.get("", response_model=None)
 async def get_logs(
     level: Optional[str] = None,
     limit: int = 100,

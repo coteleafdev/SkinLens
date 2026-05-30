@@ -2,9 +2,12 @@
 REM 서버 테스트 실행 스크립트
 
 echo ========================================
-echo AI Skin Engine v3 서버 테스트 실행
+echo SkinLens v1 서버 테스트 실행
 echo ========================================
 echo.
+
+REM 프로젝트 루트로 이동
+cd /d "%~dp0.."
 
 REM 환경 변수 설정
 set JWT_SECRET_KEY=test-secret-for-ci
@@ -26,7 +29,7 @@ echo.
 
 REM 테스트 실행
 echo [2/3] 서버 테스트 실행 중...
-python -m pytest tests/test_server.py -v --tb=short
+python -m pytest tests/test_server.py tests/test_auth_api.py tests/test_admin_api.py tests/test_health_api.py tests/test_orders_api.py -v --tb=short
 if errorlevel 1 (
     echo [실패] 일부 테스트가 실패했습니다.
     echo.
@@ -37,7 +40,7 @@ if errorlevel 1 (
 
 REM 커버리지 보고서 생성 (선택사항)
 echo [3/3] 커버리지 보고서 생성 중...
-python -m pytest tests/test_server.py --cov=src/server --cov-report=html --cov-report=term-missing
+python -m pytest tests/test_server.py tests/test_auth_api.py tests/test_admin_api.py tests/test_health_api.py tests/test_orders_api.py --cov=src/server --cov-report=html --cov-report=term-missing
 if errorlevel 1 (
     echo [경고] 커버리지 보고서 생성 실패
 ) else (
