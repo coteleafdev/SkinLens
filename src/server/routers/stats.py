@@ -30,7 +30,7 @@ from src.server.deps import (
     log_audit,
 )
 
-router = APIRouter(prefix="/v3/stats", tags=["stats"])
+router = APIRouter(prefix="/v1/stats", tags=["stats"])
 
 
 # ── 공통 헬퍼 ─────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ async def get_analysis_stats(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """분석 통계 조회."""
-    ep = "/v3/stats/analysis"
+    ep = "/v1/stats/analysis"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
 
     if customer_id and current_customer:
@@ -109,7 +109,7 @@ async def get_model_performance(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """모델 성능 조회."""
-    ep = "/v3/stats/model-performance"
+    ep = "/v1/stats/model-performance"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
     try:
         rows     = db.get_model_performance(model_type=model_type, hours=hours, limit=limit)
@@ -135,7 +135,7 @@ async def get_score_trends(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """점수 추이 조회."""
-    ep = "/v3/stats/score-trends"
+    ep = "/v1/stats/score-trends"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
 
     if customer_id and current_customer:
@@ -164,7 +164,7 @@ async def get_llm_api_stats(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """LLM API 통계 조회."""
-    ep = "/v3/stats/llm-api"
+    ep = "/v1/stats/llm-api"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
 
     if customer_id and current_customer:
@@ -193,7 +193,7 @@ async def get_image_metadata(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """이미지 메타데이터 조회."""
-    ep = "/v3/stats/image-metadata"
+    ep = "/v1/stats/image-metadata"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
     try:
         rows     = db.get_image_metadata(analysis_id=analysis_id, image_type=image_type)
@@ -220,7 +220,7 @@ async def get_errors(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """에러 조회."""
-    ep = "/v3/stats/errors"
+    ep = "/v1/stats/errors"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
     try:
         rows     = db.get_errors(resolved=resolved, severity=severity, days=days, limit=limit)
@@ -245,7 +245,7 @@ async def resolve_error(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """에러 해결 표시 (관리자 전용)."""
-    ep = f"/v3/stats/errors/{error_id}/resolve"
+    ep = f"/v1/stats/errors/{error_id}/resolve"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
 
     if current_customer is None:
@@ -276,7 +276,7 @@ async def get_system_health(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """시스템 헬스 조회."""
-    ep = "/v3/stats/system-health"
+    ep = "/v1/stats/system-health"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
     try:
         rows     = db.get_system_health(hours=hours, limit=limit)
@@ -299,7 +299,7 @@ async def get_stats_summary(
     db: ExecutionHistoryDB = Depends(get_db),
 ):
     """전체 통계 요약."""
-    ep = "/v3/stats/summary"
+    ep = "/v1/stats/summary"
     user_role, actor_id, db = _ctx(current_customer, db, ep, request)
     try:
         today_stats   = db.get_analysis_stats(days=1)

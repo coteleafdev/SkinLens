@@ -49,7 +49,7 @@ _metrics_cache = {
 
 # ── 감사 로그 ─────────────────────────────────────────────────────────────
 
-@router.get("/v3/admin/audit-logs")
+@router.get("/v1/admin/audit-logs")
 async def get_audit_logs(
     actor_customer_id:  Optional[str] = None,
     target_customer_id: Optional[str] = None,
@@ -60,7 +60,7 @@ async def get_audit_logs(
     request: Request = None,
 ):
     """감사 로그 조회 (관리자 전용)."""
-    ep = "/v3/admin/audit-logs"
+    ep = "/v1/admin/audit-logs"
     role = require_roles("admin")(current_customer)
     actor_id = current_customer.get("sub")
     try:
@@ -82,7 +82,7 @@ async def get_audit_logs(
 
 # ── DB 헬스 (관리자·분석가) ───────────────────────────────────────────────
 
-@router.get("/v3/health/db")
+@router.get("/v1/health/db")
 async def check_db_health(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
 ):
@@ -103,7 +103,7 @@ async def check_db_health(
 
 # ── DB 메트릭 ─────────────────────────────────────────────────────────────
 
-@router.get("/v3/admin/db/metrics")
+@router.get("/v1/admin/db/metrics")
 @limiter.limit("10/minute")
 async def get_db_metrics(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
@@ -111,7 +111,7 @@ async def get_db_metrics(
     request: Request = None,
 ):
     """DB 성능 메트릭 조회 (관리자 전용)."""
-    ep = "/v3/admin/db/metrics"
+    ep = "/v1/admin/db/metrics"
     role = require_roles("admin")(current_customer)
     actor_id = current_customer.get("sub")
     try:
@@ -141,7 +141,7 @@ async def get_db_metrics(
 
 # ── 감사 요약 ─────────────────────────────────────────────────────────────
 
-@router.get("/v3/admin/audit/summary")
+@router.get("/v1/admin/audit/summary")
 @limiter.limit("10/minute")
 async def get_audit_summary(
     days: int = 30,
@@ -150,7 +150,7 @@ async def get_audit_summary(
     request: Request = None,
 ):
     """감사 로그 요약 분석 (관리자 전용)."""
-    ep = "/v3/admin/audit/summary"
+    ep = "/v1/admin/audit/summary"
     role = require_roles("admin")(current_customer)
     actor_id = current_customer.get("sub")
     try:
@@ -196,7 +196,7 @@ async def get_audit_summary(
 
 # ── 로그 레벨 관리 ─────────────────────────────────────────────────────────────
 
-@router.get("/v3/admin/logging/level")
+@router.get("/v1/admin/logging/level")
 async def get_current_log_level(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     request: Request = None,
@@ -220,7 +220,7 @@ async def get_current_log_level(
         raise HTTPException(status_code=500, detail="Failed to retrieve log level")
 
 
-@router.put("/v3/admin/logging/level")
+@router.put("/v1/admin/logging/level")
 async def update_log_level(
     level: str,
     persist: bool = False,
@@ -240,7 +240,7 @@ async def update_log_level(
     if role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
 
-    ep = "/v3/admin/logging/level"
+    ep = "/v1/admin/logging/level"
     actor_id = current_customer.get("sub")
 
     # 유효한 로그 레벨 검증
@@ -292,7 +292,7 @@ async def update_log_level(
 
 # ── 시스템 메트릭 모니터링 ─────────────────────────────────────────────────────
 
-@router.get("/v3/admin/metrics/system")
+@router.get("/v1/admin/metrics/system")
 async def get_system_metrics(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
     request: Request = None,
@@ -384,7 +384,7 @@ async def get_system_metrics(
 
 # ── API 키 관리 ─────────────────────────────────────────────────────────────
 
-@router.post("/v3/admin/api-keys")
+@router.post("/v1/admin/api-keys")
 async def create_api_key(
     name: str,
     owner_id: str,
@@ -410,7 +410,7 @@ async def create_api_key(
     if role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
 
-    ep = "/v3/admin/api-keys"
+    ep = "/v1/admin/api-keys"
     actor_id = current_customer.get("sub")
 
     try:
@@ -456,7 +456,7 @@ async def create_api_key(
         raise HTTPException(status_code=500, detail="Failed to create API key")
 
 
-@router.get("/v3/admin/api-keys")
+@router.get("/v1/admin/api-keys")
 async def list_api_keys(
     owner_id: Optional[str] = None,
     is_active: Optional[bool] = None,
@@ -484,7 +484,7 @@ async def list_api_keys(
         raise HTTPException(status_code=500, detail="Failed to retrieve API keys")
 
 
-@router.delete("/v3/admin/api-keys/{key_id}")
+@router.delete("/v1/admin/api-keys/{key_id}")
 async def revoke_api_key(
     key_id: str,
     reason: Optional[str] = None,
@@ -504,7 +504,7 @@ async def revoke_api_key(
     if role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
 
-    ep = f"/v3/admin/api-keys/{key_id}"
+    ep = f"/v1/admin/api-keys/{key_id}"
     actor_id = current_customer.get("sub")
 
     try:
@@ -546,7 +546,7 @@ async def revoke_api_key(
 
 # ── 캐싱 관리 ────────────────────────────────────────────────────────────────
 
-@router.get("/v3/admin/cache/stats")
+@router.get("/v1/admin/cache/stats")
 async def get_cache_stats(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
 ):
@@ -573,7 +573,7 @@ async def get_cache_stats(
     }
 
 
-@router.post("/v3/admin/cache/clear")
+@router.post("/v1/admin/cache/clear")
 async def clear_cache(
     cache_type: str = "all",
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
@@ -591,7 +591,7 @@ async def clear_cache(
     if role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
 
-    ep = "/v3/admin/cache/clear"
+    ep = "/v1/admin/cache/clear"
     actor_id = current_customer.get("sub")
 
     cleared_caches = []
@@ -645,7 +645,7 @@ async def clear_cache(
 
 # ── WebSocket 연결 관리 ───────────────────────────────────────────────────────
 
-@router.get("/v3/admin/websocket/stats")
+@router.get("/v1/admin/websocket/stats")
 async def get_websocket_stats(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
 ):
@@ -667,7 +667,7 @@ async def get_websocket_stats(
 
 # ── 작업 큐 관리 ─────────────────────────────────────────────────────────────
 
-@router.get("/v3/admin/job-queue/stats")
+@router.get("/v1/admin/job-queue/stats")
 async def get_job_queue_stats(
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
 ):
@@ -688,7 +688,7 @@ async def get_job_queue_stats(
         raise HTTPException(status_code=500, detail="Failed to retrieve job queue stats")
 
 
-@router.get("/v3/admin/job-queue/{job_id}")
+@router.get("/v1/admin/job-queue/{job_id}")
 async def get_job_status(
     job_id: str,
     current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),

@@ -82,7 +82,7 @@ class TestFastAPIServer:
 
             with open(sample_image, "rb") as f:
                 response = client.post(
-                    "/v3/analysis/jobs",
+                    "/v1/analysis/jobs",
                     files={"image": ("test.jpg", f, "image/jpeg")},
                     data={
                         "do_restore": "true",
@@ -97,7 +97,7 @@ class TestFastAPIServer:
 
     def test_create_job_no_image_at_all(self, client):
         """이미지 없이 요청 → 400 오류 테스트."""
-        response = client.post("/v3/analysis/jobs", data={"customer_id": "C001"})
+        response = client.post("/v1/analysis/jobs", data={"customer_id": "C001"})
         assert response.status_code == 400
 
     def test_create_job_with_url(self, client, temp_dir):
@@ -113,7 +113,7 @@ class TestFastAPIServer:
                 mock_run_job_sync.return_value = None
 
                 response = client.post(
-                    "/v3/analysis/jobs",
+                    "/v1/analysis/jobs",
                     data={
                         "image_url": "https://example.com/test.jpg",
                         "do_restore": "true",
@@ -163,7 +163,7 @@ class TestFastAPIServer:
         large_data = b"x" * (11 * 1024 * 1024)
         files = {"image": ("large.jpg", large_data, "image/jpeg")}
         
-        response = client.post("/v3/analysis/jobs", files=files)
+        response = client.post("/v1/analysis/jobs", files=files)
         
         # 413 Payload Too Large
         assert response.status_code == 413
@@ -172,7 +172,7 @@ class TestFastAPIServer:
         """허용되지 않은 확장자 테스트."""
         files = {"image": ("test.gif", b"fake_image_data", "image/gif")}
         
-        response = client.post("/v3/analysis/jobs", files=files)
+        response = client.post("/v1/analysis/jobs", files=files)
         
         # 400 Bad Request
         assert response.status_code == 400
@@ -202,7 +202,7 @@ class TestFastAPIServer:
             json.dump(job_meta, f)
 
         with patch('src.server.deps.jobs_root', return_value=temp_dir / "api_jobs"):
-            response = client.get(f"/v3/analysis/jobs/{job_id}")
+            response = client.get(f"/v1/analysis/jobs/{job_id}")
 
             assert response.status_code == 200
             data = response.json()
@@ -211,7 +211,7 @@ class TestFastAPIServer:
 
     def test_get_job_not_found(self, client):
         """존재하지 않는 Job 조회 테스트."""
-        response = client.get("/v3/analysis/jobs/nonexistent-job")
+        response = client.get("/v1/analysis/jobs/nonexistent-job")
 
         assert response.status_code == 404
         data = response.json()
@@ -243,7 +243,7 @@ class TestFastAPIServer:
             "finished_at": "2026-01-28T12:01:00Z",
             "error": None,
             "artifacts": {
-                "results.json": f"/v3/analysis/jobs/{job_id}/artifacts/results.json"
+                "results.json": f"/v1/analysis/jobs/{job_id}/artifacts/results.json"
             },
             "artifacts_local": {
                 "results.json": str(artifacts_dir / "results.json")
@@ -254,7 +254,7 @@ class TestFastAPIServer:
             json.dump(job_meta, f)
 
         with patch('src.server.deps.jobs_root', return_value=temp_dir / "api_jobs"):
-            response = client.get(f"/v3/analysis/jobs/{job_id}/result")
+            response = client.get(f"/v1/analysis/jobs/{job_id}/result")
 
             assert response.status_code == 200
             data = response.json()
@@ -282,7 +282,7 @@ class TestFastAPIServer:
             json.dump(job_meta, f)
 
         with patch('src.server.deps.jobs_root', return_value=temp_dir / "api_jobs"):
-            response = client.get(f"/v3/analysis/jobs/{job_id}/result")
+            response = client.get(f"/v1/analysis/jobs/{job_id}/result")
 
             assert response.status_code == 409
             data = response.json()
@@ -367,7 +367,7 @@ class TestFastAPIServer:
 
             with open(sample_image, "rb") as f:
                 response = client.post(
-                    "/v3/analysis/jobs",
+                    "/v1/analysis/jobs",
                     files={"image": ("test.jpg", f, "image/jpeg")},
                     data={
                         "do_restore": "true",
@@ -1051,7 +1051,7 @@ class TestE2EIntegration:
 
             with open(test_image, "rb") as f:
                 response = client.post(
-                    "/v3/analysis/jobs",
+                    "/v1/analysis/jobs",
                     files={"image": ("test.jpg", f, "image/jpeg")},
                     data={"do_restore": "true"}
                 )
@@ -1078,7 +1078,7 @@ class TestE2EIntegration:
             json.dump(job_meta, f)
 
         with patch('src.server.deps.jobs_root', return_value=temp_dir / "api_jobs"):
-            response = client.get(f"/v3/analysis/jobs/{job_id}")
+            response = client.get(f"/v1/analysis/jobs/{job_id}")
             assert response.status_code == 200
             status = response.json()
             assert status["status"] == "completed"
@@ -1087,7 +1087,7 @@ class TestE2EIntegration:
         """인증 + 고객 ID 포함 E2E 테스트."""
         # 1. 로그인
         os.environ["ADMIN_PASSWORD"] = "admin123"
-        login_response = client.post("/v3/auth/login", data={
+        login_response = client.post("/v1/auth/login", data={
             "customer_id": "admin",
             "password": "admin123"
         })
@@ -1100,7 +1100,7 @@ class TestE2EIntegration:
 
             with open(test_image, "rb") as f:
                 response = client.post(
-                    "/v3/analysis/jobs",
+                    "/v1/analysis/jobs",
                     headers={"Authorization": f"Bearer {token}"},
                     files={"image": ("test.jpg", f, "image/jpeg")},
                     data={

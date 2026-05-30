@@ -56,11 +56,9 @@
       "_note": "작업 큐 설정. max_workers: 최대 동시 작업 수"
     },
     "versioning": {
-      "current_version": "v3",
-      "deprecated_versions": ["v1", "v2"],
-      "sunset_versions": {
-        "v2": "2026-12-31"
-      },
+      "current_version": "v1",
+      "deprecated_versions": [],
+      "sunset_versions": {},
       "_note": "API 버전 관리 설정. current_version: 현재 버전, deprecated_versions: 폐기된 버전, sunset_versions: 폐기 예정 버전과 일자"
     },
     "ip_filter": {

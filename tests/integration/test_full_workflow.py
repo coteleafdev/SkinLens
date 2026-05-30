@@ -19,7 +19,7 @@ class TestFullWorkflow:
     def auth_token(self):
         """인증 토큰 fixture"""
         login_resp = requests.post(
-            f"{BASE_URL}/v3/auth/login",
+            f"{BASE_URL}/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         assert login_resp.status_code == 200
@@ -51,7 +51,7 @@ class TestFullWorkflow:
         }
 
         response = requests.post(
-            f"{BASE_URL}/v3/customer",
+            f"{BASE_URL}/v1/customer",
             json=customer_data,
             headers=headers
         )
@@ -73,7 +73,7 @@ class TestFullWorkflow:
             data = {"customer_id": "integration_test_customer"}
 
             response = requests.post(
-                f"{BASE_URL}/v3/analysis/jobs",
+                f"{BASE_URL}/v1/analysis/jobs",
                 files=files,
                 data=data,
                 headers=headers
@@ -96,7 +96,7 @@ class TestFullWorkflow:
             data = {"customer_id": "integration_test_customer"}
 
             create_resp = requests.post(
-                f"{BASE_URL}/v3/analysis/jobs",
+                f"{BASE_URL}/v1/analysis/jobs",
                 files=files,
                 data=data,
                 headers=headers
@@ -106,7 +106,7 @@ class TestFullWorkflow:
 
         # 작업 상태 조회
         response = requests.get(
-            f"{BASE_URL}/v3/analysis/jobs/{job_id}",
+            f"{BASE_URL}/v1/analysis/jobs/{job_id}",
             headers=headers
         )
 
@@ -118,7 +118,7 @@ class TestFullWorkflow:
     def test_list_jobs(self, headers):
         """작업 목록 조회 테스트"""
         response = requests.get(
-            f"{BASE_URL}/v3/analysis/jobs",
+            f"{BASE_URL}/v1/analysis/jobs",
             headers=headers
         )
 
@@ -129,7 +129,7 @@ class TestFullWorkflow:
     def test_get_customer_info(self, headers):
         """고객 정보 조회 테스트"""
         response = requests.get(
-            f"{BASE_URL}/v3/customer/integration_test_customer",
+            f"{BASE_URL}/v1/customer/integration_test_customer",
             headers=headers
         )
 
@@ -137,7 +137,7 @@ class TestFullWorkflow:
 
     def test_health_check(self):
         """헬스 체크 테스트"""
-        response = requests.get(f"{BASE_URL}/v3/health")
+        response = requests.get(f"{BASE_URL}/v1/health")
         assert response.status_code == 200
         data = response.json()
         assert "status" in data
@@ -145,7 +145,7 @@ class TestFullWorkflow:
     def test_system_metrics(self, headers):
         """시스템 메트릭 조회 테스트"""
         response = requests.get(
-            f"{BASE_URL}/v3/admin/metrics",
+            f"{BASE_URL}/v1/admin/metrics",
             headers=headers
         )
         assert response.status_code == 200

@@ -17,7 +17,7 @@ from src.server.deps import log
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/v3/orders", tags=["orders"])
+router = APIRouter(prefix="/v1/orders", tags=["orders"])
 
 
 # ── Pydantic 모델 ─────────────────────────────────────────────────────────────

@@ -289,7 +289,7 @@ def test_custom_workflow(self, headers):
         "phone": "010-0000-0000"
     }
     response = requests.post(
-        f"{BASE_URL}/v3/customer",
+        f"{BASE_URL}/v1/customer",
         json=customer_data,
         headers=headers
     )
@@ -381,7 +381,7 @@ BASE_URL = "http://your-server:8000"
 
 ```python
 login_resp = requests.post(
-    f"{BASE_URL}/v3/auth/login",
+    f"{BASE_URL}/v1/auth/login",
     data={"customer_id": "your_id", "password": "your_password"}
 )
 ```

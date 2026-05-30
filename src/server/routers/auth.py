@@ -25,7 +25,7 @@ from src.server.deps import (
     pwd_context,
 )
 
-router = APIRouter(prefix="/v3/auth", tags=["auth"])
+router = APIRouter(prefix="/v1/auth", tags=["auth"])
 
 
 def _verify_pw(plain: str, stored: str) -> bool:
@@ -104,7 +104,7 @@ async def login(
             db=db,
             actor_customer_id=customer_id,
             target_customer_id=None,
-            endpoint="/v3/auth/login",
+            endpoint="/v1/auth/login",
             method="POST",
             user_role=user_role,
             request=request,

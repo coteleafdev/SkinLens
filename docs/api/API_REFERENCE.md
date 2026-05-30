@@ -1,7 +1,7 @@
 # API 레퍼런스 (API Reference)
 
 > **프로젝트:** SkinLens v1.0  
-> **버전:** v3.6  
+> **버전:** v1.0  
 > **작성일:** 2026-05-30  
 > **상태:** 초안
 
@@ -42,7 +42,7 @@ SkinLens REST API 엔드포인트 상세 설명입니다.
 
 ### 1.1 로그인
 
-**POST** `/v3/auth/login`
+**POST** `/v1/auth/login`
 
 로그인 및 JWT 토큰 발급
 
@@ -69,7 +69,7 @@ SkinLens REST API 엔드포인트 상세 설명입니다.
 
 ### 1.2 내 정보 조회
 
-**GET** `/v3/auth/me`
+**GET** `/v1/auth/me`
 
 현재 인증된 사용자 정보 조회
 
@@ -87,7 +87,7 @@ SkinLens REST API 엔드포인트 상세 설명입니다.
 
 ### 2.1 Job 생성
 
-**POST** `/v3/analysis/jobs`
+**POST** `/v1/analysis/jobs`
 
 분석 Job을 생성합니다.
 
@@ -132,7 +132,7 @@ Content-Type: multipart/form-data
 
 ### 2.2 Job 상태 조회
 
-**GET** `/v3/analysis/jobs/{job_id}`
+**GET** `/v1/analysis/jobs/{job_id}`
 
 Job 상태를 조회합니다.
 
@@ -172,7 +172,7 @@ Job 상태를 조회합니다.
 
 ### 2.3 Job 취소
 
-**DELETE** `/v3/analysis/jobs/{job_id}`
+**DELETE** `/v1/analysis/jobs/{job_id}`
 
 Job을 취소합니다.
 
@@ -188,7 +188,7 @@ Job을 취소합니다.
 
 ### 2.4 피부 타입 확인
 
-**POST** `/v3/analysis/jobs/{job_id}/confirm-skin-type`
+**POST** `/v1/analysis/jobs/{job_id}/confirm-skin-type`
 
 피부 타입 사용자 확인
 
@@ -212,7 +212,7 @@ Job을 취소합니다.
 
 ### 2.5 이미지 다운로드
 
-**GET** `/v3/analysis/jobs/{job_id}/artifacts/{filename}`
+**GET** `/v1/analysis/jobs/{job_id}/artifacts/{filename}`
 
 분석 결과 이미지를 다운로드합니다.
 
@@ -232,7 +232,7 @@ Job을 취소합니다.
 
 ### 3.1 내 정보 조회
 
-**GET** `/v3/customer/my/info`
+**GET** `/v1/customer/my/info`
 
 내 고객 정보를 조회합니다.
 
@@ -254,7 +254,7 @@ Job을 취소합니다.
 
 ### 3.2 분석 이력 조회
 
-**GET** `/v3/customer/my/analyses`
+**GET** `/v1/customer/my/analyses`
 
 내 분석 이력을 조회합니다.
 
@@ -287,7 +287,7 @@ Job을 취소합니다.
 
 ### 4.1 분석 통계 조회
 
-**GET** `/v3/stats/analysis`
+**GET** `/v1/stats/analysis`
 
 분석 통계를 조회합니다.
 
@@ -338,7 +338,7 @@ Job을 취소합니다.
 
 ### 6.1 감사 로그 조회
 
-**GET** `/v3/admin/audit-logs`
+**GET** `/v1/admin/audit-logs`
 
 감사 로그를 조회합니다 (관리자/분석가 전용).
 
@@ -358,7 +358,7 @@ Job을 취소합니다.
       "id": "uuid",
       "actor_customer_id": "ADMIN001",
       "target_customer_id": "CUST001",
-      "endpoint": "/v3/analysis/jobs",
+      "endpoint": "/v1/analysis/jobs",
       "method": "POST",
       "user_role": "admin",
       "success": true,
@@ -373,7 +373,7 @@ Job을 취소합니다.
 
 ### 6.2 DB 헬스체크
 
-**GET** `/v3/admin/health/db`
+**GET** `/v1/admin/health/db`
 
 데이터베이스 상태를 확인합니다 (관리자/분석가 전용).
 
@@ -391,7 +391,7 @@ Job을 취소합니다.
 
 ### 6.3 로그 레벨 조회
 
-**GET** `/v3/admin/logging/level`
+**GET** `/v1/admin/logging/level`
 
 현재 로그 레벨을 조회합니다 (관리자/분석가 전용).
 
@@ -407,7 +407,7 @@ Job을 취소합니다.
 
 ### 6.4 로그 레벨 변경
 
-**PUT** `/v3/admin/logging/level`
+**PUT** `/v1/admin/logging/level`
 
 로그 레벨을 변경합니다 (관리자/분석가 전용).
 
@@ -430,7 +430,7 @@ Job을 취소합니다.
 
 ### 6.5 시스템 메트릭 조회
 
-**GET** `/v3/admin/metrics/system`
+**GET** `/v1/admin/metrics/system`
 
 시스템 메트릭을 조회합니다 (관리자/분석가 전용).
 
@@ -473,7 +473,7 @@ Job을 취소합니다.
 
 ### 6.6 API 키 생성
 
-**POST** `/v3/admin/api-keys`
+**POST** `/v1/admin/api-keys`
 
 API 키를 생성합니다 (관리자/분석가 전용).
 
@@ -504,7 +504,7 @@ API 키를 생성합니다 (관리자/분석가 전용).
 
 ### 6.7 API 키 목록 조회
 
-**GET** `/v3/admin/api-keys`
+**GET** `/v1/admin/api-keys`
 
 API 키 목록을 조회합니다 (관리자/분석가 전용).
 
@@ -538,7 +538,7 @@ API 키 목록을 조회합니다 (관리자/분석가 전용).
 
 ### 6.8 API 키 폐지
 
-**DELETE** `/v3/admin/api-keys/{key_id}`
+**DELETE** `/v1/admin/api-keys/{key_id}`
 
 API 키를 폐지합니다 (관리자/분석가 전용).
 
@@ -559,7 +559,7 @@ API 키를 폐지합니다 (관리자/분석가 전용).
 
 ### 6.9 캐시 통계 조회
 
-**GET** `/v3/admin/cache/stats`
+**GET** `/v1/admin/cache/stats`
 
 캐시 통계를 조회합니다 (관리자/분석가 전용).
 
@@ -580,7 +580,7 @@ API 키를 폐지합니다 (관리자/분석가 전용).
 
 ### 6.10 캐시 초기화
 
-**POST** `/v3/admin/cache/clear`
+**POST** `/v1/admin/cache/clear`
 
 캐시를 초기화합니다 (관리자/분석가 전용).
 
@@ -602,7 +602,7 @@ API 키를 폐지합니다 (관리자/분석가 전용).
 
 ### 6.11 WebSocket 연결 통계
 
-**GET** `/v3/admin/websocket/stats`
+**GET** `/v1/admin/websocket/stats`
 
 WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
@@ -627,7 +627,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
 ### 6.12 작업 큐 통계
 
-**GET** `/v3/admin/job-queue/stats`
+**GET** `/v1/admin/job-queue/stats`
 
 작업 큐 통계를 조회합니다 (관리자/분석가 전용).
 
@@ -646,7 +646,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
 ### 6.13 작업 상태 조회
 
-**GET** `/v3/admin/job-queue/{job_id}`
+**GET** `/v1/admin/job-queue/{job_id}`
 
 작업 상태를 조회합니다 (관리자/분석가 전용).
 
@@ -669,7 +669,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
 ### 7.1 진행률 트래킹
 
-**WS** `/v3/ws/analyze/{job_id}`
+**WS** `/v1/ws/analyze/{job_id}`
 
 분석 진행률을 실시간으로 수신합니다.
 
@@ -739,11 +739,11 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 **엔드포인트별 제한:**
 | 엔드포인트 | 제한 |
 |-----------|------|
-| POST /v3/auth/login | 5/분 |
-| POST /v3/analysis/jobs | 30/분 |
-| GET /v3/analysis/jobs/{job_id} | 60/분 |
-| GET /v3/customer/my/* | 60/분 |
-| GET /v3/stats/* | 30/분 |
+| POST /v1/auth/login | 5/분 |
+| POST /v1/analysis/jobs | 30/분 |
+| GET /v1/analysis/jobs/{job_id} | 60/분 |
+| GET /v1/customer/my/* | 60/분 |
+| GET /v1/stats/* | 30/분 |
 | 기타 엔드포인트 | 역할별 제한 적용 |
 
 **속도 제한 초과 시:**
@@ -782,7 +782,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
 ### 엔드포인트
 
-#### POST /v3/upload/init
+#### POST /v1/upload/init
 업로드 세션 초기화.
 
 **요청 파라미터:**
@@ -802,7 +802,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 }
 ```
 
-#### POST /v3/upload/chunk
+#### POST /v1/upload/chunk
 청크 업로드.
 
 **요청 파라미터:**
@@ -820,7 +820,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 }
 ```
 
-#### POST /v3/upload/complete
+#### POST /v1/upload/complete
 업로드 완료 및 파일 합치기.
 
 **요청 파라미터:**
@@ -836,7 +836,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 }
 ```
 
-#### POST /v3/upload/cancel
+#### POST /v1/upload/cancel
 업로드 취소.
 
 **요청 파라미터:**
@@ -850,7 +850,7 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 }
 ```
 
-#### GET /v3/upload/progress/{session_id}
+#### GET /v1/upload/progress/{session_id}
 업로드 진행률 조회.
 
 **응답:**
@@ -882,15 +882,15 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
 ### 버전 정책
 
-- **현재 버전**: v3
-- **폐기된 버전**: v1, v2
-- **폐기 예정**: v2 (2026-12-31)
+- **현재 버전**: v1
+- **폐기된 버전**: 없음
+- **폐기 예정**: 없음
 
 ### 사용 예시
 
 ```bash
 # 현재 버전 사용
-curl https://api.example.com/v3/analysis/jobs
+curl https://api.example.com/v1/analysis/jobs
 
 # 폐기된 버전 사용 (경고 헤더 포함)
 curl https://api.example.com/v1/analysis/jobs

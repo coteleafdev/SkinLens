@@ -3,7 +3,7 @@
 routers/websocket.py — WebSocket 진행률 트래킹
 
 WebSocket 엔드포인트:
-    WS /v3/ws/analyze/{job_id} — 작업 진행률 실시간 전송
+    WS /v1/ws/analyze/{job_id} — 작업 진행률 실시간 전송
 
 메시지 형식:
     {"type": "progress", "stage": "restore", "percent": 30, "message": "복원 중..."}
@@ -24,7 +24,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from src.server.deps import job_dir, read_job_meta, log
 from src.utils.config import load_config as _load_config
 
-router = APIRouter(prefix="/v3/ws", tags=["websocket"])
+router = APIRouter(prefix="/v1/ws", tags=["websocket"])
 
 
 # ── WebSocket 연결 관리자 ─────────────────────────────────────────────────
@@ -222,7 +222,7 @@ async def websocket_analyze(websocket: WebSocket, job_id: str) -> None:
     """작업 진행률 실시간 수신 WebSocket.
     
     클라이언트 연결 예시 (JavaScript):
-        const ws = new WebSocket(`ws://server/v3/ws/analyze/${jobId}`);
+        const ws = new WebSocket(`ws://server/v1/ws/analyze/${jobId}`);
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'progress') {

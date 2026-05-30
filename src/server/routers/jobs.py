@@ -51,7 +51,7 @@ from src.server.deps import (
 from src.cli.execution_history import ExecutionHistoryDB
 from src.utils.config import get_db_path_from_env
 
-router = APIRouter(prefix="/v3/analysis", tags=["jobs"])
+router = APIRouter(prefix="/v1/analysis", tags=["jobs"])
 
 
 # ── 내부 유틸 ─────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ def _canonicalize_artifacts(job_id: str, image_stem: str, result: Dict[str, Any]
     result_path = art_dir / "results.json"
     with open(result_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
-    out["results.json"] = f"/v3/analysis/jobs/{job_id}/artifacts/results.json"
+    out["results.json"] = f"/v1/analysis/jobs/{job_id}/artifacts/results.json"
 
     # 복원·입력 이미지
     for key in ("restored_image", "input_image"):
@@ -76,7 +76,7 @@ def _canonicalize_artifacts(job_id: str, image_stem: str, result: Dict[str, Any]
             if src.exists():
                 dst = art_dir / src.name
                 shutil.copyfile(src, dst)
-                out[key] = f"/v3/analysis/jobs/{job_id}/artifacts/{src.name}"
+                out[key] = f"/v1/analysis/jobs/{job_id}/artifacts/{src.name}"
 
     out["image_stem"] = image_stem
     return out
@@ -539,7 +539,7 @@ async def confirm_skin_type(
         db.record_audit_log(
             actor_customer_id=customer_id,
             target_customer_id=customer_id,
-            endpoint=f"/v3/analysis/jobs/{job_id}/confirm-skin-type",
+            endpoint=f"/v1/analysis/jobs/{job_id}/confirm-skin-type",
             method="POST",
             user_role=current_customer.get("role", "unknown") if current_customer else "unknown",
             success=True,

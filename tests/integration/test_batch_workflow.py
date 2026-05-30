@@ -20,7 +20,7 @@ class TestBatchWorkflow:
     def auth_token(self):
         """인증 토큰 fixture"""
         login_resp = requests.post(
-            f"{BASE_URL}/v3/auth/login",
+            f"{BASE_URL}/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         assert login_resp.status_code == 200
@@ -54,7 +54,7 @@ class TestBatchWorkflow:
         }
 
         customer_resp = requests.post(
-            f"{BASE_URL}/v3/customer",
+            f"{BASE_URL}/v1/customer",
             json=customer_data,
             headers=headers
         )
@@ -74,7 +74,7 @@ class TestBatchWorkflow:
             data = {"customer_id": test_case["customer_id"]}
 
             job_resp = requests.post(
-                f"{BASE_URL}/v3/analysis/jobs",
+                f"{BASE_URL}/v1/analysis/jobs",
                 files=files,
                 data=data,
                 headers=headers
@@ -93,7 +93,7 @@ class TestBatchWorkflow:
         # 3. 작업 완료 대기
         for i in range(30):  # 최대 60초 대기
             status_resp = requests.get(
-                f"{BASE_URL}/v3/analysis/jobs/{job_id}",
+                f"{BASE_URL}/v1/analysis/jobs/{job_id}",
                 headers=headers
             )
             status_data = status_resp.json()
@@ -121,7 +121,7 @@ class TestBatchWorkflow:
 
         # 4. 결과 조회
         result_resp = requests.get(
-            f"{BASE_URL}/v3/analysis/jobs/{job_id}/result",
+            f"{BASE_URL}/v1/analysis/jobs/{job_id}/result",
             headers=headers
         )
 
@@ -171,7 +171,7 @@ def run_batch_test():
     # 1. 로그인
     print("로그인...")
     login_resp = requests.post(
-        f"{BASE_URL}/v3/auth/login",
+        f"{BASE_URL}/v1/auth/login",
         data={"customer_id": "admin", "password": "admin123"}
     )
     if login_resp.status_code != 200:

@@ -1,8 +1,8 @@
 """
 routers/logs.py — 로그 조회·다운로드 (관리자·분석가 전용)
 
-GET /v3/logs
-GET /v3/logs/download
+GET /v1/logs
+GET /v1/logs/download
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from src.cli.execution_history import ExecutionHistoryDB
 from src.server.deps import get_db
 from src.server.deps import get_current_customer, log, require_roles
 
-router = APIRouter(prefix="/v3/logs", tags=["logs"])
+router = APIRouter(prefix="/v1/logs", tags=["logs"])
 
 _VALID_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR")
 

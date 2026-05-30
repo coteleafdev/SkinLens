@@ -2,12 +2,12 @@
 health.py — 헬스 체크 및 장애 자동 복구 관련 라우터
 
 기능:
-- GET /v3/health - 상세한 서비스 헬스 체크
-- GET /v3/admin/incidents - 장애 이벤트 조회
-- GET /v3/admin/incidents/{incident_id} - 특정 장애 조회
-- POST /v3/admin/incidents/{incident_id}/recover - 수동 복구 트리거
-- GET /v3/admin/incidents/{incident_id}/recovery-actions - 복구 작업 조회
-- POST /v3/admin/recovery-actions/{action_id}/rollback - 롤백 트리거
+- GET /v1/health - 상세한 서비스 헬스 체크
+- GET /v1/admin/incidents - 장애 이벤트 조회
+- GET /v1/admin/incidents/{incident_id} - 특정 장애 조회
+- POST /v1/admin/incidents/{incident_id}/recover - 수동 복구 트리거
+- GET /v1/admin/incidents/{incident_id}/recovery-actions - 복구 작업 조회
+- POST /v1/admin/recovery-actions/{action_id}/rollback - 롤백 트리거
 """
 import logging
 import sqlite3

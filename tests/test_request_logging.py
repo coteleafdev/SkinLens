@@ -13,14 +13,14 @@ class TestRequestLoggingMiddleware:
     def test_request_id_header_added(self):
         """요청 ID가 응답 헤더에 추가되는지 확인"""
         client = TestClient(app)
-        response = client.get("/v3/health")
+        response = client.get("/v1/health")
         assert "X-Request-ID" in response.headers
         assert len(response.headers["X-Request-ID"]) > 0
 
     def test_request_id_format(self):
         """요청 ID가 UUID 형식인지 확인"""
         client = TestClient(app)
-        response = client.get("/v3/health")
+        response = client.get("/v1/health")
         request_id = response.headers["X-Request-ID"]
         # UUID 형식: 8-4-4-4-12 (총 36자, 하이픈 4개)
         assert len(request_id) == 36

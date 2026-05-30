@@ -7,11 +7,11 @@ routers/upload.py — 청크 업로드 및 파일 업로드 개선
 - 업로드 진행률 추적
 
 엔드포인트:
-- POST /v3/upload/init - 업로드 세션 초기화
-- POST /v3/upload/chunk - 청크 업로드
-- POST /v3/upload/complete - 업로드 완료
-- POST /v3/upload/cancel - 업로드 취소
-- GET /v3/upload/progress/{session_id} - 업로드 진행률 조회
+- POST /v1/upload/init - 업로드 세션 초기화
+- POST /v1/upload/chunk - 청크 업로드
+- POST /v1/upload/complete - 업로드 완료
+- POST /v1/upload/cancel - 업로드 취소
+- GET /v1/upload/progress/{session_id} - 업로드 진행률 조회
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from src.server.deps import get_current_customer, limiter, log
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/v3/upload", tags=["upload"])
+router = APIRouter(prefix="/v1/upload", tags=["upload"])
 
 
 # ── 업로드 세션 관리 ───────────────────────────────────────────────────────

@@ -34,7 +34,7 @@ from src.server.deps import (
 )
 from src.db.skin_analysis_db import SkinAnalysisDB
 
-router = APIRouter(prefix="/v3/customer/my", tags=["customer"])
+router = APIRouter(prefix="/v1/customer/my", tags=["customer"])
 
 
 def _ctx(current_customer: Dict[str, Any], db: ExecutionHistoryDB):
@@ -65,7 +65,7 @@ async def get_my_score_trends(
     request: Request = None,
 ):
     """인증된 고객의 점수 추이 조회."""
-    ep = "/v3/customer/my/trends"
+    ep = "/v1/customer/my/trends"
     cid, role, db = _ctx(current_customer, db)
     try:
         rows     = db.get_score_trends(customer_id=cid, days=days, limit=limit)
@@ -86,7 +86,7 @@ async def get_my_analysis_stats(
     request: Request = None,
 ):
     """인증된 고객의 분석 통계 조회."""
-    ep = "/v3/customer/my/analysis"
+    ep = "/v1/customer/my/analysis"
     cid, role, db = _ctx(current_customer, db)
     try:
         rows     = db.get_analysis_stats(days=days, customer_id=cid)
@@ -108,7 +108,7 @@ async def get_my_errors(
     request: Request = None,
 ):
     """인증된 고객의 에러 조회."""
-    ep = "/v3/customer/my/errors"
+    ep = "/v1/customer/my/errors"
     cid, role, db = _ctx(current_customer, db)
     try:
         rows     = db.get_errors(customer_id=cid, days=days, limit=limit)
@@ -128,7 +128,7 @@ async def delete_my_data(
     request: Request = None,
 ):
     """인증된 고객의 모든 데이터 삭제 (GDPR 준수)."""
-    ep = "/v3/customer/my/data"
+    ep = "/v1/customer/my/data"
     cid, role, db = _ctx(current_customer, db)
     try:
         deleted = db.delete_customer_data(cid)
@@ -147,7 +147,7 @@ async def export_my_data(
     request: Request = None,
 ):
     """인증된 고객의 모든 데이터 내보내기 (ZIP)."""
-    ep = "/v3/customer/my/data/export"
+    ep = "/v1/customer/my/data/export"
     cid, role, db = _ctx(current_customer, db)
     try:
         temp_dir  = tempfile.mkdtemp()
@@ -183,7 +183,7 @@ async def get_my_preferences(
     request: Request = None,
 ):
     """인증된 고객의 설정 조회."""
-    ep = "/v3/customer/my/preferences"
+    ep = "/v1/customer/my/preferences"
     if current_customer is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
     customer_id = current_customer.get("sub")
@@ -212,7 +212,7 @@ async def set_my_language(
     request: Request = None,
 ):
     """인증된 고객의 언어 설정."""
-    ep = "/v3/customer/my/preferences/language"
+    ep = "/v1/customer/my/preferences/language"
     if current_customer is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
     customer_id = current_customer.get("sub")
@@ -238,7 +238,7 @@ async def set_my_timezone(
     request: Request = None,
 ):
     """인증된 고객의 시간대 설정."""
-    ep = "/v3/customer/my/preferences/timezone"
+    ep = "/v1/customer/my/preferences/timezone"
     if current_customer is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
     customer_id = current_customer.get("sub")
