@@ -1274,9 +1274,11 @@ def _run_analyze(image_path: Path) -> int:
 # main
 # ---------------------------------------------------------------------------
 def main() -> int:
-    # 브레이크포인트 캐시 초기화 - config.json 변경 반영
+    # 캐시 초기화 - config.json 변경 반영
     from src.scoring._breakpoints import _clear_breakpoints_cache
+    from src.llm.llm_metadata import clear_metadata_cache
     _clear_breakpoints_cache()
+    clear_metadata_cache()
 
     argv = sys.argv[1:]
     if argv and argv[0] in ("-h", "--help"):

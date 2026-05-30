@@ -24,6 +24,17 @@ _metric_meta_cache: Optional[List[Tuple[str, str, str, bool]]] = None
 _score_criteria_cache: Optional[Dict[str, Tuple[int, int, str]]] = None
 
 
+def clear_metadata_cache() -> None:
+    """메타데이터 캐시 비우기
+    
+    [FIX 2026-05-30] config.json 변경 시 캐시를 비우기 위한 함수
+    """
+    global _metric_meta_cache, _score_criteria_cache
+    _metric_meta_cache = None
+    _score_criteria_cache = None
+    log.info("[LLM Metadata] 메타데이터 캐시 비움")
+
+
 def _get_metric_meta_fallback() -> List[Tuple[str, str, str, bool]]:
     """폴백용 하드코딩된 측정항목 메타데이터"""
     return [
