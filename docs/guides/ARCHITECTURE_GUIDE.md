@@ -135,6 +135,29 @@ llm = llm_class(api_key="your-api-key")
 response = llm.generate(prompt)
 ```
 
+### 1.4 LLM 응답 짤림 처리 (부분 완료 로직)
+
+LLM 응답이 토큰 제한으로 인해 짤리는 경우, 전체 프롬프트를 다시 보내는 대신 누락된 필드만 요청하여 효율적으로 재시도합니다.
+
+**작동 원리**:
+1. **응답 짤림 감지**: `_is_response_truncated()` 함수로 응답이 완전한지 확인
+2. **부분 JSON 파싱**: 마크다운 코드 블록 제거 후 부분 JSON 파싱 시도
+3. **누락 필드 식별**: `_identify_missing_fields()`로 기대 필드와 실제 필드 비교
+4. **부분 완료 요청**: 누락된 필드가 10개 미만일 경우 `_build_field_completion_prompt()`로 부분 요청 생성
+5. **응답 병합**: `_merge_json_responses()`로 원본 응답과 완료 응답 병합
+
+**적용 모드**:
+- **Reference Guided 모드**: `reference_baseline`, `score_reasons`, `orig_metric_scores`, `orig_metric_opinions`, `orig_overall_score`, `orig_perceived_age`, `orig_overall_opinion`, `recommendation`, `ref_metric_scores`, `ref_metric_reasons`
+- **Dual 모드**: `original_metric_opinions`, `restored_metric_opinions`, `original_overall_opinion`, `restored_overall_opinion`, `original_overall_score`, `restored_overall_score`, `original_perceived_age`, `restored_perceived_age`, `recommendation`
+
+**재시도 전략**:
+- 누락 필드 < 10개: 부분 완료 시도 (이미지 없이 텍스트만 요청)
+- 누락 필드 ≥ 10개: 토큰 1.5배 증가 후 전체 재시도
+- 최대 재시도: 기본 재시도 + 토큰 증가 재시도 2회
+
+**타임아웃 설정**:
+- 기본 타임아웃: 600초 (config.json `llm.timeout_sec`, `timeouts.llm_timeout_sec`, `llms.gemini_v1.timeout_sec`)
+
 ---
 
 ## 2. 데이터베이스 아키텍처
