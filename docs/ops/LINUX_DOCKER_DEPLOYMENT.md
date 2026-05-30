@@ -46,15 +46,6 @@ graph TB
     SkinLens -->|REST API| LLM
     SkinLens -->|Metrics| Prometheus
     Prometheus -->|Query| Grafana
-    
-    style User fill:#e1f5ff
-    style Nginx fill:#fff4e1
-    style SkinLens fill:#e8f5e9
-    style GPU fill:#fce4ec
-    style DB fill:#f3e5f5
-    style Prometheus fill:#fff3e0
-    style Grafana fill:#e0f7fa
-    style LLM fill:#f1f8e9
 ```
 
 ---
@@ -228,10 +219,6 @@ flowchart TD
     Build --> Compose[Docker Compose 실행]
     Compose --> Verify[상태 확인]
     Verify --> Success[배포 완료]
-    
-    style Start fill:#e1f5ff
-    style Success fill:#e8f5e9
-    style GPU fill:#fff4e1
 ```
 
 ### 4.1 소스 코드 클론
@@ -428,12 +415,6 @@ graph LR
     Prometheus --> Grafana
     Prometheus --> AlertManager
     AlertManager --> Slack
-    
-    style SkinLens fill:#e8f5e9
-    style Prometheus fill:#fff3e0
-    style Grafana fill:#e0f7fa
-    style AlertManager fill:#fce4ec
-    style Slack fill:#f3e5f5
 ```
 
 ### 6.1 컨테이너 리소스 확인
@@ -563,14 +544,6 @@ graph TB
     
     Hacker -.->|차단됨| UFW
     Hacker -.->|차단됨| RateLimit
-    
-    style Hacker fill:#ffcccc
-    style UFW fill:#fff4e1
-    style Nginx fill:#e8f5e9
-    style SkinLens fill:#e0f7fa
-    style Auth fill:#f3e5f5
-    style RateLimit fill:#fce4ec
-    style InputSanitize fill:#f1f8e9
 ```
 
 ### 8.1 방화벽 설정
