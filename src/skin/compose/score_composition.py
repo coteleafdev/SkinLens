@@ -15,7 +15,7 @@ skin.compose.score_composition
 [REFACTOR MAGIC] WEIGHTS 하드코딩 제거 — config.json에서 로드
 [REFACTOR P1-11] 순환 import 제거 — _load_scoring_config lazy import
 [REFACTOR P2] _clamp() 중복 정의 제거 — scoring_utils에서 import
-[REFACTOR 2026-05-22] _MEASUREMENT_CATEGORIES 하드코딩 제거 — llm_prompt_template.md에서 로드
+[REFACTOR 2026-05-22] _MEASUREMENT_CATEGORIES 하드코딩 제거 — LLM_PROMPT_TEMPLATE.md에서 로드
 """
 from __future__ import annotations
 
@@ -224,10 +224,10 @@ OUTPUT_KEYS: List[str] = _OutputKeysProxy()  # 하위 호환
 
 
 def get_measurement_categories() -> List[Tuple[str, List[str]]]:
-    """직교 키 카테고리를 반환합니다 (llm_prompt_template.md에서 로드).
-    
+    """직교 키 카테고리를 반환합니다 (LLM_PROMPT_TEMPLATE.md에서 로드).
+
     [REFACTOR 2026-05-22] 하드코딩된 _MEASUREMENT_CATEGORIES를 동적 로드로 변경.
-    llm_prompt_template.md의 SCORE_MAPPING 섹션을 기반으로 카테고리를 생성합니다.
+    LLM_PROMPT_TEMPLATE.md의 SCORE_MAPPING 섹션을 기반으로 카테고리를 생성합니다.
     
     Returns:
         List[(카테고리명, [source_key 목록])]

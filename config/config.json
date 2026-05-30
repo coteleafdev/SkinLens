@@ -5,8 +5,8 @@
     "description": "AI-powered skin analysis engine"
   },
   "config_version": "3.6",
-  "description": "피부 점수 측정 런타임 설정 파일 (메타데이터는 llm_prompt_template.md에서 관리)",
-  "_note": "이 파일은 런타임 설정만 포함합니다. 측정항목 메타데이터(가중치, 디스플레이 이름, 카테고리, 실측 범위)는 docs/llm_prompt_template.md를 참조하세요.",
+  "description": "피부 점수 측정 런타임 설정 파일 (메타데이터는 LLM_PROMPT_TEMPLATE.md에서 관리)",
+  "_note": "이 파일은 런타임 설정만 포함합니다. 측정항목 메타데이터(가중치, 디스플레이 이름, 카테고리, 실측 범위)는 docs/guides/LLM_PROMPT_TEMPLATE.md를 참조하세요.",
   "logging": {
     "level": "DEBUG",
     "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -2258,7 +2258,7 @@
     }
   },
   "actual_ranges": {
-    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 측정 항목 실측 범위 파라미터.",
+    "_note": "[REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전. 측정 항목 실측 범위 파라미터.",
     "_purpose": "측정 알고리즘 내부 계산에 사용되는 범위 파라미터.",
     "카테고리별 커버리지 범위": {
       "pigmentation_coverage": [
@@ -2374,7 +2374,7 @@
     }
   },
   "score_mapping": {
-    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 내부 원시 점수에서 최종 점수 매핑.",
+    "_note": "[REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전. 내부 원시 점수에서 최종 점수 매핑.",
     "_purpose": "18개 사용자 표현용 항목을 10개 내부 직교 키에 매핑. ReportLayer._fallback_from_v3()에서 사용.",
     "원시 점수 소스 매핑 및 보정 계수": {
       "melasma_score": {
@@ -2452,7 +2452,7 @@
     }
   },
   "score_criteria": {
-    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 점수 기준 설정.",
+    "_note": "[REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전. 점수 기준 설정.",
     "_purpose": "점수 스케일 및 등급 라벨 정의.",
     "엄격한 평가 모드": {
       "enabled": true,
@@ -2719,7 +2719,7 @@
     }
   },
   "recommendation_guidelines": {
-    "_note": "[REFACTOR 2026-05-24] llm_prompt_template.md에서 이전. 관리 권고사항 가이드라인.",
+    "_note": "[REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전. 관리 권고사항 가이드라인.",
     "_purpose": "LLM이 생성하는 관리 권고사항의 형식과 내용 가이드라인.",
     "형식 요구사항": {
       "항목 수": {

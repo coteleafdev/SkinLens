@@ -26,8 +26,8 @@ log = logging.getLogger(__name__)
 
 class ConfigManager:
     """통합 설정 관리자 (싱글톤).
-    
-    config.json, llm_prompt_template.md 등 모든 설정 파일을
+
+    config.json, LLM_PROMPT_TEMPLATE.md 등 모든 설정 파일을
     중앙에서 관리하고 캐싱합니다.
     """
     
@@ -50,7 +50,7 @@ class ConfigManager:
         # 프로젝트 루트 경로 계산
         self._project_root = Path(__file__).resolve().parents[2]
         self._config_path = self._project_root / "config" / "config.json"
-        self._template_path = self._project_root / "docs" / "guides" / "llm_prompt_template.md"
+        self._template_path = self._project_root / "docs" / "guides" / "LLM_PROMPT_TEMPLATE.md"
         self._secrets_path = self._project_root / "config" / "config.secrets.json"
         
         # 하위 호환성: src/config/config/ 디렉토리도 확인
@@ -125,7 +125,7 @@ class ConfigManager:
                 return {}
     
     def _load_template(self) -> str:
-        """llm_prompt_template.md를 로드합니다 (mtime 기반 캐싱)."""
+        """LLM_PROMPT_TEMPLATE.md를 로드합니다 (mtime 기반 캐싱)."""
         with self._cache_lock:
             if not self._template_path.exists():
                 log.warning("프롬프트 템플릿 파일을 찾을 수 없습니다: %s", self._template_path)

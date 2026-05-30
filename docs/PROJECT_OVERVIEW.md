@@ -1137,15 +1137,14 @@ chmod +x deploy.sh
 - [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md): 리눅스 Docker 배포 가이드
 
 ### 기술 가이드 (docs/guides/)
-- [llm_prompt_template.md](guides/llm_prompt_template.md): LLM 프롬프트 템플릿
-- [skin_analysis_README.md](guides/skin_analysis_README.md): 피부 분석 상세 문서
+- [LLM_PROMPT_TEMPLATE.md](guides/LLM_PROMPT_TEMPLATE.md): LLM 프롬프트 템플릿
 - [SKIN_SCORING_GUIDE.md](guides/SKIN_SCORING_GUIDE.md): 18개 측정항목 상세 (가중치·측정원리·ROI), 점수 척도, 카테고리 배분
 - [PRESCRIPTION_GUIDE.md](guides/PRESCRIPTION_GUIDE.md): 처방전 구성 (M01~M10 + PCR 3종), 처방 생성 플로우차트, 베이스 비율 계산
 - [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md): Strategy 패턴 (분석기·복원기·LLM), DB 구조, 의존성 방향도
-- [CODE_REVIEW_HISTORY.md](guides/CODE_REVIEW_HISTORY.md): 코드 리뷰 결과, 리팩토링 이력, 변경 명세서
+- [CODE_REVIEW_HISTORY.md](project/CODE_REVIEW_HISTORY.md): 코드 리뷰 결과, 리팩토링 이력, 변경 명세서
 - [JSON_IO_FLOW.md](guides/JSON_IO_FLOW.md): 데이터 처리 흐름
 - [DEVELOPMENT_GUIDE.md](guides/DEVELOPMENT_GUIDE.md): 개발 가이드
-- [IMPROVEMENT_PLAN.md](guides/IMPROVEMENT_PLAN.md): 개선 계획
+- [IMPROVEMENT_PLAN.md](project/IMPROVEMENT_PLAN.md): 개선 계획
 
 ### 기능 설계 문서 (docs/design/)
 - [REGIONAL_RESTORATION_DESIGN.md](design/REGIONAL_RESTORATION_DESIGN.md): 지역별 복원 기능 설계

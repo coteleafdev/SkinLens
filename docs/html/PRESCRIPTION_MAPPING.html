@@ -1197,7 +1197,7 @@
 </li>
 <li><a href="#5">5. 설정 파일 관리</a><ul>
 <li><a href="#_14">아키텍처 다이아그램</a></li>
-<li><a href="#llm_prompt_templatemd">llm_prompt_template.md</a></li>
+<li><a href="#llm_prompt_templatemd">LLM_PROMPT_TEMPLATE.md</a></li>
 <li><a href="#configjson">config.json</a></li>
 <li><a href="#prescription_calculatorpy">prescription_calculator.py</a></li>
 </ul>
@@ -1267,7 +1267,7 @@
 </li>
 <li><a href="#5">5. 설정 파일 관리</a><ul>
 <li><a href="#_14">아키텍처 다이아그램</a></li>
-<li><a href="#llm_prompt_templatemd">llm_prompt_template.md</a></li>
+<li><a href="#llm_prompt_templatemd">LLM_PROMPT_TEMPLATE.md</a></li>
 <li><a href="#configjson">config.json</a></li>
 <li><a href="#prescription_calculatorpy">prescription_calculator.py</a></li>
 </ul>
@@ -1920,7 +1920,7 @@
 <h2 id="5">5. 설정 파일 관리<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
 <h3 id="_14">아키텍처 다이아그램<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
 <div class="mermaid">flowchart TB
-    subgraph 템플릿["llm_prompt_template.md"]
+    subgraph 템플릿["LLM_PROMPT_TEMPLATE.md"]
         T1["PRESCRIPTION_CONFIG&lt;br/>매핑 테이블"]
         T2["변환 규칙"]
         T3["PCR 규칙"]
@@ -1965,7 +1965,7 @@
     style 모듈 fill:#ffe1f5
     style 사용 fill:#e1ffe1</div>
 
-<h3 id="llm_prompt_templatemd">llm_prompt_template.md<a class="headerlink" href="#llm_prompt_templatemd" title="Permanent link">&para;</a></h3>
+<h3 id="llm_prompt_templatemd">LLM_PROMPT_TEMPLATE.md<a class="headerlink" href="#llm_prompt_templatemd" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>PRESCRIPTION_CONFIG 섹션</strong>: 매핑 테이블, 변환 규칙 문서화</li>
 <li><strong>목적</strong>: 개발자/사용자에게 매핑 구조 제공</li>
@@ -2003,13 +2003,13 @@
 <h3 id="_17">확장 예시<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
 <p><strong>새로운 측정항목 추가 (예: 새로운 직교 항목)</strong>:</p>
 <ol>
-<li>llm_prompt_template.md에 매핑 추가</li>
+<li>LLM_PROMPT_TEMPLATE.md에 매핑 추가</li>
 <li>config.json에 매핑 추가</li>
 <li>코드 수정 불필요 (자동 반영)</li>
 </ol>
 <h2 id="7">7. 주의사항<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>매핑 일관성</strong>: llm_prompt_template.md와 config.json의 매핑이 일치해야 함</li>
+<li><strong>매핑 일관성</strong>: LLM_PROMPT_TEMPLATE.md와 config.json의 매핑이 일치해야 함</li>
 <li><strong>점수 범위</strong>: 모든 점수는 0-100 범위여야 함</li>
 <li><strong>처방 비율 합계</strong>: 처방 비율 합계에 제한 없음 (각 항목 독립 계산)</li>
 <li><strong>미사용 항목</strong>: 현재 미사용 항목은 향후 확장을 위해 예약됨</li>
@@ -2018,7 +2018,7 @@
 <h2 id="8">8. 관련 파일<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>src/prescription/prescription_calculator.py</code>: 처방전 계산 모듈</li>
-<li><code>docs/llm_prompt_template.md</code>: 처방전 설정 템플릿</li>
+<li><code>docs/guides/LLM_PROMPT_TEMPLATE.md</code>: 처방전 설정 템플릿</li>
 <li><code>config/config.json</code>: 처방전 파라미터 및 매핑</li>
 <li><code>docs/SKIN_ASSESSMENT_PRESCRIPTION.md</code>: 피부 평가 처방 로직 (레거시)</li>
 <li><code>docs/PRESCRIPTION_CALCULATION.md</code>: PCR 처방 로직</li>

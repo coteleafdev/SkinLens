@@ -398,12 +398,11 @@ pytest tests/test_server.py -v
 - [SKIN_SCORING_GUIDE.md](docs/guides/SKIN_SCORING_GUIDE.md): 스코어링 가이드
 - [IMPROVEMENT_PLAN.md](docs/guides/IMPROVEMENT_PLAN.md): 개선 계획
 - [JSON_IO_FLOW.md](docs/guides/JSON_IO_FLOW.md): 데이터 처리 흐름
-- [skin_analysis_README.md](docs/guides/skin_analysis_README.md): 피부 분석 상세 문서
 - [RESTORATION_ENGINE_GUIDE.md](docs/guides/RESTORATION_ENGINE_GUIDE.md): 복원 엔진 추가 가이드
-- [CODE_REVIEW_HISTORY.md](docs/guides/CODE_REVIEW_HISTORY.md): 코드 리뷰 이력
+- [CODE_REVIEW_HISTORY.md](docs/project/CODE_REVIEW_HISTORY.md): 코드 리뷰 이력
 - [PRESCRIPTION_GUIDE.md](docs/guides/PRESCRIPTION_GUIDE.md): 처방 가이드
-- [image_enhancer_guide.md](docs/guides/image_enhancer_guide.md): 이미지 인핸서 가이드
-- [llm_prompt_template.md](docs/guides/llm_prompt_template.md): LLM 프롬프트 템플릿
+- [IMAGE_ENHANCER_GUIDE.md](docs/user/IMAGE_ENHANCER_GUIDE.md): 이미지 인핸서 가이드
+- [LLM_PROMPT_TEMPLATE.md](docs/guides/LLM_PROMPT_TEMPLATE.md): LLM 프롬프트 템플릿
 - ... (다른 GUIDE 문서들)
 
 ### 테스트 가이드

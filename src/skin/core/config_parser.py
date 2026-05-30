@@ -4,15 +4,15 @@ skin.core.config_parser
 설정 파싱 전용 SSOT 모듈.
 
 [REFACTOR 2026-05-24] config.json 기반 설정 로드로 전환.
-llm_prompt_template.md는 순수 프롬프트 템플릿으로 유지.
+LLM_PROMPT_TEMPLATE.md는 순수 프롬프트 템플릿으로 유지.
 
 기존 기능:
-    - llm_prompt_template.md 파싱 (하위 호환용)
+    - LLM_PROMPT_TEMPLATE.md 파싱 (하위 호환용)
     - config.json 기반 설정 로드 (신규)
 
 설계 원칙:
   - config.json 우선: measurement_weights, actual_ranges 등은 config.json에서 로드
-  - 하위 호환: llm_prompt_template.md 파싱 함수 유지 (기존 코드 호환)
+  - 하위 호환: LLM_PROMPT_TEMPLATE.md 파싱 함수 유지 (기존 코드 호환)
   - 로드 함수(load_*, get_*): 파일 I/O + 캐시. functools.cache 로 단순화.
   - 로거 이름: "skin.core.config_parser"
 
@@ -27,7 +27,7 @@ llm_prompt_template.md는 순수 프롬프트 템플릿으로 유지.
         get_recommendation_guidelines_from_config,  # 권고사항 가이드라인
     )
     
-    # llm_prompt_template.md 파싱 (하위 호환)
+    # LLM_PROMPT_TEMPLATE.md 파싱 (하위 호환)
     from skin.core.config_parser import (
         load_prompt_template,
         extract_section,
@@ -59,9 +59,9 @@ log = logging.getLogger(__name__)
 #   parent.parent          = src/skin
 #   parent.parent.parent  = src
 #   parent.parent.parent.parent = project_root (parent 4번 필요)
-# 템플릿 경로: <project_root>/docs/guides/llm_prompt_template.md
+# 템플릿 경로: <project_root>/docs/guides/LLM_PROMPT_TEMPLATE.md
 _DEFAULT_TEMPLATE_PATH: Path = (
-    Path(__file__).parent.parent.parent.parent / "docs" / "guides" / "llm_prompt_template.md"
+    Path(__file__).parent.parent.parent.parent / "docs" / "guides" / "LLM_PROMPT_TEMPLATE.md"
 )
 
 
@@ -71,7 +71,7 @@ _DEFAULT_TEMPLATE_PATH: Path = (
 
 @lru_cache(maxsize=1)
 def load_prompt_template(path: Optional[Path] = None) -> str:
-    """llm_prompt_template.md 내용을 읽어 캐싱하여 반환합니다.
+    """LLM_PROMPT_TEMPLATE.md 내용을 읽어 캐싱하여 반환합니다.
 
     Args:
         path: 템플릿 파일 경로. None 이면 프로젝트 기본 경로(_DEFAULT_TEMPLATE_PATH) 사용.
@@ -299,7 +299,7 @@ def get_metric_meta(
     """
     template = load_prompt_template(template_path)
     if not template:
-        msg = "프롬프트 템플릿을 찾을 수 없습니다. docs/guides/llm_prompt_template.md 파일을 확인하세요."
+        msg = "프롬프트 템플릿을 찾을 수 없습니다. docs/guides/LLM_PROMPT_TEMPLATE.md 파일을 확인하세요."
         if strict:
             raise ValueError(msg)
         return []
@@ -716,7 +716,7 @@ def _load_config_json() -> Dict[str, Any]:
 def get_measurement_weights() -> Dict[str, Any]:
     """config.json에서 측정항목 가중치를 로드합니다.
 
-    [REFACTOR 2026-05-24] llm_prompt_template.md에서 이전.
+    [REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전.
 
     Returns:
         측정항목 가중치 dict. {metric_key: weight}
@@ -743,7 +743,7 @@ def get_restoration_quality_weights() -> Dict[str, Any]:
 def get_actual_ranges() -> Dict[str, Any]:
     """config.json에서 실측 범위를 로드합니다.
 
-    [REFACTOR 2026-05-24] llm_prompt_template.md에서 이전.
+    [REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전.
 
     Returns:
         실측 범위 dict. {metric_key: [min, max]}
@@ -762,7 +762,7 @@ def get_actual_ranges() -> Dict[str, Any]:
 def get_score_mapping() -> Dict[str, Any]:
     """config.json에서 점수 매핑을 로드합니다.
 
-    [REFACTOR 2026-05-24] llm_prompt_template.md에서 이전.
+    [REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전.
 
     Returns:
         점수 매핑 dict. {metric_key: {source, coefficient}}
@@ -775,7 +775,7 @@ def get_score_mapping() -> Dict[str, Any]:
 def get_score_criteria() -> Dict[str, Any]:
     """config.json에서 점수 기준을 로드합니다.
 
-    [REFACTOR 2026-05-24] llm_prompt_template.md에서 이전.
+    [REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전.
 
     Returns:
         점수 기준 dict. {점수 스케일, 등급 라벨}
@@ -801,7 +801,7 @@ def get_detailed_scoring_criteria() -> Dict[str, Any]:
 def get_recommendation_guidelines_from_config() -> Dict[str, Any]:
     """config.json에서 관리 권고사항 가이드라인을 로드합니다.
 
-    [REFACTOR 2026-05-24] llm_prompt_template.md에서 이전.
+    [REFACTOR 2026-05-24] LLM_PROMPT_TEMPLATE.md에서 이전.
     기존 get_recommendation_guidelines()와 이름 충돌 방지를 위해 접미사 추가.
 
     Returns:
