@@ -23,6 +23,7 @@ import os
 import shutil
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,6 +55,13 @@ from src.notification import AlertSystem
 from src.i18n import Translator
 from src.server.middleware import I18nMiddleware
 
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+    WATCHDOG_AVAILABLE = True
+except ImportError:
+    WATCHDOG_AVAILABLE = False
+
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
 from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders
 
@@ -69,6 +77,51 @@ logging.basicConfig(
 setup_db_logging()
 
 log = logging.getLogger(__name__)
+
+
+# ── 핫 리로드 (config.json 변경 감지) ────────────────────────────────────────
+
+if WATCHDOG_AVAILABLE:
+    class ConfigFileHandler(FileSystemEventHandler):
+        """config.json 변경 감지 핸들러."""
+
+        def __init__(self, config_path: Path):
+            self.config_path = config_path
+
+        def on_modified(self, event):
+            if event.src_path == str(self.config_path):
+                log.info("config.json 변경 감지, 캐시 초기화")
+                from src.config.config_manager import ConfigManager
+                from src.scoring._breakpoints import _clear_breakpoints_cache
+                from src.llm.llm_metadata import clear_metadata_cache
+
+                # 캐시 초기화
+                ConfigManager._instance = None
+                _clear_breakpoints_cache()
+                clear_metadata_cache()
+
+                # 로그 레벨 재로드
+                new_level = _load_logging_level()
+                from src.utils.utils import set_logging_level
+                set_logging_level(new_level, force=True)
+
+                log.info("설정 재로드 완료 (로그 레벨: %s)", new_level)
+
+    # config.json 감시 시작
+    config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
+    if config_path.exists():
+        observer = Observer()
+        observer.schedule(
+            ConfigFileHandler(config_path),
+            str(config_path.parent),
+            recursive=False
+        )
+        observer.start()
+        log.info("핫 리로드 활성화: %s 감시 중", config_path)
+    else:
+        log.warning("config.json을 찾을 수 없어 핫 리로드 비활성화")
+else:
+    log.info("watchdog 패키지가 설치되지 않아 핫 리로드 비활성화. pip install watchdog")
 
 
 # ── 백그라운드 태스크 ─────────────────────────────────────────────────────

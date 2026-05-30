@@ -160,17 +160,49 @@ def _load_logging_level(config_path: Optional[Path] = None) -> str:
 
 def get_logging_level() -> str:
     """현재 설정된 로그 레벨을 반환합니다."""
-    return _load_logging_level()
+    # 런타임 로거의 실제 레벨 반환
+    root_logger = logging.getLogger()
+    level_int = root_logger.level
+
+    level_map = {
+        logging.DEBUG: "DEBUG",
+        logging.INFO: "INFO",
+        logging.WARNING: "WARNING",
+        logging.ERROR: "ERROR",
+    }
+    return level_map.get(level_int, _load_logging_level())
 
 
-def set_logging_level(level: str, force: bool = True) -> None:
+def set_logging_level(level: str, force: bool = True, persist: bool = False) -> None:
     """로그 레벨을 동적으로 변경합니다.
-    
+
     Args:
         level: 로그 레벨 (DEBUG, INFO, WARNING, ERROR)
         force: True이면 강제로 재설정
+        persist: True이면 config.json에도 저장
     """
     setup_logging(level=level, force=force)
+
+    if persist:
+        _persist_logging_level(level)
+
+
+def _persist_logging_level(level: str) -> None:
+    """로그 레벨을 config.json에 저장합니다."""
+    import json
+    from pathlib import Path as P
+
+    config_path = P(__file__).parent.parent.parent / "config" / "config.json"
+    try:
+        if config_path.exists():
+            with open(config_path, encoding="utf-8") as f:
+                config = json.load(f)
+            config["logging"]["level"] = level.upper()
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump(config, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.warning("config.json 저장 실패: %s", e)
 
 
 # ---------------------------------------------------------------------------

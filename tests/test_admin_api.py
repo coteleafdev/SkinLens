@@ -43,6 +43,193 @@ class TestAdminAPI:
         data = response.json()
         assert "audit_logs" in data
 
+    def test_get_log_level_unauthorized(self, auth_client):
+        """인증 없이 로그 레벨 조회 실패"""
+        response = auth_client.get("/v3/admin/logging/level")
+        assert response.status_code == 401
+
+    def test_get_log_level_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 로그 레벨 조회 실패"""
+        response = auth_client.get(
+            "/v3/admin/logging/level",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_get_log_level_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 로그 레벨 조회 성공"""
+        response = auth_client.get(
+            "/v3/admin/logging/level",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "current_level" in data
+        assert "available_levels" in data
+        assert isinstance(data["available_levels"], list)
+
+    def test_update_log_level_unauthorized(self, auth_client):
+        """인증 없이 로그 레벨 변경 실패"""
+        response = auth_client.put("/v3/admin/logging/level?level=DEBUG")
+        assert response.status_code == 401
+
+    def test_update_log_level_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 로그 레벨 변경 실패"""
+        response = auth_client.put(
+            "/v3/admin/logging/level?level=DEBUG",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_update_log_level_invalid_level(self, auth_client, admin_token):
+        """잘못된 로그 레벨로 변경 실패"""
+        response = auth_client.put(
+            "/v3/admin/logging/level?level=INVALID",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 400
+
+    def test_update_log_level_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 로그 레벨 변경 성공"""
+        response = auth_client.put(
+            "/v3/admin/logging/level?level=WARNING",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "previous_level" in data
+        assert "new_level" in data
+        assert data["new_level"] == "WARNING"
+
+    def test_get_system_metrics_unauthorized(self, auth_client):
+        """인증 없이 시스템 메트릭 조회 실패"""
+        response = auth_client.get("/v3/admin/metrics/system")
+        assert response.status_code == 401
+
+    def test_get_system_metrics_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 시스템 메트릭 조회 실패"""
+        response = auth_client.get(
+            "/v3/admin/metrics/system",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_get_system_metrics_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 시스템 메트릭 조회 성공"""
+        response = auth_client.get(
+            "/v3/admin/metrics/system",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        # psutil이 설치되어 있으면 메트릭 반환, 없으면 에러 메시지
+        if "error" in data:
+            assert data["error"] == "psutil not installed"
+        else:
+            assert "cpu" in data
+            assert "memory" in data
+            assert "disk" in data
+            assert "network" in data
+            assert "process" in data
+            assert "timestamp" in data
+
+    def test_create_api_key_unauthorized(self, auth_client):
+        """인증 없이 API 키 생성 실패"""
+        response = auth_client.post("/v3/admin/api-keys?name=test&owner_id=user1")
+        assert response.status_code == 401
+
+    def test_create_api_key_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 API 키 생성 실패"""
+        response = auth_client.post(
+            "/v3/admin/api-keys?name=test&owner_id=user1",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_create_api_key_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 API 키 생성 성공"""
+        response = auth_client.post(
+            "/v3/admin/api-keys?name=test_key&owner_id=user1&scopes=%5B%22read%22%2C%22write%22%5D",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "id" in data
+        assert "api_key" in data
+        assert "name" in data
+        assert data["name"] == "test_key"
+        assert "scopes" in data
+
+    def test_list_api_keys_unauthorized(self, auth_client):
+        """인증 없이 API 키 목록 조회 실패"""
+        response = auth_client.get("/v3/admin/api-keys")
+        assert response.status_code == 401
+
+    def test_list_api_keys_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 API 키 목록 조회 성공"""
+        response = auth_client.get(
+            "/v3/admin/api-keys",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "api_keys" in data
+        assert "count" in data
+        assert isinstance(data["api_keys"], list)
+
+    def test_revoke_api_key_unauthorized(self, auth_client):
+        """인증 없이 API 키 폐지 실패"""
+        response = auth_client.delete("/v3/admin/api-keys/test-key-id")
+        assert response.status_code == 401
+
+    def test_revoke_api_key_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 API 키 폐지 실패"""
+        response = auth_client.delete(
+            "/v3/admin/api-keys/test-key-id",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_get_cache_stats_unauthorized(self, auth_client):
+        """인증 없이 캐시 통계 조회 실패"""
+        response = auth_client.get("/v3/admin/cache/stats")
+        assert response.status_code == 401
+
+    def test_get_cache_stats_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 캐시 통계 조회 성공"""
+        response = auth_client.get(
+            "/v3/admin/cache/stats",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "metrics_cache" in data
+        assert "timestamp" in data
+
+    def test_clear_cache_unauthorized(self, auth_client):
+        """인증 없이 캐시 초기화 실패"""
+        response = auth_client.post("/v3/admin/cache/clear")
+        assert response.status_code == 401
+
+    def test_clear_cache_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 캐시 초기화 실패"""
+        response = auth_client.post(
+            "/v3/admin/cache/clear",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_clear_cache_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 캐시 초기화 성공"""
+        response = auth_client.post(
+            "/v3/admin/cache/clear?cache_type=metrics",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "cleared_caches" in data
+        assert "metrics" in data["cleared_caches"]
+
     def test_check_db_health_unauthorized(self, auth_client):
         """인증 없이 DB 헬스체크 실패"""
         response = auth_client.get("/v3/health/db")
