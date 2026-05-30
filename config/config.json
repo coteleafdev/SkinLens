@@ -66,7 +66,7 @@
     "default_model": "models/gemini-2.5-pro",
     "provider": "gemini",
     "api_key_env": "GEMINI_API_KEY",
-    "timeout_sec": 300,
+    "timeout_sec": 600,
     "max_retries": 3,
     "temperature": 0.3,
     "max_output_tokens_single": 8192,
@@ -177,7 +177,7 @@
     "gemini_v1": {
       "model": "models/gemini-2.5-pro",
       "provider": "gemini",
-      "timeout_sec": 300,
+      "timeout_sec": 600,
       "max_retries": 3
     },
     "_note": "[REFACTOR] LLM 선택. 레지스트리에 등록된 이름 사용. provider 필드 추가 (2026-05-24)."
@@ -827,7 +827,7 @@
   },
   "timeouts": {
     "job_semaphore_timeout_sec": 300,
-    "llm_timeout_sec": 300,
+    "llm_timeout_sec": 600,
     "analysis_timeout_sec": 600,
     "restore_timeout_sec": 300,
     "_note": "각 작업별 타임아웃 설정."
