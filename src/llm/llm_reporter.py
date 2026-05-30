@@ -1156,24 +1156,89 @@ class LlmSkinReporter:
 
                 # 응답 완전성 검사
                 if _is_response_truncated(response_text):
-                    if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning(
-                            "[LLM] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
-                            attempt + 1,
-                            current_max_tokens,
-                            len(response_text),
-                            int(current_max_tokens * 1.5)
-                        )
-                        current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
-                        time.sleep(self.retry_delay)
-                        continue
-                    else:
-                        log.error(
-                            "[LLM] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
-                            attempt + 1,
-                            current_max_tokens,
-                            len(response_text)
-                        )
+                    # 누락된 필드 식별 시도
+                    try:
+                        # 마크다운 코드 블록 제거 후 JSON 파싱 시도
+                        clean_response = response_text
+                        if clean_response.startswith("```"):
+                            lines = clean_response.split("\n")
+                            if lines[0].startswith("```"):
+                                lines = lines[1:]
+                            if lines and lines[-1].startswith("```"):
+                                lines = lines[:-1]
+                            clean_response = "\n".join(lines).strip()
+                        
+                        # 부분 JSON 파싱 시도
+                        partial_json = json.loads(clean_response)
+                        
+                        # 기대하는 필드 목록 (듀얼 모드)
+                        expected_fields = [
+                            "original_metric_opinions", "restored_metric_opinions",
+                            "original_overall_opinion", "restored_overall_opinion",
+                            "original_overall_score", "restored_overall_score",
+                            "original_perceived_age", "restored_perceived_age",
+                            "recommendation"
+                        ]
+                        
+                        missing_fields = _identify_missing_fields(clean_response, expected_fields)
+                        
+                        if missing_fields and len(missing_fields) < 10:  # 누락된 필드가 적으면 부분 완료 시도
+                            log.info(f"[Dual] 응답 짤림 감지 - 누락된 필드 {len(missing_fields)}개: {missing_fields}")
+                            
+                            # 누락된 필드만 요청
+                            completion_prompt = _build_field_completion_prompt(missing_fields, clean_response)
+                            completion_response = self._call_llm(
+                                system_prompt,
+                                completion_prompt,
+                                [],  # 이미지 없이 텍스트만
+                                max_output_tokens=4096,
+                            )
+                            
+                            # 완료 응답 파싱
+                            completion_json = json.loads(completion_response)
+                            
+                            # 응답 병합
+                            merged_json = _merge_json_responses(partial_json, completion_json)
+                            response_text = json.dumps(merged_json, ensure_ascii=False)
+                            
+                            log.info(f"[Dual] 누락된 필드 완료 성공 - 병합된 응답 길이: {len(response_text)}")
+                        else:
+                            # 누락된 필드가 너무 많으면 기존 방식대로 재시도
+                            if attempt < self.max_retries + max_token_increase_retries:
+                                log.warning(
+                                    "[Dual] 응답 짤림 감지 - 누락된 필드가 너무 많음 ({len(missing_fields)}개) - 토큰 증가 재시도"
+                                )
+                                current_max_tokens = int(current_max_tokens * 1.5)
+                                time.sleep(self.retry_delay)
+                                continue
+                            else:
+                                log.error(
+                                    "[Dual] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                                    attempt + 1,
+                                    current_max_tokens,
+                                    len(response_text)
+                                )
+                    except (json.JSONDecodeError, Exception) as e:
+                        # JSON 파싱 실패하면 기존 방식대로 재시도
+                        log.warning(f"[Dual] 부분 JSON 파싱 실패 - 기존 방식 재시도: {e}")
+                        if attempt < self.max_retries + max_token_increase_retries:
+                            log.warning(
+                                "[Dual] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
+                                attempt + 1,
+                                current_max_tokens,
+                                len(response_text),
+                                int(current_max_tokens * 1.5)
+                            )
+                            current_max_tokens = int(current_max_tokens * 1.5)
+                            time.sleep(self.retry_delay)
+                            continue
+                        else:
+                            log.error(
+                                "[Dual] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                                attempt + 1,
+                                current_max_tokens,
+                                len(response_text)
+                            )
 
                 # 응답 파싱
                 return self._parse_dual_response(
