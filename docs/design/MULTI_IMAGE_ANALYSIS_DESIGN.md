@@ -572,9 +572,9 @@ def test_integrate_scores():
 
 ## 10. 참고 문서
 
-- [API_GUIDE.md](API_GUIDE.md) - API 문서
-- [SKIN_SCORING_GUIDE.md](SKIN_SCORING_GUIDE.md) - 스코어링 가이드
-- [JSON_IO_FLOW.md](JSON_IO_FLOW.md) - 데이터 처리 흐름
+- [API_GUIDE.md](../api/API_GUIDE.md) - API 문서
+- [SKIN_SCORING_GUIDE.md](../guides/SKIN_SCORING_GUIDE.md) - 스코어링 가이드
+- [JSON_IO_FLOW.md](../guides/JSON_IO_FLOW.md) - 데이터 처리 흐름
 
 ---
 

@@ -1102,6 +1102,6 @@ WHERE customer_id = 'C001';
 
 ## 참고 문서
 
-- [upload-spec.md](../upload-spec.md) - 클라이언트→서버 업로드 스펙
+- [upload-spec.md](upload-spec.md) - 클라이언트→서버 업로드 스펙
 - [supabase_setup.sql](../supabase_setup.sql) - Supabase 초기화 SQL
 - [skin_scoring_measurement_spec.md](./skin_scoring_measurement_spec.md) - 측정항목 명세

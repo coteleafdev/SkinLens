@@ -84,7 +84,7 @@ restorer = RestorerRegistry.create("codeformer_v1", config={"repo": "/path/to/Co
 result = restorer.restore("input.jpg", "output.jpg")
 ```
 
-**자세한 가이드**: [RESTORATION_ENGINE_GUIDE.md](docs/RESTORATION_ENGINE_GUIDE.md)
+**자세한 가이드**: [RESTORATION_ENGINE_GUIDE.md](guides/RESTORATION_ENGINE_GUIDE.md)
 
 ---
 
@@ -1119,35 +1119,56 @@ chmod +x deploy.sh
 
 ## 14. 문서
 
-- [README.md](README.md): 프로젝트 기본 정보
-- [API_GUIDE.md](docs/API_GUIDE.md): API 서버 상세 가이드
-- [llm_prompt_template.md](docs/llm_prompt_template.md): LLM 프롬프트 템플릿
-- [skin_analysis_README.md](docs/skin_analysis_README.md): 피부 분석 상세 문서
-- [tests/README.md](tests/README.md): 테스트 가이드
-- [SKIN_SCORING_GUIDE.md](docs/SKIN_SCORING_GUIDE.md): 18개 측정항목 상세 (가중치·측정원리·ROI), 점수 척도, 카테고리 배분
-- [PRESCRIPTION_GUIDE.md](docs/PRESCRIPTION_GUIDE.md): 처방전 구성 (M01~M10 + PCR 3종), 처방 생성 플로우차트, 베이스 비율 계산
-- [ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md): Strategy 패턴 (분석기·복원기·LLM), DB 구조, 의존성 방향도
-- [CODE_REVIEW_HISTORY.md](docs/CODE_REVIEW_HISTORY.md): 코드 리뷰 결과, 리팩토링 이력, 변경 명세서
-- [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](docs/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md): 처방전 고객 가이드
+### API 문서 (docs/api/)
+- [API_GUIDE.md](api/API_GUIDE.md): API 서버 상세 가이드
+- [API_DOCUMENTATION.md](api/API_DOCUMENTATION.md): API 엔드포인트 참조
 
-### 기능 설계 문서
-- [REGIONAL_RESTORATION_DESIGN.md](docs/REGIONAL_RESTORATION_DESIGN.md): 지역별 복원 기능 설계
-- [REALTIME_RESTORATION_PREVIEW_DESIGN.md](docs/REALTIME_RESTORATION_PREVIEW_DESIGN.md): 실시간 복원 미리보기 기능 설계
-- [PRESCRIPTION_EFFECT_PREDICTION_DESIGN.md](docs/PRESCRIPTION_EFFECT_PREDICTION_DESIGN.md): 처방 효과 예측 기능 설계
-- [PRESCRIPTION_HISTORY_TRACKING_DESIGN.md](docs/PRESCRIPTION_HISTORY_TRACKING_DESIGN.md): 처방 이력 추적 기능 설계
-- [PRODUCT_REVIEW_INTEGRATION_DESIGN.md](docs/PRODUCT_REVIEW_INTEGRATION_DESIGN.md): 제품 리뷰 통합 기능 설계
-- [PRICE_FILTER_DESIGN.md](docs/PRICE_FILTER_DESIGN.md): 가격 필터 기능 설계
-- [MULTI_LANGUAGE_SUPPORT_DESIGN.md](docs/MULTI_LANGUAGE_SUPPORT_DESIGN.md): 다국어 지원 기능 설계
-- [DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md](docs/DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md): 진단 피드백 루프 기능 설계
-- [OFFLINE_MODE_DESIGN.md](docs/OFFLINE_MODE_DESIGN.md): 오프라인 모드 기능 설계
-- [PUSH_NOTIFICATION_DESIGN.md](docs/PUSH_NOTIFICATION_DESIGN.md): 푸시 알림 기능 설계
-- [ANALYSIS_RESULT_SHARING_DESIGN.md](docs/ANALYSIS_RESULT_SHARING_DESIGN.md): 분석 결과 공유 기능 설계
-- [FACE_AUTHENTICATION_DESIGN.md](docs/FACE_AUTHENTICATION_DESIGN.md): 얼굴 인증 기능 설계
-- [IMAGE_ENCRYPTION_DESIGN.md](docs/IMAGE_ENCRYPTION_DESIGN.md): 이미지 암호화 기능 설계
-- [GDPR_COMPLIANCE_DESIGN.md](docs/GDPR_COMPLIANCE_DESIGN.md): GDPR 준수 기능 설계
-- [AB_TESTING_FRAMEWORK_DESIGN.md](docs/AB_TESTING_FRAMEWORK_DESIGN.md): A/B 테스트 프레임워크 설계
-- [AUTO_SCALING_DESIGN.md](docs/AUTO_SCALING_DESIGN.md): 자동 스케일링 기능 설계
-- [AUTO_RECOVERY_DESIGN.md](docs/AUTO_RECOVERY_DESIGN.md): 장애 자동 복구 기능 설계
+### 사용자 가이드 (docs/user/)
+- [USER_GUIDE.md](user/USER_GUIDE.md): 사용자 매뉴얼
+- [PRODUCT_PURCHASE_GUIDE.md](user/PRODUCT_PURCHASE_GUIDE.md): 제품 구매 가이드
+- [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](user/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md): 처방전 고객 가이드
+- [MOBILE_APP_GUIDE.md](user/MOBILE_APP_GUIDE.md): 모바일 앱 가이드
+
+### 운영 가이드 (docs/ops/)
+- [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md): 배포 가이드
+- [MONITORING_GUIDE.md](ops/MONITORING_GUIDE.md): 모니터링 가이드
+- [INCIDENT_RESPONSE_GUIDE.md](ops/INCIDENT_RESPONSE_GUIDE.md): 장애 대응 가이드
+- [SERVER_TEST_GUIDE.md](ops/SERVER_TEST_GUIDE.md): 서버 테스트 가이드
+- [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md): 리눅스 Docker 배포 가이드
+
+### 기술 가이드 (docs/guides/)
+- [llm_prompt_template.md](guides/llm_prompt_template.md): LLM 프롬프트 템플릿
+- [skin_analysis_README.md](guides/skin_analysis_README.md): 피부 분석 상세 문서
+- [SKIN_SCORING_GUIDE.md](guides/SKIN_SCORING_GUIDE.md): 18개 측정항목 상세 (가중치·측정원리·ROI), 점수 척도, 카테고리 배분
+- [PRESCRIPTION_GUIDE.md](guides/PRESCRIPTION_GUIDE.md): 처방전 구성 (M01~M10 + PCR 3종), 처방 생성 플로우차트, 베이스 비율 계산
+- [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md): Strategy 패턴 (분석기·복원기·LLM), DB 구조, 의존성 방향도
+- [CODE_REVIEW_HISTORY.md](guides/CODE_REVIEW_HISTORY.md): 코드 리뷰 결과, 리팩토링 이력, 변경 명세서
+- [JSON_IO_FLOW.md](guides/JSON_IO_FLOW.md): 데이터 처리 흐름
+- [DEVELOPMENT_GUIDE.md](guides/DEVELOPMENT_GUIDE.md): 개발 가이드
+- [IMPROVEMENT_PLAN.md](guides/IMPROVEMENT_PLAN.md): 개선 계획
+
+### 기능 설계 문서 (docs/design/)
+- [REGIONAL_RESTORATION_DESIGN.md](design/REGIONAL_RESTORATION_DESIGN.md): 지역별 복원 기능 설계
+- [REALTIME_RESTORATION_PREVIEW_DESIGN.md](design/REALTIME_RESTORATION_PREVIEW_DESIGN.md): 실시간 복원 미리보기 기능 설계
+- [PRESCRIPTION_EFFECT_PREDICTION_DESIGN.md](design/PRESCRIPTION_EFFECT_PREDICTION_DESIGN.md): 처방 효과 예측 기능 설계
+- [PRESCRIPTION_HISTORY_TRACKING_DESIGN.md](design/PRESCRIPTION_HISTORY_TRACKING_DESIGN.md): 처방 이력 추적 기능 설계
+- [PRODUCT_REVIEW_INTEGRATION_DESIGN.md](design/PRODUCT_REVIEW_INTEGRATION_DESIGN.md): 제품 리뷰 통합 기능 설계
+- [PRICE_FILTER_DESIGN.md](design/PRICE_FILTER_DESIGN.md): 가격 필터 기능 설계
+- [MULTI_LANGUAGE_SUPPORT_DESIGN.md](design/MULTI_LANGUAGE_SUPPORT_DESIGN.md): 다국어 지원 기능 설계
+- [DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md](design/DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md): 진단 피드백 루프 기능 설계
+- [OFFLINE_MODE_DESIGN.md](design/OFFLINE_MODE_DESIGN.md): 오프라인 모드 기능 설계
+- [PUSH_NOTIFICATION_DESIGN.md](design/PUSH_NOTIFICATION_DESIGN.md): 푸시 알림 기능 설계
+- [ANALYSIS_RESULT_SHARING_DESIGN.md](design/ANALYSIS_RESULT_SHARING_DESIGN.md): 분석 결과 공유 기능 설계
+- [FACE_AUTHENTICATION_DESIGN.md](design/FACE_AUTHENTICATION_DESIGN.md): 얼굴 인증 기능 설계
+- [IMAGE_ENCRYPTION_DESIGN.md](design/IMAGE_ENCRYPTION_DESIGN.md): 이미지 암호화 기능 설계
+- [GDPR_COMPLIANCE_DESIGN.md](design/GDPR_COMPLIANCE_DESIGN.md): GDPR 준수 기능 설계
+- [AB_TESTING_FRAMEWORK_DESIGN.md](design/AB_TESTING_FRAMEWORK_DESIGN.md): A/B 테스트 프레임워크 설계
+- [AUTO_SCALING_DESIGN.md](design/AUTO_SCALING_DESIGN.md): 자동 스케일링 기능 설계
+- [AUTO_RECOVERY_DESIGN.md](design/AUTO_RECOVERY_DESIGN.md): 장애 자동 복구 기능 설계
+
+### 기타
+- [README.md](../README.md): 프로젝트 기본 정보
+- [tests/README.md](../tests/README.md): 테스트 가이드
 
 ---
 

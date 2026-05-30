@@ -661,10 +661,10 @@ function trackProgress(jobId) {
 
 ## 9. 참고 문서
 
-- [API_GUIDE.md](API_GUIDE.md) - 상세 API 문서
-- [JSON_IO_FLOW.md](JSON_IO_FLOW.md) - 데이터 처리 흐름 상세
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) - 프로젝트 개요
-- [RESTORATION_ENGINE_GUIDE.md](RESTORATION_ENGINE_GUIDE.md) - 복원 엔진 가이드
+- [API_GUIDE.md](../api/API_GUIDE.md) - 상세 API 문서
+- [JSON_IO_FLOW.md](../guides/JSON_IO_FLOW.md) - 데이터 처리 흐름 상세
+- [PROJECT_OVERVIEW.md](../PROJECT_OVERVIEW.md) - 프로젝트 개요
+- [RESTORATION_ENGINE_GUIDE.md](../guides/RESTORATION_ENGINE_GUIDE.md) - 복원 엔진 가이드
 
 ---
 
