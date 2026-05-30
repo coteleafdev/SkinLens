@@ -287,7 +287,7 @@ final_score = aggregate_weighted_signals(weighted_signals)
 
 ## 참고 문서
 
-- `llm_prompt_template.md` - LLM 프롬프트 템플릿 (측정항목 메타데이터 포함)
+- `LLM_PROMPT_TEMPLATE.md` - LLM 프롬프트 템플릿 (측정항목 메타데이터 포함)
 - `config.json` - 런타임 설정 (측정항목 메타데이터, 가중치 체계 포함)
 - `skin_scoring.py` - 스코어링 핵심 로직
 - `ARCHITECTURE_GUIDE.md` - 아키텍처 가이드 (직교 신호 분해 상세)

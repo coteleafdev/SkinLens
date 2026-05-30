@@ -58,7 +58,7 @@ docs/
 | [ANALYSIS_RESULT_SHARING_DESIGN.md](design/ANALYSIS_RESULT_SHARING_DESIGN.md) | 분석 결과 공유 설계 | 설계 |
 | [AUTO_RECOVERY_DESIGN.md](design/AUTO_RECOVERY_DESIGN.md) | 자동 복구 시스템 설계 | 설계 |
 | [AUTO_SCALING_DESIGN.md](design/AUTO_SCALING_DESIGN.md) | 자동 스케일링 설계 | 설계 |
-| [DESIGN_reference_guided_scoring.md](design/DESIGN_reference_guided_scoring.md) | 참조 기반 점수 매기기 설계 | 설계 |
+| [DESIGN_REFERENCE_GUIDED_SCORING.md](design/DESIGN_REFERENCE_GUIDED_SCORING.md) | 참조 기반 점수 매기기 설계 | 설계 |
 | [DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md](design/DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md) | 진단 피드백 루프 설계 | 설계 |
 | [FACE_AUTHENTICATION_DESIGN.md](design/FACE_AUTHENTICATION_DESIGN.md) | 얼굴 인증 설계 | 설계 |
 | [GDPR_COMPLIANCE_DESIGN.md](design/GDPR_COMPLIANCE_DESIGN.md) | GDPR 준수 설계 | 설계 |
@@ -75,8 +75,8 @@ docs/
 | [SKIN_TYPE_AUTO_DETECTION_DESIGN.md](design/SKIN_TYPE_AUTO_DETECTION_DESIGN.md) | 피부 타입 자동 감지 설계 | 설계 |
 | [TIME_SERIES_ANALYSIS_DESIGN.md](design/TIME_SERIES_ANALYSIS_DESIGN.md) | 시계열 분석 설계 | 설계 |
 | [WEBSOCKET_PROGRESS.md](design/WEBSOCKET_PROGRESS.md) | WebSocket 진행률 설계 | 설계 |
-| [in_process_model_architecture.md](design/in_process_model_architecture.md) | 인프로세스 모델 상주 아키텍처 설계 | 설계 |
-| [perfectcorp_vs_coteleaf_comparison.md](design/perfectcorp_vs_coteleaf_comparison.md) | PerfectCorp vs CÔTELEAF 측정항목 비교 | 설계 |
+| [IN_PROCESS_MODEL_ARCHITECTURE.md](design/IN_PROCESS_MODEL_ARCHITECTURE.md) | 인프로세스 모델 상주 아키텍처 설계 | 설계 |
+| [PERFECTCORP_VS_COTELEAF_COMPARISON.md](design/PERFECTCORP_VS_COTELEAF_COMPARISON.md) | PerfectCorp vs CÔTELEAF 측정항목 비교 | 설계 |
 
 ### 📚 개발 가이드 (guides/)
 
@@ -90,9 +90,9 @@ docs/
 | [RESTORATION_ENGINE_GUIDE.md](guides/RESTORATION_ENGINE_GUIDE.md) | 복원 엔진 추가 가이드 | 개발자 |
 | [SKIN_SCORING_GUIDE.md](guides/SKIN_SCORING_GUIDE.md) | 피부 점수 가이드, 18개 측정항목 | 개발자 |
 | [TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | 테스트 가이드, 단위/통합/E2E | 개발자 |
-| [codeformer_pipeline_algorithm.md](guides/codeformer_pipeline_algorithm.md) | CodeFormer 파이프라인 알고리즘 | 개발자 |
-| [llm_prompt_template.md](guides/llm_prompt_template.md) | LLM 프롬프트 템플릿 | 개발자 |
-| [weight_system_documentation.md](guides/weight_system_documentation.md) | 가중치 체계 문서 | 개발자 |
+| [CODEFORMER_PIPELINE_ALGORITHM.md](guides/CODEFORMER_PIPELINE_ALGORITHM.md) | CodeFormer 파이프라인 알고리즘 | 개발자 |
+| [LLM_PROMPT_TEMPLATE.md](guides/LLM_PROMPT_TEMPLATE.md) | LLM 프롬프트 템플릿 | 개발자 |
+| [WEIGHT_SYSTEM_DOCUMENTATION.md](guides/WEIGHT_SYSTEM_DOCUMENTATION.md) | 가중치 체계 문서 | 개발자 |
 
 ### 🌐 HTML 문서 (html/)
 
@@ -134,7 +134,7 @@ docs/
 | [PRODUCT_PURCHASE_GUIDE.md](user/PRODUCT_PURCHASE_GUIDE.md) | 제품 구매 가이드 | 최종 사용자 |
 | [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](user/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md) | 세럼 처방 고객 가이드 | 최종 사용자 |
 | [USER_GUIDE.md](user/USER_GUIDE.md) | 사용자 가이드 (웹) | 최종 사용자 |
-| [image_enhancer_guide.md](user/image_enhancer_guide.md) | 이미지 인핸서 사용자 가이드 (GUI) | 최종 사용자 |
+| [IMAGE_ENHANCER_GUIDE.md](user/IMAGE_ENHANCER_GUIDE.md) | 이미지 인핸서 사용자 가이드 (GUI) | 최종 사용자 |
 
 ---
 
@@ -155,7 +155,7 @@ docs/
 4. [TROUBLESHOOTING_GUIDE.md](ops/TROUBLESHOOTING_GUIDE.md) - 문제 해결
 
 #### 🎨 기능 설계자
-1. [DESIGN_reference_guided_scoring.md](design/DESIGN_reference_guided_scoring.md) - 점수 시스템
+1. [DESIGN_REFERENCE_GUIDED_SCORING.md](design/DESIGN_REFERENCE_GUIDED_SCORING.md) - 점수 시스템
 2. [SKIN_SCORING_GUIDE.md](guides/SKIN_SCORING_GUIDE.md) - 피부 점수 가이드
 3. [SKIN_TYPE_AUTO_DETECTION_DESIGN.md](design/SKIN_TYPE_AUTO_DETECTION_DESIGN.md) - 피부 타입 감지
 4. [GDPR_COMPLIANCE_DESIGN.md](design/GDPR_COMPLIANCE_DESIGN.md) - GDPR 준수
@@ -177,9 +177,9 @@ docs/
 - [GDPR_COMPLIANCE_DESIGN.md](design/GDPR_COMPLIANCE_DESIGN.md) - 데이터 보호
 
 #### 모델/알고리즘 관련
-- [codeformer_pipeline_algorithm.md](guides/codeformer_pipeline_algorithm.md) - CodeFormer 알고리즘
-- [llm_prompt_template.md](guides/llm_prompt_template.md) - LLM 프롬프트
-- [in_process_model_architecture.md](design/in_process_model_architecture.md) - 모델 아키텍처
+- [CODEFORMER_PIPELINE_ALGORITHM.md](guides/CODEFORMER_PIPELINE_ALGORITHM.md) - CodeFormer 알고리즘
+- [LLM_PROMPT_TEMPLATE.md](guides/LLM_PROMPT_TEMPLATE.md) - LLM 프롬프트
+- [IN_PROCESS_MODEL_ARCHITECTURE.md](design/IN_PROCESS_MODEL_ARCHITECTURE.md) - 모델 아키텍처
 
 #### 보안 관련
 - [SECURITY_GUIDE.md](ops/SECURITY_GUIDE.md) - 보안 가이드
@@ -202,10 +202,8 @@ docs/
 
 ### 파일 명명 규칙
 
-- **영어 대문자**: 주요 문서 (예: `PROJECT_OVERVIEW.md`)
-- **영어 소문자**: 기술 문서 (예: `codeformer_pipeline_algorithm.md`)
+- **모든 md 파일은 대문자**: 모든 문서 파일명은 대문자로 작성 (예: `PROJECT_OVERVIEW.md`, `CODEFORMER_PIPELINE_ALGORITHM.md`)
 - **언더스코어**: 단어 구분 (예: `CI_CD_GUIDE.md`)
-- **kebab-case**: URL 친화적 (예: `linux-docker-deployment.md`)
 
 ### 문서 구조
 

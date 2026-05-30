@@ -3,7 +3,7 @@
 > 작성일: 2026-05-27  
 > 마지막 수정: 2026-05-28  
 > 대상 버전: SkinLens v1  
-> 관련 파일: `src/llm/llm_reporter.py`, `src/llm/llm_prompt_builder.py`, `docs/llm_prompt_template.md`, `config/config.json`
+> 관련 파일: `src/llm/llm_reporter.py`, `src/llm/llm_prompt_builder.py`, `docs/LLM_PROMPT_TEMPLATE.md`, `config/config.json`
 
 ---
 
@@ -187,8 +187,8 @@ config.json:
 | `src/llm/llm_reporter.py` | 수정 | `generate_dual_report()` — `scoring_mode` 분기 추가 |
 | `src/llm/llm_prompt_builder.py` | 추가 | `_build_reference_guided_prompt()` 신규 함수 |
 | `src/llm/llm_prompt_builder.py` | 추가 | `_build_score_criteria_section()` 신규 함수 (점수 기준 제공) |
-| `docs/llm_prompt_template.md` | 추가 | `REFERENCE_GUIDED_PROMPT` 섹션 추가 |
-| `docs/llm_prompt_template.md` | 수정 | "사용자" → "고객님" 표현 변경, 점수 기준 섹션 추가 |
+| `docs/LLM_PROMPT_TEMPLATE.md` | 추가 | `REFERENCE_GUIDED_PROMPT` 섹션 추가 |
+| `docs/LLM_PROMPT_TEMPLATE.md` | 수정 | "사용자" → "고객님" 표현 변경, 점수 기준 섹션 추가 |
 | `config/config.json` | 추가 | `llm.scoring_mode` 필드 추가 |
 | `config/config.json` | 추가 | `score_criteria` 섹션 추가 (점수 스케일, 등급 라벨) |
 | `src/gui/compare_dialog.py` | 수정 | "보정 점수" → "복원 점수" 용어 변경 |
