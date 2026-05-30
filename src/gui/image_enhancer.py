@@ -332,14 +332,14 @@ def _cli_body(args) -> int:
                 do_restore=args.restore,
             )
 
-            print("restored    :", r.restored)
+            log.info(f"restored    : {r.restored}")
             parts = []
             if r.wall_restore_sec is not None:
                 parts.append(f"CodeFormer {format_duration(r.wall_restore_sec)}")
             if r.wall_total_sec is not None:
                 parts.append(f"합계 {format_duration(r.wall_total_sec)}")
             if parts:
-                print("[시간] 요약:", " | ".join(parts))
+                log.info(f"[시간] 요약: {' | '.join(parts)}")
 
             if init_resolved is not None and Path(init_resolved).is_file():
                 out_dir = Path(args.out_dir)
@@ -833,16 +833,16 @@ def _cli_body(args) -> int:
                                 # --llm-scores도 전달 (서브프로세스에서 LLM 점수 표시용)
                                 if provide_scores:
                                     proc_args.append("--llm-scores")
-                                print(f"[DEBUG] 실행 인자: {proc_args}", flush=True)
-                                print(f"[DEBUG] JSON 파일 경로: {json_path}", flush=True)
+                                log.debug(f"[DEBUG] 실행 인자: {proc_args}")
+                                log.debug(f"[DEBUG] JSON 파일 경로: {json_path}")
                                 proc.setArguments(proc_args)
                                 proc.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
                                 proc.start()
                                 log.info(f"[진행] 측정항목 비교 서브프로세스 시작: {' '.join(proc_args)}")
                     except Exception as e:
-                        print(f"[경고] 점수 분석 실패: {e}", flush=True)
+                        log.warning(f"[경고] 점수 분석 실패: {e}")
         except Exception as e:
-            print(f"[오류] 파이프라인 실행 중 오류: {e}", file=sys.stderr, flush=True)
+            log.error(f"[오류] 파이프라인 실행 중 오류: {e}")
 
             # 오류 JSON 생성 및 출력
             error_json = _create_error_json(
@@ -857,7 +857,7 @@ def _cli_body(args) -> int:
                 args.output_json.parent.mkdir(parents=True, exist_ok=True)
                 with open(args.output_json, "w", encoding="utf-8") as f:
                     f.write(json_output)
-                print(f"[오류] 오류 JSON 저장: {args.output_json}", file=sys.stderr, flush=True)
+                log.error(f"[오류] 오류 JSON 저장: {args.output_json}")
             else:
                 print(json_output, flush=True)
             
@@ -889,14 +889,14 @@ def _cli_body(args) -> int:
                 json_path = image_folder / f"{input_filename}.json"
                 with open(json_path, "w", encoding="utf-8") as f:
                     f.write(json_output)
-                print(f"[오류] 오류 JSON 저장: {json_path}", file=sys.stderr, flush=True)
+                log.error(f"[오류] 오류 JSON 저장: {json_path}")
             return 1
 
     # 전체 처리 시간 출력
     total_elapsed = time.time() - total_start_time
-    print(f"[전체 처리 시간] {format_duration(total_elapsed)}", flush=True)
+    log.info(f"[전체 처리 시간] {format_duration(total_elapsed)}")
     if llm_time > 0:
-        print(f"[LLM 처리 시간] {format_duration(llm_time)}", flush=True)
+        log.info(f"[LLM 처리 시간] {format_duration(llm_time)}")
 
     return 0
 
@@ -1186,13 +1186,13 @@ def _run_gui() -> int:
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         except Exception as ex:
-            print(f"[오류] taskkill 실행 실패: {ex!r}", file=sys.stderr)
+            log.error(f"[오류] taskkill 실행 실패: {ex!r}")
     __import__("os")._exit(exit_code)
 
 
 def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False, llm_json_path: Path = None) -> int:
     _configure_stdio_encoding()
-    print(f"[DEBUG] _run_compare_dialog 시작: {orig}, {ideal}, llm_scores={llm_scores}, llm_json_path={llm_json_path}", flush=True)
+    log.debug(f"[DEBUG] _run_compare_dialog 시작: {orig}, {ideal}, llm_scores={llm_scores}, llm_json_path={llm_json_path}")
     try:
         from PySide6.QtWidgets import QApplication
     except ImportError as e:
@@ -1210,7 +1210,7 @@ def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False, llm_j
     
     # 이미 실행 중인 QApplication 인스턴스가 있는지 확인
     existing_app = QApplication.instance()
-    print(f"[DEBUG] existing_app: {existing_app}", flush=True)
+    log.debug(f"[DEBUG] existing_app: {existing_app}")
     if existing_app is None:
         # 측정항목 비교 독립 실행: QApplication 생성 전에 DPI 설정
         try:
@@ -1221,23 +1221,23 @@ def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False, llm_j
         except Exception as e:
             log.warning(f"SetHighDpiScaleFactorRoundingPolicy failed: {e}", exc_info=True)
         app = QApplication(sys.argv)
-        print(f"[DEBUG] QApplication 생성 완료, 다이얼로그 표시 시도", flush=True)
+        log.debug(f"[DEBUG] QApplication 생성 완료, 다이얼로그 표시 시도")
         # 서브프로세스 환경: 다이얼로그를 모달로 표시하여 이벤트 루프 유지
         dlg = show_skin_measurement_compare_dialog(None, orig, ideal, llm_scores=llm_scores, modal=True, llm_json_path=llm_json_path)
-        print(f"[DEBUG] show_skin_measurement_compare_dialog 반환: modal=True, dlg={dlg}", flush=True)
+        log.debug(f"[DEBUG] show_skin_measurement_compare_dialog 반환: modal=True, dlg={dlg}")
         if dlg:
-            print(f"[DEBUG] dlg.exec() 호출 시작", flush=True)
+            log.debug(f"[DEBUG] dlg.exec() 호출 시작")
             result = dlg.exec()
-            print(f"[DEBUG] dlg.exec() 종료, result={result}", flush=True)
+            log.debug(f"[DEBUG] dlg.exec() 종료, result={result}")
             return result
         else:
-            print(f"[DEBUG] 다이얼로그 생성 실패, 종료 코드 1 반환", flush=True)
+            log.debug(f"[DEBUG] 다이얼로그 생성 실패, 종료 코드 1 반환")
             return 1
     else:
         # GUI 모드 실행: 기존 QApplication 사용
-        print(f"[DEBUG] 기존 QApplication 사용, 다이얼로그 표시 시도", flush=True)
+        log.debug(f"[DEBUG] 기존 QApplication 사용, 다이얼로그 표시 시도")
         show_skin_measurement_compare_dialog(None, orig, ideal, llm_scores=not llm_scores)
-        print(f"[DEBUG] 다이얼로그 표시 완료", flush=True)
+        log.debug(f"[DEBUG] 다이얼로그 표시 완료")
         return 0
 
 
@@ -1305,12 +1305,12 @@ def main() -> int:
             idx = argv.index("--llm-json")
             if idx + 1 < len(argv):
                 llm_json_path = Path(argv[idx + 1])
-                print(f"[DEBUG] --llm-json 경로: {llm_json_path}", flush=True)
+                log.debug(f"[DEBUG] --llm-json 경로: {llm_json_path}")
         # --llm-scores 옵션 파싱 (기본값: False - 점수 미제공)
-        print(f"[DEBUG] argv = {argv}", flush=True)
+        log.debug(f"[DEBUG] argv = {argv}")
         llm_scores = "--llm-scores" in argv  # --llm-scores가 있으면 점수 제공
-        print(f"[DEBUG] --llm-scores in argv = {'--llm-scores' in argv}", flush=True)
-        print(f"[DEBUG] llm_scores = {llm_scores} (True=점수 제공, False=점수 미제공)", flush=True)
+        log.debug(f"[DEBUG] --llm-scores in argv = {'--llm-scores' in argv}")
+        log.debug(f"[DEBUG] llm_scores = {llm_scores} (True=점수 제공, False=점수 미제공)")
         return _run_compare_dialog(Path(argv[1]), Path(argv[2]), llm_scores, llm_json_path)
     if argv and argv[0] == "--cli":
         return _run_pipeline_cli(argv[1:])

@@ -12,8 +12,6 @@
     collector = MetricsCollector.get_instance()
     with collector.measure("image_analysis"):
         analyze_image(image_path)
-    
-    report = collector.get_report()
 """
 from __future__ import annotations
 
@@ -244,40 +242,40 @@ class MetricsCollector:
         """메트릭 리포트를 출력합니다."""
         report = self.get_report()
         
-        print("\n=== 메트릭 리포트 ===")
+        log.info("=== 메트릭 리포트 ===")
         
         # 카운터
         if report["counters"]:
-            print("\n[카운터]")
+            log.info("[카운터]")
             for name, value in report["counters"].items():
-                print(f"  {name}: {value}")
+                log.info(f"  {name}: {value}")
         
         # 타이머
         if report["timers"]:
-            print("\n[타이머]")
+            log.info("[타이머]")
             for name, stats in report["timers"].items():
-                print(f"  {name}:")
-                print(f"    count: {stats['count']}")
-                print(f"    avg: {stats['avg']:.3f}s")
-                print(f"    p95: {stats['p95']:.3f}s")
-                print(f"    p99: {stats['p99']:.3f}s")
+                log.info(f"  {name}:")
+                log.info(f"    count: {stats['count']}")
+                log.info(f"    avg: {stats['avg']:.3f}s")
+                log.info(f"    p95: {stats['p95']:.3f}s")
+                log.info(f"    p99: {stats['p99']:.3f}s")
         
         # 게이지
         if report["gauges"]:
-            print("\n[게이지]")
+            log.info("[게이지]")
             for name, value in report["gauges"].items():
-                print(f"  {name}: {value:.2f}")
+                log.info(f"  {name}: {value:.2f}")
         
         # 히스토그램
         if report["histograms"]:
-            print("\n[히스토그램]")
+            log.info("[히스토그램]")
             for name, stats in report["histograms"].items():
-                print(f"  {name}:")
-                print(f"    count: {stats['count']}")
-                print(f"    avg: {stats['avg']:.2f}")
-                print(f"    p95: {stats['p95']:.2f}")
+                log.info(f"  {name}:")
+                log.info(f"    count: {stats['count']}")
+                log.info(f"    avg: {stats['avg']:.2f}")
+                log.info(f"    p95: {stats['p95']:.2f}")
         
-        print("\n==================\n")
+        log.info("==================")
     
     # ── 리셋 ───────────────────────────────────────────────────────────
     
