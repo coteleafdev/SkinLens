@@ -476,6 +476,10 @@ SkinLens는 API 키, 데이터베이스 자격증명, 고객 정보 등 민감�
 - 환경변수 `SUPABASE_URL`, `SUPABASE_KEY`에서 로드
 - `config.json`에도 저장 가능 (비권장)
 
+**Telegram 키:**
+- 환경변수 `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`에서 로드
+- `config/config.secrets.json`에서도 로드 가능
+
 #### 6.2.2 보안 강화 방안
 
 **1. 환경변수 사용 (권장)**
@@ -486,11 +490,15 @@ SkinLens는 API 키, 데이터베이스 자격증명, 고객 정보 등 민감�
 export GEMINI_API_KEY="your_api_key"
 export SUPABASE_URL="https://xxx.supabase.co"
 export SUPABASE_KEY="your_service_role_key"
+export TELEGRAM_BOT_TOKEN="your_bot_token"
+export TELEGRAM_CHAT_ID="your_chat_id"
 
 # 영구적 설정 (~/.bashrc 또는 ~/.zshrc)
 echo 'export GEMINI_API_KEY="your_api_key"' >> ~/.bashrc
 echo 'export SUPABASE_URL="https://xxx.supabase.co"' >> ~/.bashrc
 echo 'export SUPABASE_KEY="your_service_role_key"' >> ~/.bashrc
+echo 'export TELEGRAM_BOT_TOKEN="your_bot_token"' >> ~/.bashrc
+echo 'export TELEGRAM_CHAT_ID="your_chat_id"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -500,11 +508,15 @@ source ~/.bashrc
 $env:GEMINI_API_KEY="your_api_key"
 $env:SUPABASE_URL="https://xxx.supabase.co"
 $env:SUPABASE_KEY="your_service_role_key"
+$env:TELEGRAM_BOT_TOKEN="your_bot_token"
+$env:TELEGRAM_CHAT_ID="your_chat_id"
 
 # 영구적 설정 (시스템 환경변수)
 [System.Environment]::SetEnvironmentVariable('GEMINI_API_KEY', 'your_api_key', 'User')
 [System.Environment]::SetEnvironmentVariable('SUPABASE_URL', 'https://xxx.supabase.co', 'User')
 [System.Environment]::SetEnvironmentVariable('SUPABASE_KEY', 'your_service_role_key', 'User')
+[System.Environment]::SetEnvironmentVariable('TELEGRAM_BOT_TOKEN', 'your_bot_token', 'User')
+[System.Environment]::SetEnvironmentVariable('TELEGRAM_CHAT_ID', 'your_chat_id', 'User')
 ```
 
 **Windows (CMD):**
@@ -513,11 +525,15 @@ $env:SUPABASE_KEY="your_service_role_key"
 set GEMINI_API_KEY=your_api_key
 set SUPABASE_URL=https://xxx.supabase.co
 set SUPABASE_KEY=your_service_role_key
+set TELEGRAM_BOT_TOKEN=your_bot_token
+set TELEGRAM_CHAT_ID=your_chat_id
 
 # 영구적 설정 (시스템 환경변수)
 setx GEMINI_API_KEY "your_api_key"
 setx SUPABASE_URL "https://xxx.supabase.co"
 setx SUPABASE_KEY "your_service_role_key"
+setx TELEGRAM_BOT_TOKEN "your_bot_token"
+setx TELEGRAM_CHAT_ID "your_chat_id"
 ```
 
 **Docker:**
@@ -526,6 +542,8 @@ setx SUPABASE_KEY "your_service_role_key"
 docker run -e GEMINI_API_KEY="your_api_key" \
            -e SUPABASE_URL="https://xxx.supabase.co" \
            -e SUPABASE_KEY="your_service_role_key" \
+           -e TELEGRAM_BOT_TOKEN="your_bot_token" \
+           -e TELEGRAM_CHAT_ID="your_chat_id" \
            skinlens:latest
 
 # docker-compose.yml
@@ -533,6 +551,8 @@ environment:
   - GEMINI_API_KEY=your_api_key
   - SUPABASE_URL=https://xxx.supabase.co
   - SUPABASE_KEY=your_service_role_key
+  - TELEGRAM_BOT_TOKEN=your_bot_token
+  - TELEGRAM_CHAT_ID=your_chat_id
 ```
 
 **.env 파일 (개발 환경):**
@@ -541,6 +561,8 @@ environment:
 echo "GEMINI_API_KEY=your_api_key" > .env
 echo "SUPABASE_URL=https://xxx.supabase.co" >> .env
 echo "SUPABASE_KEY=your_service_role_key" >> .env
+echo "TELEGRAM_BOT_TOKEN=your_bot_token" >> .env
+echo "TELEGRAM_CHAT_ID=your_chat_id" >> .env
 
 # .env 파일 로드 (python-dotenv 필요)
 pip install python-dotenv
@@ -553,16 +575,22 @@ python -c "from dotenv import load_dotenv; load_dotenv()"
 echo $GEMINI_API_KEY
 echo $SUPABASE_URL
 echo $SUPABASE_KEY
+echo $TELEGRAM_BOT_TOKEN
+echo $TELEGRAM_CHAT_ID
 
 # Windows PowerShell
 echo $env:GEMINI_API_KEY
 echo $env:SUPABASE_URL
 echo $env:SUPABASE_KEY
+echo $env:TELEGRAM_BOT_TOKEN
+echo $env:TELEGRAM_CHAT_ID
 
 # Windows CMD
 echo %GEMINI_API_KEY%
 echo %SUPABASE_URL%
 echo %SUPABASE_KEY%
+echo %TELEGRAM_BOT_TOKEN%
+echo %TELEGRAM_CHAT_ID%
 ```
 
 **2. secrets.json 파일 관리**
@@ -581,6 +609,8 @@ stringData:
   GEMINI_API_KEY: "your_api_key"
   SUPABASE_URL: "https://xxx.supabase.co"
   SUPABASE_KEY: "your_service_role_key"
+  TELEGRAM_BOT_TOKEN: "your_bot_token"
+  TELEGRAM_CHAT_ID: "your_chat_id"
 ```
 
 ### 6.3 고객 정보 보호
