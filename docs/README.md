@@ -17,13 +17,14 @@
 docs/
 ├── README.md                           # 이 파일 (문서 목록)
 ├── PROJECT_OVERVIEW.md                 # 프로젝트 전체 개요
-├── api/                                # API 문서
-├── db/                                 # 데이터베이스 문서
-├── design/                             # 디자인 문서
-├── guides/                             # 개발 가이드
-├── html/                               # HTML 문서
-├── ops/                                # 운영 가이드
-└── user/                               # 사용자 가이드
+├── api/                                # API 문서 (1개)
+├── db/                                 # 데이터베이스 문서 (2개)
+├── design/                             # 디자인 문서 (23개)
+├── guides/                             # 개발 가이드 (11개)
+├── html/                               # HTML 문서 (6개)
+├── ops/                                # 운영 가이드 (8개)
+├── project/                            # 프로젝트 관리 (3개)
+└── user/                               # 사용자 가이드 (5개)
 ```
 
 ---
@@ -40,13 +41,13 @@ docs/
 
 | 파일 | 설명 | 대상 |
 |------|------|------|
-| [API_DOCUMENTATION.md](api/API_DOCUMENTATION.md) | API 엔드포인트, 요청/응답 형식 | 개발자 |
-| [API_GUIDE.md](api/API_GUIDE.md) | API 사용 방법, 예제 코드 | 개발자 |
+| [API_REFERENCE.md](api/API_REFERENCE.md) | API 엔드포인트, 요청/응답 형식, 인증, 에러 코드 | 개발자 |
 
 ### 🗄️ 데이터베이스 문서 (db/)
 
 | 파일 | 설명 | 대상 |
 |------|------|------|
+| [DATA_MODEL.md](db/DATA_MODEL.md) | 데이터 모델, 스키마, JSON 구조 | 개발자, DBA |
 | [supabase_setup.sql](db/supabase_setup.sql) | Supabase 데이터베이스 설정 SQL | DBA, 개발자 |
 
 ### 🎨 디자인 문서 (design/)
@@ -64,12 +65,9 @@ docs/
 | [IMAGE_ENCRYPTION_DESIGN.md](design/IMAGE_ENCRYPTION_DESIGN.md) | 이미지 암호화 설계 | 설계 |
 | [MULTI_IMAGE_ANALYSIS_DESIGN.md](design/MULTI_IMAGE_ANALYSIS_DESIGN.md) | 멀티 이미지 분석 설계 | 설계 |
 | [MULTI_LANGUAGE_SUPPORT_DESIGN.md](design/MULTI_LANGUAGE_SUPPORT_DESIGN.md) | 다국어 지원 설계 | 설계 |
-| [OFFLINE_MODE_DESIGN.md](design/OFFLINE_MODE_DESIGN.md) | 오프라인 모드 설계 | 설계 |
-| [PRESCRIPTION_EFFECT_PREDICTION_DESIGN.md](design/PRESCRIPTION_EFFECT_PREDICTION_DESIGN.md) | 처방 효과 예측 설계 | 설계 |
-| [PRESCRIPTION_HISTORY_TRACKING_DESIGN.md](design/PRESCRIPTION_HISTORY_TRACKING_DESIGN.md) | 처방 이력 추적 설계 | 설계 |
+| [PRESCRIPTION_HISTORY_TRACKING_DESIGN.md](design/PRESCRIPTION_HISTORY_TRACKING_DESIGN.md) | 처방 이력 추적 및 효과 예측 설계 | 설계 |
 | [PRICE_FILTER_DESIGN.md](design/PRICE_FILTER_DESIGN.md) | 가격 필터 설계 | 설계 |
-| [PRODUCT_REVIEW_AND_OFFLINE_DESIGN.md](design/PRODUCT_REVIEW_AND_OFFLINE_DESIGN.md) | 제품 리뷰 및 오프라인 설계 | 설계 |
-| [PRODUCT_REVIEW_INTEGRATION_DESIGN.md](design/PRODUCT_REVIEW_INTEGRATION_DESIGN.md) | 제품 리뷰 통합 설계 | 설계 |
+| [PRODUCT_REVIEW_AND_OFFLINE_DESIGN.md](design/PRODUCT_REVIEW_AND_OFFLINE_DESIGN.md) | 제품 리뷰 통합 및 오프라인 모드 설계 | 설계 |
 | [PUSH_NOTIFICATION_DESIGN.md](design/PUSH_NOTIFICATION_DESIGN.md) | 푸시 알림 설계 | 설계 |
 | [REALTIME_RESTORATION_PREVIEW_DESIGN.md](design/REALTIME_RESTORATION_PREVIEW_DESIGN.md) | 실시간 복원 미리보기 설계 | 설계 |
 | [REGIONAL_RESTORATION_DESIGN.md](design/REGIONAL_RESTORATION_DESIGN.md) | 지역별 복원 설계 | 설계 |
@@ -77,29 +75,24 @@ docs/
 | [SKIN_TYPE_AUTO_DETECTION_DESIGN.md](design/SKIN_TYPE_AUTO_DETECTION_DESIGN.md) | 피부 타입 자동 감지 설계 | 설계 |
 | [TIME_SERIES_ANALYSIS_DESIGN.md](design/TIME_SERIES_ANALYSIS_DESIGN.md) | 시계열 분석 설계 | 설계 |
 | [WEBSOCKET_PROGRESS.md](design/WEBSOCKET_PROGRESS.md) | WebSocket 진행률 설계 | 설계 |
+| [in_process_model_architecture.md](design/in_process_model_architecture.md) | 인프로세스 모델 상주 아키텍처 설계 | 설계 |
+| [perfectcorp_vs_coteleaf_comparison.md](design/perfectcorp_vs_coteleaf_comparison.md) | PerfectCorp vs CÔTELEAF 측정항목 비교 | 설계 |
 
 ### 📚 개발 가이드 (guides/)
 
 | 파일 | 설명 | 대상 |
 |------|------|------|
-| [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md) | 아키텍처 가이드 | 개발자 |
-| [CODE_REVIEW_HISTORY.md](guides/CODE_REVIEW_HISTORY.md) | 코드 리뷰 이력 | 개발자 |
-| [DEPRECATION.md](guides/DEPRECATION.md) | 폐지 예정 기능 | 개발자 |
-| [DEVELOPMENT_GUIDE.md](guides/DEVELOPMENT_GUIDE.md) | 개발 가이드 | 개발자 |
-| [IMPROVEMENT_PLAN.md](guides/IMPROVEMENT_PLAN.md) | 개선 계획 | 개발자 |
-| [JSON_IO_FLOW.md](guides/JSON_IO_FLOW.md) | JSON 입출력 흐름 | 개발자 |
-| [PRESCRIPTION_GUIDE.md](guides/PRESCRIPTION_GUIDE.md) | 처방 가이드 | 개발자 |
-| [RESTORATION_ENGINE_GUIDE.md](guides/RESTORATION_ENGINE_GUIDE.md) | 복원 엔진 가이드 | 개발자 |
-| [SKIN_SCORING_GUIDE.md](guides/SKIN_SCORING_GUIDE.md) | 피부 점수 가이드 | 개발자 |
-| [SYSTEM_ARCHITECTURE.md](guides/SYSTEM_ARCHITECTURE.md) | 시스템 아키텍처 | 개발자 |
+| [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md) | 아키텍처 가이드, 전략 패턴 | 개발자 |
+| [DEVELOPMENT_GUIDE.md](guides/DEVELOPMENT_GUIDE.md) | 개발 환경 설정, 코딩 규칙 | 개발자 |
+| [JSON_IO_FLOW.md](guides/JSON_IO_FLOW.md) | 데이터 처리 흐름, 폴더 구조 | 개발자 |
+| [PERFORMANCE_GUIDE.md](guides/PERFORMANCE_GUIDE.md) | 성능 최적화 가이드 | 개발자 |
+| [PRESCRIPTION_GUIDE.md](guides/PRESCRIPTION_GUIDE.md) | 처방 가이드, PCR 규칙 | 개발자 |
+| [RESTORATION_ENGINE_GUIDE.md](guides/RESTORATION_ENGINE_GUIDE.md) | 복원 엔진 추가 가이드 | 개발자 |
+| [SKIN_SCORING_GUIDE.md](guides/SKIN_SCORING_GUIDE.md) | 피부 점수 가이드, 18개 측정항목 | 개발자 |
+| [TESTING_GUIDE.md](guides/TESTING_GUIDE.md) | 테스트 가이드, 단위/통합/E2E | 개발자 |
 | [codeformer_pipeline_algorithm.md](guides/codeformer_pipeline_algorithm.md) | CodeFormer 파이프라인 알고리즘 | 개발자 |
-| [image_enhancer_guide.md](guides/image_enhancer_guide.md) | 이미지 인핸서 가이드 | 개발자 |
-| [in_process_model_architecture.md](guides/in_process_model_architecture.md) | 인프로세스 모델 아키텍처 | 개발자 |
 | [llm_prompt_template.md](guides/llm_prompt_template.md) | LLM 프롬프트 템플릿 | 개발자 |
-| [perfectcorp_vs_coteleaf_comparison.md](guides/perfectcorp_vs_coteleaf_comparison.md) | PerfectCorp vs CÔTELEAF 비교 | 개발자 |
-| [skin_analysis_README.md](guides/skin_analysis_README.md) | 피부 분석 README | 개발자 |
-| [upload-spec.md](guides/upload-spec.md) | 업로드 스펙 | 개발자 |
-| [weight_system_documentation.md](guides/weight_system_documentation.md) | 가중치 시스템 문서 | 개발자 |
+| [weight_system_documentation.md](guides/weight_system_documentation.md) | 가중치 체계 문서 | 개발자 |
 
 ### 🌐 HTML 문서 (html/)
 
@@ -117,12 +110,21 @@ docs/
 | 파일 | 설명 | 대상 |
 |------|------|------|
 | [CI_CD_GUIDE.md](ops/CI_CD_GUIDE.md) | CI/CD 통합 가이드 | DevOps, 개발자 |
-| [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md) | 배포 가이드 | DevOps |
+| [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md) | 배포 가이드 (Docker/직접) | DevOps |
 | [INCIDENT_RESPONSE_GUIDE.md](ops/INCIDENT_RESPONSE_GUIDE.md) | 인시던트 대응 가이드 | DevOps |
-| [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md) | 리눅스 Docker 배포 가이드 | DevOps |
-| [LINUX_DOCKER_DEPLOYMENT.html](ops/LINUX_DOCKER_DEPLOYMENT.html) | 리눅스 Docker 배포 가이드 (HTML) | DevOps |
+| [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md) | 리눅스 Docker 상세 배포 가이드 | DevOps |
 | [MONITORING_GUIDE.md](ops/MONITORING_GUIDE.md) | 모니터링 가이드 | DevOps |
+| [SECURITY_GUIDE.md](ops/SECURITY_GUIDE.md) | 보안 가이드 (API 키, 데이터 보호) | DevOps, 개발자 |
 | [SERVER_TEST_GUIDE.md](ops/SERVER_TEST_GUIDE.md) | 서버 테스트 가이드 | DevOps, 개발자 |
+| [TROUBLESHOOTING_GUIDE.md](ops/TROUBLESHOOTING_GUIDE.md) | 트러블슈팅 가이드 | DevOps, 개발자 |
+
+### 📁 프로젝트 관리 (project/)
+
+| 파일 | 설명 | 대상 |
+|------|------|------|
+| [CODE_REVIEW_HISTORY.md](project/CODE_REVIEW_HISTORY.md) | 코드 리뷰 이력 | 개발자 |
+| [DEPRECATION.md](project/DEPRECATION.md) | 폐지 예정 기능 | 개발자 |
+| [IMPROVEMENT_PLAN.md](project/IMPROVEMENT_PLAN.md) | 개선 계획 | 개발자 |
 
 ### 👤 사용자 가이드 (user/)
 
@@ -131,7 +133,8 @@ docs/
 | [MOBILE_APP_GUIDE.md](user/MOBILE_APP_GUIDE.md) | 모바일 앱 가이드 | 최종 사용자 |
 | [PRODUCT_PURCHASE_GUIDE.md](user/PRODUCT_PURCHASE_GUIDE.md) | 제품 구매 가이드 | 최종 사용자 |
 | [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](user/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md) | 세럼 처방 고객 가이드 | 최종 사용자 |
-| [USER_GUIDE.md](user/USER_GUIDE.md) | 사용자 가이드 | 최종 사용자 |
+| [USER_GUIDE.md](user/USER_GUIDE.md) | 사용자 가이드 (웹) | 최종 사용자 |
+| [image_enhancer_guide.md](user/image_enhancer_guide.md) | 이미지 인핸서 사용자 가이드 (GUI) | 최종 사용자 |
 
 ---
 
@@ -142,14 +145,14 @@ docs/
 #### 🆕 새로운 개발자
 1. [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) - 프로젝트 전체 이해
 2. [DEVELOPMENT_GUIDE.md](guides/DEVELOPMENT_GUIDE.md) - 개발 환경 설정
-3. [SYSTEM_ARCHITECTURE.md](guides/SYSTEM_ARCHITECTURE.md) - 시스템 아키텍처
-4. [API_GUIDE.md](api/API_GUIDE.md) - API 사용 방법
+3. [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md) - 아키텍처 이해
+4. [API_REFERENCE.md](api/API_REFERENCE.md) - API 사용 방법
 
 #### 🔧 DevOps 엔지니어
-1. [CI_CD_GUIDE.md](ops/CI_CD_GUIDE.md) - CI/CD 설정
-2. [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md) - 배포 방법
-3. [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md) - Docker 배포
-4. [MONITORING_GUIDE.md](ops/MONITORING_GUIDE.md) - 모니터링 설정
+1. [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md) - 배포 방법
+2. [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md) - Docker 상세 배포
+3. [SECURITY_GUIDE.md](ops/SECURITY_GUIDE.md) - 보안 설정
+4. [TROUBLESHOOTING_GUIDE.md](ops/TROUBLESHOOTING_GUIDE.md) - 문제 해결
 
 #### 🎨 기능 설계자
 1. [DESIGN_reference_guided_scoring.md](design/DESIGN_reference_guided_scoring.md) - 점수 시스템
@@ -166,28 +169,32 @@ docs/
 ### 주제별 검색
 
 #### API 관련
-- [API_DOCUMENTATION.md](api/API_DOCUMENTATION.md) - API 엔드포인트
-- [API_GUIDE.md](api/API_GUIDE.md) - API 사용 가이드
-- [upload-spec.md](guides/upload-spec.md) - 업로드 스펙
+- [API_REFERENCE.md](api/API_REFERENCE.md) - API 엔드포인트 상세
 
 #### 데이터베이스 관련
+- [DATA_MODEL.md](db/DATA_MODEL.md) - 데이터 모델, 스키마
 - [supabase_setup.sql](db/supabase_setup.sql) - Supabase 설정
 - [GDPR_COMPLIANCE_DESIGN.md](design/GDPR_COMPLIANCE_DESIGN.md) - 데이터 보호
 
 #### 모델/알고리즘 관련
 - [codeformer_pipeline_algorithm.md](guides/codeformer_pipeline_algorithm.md) - CodeFormer 알고리즘
-- [image_enhancer_guide.md](guides/image_enhancer_guide.md) - 이미지 인핸서
-- [in_process_model_architecture.md](guides/in_process_model_architecture.md) - 모델 아키텍처
 - [llm_prompt_template.md](guides/llm_prompt_template.md) - LLM 프롬프트
+- [in_process_model_architecture.md](design/in_process_model_architecture.md) - 모델 아키텍처
 
 #### 보안 관련
+- [SECURITY_GUIDE.md](ops/SECURITY_GUIDE.md) - 보안 가이드
 - [GDPR_COMPLIANCE_DESIGN.md](design/GDPR_COMPLIANCE_DESIGN.md) - GDPR 준수
 - [IMAGE_ENCRYPTION_DESIGN.md](design/IMAGE_ENCRYPTION_DESIGN.md) - 이미지 암호화
 - [FACE_AUTHENTICATION_DESIGN.md](design/FACE_AUTHENTICATION_DESIGN.md) - 얼굴 인증
 
 #### 신규 기능 설계
 - [design/](design/) 폴더의 모든 문서
-- [IMPROVEMENT_PLAN.md](guides/IMPROVEMENT_PLAN.md) - 개선 계획
+- [IMPROVEMENT_PLAN.md](project/IMPROVEMENT_PLAN.md) - 개선 계획
+
+#### 성능/테스트
+- [PERFORMANCE_GUIDE.md](guides/PERFORMANCE_GUIDE.md) - 성능 최적화
+- [TESTING_GUIDE.md](guides/TESTING_GUIDE.md) - 테스트 가이드
+- [SERVER_TEST_GUIDE.md](ops/SERVER_TEST_GUIDE.md) - 서버 테스트
 
 ---
 
@@ -205,9 +212,9 @@ docs/
 ```markdown
 # 문서 제목
 
-> **프로젝트:** SkinLens v1.0  
-> **버전:** v1.0  
-> **작성일:** YYYY-MM-DD  
+> **프로젝트:** SkinLens v1.0
+> **버전:** v1.0
+> **작성일:** YYYY-MM-DD
 > **상태:** 초안/검토/완료
 
 ---
@@ -266,5 +273,5 @@ docs/
 
 ---
 
-**마지막 업데이트**: 2026-05-30  
+**마지막 업데이트**: 2026-05-30
 **현재 개발 환경**: Python 3.12
