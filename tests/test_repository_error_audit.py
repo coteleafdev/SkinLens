@@ -229,7 +229,7 @@ class TestErrorAuditRepository:
         repository.record_audit_log(
             actor_customer_id="admin",
             target_customer_id="customer123",
-            endpoint="/v3/analyze",
+            endpoint="/v1/analyze",
             method="POST",
             user_role="admin",
             ip_address="192.168.1.1",
@@ -241,7 +241,7 @@ class TestErrorAuditRepository:
         assert len(logs) == 1
         assert logs[0]["actor_customer_id"] == "admin"
         assert logs[0]["target_customer_id"] == "customer123"
-        assert logs[0]["endpoint"] == "/v3/analyze"
+        assert logs[0]["endpoint"] == "/v1/analyze"
         assert logs[0]["method"] == "POST"
         assert logs[0]["user_role"] == "admin"
         assert logs[0]["ip_address"] == "192.168.1.1"
@@ -253,7 +253,7 @@ class TestErrorAuditRepository:
         repository.record_audit_log(
             actor_customer_id="admin",
             target_customer_id=None,
-            endpoint="/v3/health",
+            endpoint="/v1/health",
             method="GET",
             user_role="admin"
         )
@@ -268,7 +268,7 @@ class TestErrorAuditRepository:
         repository.record_audit_log(
             actor_customer_id="customer123",
             target_customer_id=None,
-            endpoint="/v3/analyze",
+            endpoint="/v1/analyze",
             method="POST",
             user_role="customer",
             success=False,
@@ -286,7 +286,7 @@ class TestErrorAuditRepository:
         repository.record_audit_log(
             actor_customer_id="admin",
             target_customer_id="customer123",
-            endpoint="/v3/analyze",
+            endpoint="/v1/analyze",
             method="POST",
             user_role="admin"
         )
@@ -294,7 +294,7 @@ class TestErrorAuditRepository:
         repository.record_audit_log(
             actor_customer_id="customer123",
             target_customer_id=None,
-            endpoint="/v3/health",
+            endpoint="/v1/health",
             method="GET",
             user_role="customer"
         )
@@ -313,7 +313,7 @@ class TestErrorAuditRepository:
         repository.record_audit_log(
             actor_customer_id="admin",
             target_customer_id=None,
-            endpoint="/v3/health",
+            endpoint="/v1/health",
             method="GET",
             user_role="admin"
         )
@@ -333,7 +333,7 @@ class TestErrorAuditRepository:
             repository.record_audit_log(
                 actor_customer_id=f"user{i}",
                 target_customer_id=None,
-                endpoint="/v3/health",
+                endpoint="/v1/health",
                 method="GET",
                 user_role="customer"
             )

@@ -289,7 +289,7 @@ def analyze_all_multi_angle(
 **파일:** `src/server/api.py`
 
 **변경 사항:**
-1. `/v3/analysis/jobs` 엔드포인트 수정
+1. `/v1/analysis/jobs` 엔드포인트 수정
 2. 이미지 3장 필수 검증 강화
 3. 각도별 결과 포함
 
@@ -513,7 +513,7 @@ def test_integrate_scores():
 
 ### 7.2 롤백 절차
 
-1. API 버전 롤백 (`/v3/analysis/jobs` → `/v2/analysis/jobs`)
+1. API 버전 롤백 (`/v1/analysis/jobs` → `/v2/analysis/jobs`)
 2. 단일 이미지 모드로 전환
 3. 통합 로직 비활성화
 4. 모니터링 및 로그 분석

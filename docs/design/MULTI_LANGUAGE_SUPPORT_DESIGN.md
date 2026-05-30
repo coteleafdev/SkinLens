@@ -137,7 +137,7 @@ ALTER TABLE products ADD COLUMN ingredients_ja TEXT;
 ### 3.6 API 엔드포인트 변경
 
 #### 3.6.1 언어 설정
-- **경로:** `/v3/users/{user_id}/language`
+- **경로:** `/v1/users/{user_id}/language`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json
@@ -155,7 +155,7 @@ ALTER TABLE products ADD COLUMN ingredients_ja TEXT;
 ```
 
 #### 3.6.2 다국어 분석 결과
-- **경로:** `/v3/jobs/{job_id}`
+- **경로:** `/v1/jobs/{job_id}`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `lang=en`
 - **응답:**

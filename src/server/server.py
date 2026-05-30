@@ -6,13 +6,13 @@ server.py — Skin Analysis API (라우터 분리 버전)
         deps.py             ← 공유 상수·의존성·유틸 (app 미포함)
         server.py           ← app 생성·미들웨어·라우터 등록 (이 파일)
         routers/
-            jobs.py         ← POST/GET /v3/analysis/jobs/*
-            logs.py         ← GET /v3/logs/*
-            stats.py        ← GET/POST /v3/stats/*
-            auth.py         ← POST /v3/auth/login, GET /v3/auth/me
-            customer.py     ← GET/DELETE /v3/customer/my/*
-            admin.py        ← GET /v3/admin/*, GET /v3/health/db
-            orders.py       ← POST/GET /v3/orders/* (주문 관리)
+            jobs.py         ← POST/GET /v1/analysis/jobs/*
+            logs.py         ← GET /v1/logs/*
+            stats.py        ← GET/POST /v1/stats/*
+            auth.py         ← POST /v1/auth/login, GET /v1/auth/me
+            customer.py     ← GET/DELETE /v1/customer/my/*
+            admin.py        ← GET /v1/admin/*, GET /v1/health/db
+            orders.py       ← POST/GET /v1/orders/* (주문 관리)
             websocket.py    ← WebSocket 연결
 """
 from __future__ import annotations

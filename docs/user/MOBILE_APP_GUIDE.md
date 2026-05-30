@@ -40,7 +40,7 @@ sequenceDiagram
 
 ### 1.1 로그인
 
-**엔드포인트:** `POST /v3/auth/login`
+**엔드포인트:** `POST /v1/auth/login`
 
 **Request:**
 ```json
@@ -116,7 +116,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 3.2 분석 Job 생성
 
-**엔드포인트:** `POST /v3/analysis/jobs`
+**엔드포인트:** `POST /v1/analysis/jobs`
 
 **Request (multipart/form-data):**
 ```
@@ -212,7 +212,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
 
 ### 4.2 진행률 추적 (WebSocket)
 
-**엔드포인트:** `WS /v3/ws/analyze/{job_id}`
+**엔드포인트:** `WS /v1/ws/analyze/{job_id}`
 
 **메시지 형식:**
 ```json
@@ -247,8 +247,8 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
   "status": "succeeded",
   "timestamp": "2026-05-24T12:01:02.345Z",
   "analysis": {
-    "input_image": "/v3/analysis/jobs/.../artifacts/input.jpg",
-    "restored_image": "/v3/analysis/jobs/.../artifacts/00_restored.png",
+    "input_image": "/v1/analysis/jobs/.../artifacts/input.jpg",
+    "restored_image": "/v1/analysis/jobs/.../artifacts/00_restored.png",
     "metadata": {
       "analyzers": {
         "pigmentation": "pigmentation_v1",
@@ -357,9 +357,9 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
     }
   },
   "artifacts": {
-    "results.json": "/v3/analysis/jobs/.../artifacts/results.json",
-    "input_image": "/v3/analysis/jobs/.../artifacts/input.jpg",
-    "restored_image": "/v3/analysis/jobs/.../artifacts/00_restored.png"
+    "results.json": "/v1/analysis/jobs/.../artifacts/results.json",
+    "input_image": "/v1/analysis/jobs/.../artifacts/input.jpg",
+    "restored_image": "/v1/analysis/jobs/.../artifacts/00_restored.png"
   }
 }
 ```
@@ -463,7 +463,7 @@ use_multi_view_analysis: (bool) 다중 뷰 분석 사용 (기본 true)
 ```dart
 Future<String> login(String customerId, String password) async {
   final response = await http.post(
-    Uri.parse('$baseUrl/v3/auth/login'),
+    Uri.parse('$baseUrl/v1/auth/login'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
       'customer_id': customerId,
@@ -490,7 +490,7 @@ Future<String> submitAnalysis(
   Map<String, dynamic> clientMeta,
   String customerId,
 ) async {
-  final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/v3/analysis/jobs'));
+  final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/v1/analysis/jobs'));
   
   // JWT 토큰 추가
   request.headers['Authorization'] = 'Bearer $token';
@@ -527,7 +527,7 @@ Future<String> submitAnalysis(
 ```dart
 void trackProgress(String jobId, String token) {
   final channel = WebSocketChannel.connect(
-    Uri.parse('$wsBaseUrl/v3/ws/analyze/$jobId'),
+    Uri.parse('$wsBaseUrl/v1/ws/analyze/$jobId'),
   );
   
   channel.stream.listen(
@@ -559,7 +559,7 @@ void trackProgress(String jobId, String token) {
 ```dart
 Future<Map<String, dynamic>> getResult(String jobId, String token) async {
   final response = await http.get(
-    Uri.parse('$baseUrl/v3/analysis/jobs/$jobId/result'),
+    Uri.parse('$baseUrl/v1/analysis/jobs/$jobId/result'),
     headers: {'Authorization': 'Bearer $token'},
   );
 
@@ -579,7 +579,7 @@ Future<Map<String, dynamic>> getResult(String jobId, String token) async {
 
 ```javascript
 async function login(customerId, password) {
-  const response = await fetch(`${baseUrl}/v3/auth/login`, {
+  const response = await fetch(`${baseUrl}/v1/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ customer_id: customerId, password }),
@@ -612,7 +612,7 @@ async function submitAnalysis(token, images, survey, clientMeta, customerId) {
   formData.append('client_meta', JSON.stringify(clientMeta));
   formData.append('customer_id', customerId);
   
-  const response = await fetch(`${baseUrl}/v3/analysis/jobs`, {
+  const response = await fetch(`${baseUrl}/v1/analysis/jobs`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}` },
     body: formData,
@@ -631,7 +631,7 @@ async function submitAnalysis(token, images, survey, clientMeta, customerId) {
 
 ```javascript
 function trackProgress(jobId) {
-  const ws = new WebSocket(`${wsBaseUrl}/v3/ws/analyze/${jobId}`);
+  const ws = new WebSocket(`${wsBaseUrl}/v1/ws/analyze/${jobId}`);
   
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);

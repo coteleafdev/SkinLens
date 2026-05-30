@@ -149,7 +149,7 @@ flowchart TD
 
 | 단계 | 설명 |
 |------|------|
-| **1. 스마트폰 데이터 수집** | - 이미지 캡처 (정면/좌측 45°/우측 45°) 3장<br>- 설문 응답 입력 (survey)<br>- 클라이언트 메타 수집 (client_meta)<br><br>↓ POST /v3/analysis/jobs<br>multipart/form-data<br>- `images[]` (JPEG, 1~3장)<br>- `angles[]` (front/left45/right45, images[]와 1:1 대응)<br>- `survey` (JSON string)<br>- `client_meta` (JSON string)<br>- `customer_id` (선택) |
+| **1. 스마트폰 데이터 수집** | - 이미지 캡처 (정면/좌측 45°/우측 45°) 3장<br>- 설문 응답 입력 (survey)<br>- 클라이언트 메타 수집 (client_meta)<br><br>↓ POST /v1/analysis/jobs<br>multipart/form-data<br>- `images[]` (JPEG, 1~3장)<br>- `angles[]` (front/left45/right45, images[]와 1:1 대응)<br>- `survey` (JSON string)<br>- `client_meta` (JSON string)<br>- `customer_id` (선택) |
 | **2. 서버 수신 및 파싱** | - job_id 생성 (UUID)<br>- 이미지 저장 전각도: `results/api_jobs/{job_id}/`<br>- `angles[]` 검증 (front/left45/right45)<br>- front 이미지 → 파이프라인 주 입력 결정<br>- `lateral_images` 목록 job meta에 저장<br>- survey 파싱 (JSON → dict)<br>- client_meta 파싱 (JSON → dict)<br>- input_json 병합 = {survey, client_meta}<br>- job.json 저장<br><br>↓ 백그라운드 작업 큐 |
 | **3. 파이프라인 실행** | - job 상태: queued → running<br>- run_analysis_pipeline_async() 호출 |
 | **4. 이미지 전처리** | - _stage_pipeline_input_rgb()<br>- RGB 변환<br>- 리사이징 (config.json input_resize)<br>- 1024×1365 → LANCZOS 리샘플링<br>- 00_input_{stem}.png 저장 |
@@ -160,11 +160,11 @@ flowchart TD
 | **9. Gemini 소견 생성** | - LLMRegistry에서 LLM 선택 (gemini_v1)<br>- llm_report=true인 경우<br>- 분석 결과를 Gemini API에 전송<br>- 맞춤형 화장품 성분 정보 포함 (제품 매칭 성공 시)<br>- **설문 정보(survey) 포함** ← 신규<br>- 듀얼 이미지 소견 (원본/복원 비교)<br>- 한국어 소견서 생성<br>- 개선 제안 제시<br>- 맞춤형 화장품 추천 포함 |
 | **10. 입력 JSON → LLM → 출력 JSON** | - input_json["survey"]에서 설문 정보 추출<br>- LLM 프롬프트에 survey_info 포함<br>- Gemini API 호출 (설문 정보 포함)<br>- 개인화된 소견 생성 (성별, 연령, 피부 타입, 고민사항, 알레르지 반영)<br>- 출력 JSON의 llm_report에 개인화된 소견 저장<br>- LLM API 통계(llm_stats) 저장 |
 | **11. 출력 JSON 생성** | {<br>  "input_image": "/path/to/original.png",<br>  "restored_image": "/path/to/restored.png",<br>  "metadata": {<br>    "analyzers": {"pigmentation": "pigmentation_v1", ...},<br>    "restorer": {"name": "codeformer_v1", "config": {...}},<br>    "llm": {"name": "gemini_v1", "model": "models/gemini-2.5-pro"}<br>  },<br>  "input_json": {survey, client_meta},<br>  "internal_analysis": {<br>    "original": {<br>      "melasma_score": 56,<br>      "redness_score": 72,<br>      ... (18개 항목)<br>      "overall_score": 65<br>    },<br>    "restored": { ... }<br>  },<br>  "prescription": {<br>    "base": {"percentage": 85},<br>    "skin": {"M03": 1, "M09": 1},<br>    "care": {"M10": 2, "M06": 2, "M07": 2},<br>    "pcr": {},<br>    "assessment": {...}<br>  },<br>  "llm_report": {<br>    "overall_score": 75,<br>    "perceived_age": 38,<br>    "metric_opinions": {...},<br>    "overall_opinion": "고객님의 피부는 전반적으로 양호한 상태입니다...",<br>    "recommendation": "여드름 관리를 위해...",<br>    "matched_products": [...],<br>    "strict_evaluation_mode": true,<br>    "llm_stats": {...}<br>  }<br>} |
-| **12. 아티팩트 정리** | - results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v3/analysis/jobs/{job_id}/artifacts/...) |
+| **12. 아티팩트 정리** | - results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v1/analysis/jobs/{job_id}/artifacts/...) |
 | **13. 로컬 DB 저장** | - SkinAnalysisDB.save_analysis()<br>- analyses 테이블 INSERT:<br>  • customer_id<br>  • original_image_path<br>  • restored_image_path<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta<br>  • original_filename<br>  • overall_score_original<br>  • overall_score_restored |
 | **14. Supabase 동기화** | - SupabaseSync.sync()<br>- 이미지 업로드 (Storage):<br>  • original.png → skin-images/{customer_id}/{date}_{id}/<br>  • restored.png → skin-images/{customer_id}/{date}_{id}/<br>- DB upsert (skin_analyses 테이블):<br>  • local_id<br>  • customer_id<br>  • original_filename<br>  • storage_original<br>  • storage_restored<br>  • overall_score_original<br>  • overall_score_restored<br>  • json_result (출력 JSON)<br>  • input_json (입력 JSON) ← survey + client_meta |
 | **15. job 상태 업데이트** | - job 상태: running → succeeded/failed<br>- finished_at 타임스탬프<br>- artifacts URL 저장<br>- job.json 업데이트 |
-| **16. 클라이언트 응답** | - GET /v3/analysis/jobs/{job_id}/result<br>- {<br>  "job_id": "...",<br>  "status": "succeeded",<br>  "timestamp": "...",<br>  "analysis": { ...출력 JSON... },<br>  "artifacts": {<br>    "results.json": "/v3/analysis/jobs/.../artifacts/...",<br>    "restored_image": "/v3/analysis/jobs/.../artifacts/...",<br>    "input_image": "/v3/analysis/jobs/.../artifacts/..."<br>  }<br>} |
+| **16. 클라이언트 응답** | - GET /v1/analysis/jobs/{job_id}/result<br>- {<br>  "job_id": "...",<br>  "status": "succeeded",<br>  "timestamp": "...",<br>  "analysis": { ...출력 JSON... },<br>  "artifacts": {<br>    "results.json": "/v1/analysis/jobs/.../artifacts/...",<br>    "restored_image": "/v1/analysis/jobs/.../artifacts/...",<br>    "input_image": "/v1/analysis/jobs/.../artifacts/..."<br>  }<br>} |
 
 ## 상세 단계 설명
 
@@ -197,7 +197,7 @@ flowchart TD
 
 ### 2. 서버 수신 및 파싱
 
-**API 엔드포인트:** `POST /v3/analysis/jobs`
+**API 엔드포인트:** `POST /v1/analysis/jobs`
 
 **파라미터 처리:**
 ```python
@@ -883,7 +883,7 @@ ALTER TABLE skin_analyses ADD COLUMN IF NOT EXISTS input_json JSONB;
 
 ### 12. API 엔드포인트
 
-### POST /v3/analysis/jobs
+### POST /v1/analysis/jobs
 
 **파라미터:**
 
@@ -904,11 +904,11 @@ ALTER TABLE skin_analyses ADD COLUMN IF NOT EXISTS input_json JSONB;
 
 **응답:** `202 Accepted` + `{ "job_id": "..." }`
 
-### GET /v3/analysis/jobs/{job_id}
+### GET /v1/analysis/jobs/{job_id}
 
 **응답:** job 상태 정보
 
-### GET /v3/analysis/jobs/{job_id}/result
+### GET /v1/analysis/jobs/{job_id}/result
 
 **응답:** 분석 결과 JSON
 
@@ -975,7 +975,7 @@ def sync(
 ### 3. server.py
 
 ```python
-@app.post("/v3/analysis/jobs", status_code=202)
+@app.post("/v1/analysis/jobs", status_code=202)
 async def create_job(
     # ... 기존 파라미터 ...
     survey: Optional[str] = Form(None),        # ← 추가
@@ -1062,7 +1062,7 @@ final clientMeta = {
 
 final request = http.MultipartRequest(
   'POST',
-  Uri.parse('http://localhost:8000/v3/analysis/jobs'),
+  Uri.parse('http://localhost:8000/v1/analysis/jobs'),
 );
 
 // 다중 이미지 전송 (권장)
@@ -1084,7 +1084,7 @@ request.fields['client_meta'] = jsonEncode(clientMeta);
 request.fields['customer_id'] = customerId ?? '';
 
 final response = await request.send();
-// 202 Accepted → job_id 추출 → GET /v3/analysis/jobs/{job_id} 폴링
+// 202 Accepted → job_id 추출 → GET /v1/analysis/jobs/{job_id} 폴링
 ```
 
 ## 데이터 조회 예시

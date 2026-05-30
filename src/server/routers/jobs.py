@@ -1,10 +1,10 @@
 """
 routers/jobs.py — 분석 Job 생성·조회·아티팩트 다운로드
 
-POST   /v3/analysis/jobs
-GET    /v3/analysis/jobs/{job_id}
-GET    /v3/analysis/jobs/{job_id}/result
-GET    /v3/analysis/jobs/{job_id}/artifacts/{name}
+POST   /v1/analysis/jobs
+GET    /v1/analysis/jobs/{job_id}
+GET    /v1/analysis/jobs/{job_id}/result
+GET    /v1/analysis/jobs/{job_id}/artifacts/{name}
 """
 from __future__ import annotations
 

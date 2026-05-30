@@ -10,7 +10,7 @@ class TestHealthAPI:
 
     def test_health_check_basic(self, auth_client):
         """기본 헬스체크"""
-        response = auth_client.get("/v3/health")
+        response = auth_client.get("/v1/health")
         assert response.status_code == 200
         data = response.json()
         assert "status" in data
@@ -20,7 +20,7 @@ class TestHealthAPI:
 
     def test_health_check_services(self, auth_client):
         """헬스체크 서비스 상태 확인"""
-        response = auth_client.get("/v3/health")
+        response = auth_client.get("/v1/health")
         data = response.json()
         services = data["services"]
         
@@ -60,34 +60,34 @@ class TestHealthAPI:
 
     def test_get_incidents_basic(self, auth_client):
         """장애 이벤트 목록 조회"""
-        response = auth_client.get("/v3/admin/incidents")
+        response = auth_client.get("/v1/admin/incidents")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
 
     def test_get_incidents_with_filters(self, auth_client):
         """필터와 함께 장애 이벤트 조회"""
-        response = auth_client.get("/v3/admin/incidents?severity=critical&status=active")
+        response = auth_client.get("/v1/admin/incidents?severity=critical&status=active")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
 
     def test_get_incidents_with_pagination(self, auth_client):
         """페이지네이션과 함께 장애 이벤트 조회"""
-        response = auth_client.get("/v3/admin/incidents?limit=5&offset=0")
+        response = auth_client.get("/v1/admin/incidents?limit=5&offset=0")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
 
     def test_get_incident_not_found(self, auth_client):
         """존재하지 않는 장애 이벤트 조회"""
-        response = auth_client.get("/v3/admin/incidents/nonexistent")
+        response = auth_client.get("/v1/admin/incidents/nonexistent")
         assert response.status_code == 404
 
     def test_trigger_recovery_not_found(self, auth_client):
         """존재하지 않는 장애 복구 시도"""
         response = auth_client.post(
-            "/v3/admin/incidents/nonexistent/recover",
+            "/v1/admin/incidents/nonexistent/recover",
             json={"action_type": "restart", "force": False}
         )
         assert response.status_code == 404
@@ -96,7 +96,7 @@ class TestHealthAPI:
         """잘못된 복구 액션 타입"""
         # 먼저 장애가 있는지 확인 필요
         response = auth_client.post(
-            "/v3/admin/incidents/test_id/recover",
+            "/v1/admin/incidents/test_id/recover",
             json={"action_type": "invalid_action", "force": False}
         )
         # 장애가 없으면 404, 있으면 500 또는 400
@@ -104,19 +104,19 @@ class TestHealthAPI:
 
     def test_get_recovery_actions_not_found(self, auth_client):
         """존재하지 않는 장애의 복구 작업 조회"""
-        response = auth_client.get("/v3/admin/incidents/nonexistent/recovery-actions")
+        response = auth_client.get("/v1/admin/incidents/nonexistent/recovery-actions")
         assert response.status_code == 200  # 빈 리스트 반환
         data = response.json()
         assert isinstance(data, list)
 
     def test_trigger_rollback_not_found(self, auth_client):
         """존재하지 않는 복구 작업 롤백 시도"""
-        response = auth_client.post("/v3/admin/recovery-actions/nonexistent/rollback")
+        response = auth_client.post("/v1/admin/recovery-actions/nonexistent/rollback")
         assert response.status_code == 404
 
     def test_health_check_response_model(self, auth_client):
         """헬스체크 응답 모델 검증"""
-        response = auth_client.get("/v3/health")
+        response = auth_client.get("/v1/health")
         data = response.json()
         
         # 필수 필드 확인
@@ -129,7 +129,7 @@ class TestHealthAPI:
 
     def test_incident_response_model(self, auth_client):
         """장애 응답 모델 검증"""
-        response = auth_client.get("/v3/admin/incidents")
+        response = auth_client.get("/v1/admin/incidents")
         data = response.json()
         
         if len(data) > 0:
@@ -157,7 +157,7 @@ class TestHealthAPI:
     def test_health_check_overall_status_critical(self, auth_client):
         """전체 상태가 critical인 경우"""
         # 이 테스트는 실제 시스템 상태에 따라 다름
-        response = auth_client.get("/v3/health")
+        response = auth_client.get("/v1/health")
         data = response.json()
         
         # 하나라도 critical이면 전체 상태도 critical
@@ -166,7 +166,7 @@ class TestHealthAPI:
 
     def test_health_check_overall_status_warning(self, auth_client):
         """전체 상태가 warning인 경우"""
-        response = auth_client.get("/v3/health")
+        response = auth_client.get("/v1/health")
         data = response.json()
         
         # critical이 없고 warning이 있으면 전체 상태는 warning

@@ -85,7 +85,7 @@
 4. 가장자리 자연스러운 전환 (alpha blending)
 
 ### 3.3 API 엔드포인트
-- **경로:** `/v3/restoration/preview`
+- **경로:** `/v1/restoration/preview`
 - **메서드:** `POST`
 - **요청 바디:**
   ```json

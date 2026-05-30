@@ -1,11 +1,11 @@
 """
 routers/customer.py — 인증된 고객 전용 API (자기 데이터만 접근)
 
-GET    /v3/customer/my/trends
-GET    /v3/customer/my/analysis
-GET    /v3/customer/my/errors
-DELETE /v3/customer/my/data
-GET    /v3/customer/my/data/export
+GET    /v1/customer/my/trends
+GET    /v1/customer/my/analysis
+GET    /v1/customer/my/errors
+DELETE /v1/customer/my/data
+GET    /v1/customer/my/data/export
 """
 from __future__ import annotations
 

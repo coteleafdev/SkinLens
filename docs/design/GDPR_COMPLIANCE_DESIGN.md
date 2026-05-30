@@ -170,7 +170,7 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ### 3.6 API 엔드포인트
 
 #### 3.6.1 동의 등록
-- **경로:** `/v3/gdpr/consent`
+- **경로:** `/v1/gdpr/consent`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -190,7 +190,7 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ```
 
 #### 3.6.2 동의 철회
-- **경로:** `/v3/gdpr/consent/{consent_id}/withdraw`
+- **경로:** `/v1/gdpr/consent/{consent_id}/withdraw`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json
@@ -206,7 +206,7 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ```
 
 #### 3.6.3 동의 조회
-- **경로:** `/v3/gdpr/consents`
+- **경로:** `/v1/gdpr/consents`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`
 - **응답:**
@@ -225,7 +225,7 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ```
 
 #### 3.6.4 데이터 삭제 요청
-- **경로:** `/v3/gdpr/data-deletion`
+- **경로:** `/v1/gdpr/data-deletion`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -245,7 +245,7 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ```
 
 #### 3.6.5 데이터 삭제 상태 조회
-- **경로:** `/v3/gdpr/data-deletion/{request_id}`
+- **경로:** `/v1/gdpr/data-deletion/{request_id}`
 - **메서드:** `GET`
 - **응답:**
 ```json
@@ -258,7 +258,7 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ```
 
 #### 3.6.6 데이터 이동 요청
-- **경로:** `/v3/gdpr/data-portability`
+- **경로:** `/v1/gdpr/data-portability`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -277,12 +277,12 @@ CREATE INDEX idx_data_access_logs_accessed ON data_access_logs(accessed_at);
 ```
 
 #### 3.6.7 데이터 이동 다운로드
-- **경로:** `/v3/gdpr/data-portability/{request_id}/download`
+- **경로:** `/v1/gdpr/data-portability/{request_id}/download`
 - **메서드:** `GET`
 - **응답:** 데이터 파일 (JSON/CSV)
 
 #### 3.6.8 데이터 접근 요청
-- **경로:** `/v3/gdpr/data-access`
+- **경로:** `/v1/gdpr/data-access`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`
 - **응답:**

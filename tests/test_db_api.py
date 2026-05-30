@@ -22,7 +22,7 @@ class TestDBHealthCheckAPI:
 
     def test_health_db_healthy(self, auth_client, admin_token):
         """DB Health Check 테스트 (정상)."""
-        response = auth_client.get("/v3/health/db", headers={"Authorization": f"Bearer {admin_token}"})
+        response = auth_client.get("/v1/health/db", headers={"Authorization": f"Bearer {admin_token}"})
         
         assert response.status_code in [200, 503]  # DB가 없을 수도 있음
         data = response.json()
@@ -42,7 +42,7 @@ class TestDBHealthCheckAPI:
         os.environ["EXECUTION_HISTORY_DB"] = "/nonexistent/path.db"
         
         try:
-            response = auth_client.get("/v3/health/db", headers={"Authorization": f"Bearer {admin_token}"})
+            response = auth_client.get("/v1/health/db", headers={"Authorization": f"Bearer {admin_token}"})
             assert response.status_code == 503
             data = response.json()
             assert data["healthy"] is False
@@ -59,19 +59,19 @@ class TestDBMetricsAPI:
 
     def test_db_metrics_unauthorized(self, auth_client):
         """DB Metrics 테스트 (인증 없음)."""
-        response = auth_client.get("/v3/admin/db/metrics")
+        response = auth_client.get("/v1/admin/db/metrics")
         assert response.status_code == 401
     
     def test_db_metrics_forbidden(self, auth_client, user_token):
         """DB Metrics 테스트 (권한 없음 - 일반 사용자)."""
         headers = {"Authorization": f"Bearer {user_token}"}
-        response = auth_client.get("/v3/admin/db/metrics", headers=headers)
+        response = auth_client.get("/v1/admin/db/metrics", headers=headers)
         assert response.status_code == 403
     
     def test_db_metrics_authorized(self, auth_client, admin_token):
         """DB Metrics 테스트 (인증됨)."""
         headers = {"Authorization": f"Bearer {admin_token}"}
-        response = auth_client.get("/v3/admin/db/metrics", headers=headers)
+        response = auth_client.get("/v1/admin/db/metrics", headers=headers)
         
         assert response.status_code in [200, 403]  # 역할 확인 필요
         if response.status_code == 200:
@@ -89,19 +89,19 @@ class TestAuditSummaryAPI:
 
     def test_audit_summary_unauthorized(self, auth_client):
         """감사 로그 요약 테스트 (인증 없음)."""
-        response = auth_client.get("/v3/admin/audit/summary")
+        response = auth_client.get("/v1/admin/audit/summary")
         assert response.status_code == 401
     
     def test_audit_summary_forbidden(self, auth_client, user_token):
         """감사 로그 요약 테스트 (권한 없음 - 일반 사용자)."""
         headers = {"Authorization": f"Bearer {user_token}"}
-        response = auth_client.get("/v3/admin/audit/summary", headers=headers)
+        response = auth_client.get("/v1/admin/audit/summary", headers=headers)
         assert response.status_code == 403
     
     def test_audit_summary_authorized(self, auth_client, admin_token):
         """감사 로그 요약 테스트 (인증됨)."""
         headers = {"Authorization": f"Bearer {admin_token}"}
-        response = auth_client.get("/v3/admin/audit/summary", headers=headers)
+        response = auth_client.get("/v1/admin/audit/summary", headers=headers)
         assert response.status_code in [200, 403]  # 역할 확인 필요
         if response.status_code == 200:
             data = response.json()
@@ -111,24 +111,24 @@ class TestAuditSummaryAPI:
     def test_audit_summary_custom_days(self, auth_client, admin_token):
         """감사 로그 요약 테스트 (사용자 정의 기간)."""
         headers = {"Authorization": f"Bearer {admin_token}"}
-        response = auth_client.get("/v3/admin/audit/summary?days=30", headers=headers)
+        response = auth_client.get("/v1/admin/audit/summary?days=30", headers=headers)
         assert response.status_code in [200, 403]
 
     def test_audit_logs_unauthorized(self, auth_client):
         """인증 없이 감사 로그 조회 시 401"""
-        response = auth_client.get("/v3/admin/audit-logs")
+        response = auth_client.get("/v1/admin/audit-logs")
         assert response.status_code == 401
 
     def test_audit_logs_forbidden_analyst(self, auth_client, analyst_token):
         """분석가 권한으로 감사 로그 조회 시 403 (admin 전용)"""
         headers = {"Authorization": f"Bearer {analyst_token}"}
-        response = auth_client.get("/v3/admin/audit-logs", headers=headers)
+        response = auth_client.get("/v1/admin/audit-logs", headers=headers)
         assert response.status_code == 403
 
     def test_audit_logs_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 감사 로그 조회 성공"""
         headers = {"Authorization": f"Bearer {admin_token}"}
-        response = auth_client.get("/v3/admin/audit-logs", headers=headers)
+        response = auth_client.get("/v1/admin/audit-logs", headers=headers)
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, dict)
@@ -139,7 +139,7 @@ class TestAuditSummaryAPI:
         """필터 파라미터로 감사 로그 조회"""
         headers = {"Authorization": f"Bearer {admin_token}"}
         response = auth_client.get(
-            "/v3/admin/audit-logs?days=7&limit=10",
+            "/v1/admin/audit-logs?days=7&limit=10",
             headers=headers
         )
         assert response.status_code == 200

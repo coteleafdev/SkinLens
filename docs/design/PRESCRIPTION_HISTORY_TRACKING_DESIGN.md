@@ -123,7 +123,7 @@ CREATE INDEX idx_prescription_effect_history ON prescription_effect(prescription
 ### 3.5 API 엔드포인트
 
 #### 3.5.1 처방 이력 조회
-- **경로:** `/v3/prescription/history`
+- **경로:** `/v1/prescription/history`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`, `limit`, `offset`
 - **응답:**
@@ -145,7 +145,7 @@ CREATE INDEX idx_prescription_effect_history ON prescription_effect(prescription
 ```
 
 #### 3.5.2 처방 사용 기록 저장
-- **경로:** `/v3/prescription/{prescription_history_id}/usage`
+- **경로:** `/v1/prescription/{prescription_history_id}/usage`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -166,7 +166,7 @@ CREATE INDEX idx_prescription_effect_history ON prescription_effect(prescription
 ```
 
 #### 3.5.3 처방 효과 분석
-- **경로:** `/v3/prescription/{prescription_history_id}/effect`
+- **경로:** `/v1/prescription/{prescription_history_id}/effect`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -192,7 +192,7 @@ CREATE INDEX idx_prescription_effect_history ON prescription_effect(prescription
 ```
 
 #### 3.5.4 처방 최적화 추천
-- **경로:** `/v3/prescription/optimize`
+- **경로:** `/v1/prescription/optimize`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json

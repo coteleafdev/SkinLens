@@ -126,7 +126,7 @@ ALTER TABLE analyses ADD COLUMN encryption_iv BLOB;
 ### 3.6 API 엔드포인트
 
 #### 3.6.1 암호화 키 등록
-- **경로:** `/v3/encryption/register-key`
+- **경로:** `/v1/encryption/register-key`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -147,7 +147,7 @@ ALTER TABLE analyses ADD COLUMN encryption_iv BLOB;
 ```
 
 #### 3.6.2 암호화된 이미지 업로드
-- **경로:** `/v3/jobs/create`
+- **경로:** `/v1/jobs/create`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -168,7 +168,7 @@ ALTER TABLE analyses ADD COLUMN encryption_iv BLOB;
 ```
 
 #### 3.6.3 암호화 설정 조회
-- **경로:** `/v3/encryption/settings`
+- **경로:** `/v1/encryption/settings`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`
 - **응답:**
@@ -181,7 +181,7 @@ ALTER TABLE analyses ADD COLUMN encryption_iv BLOB;
 ```
 
 #### 3.6.4 암호화 설정 업데이트
-- **경로:** `/v3/encryption/settings`
+- **경로:** `/v1/encryption/settings`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json

@@ -1183,9 +1183,9 @@
 </ul>
 </li>
 <li><a href="#api">API 엔드포인트</a><ul>
-<li><a href="#post-v3analysisjobs">POST /v3/analysis/jobs</a></li>
-<li><a href="#get-v3analysisjobsjob_id">GET /v3/analysis/jobs/{job_id}</a></li>
-<li><a href="#get-v3analysisjobsjob_idresult">GET /v3/analysis/jobs/{job_id}/result</a></li>
+<li><a href="#post-v3analysisjobs">POST /v1/analysis/jobs</a></li>
+<li><a href="#get-v3analysisjobsjob_id">GET /v1/analysis/jobs/{job_id}</a></li>
+<li><a href="#get-v3analysisjobsjob_idresult">GET /v1/analysis/jobs/{job_id}/result</a></li>
 </ul>
 </li>
 <li><a href="#json">입력 JSON 구조</a></li>
@@ -1254,9 +1254,9 @@
 </ul>
 </li>
 <li><a href="#api">API 엔드포인트</a><ul>
-<li><a href="#post-v3analysisjobs">POST /v3/analysis/jobs</a></li>
-<li><a href="#get-v3analysisjobsjob_id">GET /v3/analysis/jobs/{job_id}</a></li>
-<li><a href="#get-v3analysisjobsjob_idresult">GET /v3/analysis/jobs/{job_id}/result</a></li>
+<li><a href="#post-v3analysisjobs">POST /v1/analysis/jobs</a></li>
+<li><a href="#get-v3analysisjobsjob_id">GET /v1/analysis/jobs/{job_id}</a></li>
+<li><a href="#get-v3analysisjobsjob_idresult">GET /v1/analysis/jobs/{job_id}/result</a></li>
 </ul>
 </li>
 <li><a href="#json">입력 JSON 구조</a></li>
@@ -1364,7 +1364,7 @@
 <tbody>
 <tr>
 <td><strong>1. 스마트폰 데이터 수집</strong></td>
-<td>- 이미지 캡처 (정면/좌측 45°/우측 45°) 3장<br>- 설문 응답 입력 (survey)<br>- 클라이언트 메타 수집 (client_meta)<br><br>↓ POST /v3/analysis/jobs<br>multipart/form-data<br>- <code>images[]</code> (JPEG, 1~3장)<br>- <code>angles[]</code> (front/left45/right45, images[]와 1:1 대응)<br>- <code>survey</code> (JSON string)<br>- <code>client_meta</code> (JSON string)<br>- <code>customer_id</code> (선택)</td>
+<td>- 이미지 캡처 (정면/좌측 45°/우측 45°) 3장<br>- 설문 응답 입력 (survey)<br>- 클라이언트 메타 수집 (client_meta)<br><br>↓ POST /v1/analysis/jobs<br>multipart/form-data<br>- <code>images[]</code> (JPEG, 1~3장)<br>- <code>angles[]</code> (front/left45/right45, images[]와 1:1 대응)<br>- <code>survey</code> (JSON string)<br>- <code>client_meta</code> (JSON string)<br>- <code>customer_id</code> (선택)</td>
 </tr>
 <tr>
 <td><strong>2. 서버 수신 및 파싱</strong></td>
@@ -1400,7 +1400,7 @@
 </tr>
 <tr>
 <td><strong>10. 아티팩트 정리</strong></td>
-<td>- results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v3/analysis/jobs/{job_id}/artifacts/...)</td>
+<td>- results.json → artifacts/results.json<br>- original.png → artifacts/original.png<br>- restored.png → artifacts/restored.png<br>- URL 경로 생성 (/v1/analysis/jobs/{job_id}/artifacts/...)</td>
 </tr>
 <tr>
 <td><strong>11. 로컬 DB 저장</strong></td>
@@ -1416,7 +1416,7 @@
 </tr>
 <tr>
 <td><strong>14. 클라이언트 응답</strong></td>
-<td>- GET /v3/analysis/jobs/{job_id}/result<br>- {<br>  "job_id": "...",<br>  "status": "succeeded",<br>  "timestamp": "...",<br>  "analysis": { ...출력 JSON... },<br>  "artifacts": {<br>    "results.json": "/v3/analysis/jobs/.../artifacts/...",<br>    "restored_image": "/v3/analysis/jobs/.../artifacts/...",<br>    "input_image": "/v3/analysis/jobs/.../artifacts/..."<br>  }<br>}</td>
+<td>- GET /v1/analysis/jobs/{job_id}/result<br>- {<br>  "job_id": "...",<br>  "status": "succeeded",<br>  "timestamp": "...",<br>  "analysis": { ...출력 JSON... },<br>  "artifacts": {<br>    "results.json": "/v1/analysis/jobs/.../artifacts/...",<br>    "restored_image": "/v1/analysis/jobs/.../artifacts/...",<br>    "input_image": "/v1/analysis/jobs/.../artifacts/..."<br>  }<br>}</td>
 </tr>
 </tbody>
 </table>
@@ -1445,7 +1445,7 @@
 - 디바이스 모델 (<code>device_model</code>)
 - 캡처 시간 (<code>captured_at</code>)</p>
 <h3 id="2">2. 서버 수신 및 파싱<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
-<p><strong>API 엔드포인트:</strong> <code>POST /v3/analysis/jobs</code></p>
+<p><strong>API 엔드포인트:</strong> <code>POST /v1/analysis/jobs</code></p>
 <p><strong>파라미터 처리:</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># server.py: create_job()</span>
 <span class="c1"># 다중 이미지 수신 (권장)</span>
@@ -1724,7 +1724,7 @@
 </code></pre></div>
 
 <h2 id="api">API 엔드포인트<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
-<h3 id="post-v3analysisjobs">POST /v3/analysis/jobs<a class="headerlink" href="#post-v3analysisjobs" title="Permanent link">&para;</a></h3>
+<h3 id="post-v3analysisjobs">POST /v1/analysis/jobs<a class="headerlink" href="#post-v3analysisjobs" title="Permanent link">&para;</a></h3>
 <p><strong>파라미터:</strong></p>
 <table>
 <thead>
@@ -1802,9 +1802,9 @@
 <p><code>images[]</code> / <code>image</code> / <code>image_url</code> 중 하나를 반드시 제공해야 합니다. 동시 사용 불가.</p>
 </blockquote>
 <p><strong>응답:</strong> <code>202 Accepted</code> + <code>{ "job_id": "..." }</code></p>
-<h3 id="get-v3analysisjobsjob_id">GET /v3/analysis/jobs/{job_id}<a class="headerlink" href="#get-v3analysisjobsjob_id" title="Permanent link">&para;</a></h3>
+<h3 id="get-v3analysisjobsjob_id">GET /v1/analysis/jobs/{job_id}<a class="headerlink" href="#get-v3analysisjobsjob_id" title="Permanent link">&para;</a></h3>
 <p><strong>응답:</strong> job 상태 정보</p>
-<h3 id="get-v3analysisjobsjob_idresult">GET /v3/analysis/jobs/{job_id}/result<a class="headerlink" href="#get-v3analysisjobsjob_idresult" title="Permanent link">&para;</a></h3>
+<h3 id="get-v3analysisjobsjob_idresult">GET /v1/analysis/jobs/{job_id}/result<a class="headerlink" href="#get-v3analysisjobsjob_idresult" title="Permanent link">&para;</a></h3>
 <p><strong>응답:</strong> 분석 결과 JSON</p>
 <h2 id="json">입력 JSON 구조<a class="headerlink" href="#json" title="Permanent link">&para;</a></h2>
 <p><strong>input_json 딕셔너리 구조:</strong></p>
@@ -1859,7 +1859,7 @@
 </code></pre></div>
 
 <h3 id="3-serverpy">3. server.py<a class="headerlink" href="#3-serverpy" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/v3/analysis/jobs&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">202</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/v1/analysis/jobs&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">202</span><span class="p">)</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_job</span><span class="p">(</span>
     <span class="c1"># ... 기존 파라미터 ...</span>
     <span class="n">survey</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Form</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span>        <span class="c1"># ← 추가</span>
@@ -1939,7 +1939,7 @@
 
 <span class="kd">final</span><span class="w"> </span><span class="n">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">http</span><span class="p">.</span><span class="n">MultipartRequest</span><span class="p">(</span>
 <span class="w">  </span><span class="s1">&#39;POST&#39;</span><span class="p">,</span>
-<span class="w">  </span><span class="n">Uri</span><span class="p">.</span><span class="n">parse</span><span class="p">(</span><span class="s1">&#39;http://localhost:8000/v3/analysis/jobs&#39;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">Uri</span><span class="p">.</span><span class="n">parse</span><span class="p">(</span><span class="s1">&#39;http://localhost:8000/v1/analysis/jobs&#39;</span><span class="p">),</span>
 <span class="p">);</span>
 
 <span class="c1">// 다중 이미지 전송 (권장)</span>
@@ -1961,7 +1961,7 @@
 <span class="n">request</span><span class="p">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;customer_id&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">customerId</span><span class="w"> </span><span class="o">??</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">;</span>
 
 <span class="kd">final</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kd">await</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="n">send</span><span class="p">();</span>
-<span class="c1">// 202 Accepted → job_id 추출 → GET /v3/analysis/jobs/{job_id} 폴링</span>
+<span class="c1">// 202 Accepted → job_id 추출 → GET /v1/analysis/jobs/{job_id} 폴링</span>
 </code></pre></div>
 
 <h2 id="_11">데이터 조회 예시<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>

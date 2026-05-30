@@ -1,10 +1,10 @@
 """
 routers/admin.py — 관리자 전용 API
 
-GET  /v3/admin/audit-logs
-GET  /v3/admin/db/metrics
-GET  /v3/admin/audit/summary
-GET  /v3/health/db          ← 관리자·분석가 전용 (prefix 없음)
+GET  /v1/admin/audit-logs
+GET  /v1/admin/db/metrics
+GET  /v1/admin/audit/summary
+GET  /v1/health/db          ← 관리자·분석가 전용 (prefix 없음)
 """
 from __future__ import annotations
 

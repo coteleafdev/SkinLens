@@ -444,7 +444,7 @@ def collect_training_data():
 
 ### 6.2 피부 타입 확인 엔드포인트
 
-**엔드포인트:** `POST /v3/analyses/{analysis_id}/confirm-skin-type`
+**엔드포인트:** `POST /v1/analyses/{analysis_id}/confirm-skin-type`
 
 **Request:**
 ```json
@@ -466,7 +466,7 @@ def collect_training_data():
 
 ### 6.3 피부 타입 재감지
 
-**엔드포인트:** `POST /v3/analyses/{analysis_id}/reclassify-skin-type`
+**엔드포인트:** `POST /v1/analyses/{analysis_id}/reclassify-skin-type`
 
 **Request:**
 ```json

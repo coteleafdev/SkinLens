@@ -123,7 +123,7 @@ CREATE INDEX idx_authentication_attempts_created ON authentication_attempts(crea
 ### 3.5 API 엔드포인트
 
 #### 3.5.1 얼굴 등록
-- **경로:** `/v3/auth/face/register`
+- **경로:** `/v1/auth/face/register`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -155,7 +155,7 @@ CREATE INDEX idx_authentication_attempts_created ON authentication_attempts(crea
 ```
 
 #### 3.5.2 얼굴 인증
-- **경로:** `/v3/auth/face/authenticate`
+- **경로:** `/v1/auth/face/authenticate`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -179,7 +179,7 @@ CREATE INDEX idx_authentication_attempts_created ON authentication_attempts(crea
 ```
 
 #### 3.5.3 얼굴 데이터 삭제
-- **경로:** `/v3/auth/face/delete`
+- **경로:** `/v1/auth/face/delete`
 - **메서드:** `DELETE`
 - **요청 바디:**
 ```json
@@ -195,7 +195,7 @@ CREATE INDEX idx_authentication_attempts_created ON authentication_attempts(crea
 ```
 
 #### 3.5.4 인증 시도 히스토리
-- **경로:** `/v3/auth/attempts`
+- **경로:** `/v1/auth/attempts`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`, `limit`, `offset`
 - **응답:**

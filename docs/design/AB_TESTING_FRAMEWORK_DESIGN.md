@@ -171,7 +171,7 @@ CREATE INDEX idx_experiment_results_experiment ON experiment_results(experiment_
 ### 3.6 API 엔드포인트
 
 #### 3.6.1 실험 생성
-- **경로:** `/v3/ab-testing/experiments`
+- **경로:** `/v1/ab-testing/experiments`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -201,7 +201,7 @@ CREATE INDEX idx_experiment_results_experiment ON experiment_results(experiment_
 ```
 
 #### 3.6.2 실험 시작
-- **경로:** `/v3/ab-testing/experiments/{experiment_id}/start`
+- **경로:** `/v1/ab-testing/experiments/{experiment_id}/start`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json
@@ -219,7 +219,7 @@ CREATE INDEX idx_experiment_results_experiment ON experiment_results(experiment_
 ```
 
 #### 3.6.3 사용자 그룹 조회
-- **경로:** `/v3/ab-testing/user-group`
+- **경로:** `/v1/ab-testing/user-group`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`, `experiment_id`
 - **응답:**
@@ -236,7 +236,7 @@ CREATE INDEX idx_experiment_results_experiment ON experiment_results(experiment_
 ```
 
 #### 3.6.4 메트릭 기록
-- **경로:** `/v3/ab-testing/metrics`
+- **경로:** `/v1/ab-testing/metrics`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -264,7 +264,7 @@ CREATE INDEX idx_experiment_results_experiment ON experiment_results(experiment_
 ```
 
 #### 3.6.5 실험 결과 조회
-- **경로:** `/v3/ab-testing/experiments/{experiment_id}/results`
+- **경로:** `/v1/ab-testing/experiments/{experiment_id}/results`
 - **메서드:** `GET`
 - **응답:**
 ```json
@@ -294,7 +294,7 @@ CREATE INDEX idx_experiment_results_experiment ON experiment_results(experiment_
 ```
 
 #### 3.6.6 실험 종료
-- **경로:** `/v3/ab-testing/experiments/{experiment_id}/stop`
+- **경로:** `/v1/ab-testing/experiments/{experiment_id}/stop`
 - **메서드:** `PUT`
 - **응답:**
 ```json

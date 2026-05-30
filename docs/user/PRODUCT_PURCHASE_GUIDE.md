@@ -62,7 +62,7 @@ graph TB
 
 ### 2.1 주문 생성
 
-`POST /v3/orders`
+`POST /v1/orders`
 
 **Request**
 ```json
@@ -105,7 +105,7 @@ graph TB
 
 ### 2.2 주문 상태 조회
 
-`GET /v3/orders/{order_id}`
+`GET /v1/orders/{order_id}`
 
 **Response 200**
 ```json
@@ -145,7 +145,7 @@ graph TB
 
 ### 2.3 주문 취소
 
-`POST /v3/orders/{order_id}/cancel`
+`POST /v1/orders/{order_id}/cancel`
 
 **Request**
 ```json
@@ -167,7 +167,7 @@ graph TB
 
 ### 2.4 고객 구매 이력 조회
 
-`GET /v3/customers/{customer_id}/purchase-history`
+`GET /v1/customers/{customer_id}/purchase-history`
 
 **Query Parameters**
 - `limit`: 조회할 건수 (기본: 20)
@@ -202,7 +202,7 @@ graph TB
 
 ### 2.5 재고 확인
 
-`GET /v3/products/{product_id}/inventory`
+`GET /v1/products/{product_id}/inventory`
 
 **Response 200**
 ```json
@@ -316,7 +316,7 @@ sequenceDiagram
     participant S as 서버
     participant T as 토스 페이먼츠
     
-    C->>S: POST /v3/orders (주문 생성)
+    C->>S: POST /v1/orders (주문 생성)
     S->>T: 결제 요청
     T-->>S: payment_url
     S-->>C: order_id, payment_url
@@ -357,7 +357,7 @@ sequenceDiagram
     participant S as 서버
     participant N as 네이버 페이
     
-    C->>S: POST /v3/orders (주문 생성)
+    C->>S: POST /v1/orders (주문 생성)
     S->>N: 결제 요청
     N-->>S: payment_url
     S-->>C: order_id, payment_url
@@ -402,7 +402,7 @@ sequenceDiagram
     participant S as 서버
     participant K as 쿠팡 페이
     
-    C->>S: POST /v3/orders (주문 생성)
+    C->>S: POST /v1/orders (주문 생성)
     S->>K: 결제 요청
     K-->>S: payment_url
     S-->>C: order_id, payment_url

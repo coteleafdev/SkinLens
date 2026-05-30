@@ -118,7 +118,7 @@ def calculate_recommendation_score(product, user_data):
 
 **리뷰 제출 엔드포인트:**
 ```
-POST /v3/products/{product_id}/reviews
+POST /v1/products/{product_id}/reviews
 ```
 
 **Request:**
@@ -137,7 +137,7 @@ POST /v3/products/{product_id}/reviews
 
 **리뷰 조회 엔드포인트:**
 ```
-GET /v3/products/{product_id}/reviews?limit=10&offset=0
+GET /v1/products/{product_id}/reviews?limit=10&offset=0
 ```
 
 ### 1.7 구현 단계

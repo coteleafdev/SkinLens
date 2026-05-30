@@ -14,7 +14,7 @@ class TestChunkUpload:
         """인증 없이 업로드 세션 초기화 시도"""
         client = TestClient(app)
         response = client.post(
-            "/v3/upload/init",
+            "/v1/upload/init",
             params={
                 "file_name": "test.jpg",
                 "file_size": 1024,
@@ -28,14 +28,14 @@ class TestChunkUpload:
         client = TestClient(app)
         # 먼저 로그인
         login_response = client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         token = login_response.json()["access_token"]
 
         # 업로드 세션 초기화
         response = client.post(
-            "/v3/upload/init",
+            "/v1/upload/init",
             params={
                 "file_name": "test.jpg",
                 "file_size": 1024,
@@ -55,14 +55,14 @@ class TestChunkUpload:
         client = TestClient(app)
         # 먼저 로그인
         login_response = client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         token = login_response.json()["access_token"]
 
         # 너무 큰 파일로 초기화 시도
         response = client.post(
-            "/v3/upload/init",
+            "/v1/upload/init",
             params={
                 "file_name": "large.jpg",
                 "file_size": 100 * 1024 * 1024 * 1024,  # 100GB
@@ -78,7 +78,7 @@ class TestChunkUpload:
         client = TestClient(app)
         # 먼저 로그인
         login_response = client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         token = login_response.json()["access_token"]
@@ -86,7 +86,7 @@ class TestChunkUpload:
         # 존재하지 않는 세션으로 청크 업로드
         chunk_data = BytesIO(b"test data")
         response = client.post(
-            "/v3/upload/chunk",
+            "/v1/upload/chunk",
             params={
                 "session_id": "nonexistent-session",
                 "chunk_number": 0,
@@ -101,14 +101,14 @@ class TestChunkUpload:
         client = TestClient(app)
         # 먼저 로그인
         login_response = client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         token = login_response.json()["access_token"]
 
         # 존재하지 않는 세션으로 진행률 조회
         response = client.get(
-            "/v3/upload/progress/nonexistent-session",
+            "/v1/upload/progress/nonexistent-session",
             headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 404
@@ -118,14 +118,14 @@ class TestChunkUpload:
         client = TestClient(app)
         # 먼저 로그인
         login_response = client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         token = login_response.json()["access_token"]
 
         # 존재하지 않는 세션으로 취소
         response = client.post(
-            "/v3/upload/cancel",
+            "/v1/upload/cancel",
             params={"session_id": "nonexistent-session"},
             headers={"Authorization": f"Bearer {token}"}
         )

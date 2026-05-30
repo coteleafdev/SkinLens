@@ -20,12 +20,12 @@ graph TB
         Server[server.py<br/>app 생성·미들웨어·라우터 등록]
         
         subgraph "routers/"
-            Jobs[jobs.py<br/>POST/GET /v3/analysis/jobs/*]
-            Logs[logs.py<br/>GET /v3/logs/*]
-            Stats[stats.py<br/>GET/POST /v3/stats/*]
-            Auth[auth.py<br/>POST /v3/auth/login<br/>GET /v3/auth/me]
-            Customer[customer.py<br/>GET/DELETE /v3/customer/my/*]
-            Admin[admin.py<br/>GET /v3/admin/*<br/>GET /v3/health/db]
+            Jobs[jobs.py<br/>POST/GET /v1/analysis/jobs/*]
+            Logs[logs.py<br/>GET /v1/logs/*]
+            Stats[stats.py<br/>GET/POST /v1/stats/*]
+            Auth[auth.py<br/>POST /v1/auth/login<br/>GET /v1/auth/me]
+            Customer[customer.py<br/>GET/DELETE /v1/customer/my/*]
+            Admin[admin.py<br/>GET /v1/admin/*<br/>GET /v1/health/db]
         end
     end
     
@@ -42,12 +42,12 @@ graph TB
 
 | 라우터 | 경로 | 설명 |
 |--------|------|------|
-| jobs | `/v3/analysis/jobs/*` | 분석 작업 생성, 조회, 취소 |
-| logs | `/v3/logs/*` | 로그 조회 |
-| stats | `/v3/stats/*` | 통계 조회 |
-| auth | `/v3/auth/*` | 인증 (로그인, 사용자 정보) |
-| customer | `/v3/customer/my/*` | 고객 데이터 관리 |
-| admin | `/v3/admin/*` | 관리자 기능, 헬스체크 |
+| jobs | `/v1/analysis/jobs/*` | 분석 작업 생성, 조회, 취소 |
+| logs | `/v1/logs/*` | 로그 조회 |
+| stats | `/v1/stats/*` | 통계 조회 |
+| auth | `/v1/auth/*` | 인증 (로그인, 사용자 정보) |
+| customer | `/v1/customer/my/*` | 고객 데이터 관리 |
+| admin | `/v1/admin/*` | 관리자 기능, 헬스체크 |
 
 ---
 
@@ -89,7 +89,7 @@ python -m uvicorn src.server.server:app --host 0.0.0.0 --port 8000 --reload
 
 ```bash
 # 헬스체크
-curl http://localhost:8000/v3/health/db
+curl http://localhost:8000/v1/health/db
 
 # 예상 응답
 {
@@ -107,28 +107,28 @@ sequenceDiagram
     participant C as 클라이언트
     participant S as 서버
     
-    C->>S: POST /v3/analysis/jobs
+    C->>S: POST /v1/analysis/jobs
     S-->>C: job_id, status
     
-    C->>S: GET /v3/analysis/jobs/{job_id}
+    C->>S: GET /v1/analysis/jobs/{job_id}
     S-->>C: status, progress
     
     loop 진행율 확인
-        C->>S: GET /v3/analysis/jobs/{job_id}
+        C->>S: GET /v1/analysis/jobs/{job_id}
         S-->>C: status, progress
     end
     
     S-->>C: status: completed
-    C->>S: GET /v3/analysis/jobs/{job_id}
+    C->>S: GET /v1/analysis/jobs/{job_id}
     S-->>C: result
     
     Note over C,S: WebSocket으로 진행율 실시간 수신 가능
 ```
 
-#### 2.1 작업 생성 (POST /v3/analysis/jobs)
+#### 2.1 작업 생성 (POST /v1/analysis/jobs)
 
 ```bash
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{
     "input_image": "path/to/image.jpg",
@@ -147,10 +147,10 @@ curl -X POST http://localhost:8000/v3/analysis/jobs \
 }
 ```
 
-#### 2.2 작업 상태 조회 (GET /v3/analysis/jobs/{job_id})
+#### 2.2 작업 상태 조회 (GET /v1/analysis/jobs/{job_id})
 
 ```bash
-curl http://localhost:8000/v3/analysis/jobs/job_abc123
+curl http://localhost:8000/v1/analysis/jobs/job_abc123
 ```
 
 **응답 예시**:
@@ -171,10 +171,10 @@ curl http://localhost:8000/v3/analysis/jobs/job_abc123
 }
 ```
 
-#### 2.3 작업 취소 (DELETE /v3/analysis/jobs/{job_id})
+#### 2.3 작업 취소 (DELETE /v1/analysis/jobs/{job_id})
 
 ```bash
-curl -X DELETE http://localhost:8000/v3/analysis/jobs/job_abc123
+curl -X DELETE http://localhost:8000/v1/analysis/jobs/job_abc123
 ```
 
 ---
@@ -186,17 +186,17 @@ sequenceDiagram
     participant C as 클라이언트
     participant S as 서버
     
-    C->>S: POST /v3/auth/login<br/>{username, password}
+    C->>S: POST /v1/auth/login<br/>{username, password}
     S-->>C: access_token, token_type
     
-    C->>S: GET /v3/auth/me<br/>Authorization: Bearer {token}
+    C->>S: GET /v1/auth/me<br/>Authorization: Bearer {token}
     S-->>C: user_info
 ```
 
-#### 3.1 로그인 (POST /v3/auth/login)
+#### 3.1 로그인 (POST /v1/auth/login)
 
 ```bash
-curl -X POST http://localhost:8000/v3/auth/login \
+curl -X POST http://localhost:8000/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
@@ -212,10 +212,10 @@ curl -X POST http://localhost:8000/v3/auth/login \
 }
 ```
 
-#### 3.2 사용자 정보 조회 (GET /v3/auth/me)
+#### 3.2 사용자 정보 조회 (GET /v1/auth/me)
 
 ```bash
-curl http://localhost:8000/v3/auth/me \
+curl http://localhost:8000/v1/auth/me \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -254,7 +254,7 @@ graph LR
 #### 4.2 작업 생성 시 설문 JSON 포함
 
 ```bash
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{
     "input_image": "path/to/image.jpg",
@@ -296,25 +296,25 @@ sequenceDiagram
     participant C as 클라이언트
     participant S as 서버
     
-    C->>S: POST /v3/orders (주문 생성)
+    C->>S: POST /v1/orders (주문 생성)
     S-->>C: order_id, payment_url
     
-    C->>S: GET /v3/orders/{order_id} (상태 조회)
+    C->>S: GET /v1/orders/{order_id} (상태 조회)
     S-->>C: order status
     
     alt 주문 취소
-        C->>S: POST /v3/orders/{order_id}/cancel
+        C->>S: POST /v1/orders/{order_id}/cancel
         S-->>C: cancelled, refund_status
     end
     
-    C->>S: GET /v3/orders/customers/{customer_id}/purchase-history
+    C->>S: GET /v1/orders/customers/{customer_id}/purchase-history
     S-->>C: purchase history
 ```
 
-#### 5.1 주문 생성 (POST /v3/orders)
+#### 5.1 주문 생성 (POST /v1/orders)
 
 ```bash
-curl -X POST http://localhost:8000/v3/orders \
+curl -X POST http://localhost:8000/v1/orders \
   -H "Content-Type: application/json" \
   -d '{
     "customer_id": "user123",
@@ -353,10 +353,10 @@ curl -X POST http://localhost:8000/v3/orders \
 }
 ```
 
-#### 5.2 주문 상태 조회 (GET /v3/orders/{order_id})
+#### 5.2 주문 상태 조회 (GET /v1/orders/{order_id})
 
 ```bash
-curl http://localhost:8000/v3/orders/ORD-20260528-001
+curl http://localhost:8000/v1/orders/ORD-20260528-001
 ```
 
 **응답 예시**:
@@ -387,10 +387,10 @@ curl http://localhost:8000/v3/orders/ORD-20260528-001
 }
 ```
 
-#### 5.3 주문 취소 (POST /v3/orders/{order_id}/cancel)
+#### 5.3 주문 취소 (POST /v1/orders/{order_id}/cancel)
 
 ```bash
-curl -X POST http://localhost:8000/v3/orders/ORD-20260528-001/cancel \
+curl -X POST http://localhost:8000/v1/orders/ORD-20260528-001/cancel \
   -H "Content-Type: application/json" \
   -d '{
     "reason": "상품 변경"
@@ -408,10 +408,10 @@ curl -X POST http://localhost:8000/v3/orders/ORD-20260528-001/cancel \
 }
 ```
 
-#### 5.4 고객 구매 이력 조회 (GET /v3/orders/customers/{customer_id}/purchase-history)
+#### 5.4 고객 구매 이력 조회 (GET /v1/orders/customers/{customer_id}/purchase-history)
 
 ```bash
-curl "http://localhost:8000/v3/orders/customers/user123/purchase-history?limit=10&offset=0"
+curl "http://localhost:8000/v1/orders/customers/user123/purchase-history?limit=10&offset=0"
 ```
 
 **응답 예시**:
@@ -451,7 +451,7 @@ curl "http://localhost:8000/v3/orders/customers/user123/purchase-history?limit=1
 ```bash
 # Bash 스크립트로 여러 요청 동시 전송
 for i in {1..5}; do
-  curl -X POST http://localhost:8000/v3/analysis/jobs \
+  curl -X POST http://localhost:8000/v1/analysis/jobs \
     -H "Content-Type: application/json" \
     -d "{\"input_image\": \"path/to/image_$i.jpg\"}" &
 done
@@ -462,7 +462,7 @@ wait
 
 ```bash
 # 활성 작업 수 조회
-curl http://localhost:8000/v3/stats/active-jobs
+curl http://localhost:8000/v1/stats/active-jobs
 ```
 
 **응답 예시**:
@@ -481,7 +481,7 @@ curl http://localhost:8000/v3/stats/active-jobs
 
 ```bash
 # wscat 사용 (설치 필요: npm install -g wscat)
-wscat -c ws://localhost:8000/v3/ws/jobs/job_abc123
+wscat -c ws://localhost:8000/v1/ws/jobs/job_abc123
 ```
 
 #### 7.2 진행율 메시지 수신
@@ -518,7 +518,7 @@ import websockets
 import json
 
 async def listen_job_progress(job_id):
-    uri = f"ws://localhost:8000/v3/ws/jobs/{job_id}"
+    uri = f"ws://localhost:8000/v1/ws/jobs/{job_id}"
     async with websockets.connect(uri) as websocket:
         while True:
             message = await websocket.recv()
@@ -534,7 +534,7 @@ asyncio.run(listen_job_progress("job_abc123"))
 #### 7.4 JavaScript WebSocket 클라이언트
 
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/v3/ws/jobs/job_abc123');
+const ws = new WebSocket('ws://localhost:8000/v1/ws/jobs/job_abc123');
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
@@ -572,7 +572,7 @@ class JobProgressListener {
   Stream<Map<String, dynamic>> get progressStream => _progressController.stream;
 
   void connect() {
-    final uri = Uri.parse('$baseUrl/v3/ws/jobs/$jobId');
+    final uri = Uri.parse('$baseUrl/v1/ws/jobs/$jobId');
     _channel = WebSocketChannel.connect(uri);
 
     _channel.stream.listen(
@@ -623,16 +623,16 @@ void main() async {
 
 ### 8. 로그 및 통계 테스트
 
-#### 8.1 로그 조회 (GET /v3/logs)
+#### 8.1 로그 조회 (GET /v1/logs)
 
 ```bash
-curl http://localhost:8000/v3/logs?limit=10
+curl http://localhost:8000/v1/logs?limit=10
 ```
 
-#### 8.2 통계 조회 (GET /v3/stats)
+#### 8.2 통계 조회 (GET /v1/stats)
 
 ```bash
-curl http://localhost:8000/v3/stats
+curl http://localhost:8000/v1/stats
 ```
 
 **응답 예시**:
@@ -661,7 +661,7 @@ BASE_URL = "http://localhost:8000"
 
 async def listen_job_progress(job_id):
     """WebSocket으로 진행율 실시간 수신"""
-    uri = f"ws://localhost:8000/v3/ws/jobs/{job_id}"
+    uri = f"ws://localhost:8000/v1/ws/jobs/{job_id}"
     async with websockets.connect(uri) as websocket:
         while True:
             message = await websocket.recv()
@@ -673,7 +673,7 @@ async def listen_job_progress(job_id):
 
 def test_server():
     # 1. 헬스체크
-    response = requests.get(f"{BASE_URL}/v3/health/db")
+    response = requests.get(f"{BASE_URL}/v1/health/db")
     print(f"Health Check: {response.json()}")
     
     # 2. 작업 생성
@@ -687,7 +687,7 @@ def test_server():
             }
         }
     }
-    response = requests.post(f"{BASE_URL}/v3/analysis/jobs", json=job_data)
+    response = requests.post(f"{BASE_URL}/v1/analysis/jobs", json=job_data)
     job_id = response.json()["job_id"]
     print(f"Job Created: {job_id}")
     
@@ -715,10 +715,10 @@ if __name__ == "__main__":
 # macOS: brew install httpd
 
 # 100개 요청, 동시 10개
-ab -n 100 -c 10 http://localhost:8000/v3/health/db
+ab -n 100 -c 10 http://localhost:8000/v1/health/db
 
 # POST 요청 테스트 (JSON 파일 사용)
-ab -n 50 -c 5 -p request.json -T application/json http://localhost:8000/v3/analysis/jobs
+ab -n 50 -c 5 -p request.json -T application/json http://localhost:8000/v1/analysis/jobs
 ```
 
 ### 9.2 부하 테스트 (k6)
@@ -737,7 +737,7 @@ export let options = {
 };
 
 export default function () {
-  let response = http.get('http://localhost:8000/v3/health/db');
+  let response = http.get('http://localhost:8000/v1/health/db');
   check(response, {
     'status is 200': (r) => r.status === 200,
     'response time < 500ms': (r) => r.timings.duration < 500,
@@ -766,11 +766,11 @@ class SkinAnalysisUser(HttpUser):
     
     @task
     def health_check(self):
-        self.client.get("/v3/health/db")
+        self.client.get("/v1/health/db")
     
     @task(3)
     def create_job(self):
-        self.client.post("/v3/analysis/jobs", json={
+        self.client.post("/v1/analysis/jobs", json={
             "input_image": "test.jpg",
             "llm_scores": True
         })
@@ -788,7 +788,7 @@ locust -f locustfile.py --host=http://localhost:8000
 
 ```bash
 # curl로 응답 시간 측정
-curl -w "@curl-format.txt" -o /dev/null -s http://localhost:8000/v3/health/db
+curl -w "@curl-format.txt" -o /dev/null -s http://localhost:8000/v1/health/db
 
 # curl-format.txt
 time_namelookup:  %{time_namelookup}\n
@@ -831,20 +831,20 @@ while True:
 
 ```bash
 # 1. 로그인 후 토큰 받기
-TOKEN=$(curl -X POST http://localhost:8000/v3/auth/login \
+TOKEN=$(curl -X POST http://localhost:8000/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "password"}' \
   | jq -r '.access_token')
 
 # 2. 토큰 없이 요청 (401 예상)
-curl http://localhost:8000/v3/auth/me
+curl http://localhost:8000/v1/auth/me
 
 # 3. 토큰으로 요청 (200 예상)
-curl http://localhost:8000/v3/auth/me \
+curl http://localhost:8000/v1/auth/me \
   -H "Authorization: Bearer $TOKEN"
 
 # 4. 만료된 토큰으로 요청 (401 예상)
-curl http://localhost:8000/v3/auth/me \
+curl http://localhost:8000/v1/auth/me \
   -H "Authorization: Bearer invalid_token"
 ```
 
@@ -852,10 +852,10 @@ curl http://localhost:8000/v3/auth/me \
 
 ```bash
 # 관리자 전용 엔드포인트 테스트
-curl http://localhost:8000/v3/admin/users \
+curl http://localhost:8000/v1/admin/users \
   -H "Authorization: Bearer $USER_TOKEN"  # 403 예상
 
-curl http://localhost:8000/v3/admin/users \
+curl http://localhost:8000/v1/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN"  # 200 예상
 ```
 
@@ -863,7 +863,7 @@ curl http://localhost:8000/v3/admin/users \
 
 ```bash
 # SQL 인젝션 시도
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{
     "input_image": "test.jpg",
@@ -875,7 +875,7 @@ curl -X POST http://localhost:8000/v3/analysis/jobs \
 
 ```bash
 # XSS 시도
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{
     "input_image": "test.jpg",
@@ -888,7 +888,7 @@ curl -X POST http://localhost:8000/v3/analysis/jobs \
 ```bash
 # Rate Limit 테스트 (3회/분 제한)
 for i in {1..5}; do
-  curl -X POST http://localhost:8000/v3/analysis/jobs \
+  curl -X POST http://localhost:8000/v1/analysis/jobs \
     -H "Content-Type: application/json" \
     -d '{"input_image": "test.jpg"}'
   echo "---"
@@ -903,17 +903,17 @@ done
 
 ```bash
 # 1. 필수 필드 누락
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{}'  # 422 예상
 
 # 2. 잘못된 데이터 타입
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{"input_image": 123}'  # 422 예상
 
 # 3. 유효하지 않은 이미지 파일
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{"input_image": "nonexistent.jpg"}'  # 404 예상
 ```
@@ -922,7 +922,7 @@ curl -X POST http://localhost:8000/v3/analysis/jobs \
 
 ```bash
 # 1. 타임아웃 테스트
-curl --max-time 1 http://localhost:8000/v3/analysis/jobs \
+curl --max-time 1 http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{"input_image": "large_image.jpg"}'
 
@@ -938,7 +938,7 @@ sudo iptables -D INPUT -p tcp --dport 8000 -j DROP
 ```bash
 # DB 파일 삭제 후 테스트
 rm execution_history.db
-curl http://localhost:8000/v3/health/db  # 500 예상
+curl http://localhost:8000/v1/health/db  # 500 예상
 
 # DB 복구 후 테스트
 # DB 파일이 자동 생성되어야 함
@@ -949,7 +949,7 @@ curl http://localhost:8000/v3/health/db  # 500 예상
 ```bash
 # LLM API 키 없이 테스트
 unset GEMINI_API_KEY
-curl -X POST http://localhost:8000/v3/analysis/jobs \
+curl -X POST http://localhost:8000/v1/analysis/jobs \
   -H "Content-Type: application/json" \
   -d '{"input_image": "test.jpg", "llm_report": true}'  # 500 예상
 ```
@@ -979,7 +979,7 @@ BASE_URL = "http://localhost:8000"
 
 async def test_full_flow():
     # 1. 피부 분석
-    job_response = requests.post(f"{BASE_URL}/v3/analysis/jobs", json={
+    job_response = requests.post(f"{BASE_URL}/v1/analysis/jobs", json={
         "input_image": "test.jpg",
         "llm_scores": True,
         "input_json": {
@@ -992,7 +992,7 @@ async def test_full_flow():
     job_id = job_response.json()["job_id"]
     
     # 2. 진행율 수신
-    uri = f"ws://localhost:8000/v3/ws/jobs/{job_id}"
+    uri = f"ws://localhost:8000/v1/ws/jobs/{job_id}"
     async with websockets.connect(uri) as ws:
         while True:
             msg = await ws.recv()
@@ -1001,13 +1001,13 @@ async def test_full_flow():
                 break
     
     # 3. 결과 확인
-    result_response = requests.get(f"{BASE_URL}/v3/analysis/jobs/{job_id}")
+    result_response = requests.get(f"{BASE_URL}/v1/analysis/jobs/{job_id}")
     result = result_response.json()
     matched_products = result.get("result", {}).get("llm_analysis", {}).get("matched_products", [])
     
     # 4. 주문 생성
     if matched_products:
-        order_response = requests.post(f"{BASE_URL}/v3/orders", json={
+        order_response = requests.post(f"{BASE_URL}/v1/orders", json={
             "customer_id": "user123",
             "items": [
                 {
@@ -1042,7 +1042,7 @@ import websockets
 import json
 
 async def test_websocket_keepalive():
-    uri = "ws://localhost:8000/v3/ws/jobs/test_job"
+    uri = "ws://localhost:8000/v1/ws/jobs/test_job"
     try:
         async with websockets.connect(uri) as ws:
             # 5분 동안 연결 유지
@@ -1084,7 +1084,7 @@ rm execution_history.db
 cp execution_history.db.backup execution_history.db
 
 # 데이터 확인
-curl http://localhost:8000/v3/stats
+curl http://localhost:8000/v1/stats
 ```
 
 ### 13.3 장애 복구 시나리오
@@ -1108,20 +1108,20 @@ cp execution_history.db.backup execution_history.db
 
 ```bash
 # DEBUG 레벨 로그 확인
-curl http://localhost:8000/v3/logs?level=DEBUG&limit=10
+curl http://localhost:8000/v1/logs?level=DEBUG&limit=10
 
 # ERROR 레벨 로그 확인
-curl http://localhost:8000/v3/logs?level=ERROR&limit=10
+curl http://localhost:8000/v1/logs?level=ERROR&limit=10
 ```
 
 ### 14.2 메트릭 수집 테스트
 
 ```bash
 # 활성 작업 수 확인
-curl http://localhost:8000/v3/stats/active-jobs
+curl http://localhost:8000/v1/stats/active-jobs
 
 # 시스템 헬스 확인
-curl http://localhost:8000/v3/health/db
+curl http://localhost:8000/v1/health/db
 ```
 
 ### 14.3 알림 시스템 테스트
@@ -1131,7 +1131,7 @@ curl http://localhost:8000/v3/health/db
 import requests
 
 # 알림 테스트 엔드포인트 (실제 구현 필요)
-response = requests.post("http://localhost:8000/v3/admin/test-alert", json={
+response = requests.post("http://localhost:8000/v1/admin/test-alert", json={
     "type": "error",
     "message": "테스트 알림"
 })
@@ -1166,7 +1166,7 @@ docker build -t skinlens-server .
 docker run -p 8000:8000 -e GEMINI_API_KEY=your_key skinlens-server
 
 # 컨테이너 테스트
-curl http://localhost:8000/v3/health/db
+curl http://localhost:8000/v1/health/db
 ```
 
 ### 15.2 Kubernetes 배포 테스트
@@ -1209,7 +1209,7 @@ kubectl get pods
 
 # 서비스 테스트
 kubectl port-forward svc/skinlens-server 8000:8000
-curl http://localhost:8000/v3/health/db
+curl http://localhost:8000/v1/health/db
 ```
 
 ### 15.3 CI/CD 파이프라인 테스트
@@ -1283,7 +1283,7 @@ test('웹 브라우저 테스트', async ({ page }) => {
   await expect(page.locator('h1')).toContainText('Skin Analysis API');
   
   // 헬스체크 테스트
-  const response = await page.request.get('http://localhost:8000/v3/health/db');
+  const response = await page.request.get('http://localhost:8000/v1/health/db');
   expect(response.status()).toBe(200);
 });
 ```

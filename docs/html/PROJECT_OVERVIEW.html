@@ -2279,10 +2279,10 @@ uvicorn<span class="w"> </span>src.server.server:app<span class="w"> </span>--ho
 <h3 id="66-api">6.6 API 엔드포인트<a class="headerlink" href="#66-api" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>GET /health</code>: 헬스 체크</li>
-<li><code>POST /v3/analysis/jobs</code>: 분석 Job 생성</li>
-<li><code>GET /v3/analysis/jobs/{job_id}</code>: Job 상태 조회</li>
-<li><code>GET /v3/analysis/jobs/{job_id}/result</code>: Job 결과 조회</li>
-<li><code>GET /v3/analysis/jobs/{job_id}/artifacts/{name}</code>: 아티팩트 다운로드</li>
+<li><code>POST /v1/analysis/jobs</code>: 분석 Job 생성</li>
+<li><code>GET /v1/analysis/jobs/{job_id}</code>: Job 상태 조회</li>
+<li><code>GET /v1/analysis/jobs/{job_id}/result</code>: Job 결과 조회</li>
+<li><code>GET /v1/analysis/jobs/{job_id}/artifacts/{name}</code>: 아티팩트 다운로드</li>
 </ul>
 <hr />
 <h2 id="7">7. 환경변수<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
@@ -2348,10 +2348,10 @@ python<span class="w"> </span>src/db/db_cli.py<span class="w"> </span>archive<sp
 
 <h3 id="92-db-health-check-api">9.2 DB Health Check API<a class="headerlink" href="#92-db-health-check-api" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># DB 상태 확인</span>
-curl<span class="w"> </span>http://localhost:8000/v3/health/db
+curl<span class="w"> </span>http://localhost:8000/v1/health/db
 
 <span class="c1"># DB 메트릭 (관리자 전용)</span>
-curl<span class="w"> </span>http://localhost:8000/v3/admin/db/metrics<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>http://localhost:8000/v1/admin/db/metrics<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin_token&gt;&quot;</span>
 </code></pre></div>
 
@@ -2636,7 +2636,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/db/metrics<span class
 - 각 기능별 설계 문서 참조 추가</p>
 <p><strong>장애 자동 복구 기능 구현</strong>
 - 데이터베이스 스키마 확장 (incident_events, recovery_actions, recovery_logs 테이블)
-- 헬스 체크 API 엔드포인트 구현 (/v3/health, 장애 관리 API)
+- 헬스 체크 API 엔드포인트 구현 (/v1/health, 장애 관리 API)
 - 자동 복구 엔진 구현 (복구 플레이북, 헬스 모니터)
 - 알림 시스템 구현 (Slack, PagerDuty)
 - 서버 통합 (백그라운드 모니터링 태스크)
@@ -2646,7 +2646,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/db/metrics<span class
 - 번역 시스템 구현 (Translator 클래스, 네임스페이스 지원, 캐싱)
 - 다국어 미들웨어 구현 (언어 감지, 응답 자동 번역)
 - 데이터베이스 스키마 확장 (user_preferences 테이블)
-- 언어 설정 API 엔드포인트 구현 (/v3/customer/my/preferences)
+- 언어 설정 API 엔드포인트 구현 (/v1/customer/my/preferences)
 - 테스트 완료 (11개 테스트 케이스 통과)</p>
 <h3 id="v36">v3.6 주요 변경 사항 상세<a class="headerlink" href="#v36" title="Permanent link">&para;</a></h3>
 <p><strong>설정 중앙화 (Part 1)</strong>

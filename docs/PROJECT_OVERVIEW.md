@@ -851,10 +851,10 @@ uvicorn src.server.server:app --host 0.0.0.0 --port 8000
 ### 6.6 API 엔드포인트
 
 - `GET /health`: 헬스 체크
-- `POST /v3/analysis/jobs`: 분석 Job 생성
-- `GET /v3/analysis/jobs/{job_id}`: Job 상태 조회
-- `GET /v3/analysis/jobs/{job_id}/result`: Job 결과 조회
-- `GET /v3/analysis/jobs/{job_id}/artifacts/{name}`: 아티팩트 다운로드
+- `POST /v1/analysis/jobs`: 분석 Job 생성
+- `GET /v1/analysis/jobs/{job_id}`: Job 상태 조회
+- `GET /v1/analysis/jobs/{job_id}/result`: Job 결과 조회
+- `GET /v1/analysis/jobs/{job_id}/artifacts/{name}`: 아티팩트 다운로드
 
 ---
 
@@ -932,10 +932,10 @@ python src/db/db_cli.py archive --days=90
 
 ```bash
 # DB 상태 확인
-curl http://localhost:8000/v3/health/db
+curl http://localhost:8000/v1/health/db
 
 # DB 메트릭 (관리자 전용)
-curl http://localhost:8000/v3/admin/db/metrics \
+curl http://localhost:8000/v1/admin/db/metrics \
   -H "Authorization: Bearer <admin_token>"
 ```
 
@@ -1231,7 +1231,7 @@ chmod +x deploy.sh
 
 **장애 자동 복구 기능 구현**
 - 데이터베이스 스키마 확장 (incident_events, recovery_actions, recovery_logs 테이블)
-- 헬스 체크 API 엔드포인트 구현 (/v3/health, 장애 관리 API)
+- 헬스 체크 API 엔드포인트 구현 (/v1/health, 장애 관리 API)
 - 자동 복구 엔진 구현 (복구 플레이북, 헬스 모니터)
 - 알림 시스템 구현 (Slack, PagerDuty)
 - 서버 통합 (백그라운드 모니터링 태스크)
@@ -1242,7 +1242,7 @@ chmod +x deploy.sh
 - 번역 시스템 구현 (Translator 클래스, 네임스페이스 지원, 캐싱)
 - 다국어 미들웨어 구현 (언어 감지, 응답 자동 번역)
 - 데이터베이스 스키마 확장 (user_preferences 테이블)
-- 언어 설정 API 엔드포인트 구현 (/v3/customer/my/preferences)
+- 언어 설정 API 엔드포인트 구현 (/v1/customer/my/preferences)
 - 테스트 완료 (11개 테스트 케이스 통과)
 
 ### v3.6 주요 변경 사항 상세

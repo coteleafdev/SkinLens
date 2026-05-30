@@ -33,7 +33,7 @@ class TestFullWorkflow:
     def test_login(self):
         """로그인 테스트"""
         response = requests.post(
-            f"{BASE_URL}/v3/auth/login",
+            f"{BASE_URL}/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         assert response.status_code == 200
@@ -160,7 +160,7 @@ def run_manual_test():
     # 1. 로그인
     print("1. 로그인...")
     login_resp = requests.post(
-        f"{BASE_URL}/v3/auth/login",
+        f"{BASE_URL}/v1/auth/login",
         data={"customer_id": "admin", "password": "admin123"}
     )
     if login_resp.status_code != 200:
@@ -180,7 +180,7 @@ def run_manual_test():
         "phone": "010-9876-5432"
     }
     customer_resp = requests.post(
-        f"{BASE_URL}/v3/customer",
+        f"{BASE_URL}/v1/customer",
         json=customer_data,
         headers=headers
     )
@@ -199,7 +199,7 @@ def run_manual_test():
         data = {"customer_id": "manual_test_customer"}
 
         job_resp = requests.post(
-            f"{BASE_URL}/v3/analysis/jobs",
+            f"{BASE_URL}/v1/analysis/jobs",
             files=files,
             data=data,
             headers=headers
@@ -217,7 +217,7 @@ def run_manual_test():
     print("4. 작업 상태 확인...")
     for i in range(10):
         status_resp = requests.get(
-            f"{BASE_URL}/v3/analysis/jobs/{job_id}",
+            f"{BASE_URL}/v1/analysis/jobs/{job_id}",
             headers=headers
         )
         status_data = status_resp.json()
@@ -240,7 +240,7 @@ def run_manual_test():
     if status == "completed":
         print("5. 결과 조회...")
         result_resp = requests.get(
-            f"{BASE_URL}/v3/analysis/jobs/{job_id}/result",
+            f"{BASE_URL}/v1/analysis/jobs/{job_id}/result",
             headers=headers
         )
         if result_resp.status_code == 200:

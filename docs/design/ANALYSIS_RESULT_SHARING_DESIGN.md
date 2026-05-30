@@ -120,7 +120,7 @@ CREATE INDEX idx_share_statistics_platform ON share_statistics(platform);
 ### 3.5 API 엔드포인트
 
 #### 3.5.1 공유용 이미지 생성
-- **경로:** `/v3/sharing/{job_id}/share-image`
+- **경로:** `/v1/sharing/{job_id}/share-image`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -140,7 +140,7 @@ CREATE INDEX idx_share_statistics_platform ON share_statistics(platform);
 ```
 
 #### 3.5.2 PDF 보고서 생성
-- **경로:** `/v3/sharing/{job_id}/pdf`
+- **경로:** `/v1/sharing/{job_id}/pdf`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -160,7 +160,7 @@ CREATE INDEX idx_share_statistics_platform ON share_statistics(platform);
 ```
 
 #### 3.5.3 공용 링크 생성
-- **경로:** `/v3/sharing/{job_id}/public-link`
+- **경로:** `/v1/sharing/{job_id}/public-link`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -180,7 +180,7 @@ CREATE INDEX idx_share_statistics_platform ON share_statistics(platform);
 ```
 
 #### 3.5.4 공용 링크 조회
-- **경로:** `/v3/sharing/public/{share_token}`
+- **경로:** `/v1/sharing/public/{share_token}`
 - **메서드:** `GET`
 - **응답:**
 ```json
@@ -192,7 +192,7 @@ CREATE INDEX idx_share_statistics_platform ON share_statistics(platform);
 ```
 
 #### 3.5.5 공유 통계 조회
-- **경로:** `/v3/sharing/{job_id}/statistics`
+- **경로:** `/v1/sharing/{job_id}/statistics`
 - **메서드:** `GET`
 - **응답:**
 ```json

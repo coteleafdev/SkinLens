@@ -81,7 +81,7 @@ ALTER TABLE products ADD COLUMN discount_percentage REAL;           -- 할인율
 ### 3.5 API 엔드포인트
 
 #### 3.5.1 가격 범위 필터링 제품 검색
-- **경로:** `/v3/products/search`
+- **경로:** `/v1/products/search`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -118,7 +118,7 @@ ALTER TABLE products ADD COLUMN discount_percentage REAL;           -- 할인율
 ```
 
 #### 3.5.2 예산 기반 추천
-- **경로:** `/v3/products/recommend-by-budget`
+- **경로:** `/v1/products/recommend-by-budget`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -151,7 +151,7 @@ ALTER TABLE products ADD COLUMN discount_percentage REAL;           -- 할인율
 ```
 
 #### 3.5.3 가격대별 제품 통계
-- **경로:** `/v3/products/price-statistics`
+- **경로:** `/v1/products/price-statistics`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `category`, `skin_type`
 - **응답:**

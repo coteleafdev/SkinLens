@@ -130,7 +130,7 @@ CREATE INDEX idx_llm_training_data_approved ON llm_training_data(is_approved);
 ### 3.6 API 엔드포인트
 
 #### 3.6.1 피드백 제출
-- **경로:** `/v3/diagnosis/{job_id}/feedback`
+- **경로:** `/v1/diagnosis/{job_id}/feedback`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -153,7 +153,7 @@ CREATE INDEX idx_llm_training_data_approved ON llm_training_data(is_approved);
 ```
 
 #### 3.6.2 소견 수정
-- **경로:** `/v3/diagnosis/{job_id}/correct`
+- **경로:** `/v1/diagnosis/{job_id}/correct`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -175,7 +175,7 @@ CREATE INDEX idx_llm_training_data_approved ON llm_training_data(is_approved);
 ```
 
 #### 3.6.3 피드백 통계 조회
-- **경로:** `/v3/diagnosis/feedback-statistics`
+- **경로:** `/v1/diagnosis/feedback-statistics`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `start_date`, `end_date`
 - **응답:**
@@ -198,7 +198,7 @@ CREATE INDEX idx_llm_training_data_approved ON llm_training_data(is_approved);
 ```
 
 #### 3.6.4 학습 데이터 승인
-- **경로:** `/v3/admin/training-data/{id}/approve`
+- **경로:** `/v1/admin/training-data/{id}/approve`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json

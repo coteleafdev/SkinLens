@@ -146,7 +146,7 @@ CREATE INDEX idx_notification_settings_user ON notification_settings(user_id);
 ### 3.5 API 엔드포인트
 
 #### 3.5.1 디바이스 토큰 등록
-- **경로:** `/v3/notifications/register-token`
+- **경로:** `/v1/notifications/register-token`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -167,7 +167,7 @@ CREATE INDEX idx_notification_settings_user ON notification_settings(user_id);
 ```
 
 #### 3.5.2 디바이스 토큰 삭제
-- **경로:** `/v3/notifications/unregister-token`
+- **경로:** `/v1/notifications/unregister-token`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -184,7 +184,7 @@ CREATE INDEX idx_notification_settings_user ON notification_settings(user_id);
 ```
 
 #### 3.5.3 알림 설정 조회
-- **경로:** `/v3/notifications/settings`
+- **경로:** `/v1/notifications/settings`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`
 - **응답:**
@@ -199,7 +199,7 @@ CREATE INDEX idx_notification_settings_user ON notification_settings(user_id);
 ```
 
 #### 3.5.4 알림 설정 업데이트
-- **경로:** `/v3/notifications/settings`
+- **경로:** `/v1/notifications/settings`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json
@@ -220,7 +220,7 @@ CREATE INDEX idx_notification_settings_user ON notification_settings(user_id);
 ```
 
 #### 3.5.5 알림 히스토리 조회
-- **경로:** `/v3/notifications/history`
+- **경로:** `/v1/notifications/history`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `user_id`, `limit`, `offset`
 - **응답:**

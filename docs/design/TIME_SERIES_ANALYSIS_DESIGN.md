@@ -359,7 +359,7 @@ graph LR
 
 ### 5.1 분석 이력 조회
 
-**엔드포인트:** `GET /v3/customers/{customer_id}/analyses`
+**엔드포인트:** `GET /v1/customers/{customer_id}/analyses`
 
 **Query Parameters:**
 - `limit`: 반환할 분석 수 (기본 10)
@@ -399,7 +399,7 @@ graph LR
 
 ### 5.2 변화 추이 조회
 
-**엔드포인트:** `GET /v3/customers/{customer_id}/trend`
+**엔드포인트:** `GET /v1/customers/{customer_id}/trend`
 
 **Query Parameters:**
 - `metric`: 측정항목 (예: overall_score, melasma_score)
@@ -434,7 +434,7 @@ graph LR
 
 ### 5.3 케어 효과 조회
 
-**엔드포인트:** `GET /v3/customers/{customer_id}/care-effectiveness`
+**엔드포인트:** `GET /v1/customers/{customer_id}/care-effectiveness`
 
 **Query Parameters:**
 - `period_days`: 기간 (기본 30)
@@ -458,7 +458,7 @@ graph LR
 
 ### 5.4 비교 분석
 
-**엔드포인트:** `POST /v3/customers/{customer_id}/compare`
+**엔드포인트:** `POST /v1/customers/{customer_id}/compare`
 
 **Request:**
 ```json

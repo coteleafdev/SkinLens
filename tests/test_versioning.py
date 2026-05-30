@@ -12,16 +12,16 @@ class TestAPIVersioning:
     def test_version_header_present(self):
         """버전 헤더가 응답에 포함되는지 확인"""
         client = TestClient(app)
-        response = client.get("/v3/health")
+        response = client.get("/v1/health")
         assert "API-Version" in response.headers
 
     def test_current_version_header(self):
         """현재 버전이 아닌 경우 API-Current-Version 헤더 포함"""
         client = TestClient(app)
-        # 현재 버전이 v3이므로 /v3/health는 현재 버전
-        response = client.get("/v3/health")
+        # 현재 버전이 v1이므로 /v1/health는 현재 버전
+        response = client.get("/v1/health")
         assert "API-Version" in response.headers
-        assert response.headers["API-Version"] == "v3"
+        assert response.headers["API-Version"] == "v1"
         # 현재 버전이므로 API-Current-Version 헤더는 없음
         assert "API-Current-Version" not in response.headers
 
@@ -59,7 +59,7 @@ class TestAPIVersioning:
         assert "current_version" in versioning_config
         assert "deprecated_versions" in versioning_config
         assert "sunset_versions" in versioning_config
-        assert versioning_config["current_version"] == "v3"
+        assert versioning_config["current_version"] == "v1"
 
     def test_version_extraction(self):
         """버전 추출 기능 테스트"""
@@ -68,7 +68,7 @@ class TestAPIVersioning:
         middleware = APIVersionMiddleware(app=None)
 
         # 버전 추출 테스트
-        assert middleware._extract_version("/v3/analysis/jobs") == "v3"
+        assert middleware._extract_version("/v1/analysis/jobs") == "v1"
         assert middleware._extract_version("/v2/analysis/jobs") == "v2"
         assert middleware._extract_version("/health") is None
-        assert middleware._extract_version("/api/v3/test") is None  # 경로 시작이 아님
+        assert middleware._extract_version("/api/v1/test") is None  # 경로 시작이 아님

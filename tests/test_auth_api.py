@@ -11,7 +11,7 @@ class TestAuthAPI:
     def test_login_admin_success(self, auth_client):
         """관리자 로그인 성공"""
         response = auth_client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         assert response.status_code == 200
@@ -25,7 +25,7 @@ class TestAuthAPI:
     def test_login_analyst_success(self, auth_client):
         """분석가 로그인 성공"""
         response = auth_client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "analyst", "password": "analyst123"}
         )
         assert response.status_code == 200
@@ -36,7 +36,7 @@ class TestAuthAPI:
     def test_login_customer_success(self, auth_client):
         """고객 로그인 성공"""
         response = auth_client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "customer123", "password": "customer123"}
         )
         assert response.status_code == 200
@@ -47,7 +47,7 @@ class TestAuthAPI:
     def test_login_wrong_password(self, auth_client):
         """잘못된 비밀번호로 로그인 실패"""
         response = auth_client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "wrongpassword"}
         )
         assert response.status_code == 401
@@ -58,7 +58,7 @@ class TestAuthAPI:
         monkeypatch.delenv("ANALYST_PASSWORD", raising=False)
         
         response = auth_client.post(
-            "/v3/auth/login",
+            "/v1/auth/login",
             data={"customer_id": "admin", "password": "admin123"}
         )
         assert response.status_code == 401
@@ -68,7 +68,7 @@ class TestAuthAPI:
         # 5회 이상 요청 시 속도 제한
         for _ in range(6):
             response = auth_client.post(
-                "/v3/auth/login",
+                "/v1/auth/login",
                 data={"customer_id": "admin", "password": "wrong"}
             )
         
@@ -77,13 +77,13 @@ class TestAuthAPI:
 
     def test_get_current_user_unauthorized(self, auth_client):
         """인증 없이 현재 사용자 정보 조회 실패"""
-        response = auth_client.get("/v3/auth/me")
+        response = auth_client.get("/v1/auth/me")
         assert response.status_code == 401
 
     def test_get_current_user_authorized(self, auth_client, admin_token):
         """인증된 상태에서 현재 사용자 정보 조회 성공"""
         response = auth_client.get(
-            "/v3/auth/me",
+            "/v1/auth/me",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200

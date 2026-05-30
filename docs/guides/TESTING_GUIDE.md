@@ -188,7 +188,7 @@ client = TestClient(app)
 
 def test_create_job():
     response = client.post(
-        "/v3/analysis/jobs",
+        "/v1/analysis/jobs",
         files={"image": open("tests/fixtures/images/test.jpg", "rb")},
         data={
             "customer_id": "CUST001",
@@ -203,13 +203,13 @@ def test_create_job():
 def test_get_job_status():
     # 먼저 Job 생성
     create_response = client.post(
-        "/v3/analysis/jobs",
+        "/v1/analysis/jobs",
         files={"image": open("tests/fixtures/images/test.jpg", "rb")}
     )
     job_id = create_response.json()["job_id"]
     
     # 상태 조회
-    response = client.get(f"/v3/analysis/jobs/{job_id}")
+    response = client.get(f"/v1/analysis/jobs/{job_id}")
     
     assert response.status_code == 200
     assert "status" in response.json()

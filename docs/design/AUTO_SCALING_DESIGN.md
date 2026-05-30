@@ -154,7 +154,7 @@ CREATE INDEX idx_cost_metrics_period ON cost_metrics(period_start, period_end);
 ### 3.7 API 엔드포인트
 
 #### 3.7.1 스케일링 정책 조회
-- **경로:** `/v3/admin/scaling-policies`
+- **경로:** `/v1/admin/scaling-policies`
 - **메서드:** `GET`
 - **응답:**
 ```json
@@ -174,7 +174,7 @@ CREATE INDEX idx_cost_metrics_period ON cost_metrics(period_start, period_end);
 ```
 
 #### 3.7.2 스케일링 정책 업데이트
-- **경로:** `/v3/admin/scaling-policies/{resource_type}`
+- **경로:** `/v1/admin/scaling-policies/{resource_type}`
 - **메서드:** `PUT`
 - **요청 바디:**
 ```json
@@ -195,7 +195,7 @@ CREATE INDEX idx_cost_metrics_period ON cost_metrics(period_start, period_end);
 ```
 
 #### 3.7.3 스케일링 이벤트 조회
-- **경로:** `/v3/admin/scaling-events`
+- **경로:** `/v1/admin/scaling-events`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `resource_type`, `start_date`, `end_date`, `limit`, `offset`
 - **응답:**
@@ -220,7 +220,7 @@ CREATE INDEX idx_cost_metrics_period ON cost_metrics(period_start, period_end);
 ```
 
 #### 3.7.4 비용 메트릭 조회
-- **경로:** `/v3/admin/cost-metrics`
+- **경로:** `/v1/admin/cost-metrics`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `resource_type`, `start_date`, `end_date`
 - **응답:**

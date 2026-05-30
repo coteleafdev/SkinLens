@@ -128,7 +128,7 @@ class TestFastAPIServer:
     def test_create_job_missing_both_image_and_url(self, client):
         """이미지와 URL 모두 없는 경우 에러 테스트."""
         response = client.post(
-            "/v3/analysis/jobs",
+            "/v1/analysis/jobs",
             data={"do_restore": "true"}
         )
 
@@ -142,7 +142,7 @@ class TestFastAPIServer:
         """이미지와 URL 모두 있는 경우 에러 테스트."""
         with open(sample_image, "rb") as f:
             response = client.post(
-                "/v3/analysis/jobs",
+                "/v1/analysis/jobs",
                 files={"image": ("test.jpg", f, "image/jpeg")},
                 data={
                     "image_url": "https://example.com/test.jpg",
@@ -318,7 +318,7 @@ class TestFastAPIServer:
             json.dump(job_meta, f)
 
         with patch('src.server.deps.jobs_root', return_value=temp_dir / "api_jobs"):
-            response = client.get(f"/v3/analysis/jobs/{job_id}/artifacts/results.json")
+            response = client.get(f"/v1/analysis/jobs/{job_id}/artifacts/results.json")
 
             assert response.status_code == 200
             assert response.content == b'{"test": "data"}'
@@ -344,14 +344,14 @@ class TestFastAPIServer:
             json.dump(job_meta, f)
 
         with patch('src.server.deps.jobs_root', return_value=temp_dir / "api_jobs"):
-            response = client.get(f"/v3/analysis/jobs/{job_id}/artifacts/nonexistent.json")
+            response = client.get(f"/v1/analysis/jobs/{job_id}/artifacts/nonexistent.json")
 
             assert response.status_code == 404
 
     def test_download_image_url_invalid_scheme(self, client):
         """잘못된 URL 스킴 테스트."""
         response = client.post(
-            "/v3/analysis/jobs",
+            "/v1/analysis/jobs",
             data={
                 "image_url": "ftp://example.com/test.jpg",
                 "do_restore": "true",
@@ -586,7 +586,7 @@ class TestFastAPIServerAsync:
                 "survey": '{"consent_agreed": true, "gender": "female"}',
             }
 
-            response = await async_client.post("/v3/analysis/jobs", files=files, data=data)
+            response = await async_client.post("/v1/analysis/jobs", files=files, data=data)
 
         assert response.status_code == 202
         data = response.json()
@@ -604,7 +604,7 @@ class TestFastAPIServerAsync:
             mock_run_job_sync.return_value = None
 
             files = [("images", (img.name, img.read_bytes(), "image/jpeg")) for img in imgs]
-            response = await async_client.post("/v3/analysis/jobs", files=files)
+            response = await async_client.post("/v1/analysis/jobs", files=files)
 
         assert response.status_code == 202
     
@@ -617,7 +617,7 @@ class TestFastAPIServerAsync:
         files = [("images", ("img.jpg", img.read_bytes(), "image/jpeg"))]
         data = {"angles": ["invalid_angle"]}
 
-        response = await async_client.post("/v3/analysis/jobs", files=files, data=data)
+        response = await async_client.post("/v1/analysis/jobs", files=files, data=data)
 
         assert response.status_code == 400
         assert "유효하지 않은" in response.json()["detail"]
@@ -635,7 +635,7 @@ class TestFastAPIServerAsync:
             ("image", ("b.jpg", img2.read_bytes(), "image/jpeg")),
         ]
 
-        response = await async_client.post("/v3/analysis/jobs", files=files)
+        response = await async_client.post("/v1/analysis/jobs", files=files)
 
         assert response.status_code == 400
     
@@ -667,7 +667,7 @@ class TestFastAPIServerAsync:
                 "client_meta": client_meta_data,
             }
 
-            response = await async_client.post("/v3/analysis/jobs", files=files, data=data)
+            response = await async_client.post("/v1/analysis/jobs", files=files, data=data)
 
         assert response.status_code == 202
         data = response.json()
@@ -702,7 +702,7 @@ class TestFastAPIServerAsync:
                 "angles": ["front", "left45"],
             }
 
-            response = await async_client.post("/v3/analysis/jobs", files=files, data=data)
+            response = await async_client.post("/v1/analysis/jobs", files=files, data=data)
 
         assert response.status_code == 202
         assert "lateral_images" in written_meta
@@ -734,7 +734,7 @@ class TestConcurrencyControl:
         tasks = []
         for i in range(5):
             files = {"image": (f"test_{i}.jpg", b"fake_image_data", "image/jpeg")}
-            task = async_client.post("/v3/analysis/jobs", files=files)
+            task = async_client.post("/v1/analysis/jobs", files=files)
             tasks.append(task)
         
         # 동시 실행
@@ -766,7 +766,7 @@ class TestConcurrencyControl:
             files = {"image": ("test.jpg", b"fake_image_data", "image/jpeg")}
             
             # Semaphore가 점유된 상태에서 요청
-            response = await async_client.post("/v3/analysis/jobs", files=files)
+            response = await async_client.post("/v1/analysis/jobs", files=files)
             
             # 요청 자체는 성공해야 함 (202 Accepted)
             # 실제 실행은 Semaphore에 의해 제한됨
@@ -792,7 +792,7 @@ class TestAuthenticationAPI:
 
     def test_login_admin_success(self, client):
         """관리자 로그인 성공 테스트."""
-        response = client.post("/v3/auth/login", data={
+        response = client.post("/v1/auth/login", data={
             "customer_id": "admin",
             "password": "admin123"
         })
@@ -804,7 +804,7 @@ class TestAuthenticationAPI:
 
     def test_login_analyst_success(self, client):
         """분석가 로그인 성공 테스트."""
-        response = client.post("/v3/auth/login", data={
+        response = client.post("/v1/auth/login", data={
             "customer_id": "analyst",
             "password": "analyst123"
         })
@@ -816,7 +816,7 @@ class TestAuthenticationAPI:
 
     def test_login_wrong_password(self, client):
         """잘못된 비밀번호 로그인 실패 테스트."""
-        response = client.post("/v3/auth/login", data={
+        response = client.post("/v1/auth/login", data={
             "customer_id": "admin",
             "password": "wrongpassword"
         })
@@ -829,7 +829,7 @@ class TestAuthenticationAPI:
         os.environ.pop("ADMIN_PASSWORD", None)
         os.environ.pop("ANALYST_PASSWORD", None)
         
-        response = client.post("/v3/auth/login", data={
+        response = client.post("/v1/auth/login", data={
             "customer_id": "admin",
             "password": "any"
         })
@@ -839,13 +839,13 @@ class TestAuthenticationAPI:
 
     def test_get_current_user_unauthorized(self, client):
         """인증 없이 현재 사용자 정보 조회 시 401"""
-        response = client.get("/v3/auth/me")
+        response = client.get("/v1/auth/me")
         assert response.status_code == 401
 
     def test_get_current_user_authorized_admin(self, auth_client, admin_token):
         """관리자 토큰으로 현재 사용자 정보 조회 성공"""
         response = auth_client.get(
-            "/v3/auth/me",
+            "/v1/auth/me",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -857,7 +857,7 @@ class TestAuthenticationAPI:
     def test_get_current_user_authorized_analyst(self, auth_client, analyst_token):
         """분석가 토큰으로 현재 사용자 정보 조회 성공"""
         response = auth_client.get(
-            "/v3/auth/me",
+            "/v1/auth/me",
             headers={"Authorization": f"Bearer {analyst_token}"}
         )
         assert response.status_code == 200
@@ -884,7 +884,7 @@ class TestCustomerAPI:
     @pytest.fixture
     def auth_token(self, client):
         """인증 토큰 fixture."""
-        response = client.post("/v3/auth/login", data={
+        response = client.post("/v1/auth/login", data={
             "customer_id": "admin",
             "password": "admin123"
         })
@@ -892,13 +892,13 @@ class TestCustomerAPI:
 
     def test_get_my_trends_unauthorized(self, client):
         """인증 없이 트렌드 조회 시 401."""
-        response = client.get("/v3/customer/my/trends")
+        response = client.get("/v1/customer/my/trends")
         assert response.status_code == 401
 
     def test_get_my_trends_authorized(self, client, auth_token):
         """인증된 트렌드 조회."""
         response = client.get(
-            "/v3/customer/my/trends",
+            "/v1/customer/my/trends",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
         # 데이터가 없어도 200이어야 함
@@ -910,52 +910,52 @@ class TestCustomerAPI:
 
     def test_get_my_analysis_unauthorized(self, client):
         """인증 없이 분석 통계 조회 시 401."""
-        response = client.get("/v3/customer/my/analysis")
+        response = client.get("/v1/customer/my/analysis")
         assert response.status_code == 401
 
     def test_get_my_analysis_authorized(self, client, auth_token):
         """인증된 분석 통계 조회."""
         response = client.get(
-            "/v3/customer/my/analysis",
+            "/v1/customer/my/analysis",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
         assert response.status_code in [200, 500]
 
     def test_get_my_errors_unauthorized(self, client):
         """인증 없이 에러 조회 시 401."""
-        response = client.get("/v3/customer/my/errors")
+        response = client.get("/v1/customer/my/errors")
         assert response.status_code == 401
 
     def test_get_my_errors_authorized(self, client, auth_token):
         """인증된 에러 조회."""
         response = client.get(
-            "/v3/customer/my/errors",
+            "/v1/customer/my/errors",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
         assert response.status_code in [200, 500]
 
     def test_delete_my_data_unauthorized(self, client):
         """인증 없이 데이터 삭제 시 401."""
-        response = client.delete("/v3/customer/my/data")
+        response = client.delete("/v1/customer/my/data")
         assert response.status_code == 401
 
     def test_delete_my_data_authorized(self, client, auth_token):
         """인증된 데이터 삭제."""
         response = client.delete(
-            "/v3/customer/my/data",
+            "/v1/customer/my/data",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
         assert response.status_code in [200, 500]
 
     def test_export_my_data_unauthorized(self, client):
         """인증 없이 데이터 내보내기 시 401."""
-        response = client.get("/v3/customer/my/data/export")
+        response = client.get("/v1/customer/my/data/export")
         assert response.status_code == 401
 
     def test_export_my_data_authorized(self, client, auth_token):
         """인증된 데이터 내보내기."""
         response = client.get(
-            "/v3/customer/my/data/export",
+            "/v1/customer/my/data/export",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
         # 데이터가 없어도 파일 응답이어야 함

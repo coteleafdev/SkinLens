@@ -10,13 +10,13 @@ class TestAdminAPI:
 
     def test_get_audit_logs_unauthorized(self, auth_client):
         """인증 없이 감사 로그 조회 실패"""
-        response = auth_client.get("/v3/admin/audit-logs")
+        response = auth_client.get("/v1/admin/audit-logs")
         assert response.status_code == 401
 
     def test_get_audit_logs_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 감사 로그 조회 실패"""
         response = auth_client.get(
-            "/v3/admin/audit-logs",
+            "/v1/admin/audit-logs",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -24,7 +24,7 @@ class TestAdminAPI:
     def test_get_audit_logs_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 감사 로그 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/audit-logs",
+            "/v1/admin/audit-logs",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -36,7 +36,7 @@ class TestAdminAPI:
     def test_get_audit_logs_with_filters(self, auth_client, admin_token):
         """필터와 함께 감사 로그 조회"""
         response = auth_client.get(
-            "/v3/admin/audit-logs?days=7&limit=50",
+            "/v1/admin/audit-logs?days=7&limit=50",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -45,13 +45,13 @@ class TestAdminAPI:
 
     def test_get_log_level_unauthorized(self, auth_client):
         """인증 없이 로그 레벨 조회 실패"""
-        response = auth_client.get("/v3/admin/logging/level")
+        response = auth_client.get("/v1/admin/logging/level")
         assert response.status_code == 401
 
     def test_get_log_level_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 로그 레벨 조회 실패"""
         response = auth_client.get(
-            "/v3/admin/logging/level",
+            "/v1/admin/logging/level",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -59,7 +59,7 @@ class TestAdminAPI:
     def test_get_log_level_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 로그 레벨 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/logging/level",
+            "/v1/admin/logging/level",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -70,13 +70,13 @@ class TestAdminAPI:
 
     def test_update_log_level_unauthorized(self, auth_client):
         """인증 없이 로그 레벨 변경 실패"""
-        response = auth_client.put("/v3/admin/logging/level?level=DEBUG")
+        response = auth_client.put("/v1/admin/logging/level?level=DEBUG")
         assert response.status_code == 401
 
     def test_update_log_level_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 로그 레벨 변경 실패"""
         response = auth_client.put(
-            "/v3/admin/logging/level?level=DEBUG",
+            "/v1/admin/logging/level?level=DEBUG",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -84,7 +84,7 @@ class TestAdminAPI:
     def test_update_log_level_invalid_level(self, auth_client, admin_token):
         """잘못된 로그 레벨로 변경 실패"""
         response = auth_client.put(
-            "/v3/admin/logging/level?level=INVALID",
+            "/v1/admin/logging/level?level=INVALID",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 400
@@ -92,7 +92,7 @@ class TestAdminAPI:
     def test_update_log_level_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 로그 레벨 변경 성공"""
         response = auth_client.put(
-            "/v3/admin/logging/level?level=WARNING",
+            "/v1/admin/logging/level?level=WARNING",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -103,13 +103,13 @@ class TestAdminAPI:
 
     def test_get_system_metrics_unauthorized(self, auth_client):
         """인증 없이 시스템 메트릭 조회 실패"""
-        response = auth_client.get("/v3/admin/metrics/system")
+        response = auth_client.get("/v1/admin/metrics/system")
         assert response.status_code == 401
 
     def test_get_system_metrics_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 시스템 메트릭 조회 실패"""
         response = auth_client.get(
-            "/v3/admin/metrics/system",
+            "/v1/admin/metrics/system",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -117,7 +117,7 @@ class TestAdminAPI:
     def test_get_system_metrics_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 시스템 메트릭 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/metrics/system",
+            "/v1/admin/metrics/system",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -135,13 +135,13 @@ class TestAdminAPI:
 
     def test_create_api_key_unauthorized(self, auth_client):
         """인증 없이 API 키 생성 실패"""
-        response = auth_client.post("/v3/admin/api-keys?name=test&owner_id=user1")
+        response = auth_client.post("/v1/admin/api-keys?name=test&owner_id=user1")
         assert response.status_code == 401
 
     def test_create_api_key_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 API 키 생성 실패"""
         response = auth_client.post(
-            "/v3/admin/api-keys?name=test&owner_id=user1",
+            "/v1/admin/api-keys?name=test&owner_id=user1",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -149,7 +149,7 @@ class TestAdminAPI:
     def test_create_api_key_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 API 키 생성 성공"""
         response = auth_client.post(
-            "/v3/admin/api-keys?name=test_key&owner_id=user1&scopes=%5B%22read%22%2C%22write%22%5D",
+            "/v1/admin/api-keys?name=test_key&owner_id=user1&scopes=%5B%22read%22%2C%22write%22%5D",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -162,13 +162,13 @@ class TestAdminAPI:
 
     def test_list_api_keys_unauthorized(self, auth_client):
         """인증 없이 API 키 목록 조회 실패"""
-        response = auth_client.get("/v3/admin/api-keys")
+        response = auth_client.get("/v1/admin/api-keys")
         assert response.status_code == 401
 
     def test_list_api_keys_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 API 키 목록 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/api-keys",
+            "/v1/admin/api-keys",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -179,26 +179,26 @@ class TestAdminAPI:
 
     def test_revoke_api_key_unauthorized(self, auth_client):
         """인증 없이 API 키 폐지 실패"""
-        response = auth_client.delete("/v3/admin/api-keys/test-key-id")
+        response = auth_client.delete("/v1/admin/api-keys/test-key-id")
         assert response.status_code == 401
 
     def test_revoke_api_key_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 API 키 폐지 실패"""
         response = auth_client.delete(
-            "/v3/admin/api-keys/test-key-id",
+            "/v1/admin/api-keys/test-key-id",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
 
     def test_get_cache_stats_unauthorized(self, auth_client):
         """인증 없이 캐시 통계 조회 실패"""
-        response = auth_client.get("/v3/admin/cache/stats")
+        response = auth_client.get("/v1/admin/cache/stats")
         assert response.status_code == 401
 
     def test_get_cache_stats_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 캐시 통계 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/cache/stats",
+            "/v1/admin/cache/stats",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -208,13 +208,13 @@ class TestAdminAPI:
 
     def test_clear_cache_unauthorized(self, auth_client):
         """인증 없이 캐시 초기화 실패"""
-        response = auth_client.post("/v3/admin/cache/clear")
+        response = auth_client.post("/v1/admin/cache/clear")
         assert response.status_code == 401
 
     def test_clear_cache_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 캐시 초기화 실패"""
         response = auth_client.post(
-            "/v3/admin/cache/clear",
+            "/v1/admin/cache/clear",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -222,7 +222,7 @@ class TestAdminAPI:
     def test_clear_cache_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 캐시 초기화 성공"""
         response = auth_client.post(
-            "/v3/admin/cache/clear?cache_type=metrics",
+            "/v1/admin/cache/clear?cache_type=metrics",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -232,13 +232,13 @@ class TestAdminAPI:
 
     def test_check_db_health_unauthorized(self, auth_client):
         """인증 없이 DB 헬스체크 실패"""
-        response = auth_client.get("/v3/health/db")
+        response = auth_client.get("/v1/health/db")
         assert response.status_code == 401
 
     def test_check_db_health_forbidden_customer(self, auth_client, user_token):
         """고객 권한으로 DB 헬스체크 실패"""
         response = auth_client.get(
-            "/v3/health/db",
+            "/v1/health/db",
             headers={"Authorization": f"Bearer {user_token}"}
         )
         assert response.status_code == 403
@@ -246,7 +246,7 @@ class TestAdminAPI:
     def test_check_db_health_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 DB 헬스체크 성공"""
         response = auth_client.get(
-            "/v3/health/db",
+            "/v1/health/db",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -256,7 +256,7 @@ class TestAdminAPI:
     def test_check_db_health_authorized_analyst(self, auth_client, analyst_token):
         """분석가 권한으로 DB 헬스체크 성공"""
         response = auth_client.get(
-            "/v3/health/db",
+            "/v1/health/db",
             headers={"Authorization": f"Bearer {analyst_token}"}
         )
         assert response.status_code == 200
@@ -265,13 +265,13 @@ class TestAdminAPI:
 
     def test_get_db_metrics_unauthorized(self, auth_client):
         """인증 없이 DB 메트릭 조회 실패"""
-        response = auth_client.get("/v3/admin/db/metrics")
+        response = auth_client.get("/v1/admin/db/metrics")
         assert response.status_code == 401
 
     def test_get_db_metrics_forbidden_analyst(self, auth_client, analyst_token):
         """분석가 권한으로 DB 메트릭 조회 실패"""
         response = auth_client.get(
-            "/v3/admin/db/metrics",
+            "/v1/admin/db/metrics",
             headers={"Authorization": f"Bearer {analyst_token}"}
         )
         assert response.status_code == 403
@@ -279,7 +279,7 @@ class TestAdminAPI:
     def test_get_db_metrics_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 DB 메트릭 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/db/metrics",
+            "/v1/admin/db/metrics",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -294,7 +294,7 @@ class TestAdminAPI:
         # 10회 이상 요청 시 속도 제한
         for _ in range(11):
             response = auth_client.get(
-                "/v3/admin/db/metrics",
+                "/v1/admin/db/metrics",
                 headers={"Authorization": f"Bearer {admin_token}"}
             )
         
@@ -303,13 +303,13 @@ class TestAdminAPI:
 
     def test_get_audit_summary_unauthorized(self, auth_client):
         """인증 없이 감사 요약 조회 실패"""
-        response = auth_client.get("/v3/admin/audit/summary")
+        response = auth_client.get("/v1/admin/audit/summary")
         assert response.status_code == 401
 
     def test_get_audit_summary_forbidden_analyst(self, auth_client, analyst_token):
         """분석가 권한으로 감사 요약 조회 실패"""
         response = auth_client.get(
-            "/v3/admin/audit/summary",
+            "/v1/admin/audit/summary",
             headers={"Authorization": f"Bearer {analyst_token}"}
         )
         assert response.status_code == 403
@@ -317,7 +317,7 @@ class TestAdminAPI:
     def test_get_audit_summary_authorized_admin(self, auth_client, admin_token):
         """관리자 권한으로 감사 요약 조회 성공"""
         response = auth_client.get(
-            "/v3/admin/audit/summary",
+            "/v1/admin/audit/summary",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -333,7 +333,7 @@ class TestAdminAPI:
     def test_get_audit_summary_with_days_param(self, auth_client, admin_token):
         """days 파라미터로 기간 설정"""
         response = auth_client.get(
-            "/v3/admin/audit/summary?days=7",
+            "/v1/admin/audit/summary?days=7",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
@@ -345,7 +345,7 @@ class TestAdminAPI:
         # 10회 이상 요청 시 속도 제한
         for _ in range(11):
             response = auth_client.get(
-                "/v3/admin/audit/summary",
+                "/v1/admin/audit/summary",
                 headers={"Authorization": f"Bearer {admin_token}"}
             )
         

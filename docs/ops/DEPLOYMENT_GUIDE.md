@@ -230,7 +230,7 @@ tail -f /var/log/skinlens/app.log
 curl http://localhost:8000/health
 
 # 작업 큐 상태 확인
-curl http://localhost:8000/v3/analysis/jobs
+curl http://localhost:8000/v1/analysis/jobs
 ```
 
 ---

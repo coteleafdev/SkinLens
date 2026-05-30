@@ -1,8 +1,8 @@
 """
 routers/auth.py — 인증 엔드포인트
 
-POST /v3/auth/login
-GET  /v3/auth/me
+POST /v1/auth/login
+GET  /v1/auth/me
 """
 from __future__ import annotations
 

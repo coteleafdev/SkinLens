@@ -203,7 +203,7 @@ class TestCustomerDataRepository:
         ]
         
         audit_logs_data = [
-            {"timestamp": "2024-01-01T00:00:00", "endpoint": "/v3/analyze"}
+            {"timestamp": "2024-01-01T00:00:00", "endpoint": "/v1/analyze"}
         ]
         
         # 내보내기 실행

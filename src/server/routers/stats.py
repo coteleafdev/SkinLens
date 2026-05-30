@@ -1,15 +1,15 @@
 """
 routers/stats.py — 통계 조회 API
 
-GET  /v3/stats/analysis
-GET  /v3/stats/model-performance
-GET  /v3/stats/score-trends
-GET  /v3/stats/llm-api
-GET  /v3/stats/image-metadata
-GET  /v3/stats/errors
-POST /v3/stats/errors/{error_id}/resolve
-GET  /v3/stats/system-health
-GET  /v3/stats/summary
+GET  /v1/stats/analysis
+GET  /v1/stats/model-performance
+GET  /v1/stats/score-trends
+GET  /v1/stats/llm-api
+GET  /v1/stats/image-metadata
+GET  /v1/stats/errors
+POST /v1/stats/errors/{error_id}/resolve
+GET  /v1/stats/system-health
+GET  /v1/stats/summary
 """
 from __future__ import annotations
 

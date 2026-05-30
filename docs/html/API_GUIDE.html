@@ -1367,7 +1367,7 @@
 <li><a href="#23-sd-2026-05-16">23) SD 기능 제거 (2026-05-16)</a><ul>
 <li><a href="#_8">제거 이유</a></li>
 <li><a href="#api">API 변경</a><ul>
-<li><a href="#post-v3analysisjobs">POST /v3/analysis/jobs</a></li>
+<li><a href="#post-v3analysisjobs">POST /v1/analysis/jobs</a></li>
 </ul>
 </li>
 <li><a href="#_9">영향 범위</a></li>
@@ -1600,7 +1600,7 @@
 <li><a href="#23-sd-2026-05-16">23) SD 기능 제거 (2026-05-16)</a><ul>
 <li><a href="#_8">제거 이유</a></li>
 <li><a href="#api">API 변경</a><ul>
-<li><a href="#post-v3analysisjobs">POST /v3/analysis/jobs</a></li>
+<li><a href="#post-v3analysisjobs">POST /v1/analysis/jobs</a></li>
 </ul>
 </li>
 <li><a href="#_9">영향 범위</a></li>
@@ -1689,7 +1689,7 @@
 
 <hr />
 <h3 id="42-job-async">4.2 분석 Job 생성 (Async)<a class="headerlink" href="#42-job-async" title="Permanent link">&para;</a></h3>
-<p><code>POST /v3/analysis/jobs</code></p>
+<p><code>POST /v1/analysis/jobs</code></p>
 <p><strong>Rate Limit</strong>
 - 분석 엔드포인트는 <strong>3회/분</strong>으로 제한됩니다 (GPU 집약적 작업 보호)</p>
 <p><strong>Request (multipart/form-data)</strong>
@@ -1722,21 +1722,21 @@
 - <code>image</code>와 <code>image_url</code> 중 <strong>정확히 하나만</strong> 제공해야 합니다.</p>
 <p><strong>예시</strong></p>
 <p>파일 업로드:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;image=@./images/01-F-1.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;do_restore=true&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;customer_id=test01&quot;</span>
 </code></pre></div>
 
 <p>URL 입력:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;image_url=https://example.com/sample.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;do_restore=true&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;customer_id=test01&quot;</span>
 </code></pre></div>
 
 <p>설문 포함 (맞춤형 화장품 추천):</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;image=@./images/01-F-1.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;do_restore=true&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;llm_report=true&quot;</span><span class="w"> </span><span class="se">\</span>
@@ -1761,7 +1761,7 @@
 - 실행 이력을 SQLite 데이터베이스에 자동 저장</p>
 <hr />
 <h3 id="43-job">4.3 Job 상태 조회<a class="headerlink" href="#43-job" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/analysis/jobs/{job_id}</code></p>
+<p><code>GET /v1/analysis/jobs/{job_id}</code></p>
 <p><strong>Response 200</strong></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
@@ -1778,17 +1778,17 @@
 - <code>queued</code> | <code>running</code> | <code>succeeded</code> | <code>failed</code></p>
 <hr />
 <h3 id="44-job-json">4.4 Job 결과(JSON) 조회<a class="headerlink" href="#44-job-json" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/analysis/jobs/{job_id}/result</code></p>
+<p><code>GET /v1/analysis/jobs/{job_id}/result</code></p>
 <p><strong>Response 200</strong></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;job_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;succeeded&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-28T12:01:02.345Z&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;analysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;input_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/input.jpg&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;input_image_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/input.jpg&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;restored_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/00_restored.png&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;restored_image_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/00_restored.png&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;input_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/input.jpg&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;input_image_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/input.jpg&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;restored_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/00_restored.png&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;restored_image_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/00_restored.png&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;execution_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;total_sec&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">45.3</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;restore_sec&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">15.2</span><span class="p">,</span>
@@ -1878,9 +1878,9 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;artifacts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;results.json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/results.json&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;input_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/input.jpg&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;restored_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/analysis/jobs/.../artifacts/00_restored.png&quot;</span>
+<span class="w">    </span><span class="nt">&quot;results.json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/results.json&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;input_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/input.jpg&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;restored_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/analysis/jobs/.../artifacts/00_restored.png&quot;</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 <span class="p">}</span>
@@ -1888,7 +1888,7 @@
 
 <hr />
 <h3 id="45-artifact">4.5 결과 파일(artifact) 다운로드<a class="headerlink" href="#45-artifact" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/analysis/jobs/{job_id}/artifacts/{name}</code></p>
+<p><code>GET /v1/analysis/jobs/{job_id}/artifacts/{name}</code></p>
 <ul>
 <li><code>{name}</code> 예시</li>
 <li><code>results.json</code></li>
@@ -2206,19 +2206,19 @@
 <hr />
 <h2 id="8_1">8) 최소 연동 예시 (클라이언트)<a class="headerlink" href="#8_1" title="Permanent link">&para;</a></h2>
 <h3 id="81-job">8.1 Job 생성<a class="headerlink" href="#81-job" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;image=@./images/01-F-1.jpg&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;do_restore=true&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;customer_id=test01&quot;</span>
 </code></pre></div>
 
 <h3 id="82">8.2 상태 조회<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs/&lt;job_id&gt;&quot;</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs/&lt;job_id&gt;&quot;</span>
 </code></pre></div>
 
 <h3 id="83">8.3 결과 다운로드<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>results.json<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs/&lt;job_id&gt;/artifacts/results.json&quot;</span>
-curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>restored.png<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v3/analysis/jobs/&lt;job_id&gt;/artifacts/00_restored.png&quot;</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>results.json<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs/&lt;job_id&gt;/artifacts/results.json&quot;</span>
+curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>restored.png<span class="w"> </span><span class="s2">&quot;http://localhost:8000/v1/analysis/jobs/&lt;job_id&gt;/artifacts/00_restored.png&quot;</span>
 </code></pre></div>
 
 <hr />
@@ -2274,9 +2274,9 @@ uvicorn<span class="w"> </span>server:app<span class="w"> </span>--host<span cla
 <h3 id="111-job">11.1 권장 아키텍처(비동기 Job)<a class="headerlink" href="#111-job" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Node 백엔드 → Skin Analysis API</li>
-<li><code>POST /v3/analysis/jobs</code>로 이미지 업로드</li>
-<li><code>GET /v3/analysis/jobs/{job_id}</code>로 상태 확인(폴링)</li>
-<li>완료 시 <code>GET /v3/analysis/jobs/{job_id}/result</code>로 결과 수집</li>
+<li><code>POST /v1/analysis/jobs</code>로 이미지 업로드</li>
+<li><code>GET /v1/analysis/jobs/{job_id}</code>로 상태 확인(폴링)</li>
+<li>완료 시 <code>GET /v1/analysis/jobs/{job_id}/result</code>로 결과 수집</li>
 </ul>
 <h3 id="112-node-job">11.2 Node에서 Job 생성 예시<a class="headerlink" href="#112-node-job" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="nx">fs</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;fs&quot;</span><span class="p">;</span>
@@ -2294,7 +2294,7 @@ uvicorn<span class="w"> </span>server:app<span class="w"> </span>--host<span cla
 <span class="w">  </span><span class="nx">form</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;do_restore&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span><span class="p">(</span><span class="nx">doRestore</span><span class="p">));</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">customerId</span><span class="p">)</span><span class="w"> </span><span class="nx">form</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">customerId</span><span class="p">);</span>
 
-<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">apiBaseUrl</span><span class="si">}</span><span class="sb">/v3/analysis/jobs`</span><span class="p">,</span><span class="w"> </span><span class="nx">form</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">apiBaseUrl</span><span class="si">}</span><span class="sb">/v1/analysis/jobs`</span><span class="p">,</span><span class="w"> </span><span class="nx">form</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="nx">form</span><span class="p">.</span><span class="nx">getHeaders</span><span class="p">(),</span>
 <span class="w">    </span><span class="nx">maxBodyLength</span><span class="o">:</span><span class="w"> </span><span class="kc">Infinity</span><span class="p">,</span>
 <span class="w">    </span><span class="nx">maxContentLength</span><span class="o">:</span><span class="w"> </span><span class="kc">Infinity</span><span class="p">,</span>
@@ -2307,7 +2307,7 @@ uvicorn<span class="w"> </span>server:app<span class="w"> </span>--host<span cla
 <h3 id="113-db">11.3 결과 수집 및 DB 저장<a class="headerlink" href="#113-db" title="Permanent link">&para;</a></h3>
 <p>완료된 Job에 대해서는 아래 API로 결과 JSON을 가져와 DB에 저장합니다.</p>
 <ul>
-<li><code>GET /v3/analysis/jobs/{job_id}/result</code></li>
+<li><code>GET /v1/analysis/jobs/{job_id}/result</code></li>
 </ul>
 <p>DB 저장 권장:
 - <code>job_id</code>
@@ -2319,7 +2319,7 @@ uvicorn<span class="w"> </span>server:app<span class="w"> </span>--host<span cla
 <hr />
 <h2 id="12-api">12) 로그 다운로드 API<a class="headerlink" href="#12-api" title="Permanent link">&para;</a></h2>
 <h3 id="121-json">12.1 로그 조회 (JSON)<a class="headerlink" href="#121-json" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/logs</code></p>
+<p><code>GET /v1/logs</code></p>
 <p><strong>Query Parameters</strong>
 - <code>level</code>: (string, optional) 필터링할 로그 레벨 (DEBUG, INFO, WARNING, ERROR)
 - <code>limit</code>: (int, optional) 조회할 레코드 수 (기본 100, 최대 1000)
@@ -2344,17 +2344,17 @@ uvicorn<span class="w"> </span>server:app<span class="w"> </span>--host<span cla
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 전체 로그 (100개)</span>
-curl<span class="w"> </span>http://localhost:8000/v3/logs
+curl<span class="w"> </span>http://localhost:8000/v1/logs
 
 <span class="c1"># ERROR 레벨만 (50개)</span>
-curl<span class="w"> </span>http://localhost:8000/v3/logs?level<span class="o">=</span>ERROR<span class="p">&amp;</span><span class="nv">limit</span><span class="o">=</span><span class="m">50</span>
+curl<span class="w"> </span>http://localhost:8000/v1/logs?level<span class="o">=</span>ERROR<span class="p">&amp;</span><span class="nv">limit</span><span class="o">=</span><span class="m">50</span>
 
 <span class="c1"># 최근 6시간 로그 (200개)</span>
-curl<span class="w"> </span>http://localhost:8000/v3/logs?hours<span class="o">=</span><span class="m">6</span><span class="p">&amp;</span><span class="nv">limit</span><span class="o">=</span><span class="m">200</span>
+curl<span class="w"> </span>http://localhost:8000/v1/logs?hours<span class="o">=</span><span class="m">6</span><span class="p">&amp;</span><span class="nv">limit</span><span class="o">=</span><span class="m">200</span>
 </code></pre></div>
 
 <h3 id="122">12.2 로그 파일 다운로드<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/logs/download</code></p>
+<p><code>GET /v1/logs/download</code></p>
 <p><strong>Query Parameters</strong>
 - <code>level</code>: (string, optional) 필터링할 로그 레벨 (DEBUG, INFO, WARNING, ERROR)
 - <code>hours</code>: (int, optional) 최근 N시간 내의 로그만 다운로드
@@ -2366,13 +2366,13 @@ curl<span class="w"> </span>http://localhost:8000/v3/logs?hours<span class="o">=
 - 조건에 맞는 로그가 없는 경우</p>
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 전체 로그 CSV 다운로드</span>
-curl<span class="w"> </span>http://localhost:8000/v3/logs/download?format<span class="o">=</span>csv<span class="w"> </span>-o<span class="w"> </span>logs.csv
+curl<span class="w"> </span>http://localhost:8000/v1/logs/download?format<span class="o">=</span>csv<span class="w"> </span>-o<span class="w"> </span>logs.csv
 
 <span class="c1"># ERROR 레벨만 CSV 다운로드</span>
-curl<span class="w"> </span>http://localhost:8000/v3/logs/download?level<span class="o">=</span>ERROR<span class="p">&amp;</span><span class="nv">format</span><span class="o">=</span>csv<span class="w"> </span>-o<span class="w"> </span>errors.csv
+curl<span class="w"> </span>http://localhost:8000/v1/logs/download?level<span class="o">=</span>ERROR<span class="p">&amp;</span><span class="nv">format</span><span class="o">=</span>csv<span class="w"> </span>-o<span class="w"> </span>errors.csv
 
 <span class="c1"># 최근 24시간 로그 JSON 다운로드</span>
-curl<span class="w"> </span>http://localhost:8000/v3/logs/download?hours<span class="o">=</span><span class="m">24</span><span class="p">&amp;</span><span class="nv">format</span><span class="o">=</span>json<span class="w"> </span>-o<span class="w"> </span>recent.json
+curl<span class="w"> </span>http://localhost:8000/v1/logs/download?hours<span class="o">=</span><span class="m">24</span><span class="p">&amp;</span><span class="nv">format</span><span class="o">=</span>json<span class="w"> </span>-o<span class="w"> </span>recent.json
 </code></pre></div>
 
 <h3 id="123-db">12.3 로그 DB 설정<a class="headerlink" href="#123-db" title="Permanent link">&para;</a></h3>
@@ -2398,7 +2398,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/logs/download?hours<span cl
 <hr />
 <h2 id="13-api">13) 통계 조회 API<a class="headerlink" href="#13-api" title="Permanent link">&para;</a></h2>
 <h3 id="131">13.1 분석 통계 조회<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/analysis</code></p>
+<p><code>GET /v1/stats/analysis</code></p>
 <p><strong>Query Parameters</strong>
 - <code>days</code>: 조회할 기간 (일, 기본 7)
 - <code>customer_id</code>: 고객 ID (선택)</p>
@@ -2423,14 +2423,14 @@ curl<span class="w"> </span>http://localhost:8000/v3/logs/download?hours<span cl
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 최근 7일 통계</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/analysis?days<span class="o">=</span><span class="m">7</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/analysis?days<span class="o">=</span><span class="m">7</span>
 
 <span class="c1"># 특정 고객 통계</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/analysis?customer_id<span class="o">=</span>user123<span class="p">&amp;</span><span class="nv">days</span><span class="o">=</span><span class="m">30</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/analysis?customer_id<span class="o">=</span>user123<span class="p">&amp;</span><span class="nv">days</span><span class="o">=</span><span class="m">30</span>
 </code></pre></div>
 
 <h3 id="132">13.2 모델 성능 조회<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/model-performance</code></p>
+<p><code>GET /v1/stats/model-performance</code></p>
 <p><strong>Query Parameters</strong>
 - <code>model_type</code>: 모델 유형 필터 (예: skin_analyzer, restoreformer)
 - <code>hours</code>: 최근 N시간 (선택)
@@ -2457,14 +2457,14 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/analysis?customer_id<
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 최근 24시간 성능</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/model-performance?hours<span class="o">=</span><span class="m">24</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/model-performance?hours<span class="o">=</span><span class="m">24</span>
 
 <span class="c1"># 특정 모델 성능</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/model-performance?model_type<span class="o">=</span>skin_analyzer
+curl<span class="w"> </span>http://localhost:8000/v1/stats/model-performance?model_type<span class="o">=</span>skin_analyzer
 </code></pre></div>
 
 <h3 id="133">13.3 점수 추이 조회<a class="headerlink" href="#133" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/score-trends</code></p>
+<p><code>GET /v1/stats/score-trends</code></p>
 <p><strong>Query Parameters</strong>
 - <code>customer_id</code>: 고객 ID (선택)
 - <code>days</code>: 조회할 기간 (일, 기본 30)
@@ -2491,14 +2491,14 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/model-performance?mod
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 특정 고객 점수 추이</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer_id<span class="o">=</span>user123
+curl<span class="w"> </span>http://localhost:8000/v1/stats/score-trends?customer_id<span class="o">=</span>user123
 
 <span class="c1"># 최근 90일 추이</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?days<span class="o">=</span><span class="m">90</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/score-trends?days<span class="o">=</span><span class="m">90</span>
 </code></pre></div>
 
 <h3 id="134-gemini-api">13.4 Gemini API 통계 조회<a class="headerlink" href="#134-gemini-api" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/gemini-api</code></p>
+<p><code>GET /v1/stats/gemini-api</code></p>
 <p><strong>Query Parameters</strong>
 - <code>customer_id</code>: 고객 ID (선택)
 - <code>days</code>: 조회할 기간 (일, 기본 30)</p>
@@ -2525,14 +2525,14 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?days<spa
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 최근 7일 Gemini API 통계</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/gemini-api?days<span class="o">=</span><span class="m">7</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/gemini-api?days<span class="o">=</span><span class="m">7</span>
 
 <span class="c1"># 특정 고객 API 사용량</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/gemini-api?customer_id<span class="o">=</span>user123
+curl<span class="w"> </span>http://localhost:8000/v1/stats/gemini-api?customer_id<span class="o">=</span>user123
 </code></pre></div>
 
 <h3 id="135">13.5 이미지 메타데이터 조회<a class="headerlink" href="#135" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/image-metadata</code></p>
+<p><code>GET /v1/stats/image-metadata</code></p>
 <p><strong>Query Parameters</strong>
 - <code>analysis_id</code>: 분석 ID (선택)
 - <code>image_type</code>: 이미지 유형 (original, restored)</p>
@@ -2558,14 +2558,14 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/gemini-api?customer_i
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 원본 이미지 메타데이터</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/image-metadata?image_type<span class="o">=</span>original
+curl<span class="w"> </span>http://localhost:8000/v1/stats/image-metadata?image_type<span class="o">=</span>original
 
 <span class="c1"># 특정 분석 메타데이터</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/image-metadata?analysis_id<span class="o">=</span><span class="m">100</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/image-metadata?analysis_id<span class="o">=</span><span class="m">100</span>
 </code></pre></div>
 
 <h3 id="136">13.6 에러 조회<a class="headerlink" href="#136" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/errors</code></p>
+<p><code>GET /v1/stats/errors</code></p>
 <p><strong>Query Parameters</strong>
 - <code>resolved</code>: 해결 여부 (true/false)
 - <code>severity</code>: 심각도 (critical, high, medium, low)
@@ -2598,17 +2598,17 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/image-metadata?analys
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 미해결 에러 조회</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/errors?resolved<span class="o">=</span><span class="nb">false</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/errors?resolved<span class="o">=</span><span class="nb">false</span>
 
 <span class="c1"># 심각한 에러 조회</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/errors?severity<span class="o">=</span>critical
+curl<span class="w"> </span>http://localhost:8000/v1/stats/errors?severity<span class="o">=</span>critical
 
 <span class="c1"># 최근 7일 에러</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/errors?days<span class="o">=</span><span class="m">7</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/errors?days<span class="o">=</span><span class="m">7</span>
 </code></pre></div>
 
 <h3 id="137">13.7 에러 해결 표시<a class="headerlink" href="#137" title="Permanent link">&para;</a></h3>
-<p><code>POST /v3/stats/errors/{error_id}/resolve</code></p>
+<p><code>POST /v1/stats/errors/{error_id}/resolve</code></p>
 <p><strong>Request Body</strong></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;resolution_note&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fixed by updating image format validation&quot;</span>
@@ -2623,13 +2623,13 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/errors?days<span clas
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v3/stats/errors/1/resolve<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/stats/errors/1/resolve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;resolution_note&quot;: &quot;Fixed by updating validation&quot;}&#39;</span>
 </code></pre></div>
 
 <h3 id="138">13.8 시스템 헬스 조회<a class="headerlink" href="#138" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/system-health</code></p>
+<p><code>GET /v1/stats/system-health</code></p>
 <p><strong>Query Parameters</strong>
 - <code>hours</code>: 조회할 기간 (시간, 기본 24)
 - <code>limit</code>: 조회할 레코드 수 (기본 100)</p>
@@ -2657,14 +2657,14 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/errors?days<span clas
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 최근 24시간 시스템 헬스</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/system-health
+curl<span class="w"> </span>http://localhost:8000/v1/stats/system-health
 
 <span class="c1"># 최근 1시간 헬스</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/system-health?hours<span class="o">=</span><span class="m">1</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/system-health?hours<span class="o">=</span><span class="m">1</span>
 </code></pre></div>
 
 <h3 id="139">13.9 전체 통계 요약<a class="headerlink" href="#139" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/stats/summary</code></p>
+<p><code>GET /v1/stats/summary</code></p>
 <p><strong>Response 200</strong></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;today_analyses&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span>
@@ -2681,7 +2681,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/system-health?hours<s
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/stats/summary
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/stats/summary
 </code></pre></div>
 
 <hr />
@@ -2716,7 +2716,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/system-health?hours<s
 </tbody>
 </table>
 <h3 id="143">14.3 로그인<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
-<p><code>POST /v3/auth/login</code></p>
+<p><code>POST /v1/auth/login</code></p>
 <p><strong>Request Body (Form)</strong>
 - <code>customer_id</code>: 고객 ID
 - <code>password</code>: 비밀번호 (개발용: customer_id 접두사로 역할 결정)</p>
@@ -2736,18 +2736,18 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/system-health?hours<s
 - 그 외: <code>customer</code> 역할</p>
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 일반 고객 로그인</span>
-curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v3/auth/login<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/auth/login<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;customer_id=user123&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;password=password123&quot;</span>
 
 <span class="c1"># 관리자 로그인</span>
-curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v3/auth/login<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/auth/login<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;customer_id=admin001&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;password=admin123&quot;</span>
 </code></pre></div>
 
 <h3 id="144">14.4 현재 사용자 정보<a class="headerlink" href="#144" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/auth/me</code></p>
+<p><code>GET /v1/auth/me</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code></p>
 <p><strong>Response 200</strong></p>
@@ -2758,7 +2758,7 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/auth/me<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/auth/me<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 </code></pre></div>
 
@@ -2766,11 +2766,11 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
 <p>모든 API 요청에 <code>Authorization</code> 헤더를 포함하여 인증된 요청을 보낼 수 있습니다.</p>
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 인증된 통계 조회</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/summary<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/summary<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 
 <span class="c1"># 인증된 점수 추이 조회</span>
-curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer_id<span class="o">=</span>user123<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>http://localhost:8000/v1/stats/score-trends?customer_id<span class="o">=</span>user123<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 </code></pre></div>
 
@@ -2799,7 +2799,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 <hr />
 <h2 id="15-api">15) 고객 전용 API<a class="headerlink" href="#15-api" title="Permanent link">&para;</a></h2>
 <h3 id="151">15.1 내 점수 추이 조회<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/customer/my/trends</code></p>
+<p><code>GET /v1/customer/my/trends</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수)</p>
 <p><strong>Query Parameters</strong>
@@ -2826,12 +2826,12 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/customer/my/trends?days<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/customer/my/trends?days<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 </code></pre></div>
 
 <h3 id="152">15.2 내 분석 통계 조회<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/customer/my/analysis</code></p>
+<p><code>GET /v1/customer/my/analysis</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수)</p>
 <p><strong>Query Parameters</strong>
@@ -2856,12 +2856,12 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/customer/my/analysis?days<span class="o">=</span><span class="m">7</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/customer/my/analysis?days<span class="o">=</span><span class="m">7</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 </code></pre></div>
 
 <h3 id="153">15.3 내 에러 조회<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/customer/my/errors</code></p>
+<p><code>GET /v1/customer/my/errors</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수)</p>
 <p><strong>Query Parameters</strong>
@@ -2893,12 +2893,12 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/customer/my/errors?days<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/customer/my/errors?days<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 </code></pre></div>
 
 <h3 id="154-gdpr">15.4 내 데이터 삭제 (GDPR)<a class="headerlink" href="#154-gdpr" title="Permanent link">&para;</a></h3>
-<p><code>DELETE /v3/customer/my/data</code></p>
+<p><code>DELETE /v1/customer/my/data</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수)</p>
 <p><strong>Response 200</strong></p>
@@ -2909,18 +2909,18 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/v3/customer/my/data<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/v1/customer/my/data<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span>
 </code></pre></div>
 
 <h3 id="155">15.5 내 데이터 내보내기<a class="headerlink" href="#155" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/customer/my/data/export</code></p>
+<p><code>GET /v1/customer/my/data/export</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수)</p>
 <p><strong>Response</strong>
 - ZIP 파일 다운로드 (JSON 포함)</p>
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/customer/my/data/export<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/customer/my/data/export<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;token&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>my_data.zip
 </code></pre></div>
@@ -2928,7 +2928,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 <hr />
 <h2 id="16-api">16) 관리자 전용 API<a class="headerlink" href="#16-api" title="Permanent link">&para;</a></h2>
 <h3 id="161">16.1 감사 로그 조회<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/admin/audit-logs</code></p>
+<p><code>GET /v1/admin/audit-logs</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수, admin 역할)</p>
 <p><strong>Query Parameters</strong>
@@ -2944,7 +2944,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 <span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-15T12:34:56.789&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;actor_customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user123&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;target_customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user123&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/customer/my/trends&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/customer/my/trends&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GET&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;user_role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;ip_address&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span>
@@ -2959,11 +2959,11 @@ curl<span class="w"> </span>http://localhost:8000/v3/stats/score-trends?customer
 
 <p><strong>예시</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># 모든 감사 로그</span>
-curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>http://localhost:8000/v1/admin/audit-logs<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin_token&gt;&quot;</span>
 
 <span class="c1"># 특정 고객 접근 기록</span>
-curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs?actor_customer_id<span class="o">=</span>user123<span class="w"> </span><span class="se">\</span>
+curl<span class="w"> </span>http://localhost:8000/v1/admin/audit-logs?actor_customer_id<span class="o">=</span>user123<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin_token&gt;&quot;</span>
 </code></pre></div>
 
@@ -3002,7 +3002,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs?actor_cust
 <hr />
 <h2 id="18-db-api">18) DB 관리 API<a class="headerlink" href="#18-db-api" title="Permanent link">&para;</a></h2>
 <h3 id="181-db-health-check">18.1 DB Health Check<a class="headerlink" href="#181-db-health-check" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/health/db</code></p>
+<p><code>GET /v1/health/db</code></p>
 <p><strong>Response 200 (Healthy)</strong></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;healthy&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
@@ -3035,11 +3035,11 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs?actor_cust
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/health/db
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/health/db
 </code></pre></div>
 
 <h3 id="182-db-metrics">18.2 DB Metrics (관리자 전용)<a class="headerlink" href="#182-db-metrics" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/admin/db/metrics</code></p>
+<p><code>GET /v1/admin/db/metrics</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수, admin 역할)</p>
 <p><strong>Response 200</strong></p>
@@ -3067,12 +3067,12 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs?actor_cust
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/admin/db/metrics<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/admin/db/metrics<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin_token&gt;&quot;</span>
 </code></pre></div>
 
 <h3 id="183">18.3 감사 로그 요약 (관리자 전용)<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
-<p><code>GET /v3/admin/audit/summary</code></p>
+<p><code>GET /v1/admin/audit/summary</code></p>
 <p><strong>Headers</strong>
 - <code>Authorization: Bearer &lt;token&gt;</code> (필수, admin 역할)</p>
 <p><strong>Query Parameters</strong>
@@ -3084,8 +3084,8 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs?actor_cust
 <span class="w">  </span><span class="nt">&quot;failed_access&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;success_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">98.0</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;top_endpoints&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/customer/my/trends&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v3/stats/summary&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">}</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/customer/my/trends&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/v1/stats/summary&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
 <span class="w">  </span><span class="nt">&quot;suspicious_activity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
@@ -3099,7 +3099,7 @@ curl<span class="w"> </span>http://localhost:8000/v3/admin/audit-logs?actor_cust
 </code></pre></div>
 
 <p><strong>예시</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v3/admin/audit/summary?days<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/v1/admin/audit/summary?days<span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin_token&gt;&quot;</span>
 </code></pre></div>
 
@@ -3253,7 +3253,7 @@ click&gt;=8.1.0     # CLI 도구
 <h4 id="rate-limit">분석 엔드포인트 Rate Limit<a class="headerlink" href="#rate-limit" title="Permanent link">&para;</a></h4>
 <ul>
 <li><strong>파일:</strong> <code>src/server/server.py</code></li>
-<li><strong>내용:</strong> <code>POST /v3/analysis/jobs</code>에 Rate Limit 적용</li>
+<li><strong>내용:</strong> <code>POST /v1/analysis/jobs</code>에 Rate Limit 적용</li>
 <li><strong>변경:</strong> 3회/분 제한 (GPU 집약적 작업 보호)</li>
 <li><strong>API:</strong> <a href="#42-분석-job-创建-async">4.2 분석 Job 생성</a></li>
 </ul>
@@ -3355,7 +3355,7 @@ click&gt;=8.1.0     # CLI 도구
 <li>LLM 제공업체 독립성 확보 (Gemini → 일반 LLM)</li>
 </ul>
 <h3 id="api">API 변경<a class="headerlink" href="#api" title="Permanent link">&para;</a></h3>
-<h4 id="post-v3analysisjobs">POST /v3/analysis/jobs<a class="headerlink" href="#post-v3analysisjobs" title="Permanent link">&para;</a></h4>
+<h4 id="post-v3analysisjobs">POST /v1/analysis/jobs<a class="headerlink" href="#post-v3analysisjobs" title="Permanent link">&para;</a></h4>
 <p><strong>제거된 매개변수:</strong>
 - <code>skip_sd</code> (Form): SD 생략 여부
 - <code>sd_strength</code> (Form): SD img2img 강도</p>

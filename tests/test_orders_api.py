@@ -44,7 +44,7 @@ class TestOrdersAPI:
             "analysis_job_id": "job123"
         }
         
-        response = auth_client.post("/v3/orders", json=request_data)
+        response = auth_client.post("/v1/orders", json=request_data)
         assert response.status_code == 201
         data = response.json()
         assert "order_id" in data
@@ -78,7 +78,7 @@ class TestOrdersAPI:
             "payment_method": "naver_pay"
         }
         
-        response = auth_client.post("/v3/orders", json=request_data)
+        response = auth_client.post("/v1/orders", json=request_data)
         assert response.status_code == 201
         data = response.json()
         assert data["total_amount"] == 55000.0
@@ -103,7 +103,7 @@ class TestOrdersAPI:
             "payment_method": "credit_card"
         }
         
-        response = auth_client.post("/v3/orders", json=request_data)
+        response = auth_client.post("/v1/orders", json=request_data)
         assert response.status_code == 422  # Validation error
 
     def test_create_order_invalid_price(self, auth_client):
@@ -126,7 +126,7 @@ class TestOrdersAPI:
             "payment_method": "credit_card"
         }
         
-        response = auth_client.post("/v3/orders", json=request_data)
+        response = auth_client.post("/v1/orders", json=request_data)
         assert response.status_code == 422  # Validation error
 
     def test_get_order_status_success(self, auth_client):
@@ -150,11 +150,11 @@ class TestOrdersAPI:
             "payment_method": "credit_card"
         }
         
-        create_response = auth_client.post("/v3/orders", json=create_request)
+        create_response = auth_client.post("/v1/orders", json=create_request)
         order_id = create_response.json()["order_id"]
         
         # 주문 상태 조회
-        response = auth_client.get(f"/v3/orders/{order_id}")
+        response = auth_client.get(f"/v1/orders/{order_id}")
         assert response.status_code == 200
         data = response.json()
         assert data["order_id"] == order_id
@@ -167,7 +167,7 @@ class TestOrdersAPI:
 
     def test_get_order_status_not_found(self, auth_client):
         """존재하지 않는 주문 조회 실패"""
-        response = auth_client.get("/v3/orders/nonexistent")
+        response = auth_client.get("/v1/orders/nonexistent")
         assert response.status_code == 404
 
     def test_cancel_order_success(self, auth_client):
@@ -191,12 +191,12 @@ class TestOrdersAPI:
             "payment_method": "credit_card"
         }
         
-        create_response = auth_client.post("/v3/orders", json=create_request)
+        create_response = auth_client.post("/v1/orders", json=create_request)
         order_id = create_response.json()["order_id"]
         
         # 주문 취소
         cancel_request = {"reason": "단순 변심"}
-        response = auth_client.post(f"/v3/orders/{order_id}/cancel", json=cancel_request)
+        response = auth_client.post(f"/v1/orders/{order_id}/cancel", json=cancel_request)
         assert response.status_code == 200
         data = response.json()
         assert data["order_id"] == order_id
@@ -208,7 +208,7 @@ class TestOrdersAPI:
     def test_cancel_order_not_found(self, auth_client):
         """존재하지 않는 주문 취소 실패"""
         cancel_request = {"reason": "단순 변심"}
-        response = auth_client.post("/v3/orders/nonexistent/cancel", json=cancel_request)
+        response = auth_client.post("/v1/orders/nonexistent/cancel", json=cancel_request)
         assert response.status_code == 404
 
     def test_cancel_shipped_order(self, auth_client):
@@ -232,7 +232,7 @@ class TestOrdersAPI:
             "payment_method": "credit_card"
         }
         
-        create_response = auth_client.post("/v3/orders", json=create_request)
+        create_response = auth_client.post("/v1/orders", json=create_request)
         order_id = create_response.json()["order_id"]
         
         # 주문 상태를 shipped로 변경
@@ -240,7 +240,7 @@ class TestOrdersAPI:
         
         # 주문 취소 시도
         cancel_request = {"reason": "단순 변심"}
-        response = auth_client.post(f"/v3/orders/{order_id}/cancel", json=cancel_request)
+        response = auth_client.post(f"/v1/orders/{order_id}/cancel", json=cancel_request)
         assert response.status_code == 400
 
     def test_get_purchase_history_success(self, auth_client):
@@ -264,10 +264,10 @@ class TestOrdersAPI:
                 },
                 "payment_method": "credit_card"
             }
-            auth_client.post("/v3/orders", json=create_request)
+            auth_client.post("/v1/orders", json=create_request)
         
         # 구매 이력 조회
-        response = auth_client.get("/v3/orders/customers/customer123/purchase-history")
+        response = auth_client.get("/v1/orders/customers/customer123/purchase-history")
         assert response.status_code == 200
         data = response.json()
         assert data["customer_id"] == "customer123"
@@ -297,14 +297,14 @@ class TestOrdersAPI:
             "payment_method": "credit_card"
         }
         
-        create_response = auth_client.post("/v3/orders", json=create_request)
+        create_response = auth_client.post("/v1/orders", json=create_request)
         order_id = create_response.json()["order_id"]
         
         # 주문 상태를 paid로 변경
         _orders_db[order_id]["status"] = "paid"
         
         # paid 상태만 필터링하여 조회
-        response = auth_client.get("/v3/orders/customers/customer123/purchase-history?status=paid")
+        response = auth_client.get("/v1/orders/customers/customer123/purchase-history?status=paid")
         assert response.status_code == 200
         data = response.json()
         assert all(order["status"] == "paid" for order in data["orders"])
@@ -330,10 +330,10 @@ class TestOrdersAPI:
                 },
                 "payment_method": "credit_card"
             }
-            auth_client.post("/v3/orders", json=create_request)
+            auth_client.post("/v1/orders", json=create_request)
         
         # 페이지네이션 적용 (limit=2, offset=0)
-        response = auth_client.get("/v3/orders/customers/customer123/purchase-history?limit=2&offset=0")
+        response = auth_client.get("/v1/orders/customers/customer123/purchase-history?limit=2&offset=0")
         assert response.status_code == 200
         data = response.json()
         assert data["total_orders"] == 5

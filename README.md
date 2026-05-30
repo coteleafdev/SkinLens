@@ -304,11 +304,11 @@ uvicorn src.server.server:app --host 0.0.0.0 --port 8000
 ### API 엔드포인트
 
 - `GET /health`: 헬스 체크
-- `POST /v3/analysis/jobs`: 분석 Job 생성
-- `GET /v3/analysis/jobs/{job_id}`: Job 상태 조회
-- `GET /v3/analysis/jobs/{job_id}/result`: Job 결과 조회
-- `GET /v3/analysis/jobs/{job_id}/artifacts/{name}`: 아티팩트 다운로드
-- `WS /v3/ws/analyze/{job_id}`: WebSocket 진행률 트래킹
+- `POST /v1/analysis/jobs`: 분석 Job 생성
+- `GET /v1/analysis/jobs/{job_id}`: Job 상태 조회
+- `GET /v1/analysis/jobs/{job_id}/result`: Job 결과 조회
+- `GET /v1/analysis/jobs/{job_id}/artifacts/{name}`: 아티팩트 다운로드
+- `WS /v1/ws/analyze/{job_id}`: WebSocket 진행률 트래킹
 
 ### WebSocket 진행률 트래킹
 
@@ -317,7 +317,7 @@ WebSocket을 사용하여 실시간 진행률을 수신할 수 있습니다.
 **클라이언트 연결 예시 (JavaScript):**
 ```javascript
 const jobId = "your-job-id";
-const ws = new WebSocket(`ws://localhost:8000/v3/ws/analyze/${jobId}`);
+const ws = new WebSocket(`ws://localhost:8000/v1/ws/analyze/${jobId}`);
 
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
@@ -433,14 +433,14 @@ python src/db/db_cli.py replica --output=readonly.db
 
 ```bash
 # DB 상태 확인
-curl http://localhost:8000/v3/health/db
+curl http://localhost:8000/v1/health/db
 
 # DB 메트릭 (관리자 전용)
-curl http://localhost:8000/v3/admin/db/metrics \
+curl http://localhost:8000/v1/admin/db/metrics \
   -H "Authorization: Bearer <admin_token>"
 
 # 감사 로그 요약 (관리자 전용)
-curl http://localhost:8000/v3/admin/audit/summary?days=30 \
+curl http://localhost:8000/v1/admin/audit/summary?days=30 \
   -H "Authorization: Bearer <admin_token>"
 ```
 

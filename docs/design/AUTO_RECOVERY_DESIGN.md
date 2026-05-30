@@ -187,7 +187,7 @@ CREATE INDEX idx_recovery_logs_created ON recovery_logs(created_at);
 ### 4.5 API 엔드포인트
 
 #### 4.5.1 헬스 체크
-- **경로:** `/v3/health`
+- **경로:** `/v1/health`
 - **메서드:** `GET`
 - **응답:**
 ```json
@@ -204,7 +204,7 @@ CREATE INDEX idx_recovery_logs_created ON recovery_logs(created_at);
 ```
 
 #### 4.5.2 장애 이벤트 조회
-- **경로:** `/v3/admin/incidents`
+- **경로:** `/v1/admin/incidents`
 - **메서드:** `GET`
 - **쿼리 파라미터:** `severity`, `status`, `start_date`, `end_date`, `limit`, `offset`
 - **응답:**
@@ -229,7 +229,7 @@ CREATE INDEX idx_recovery_logs_created ON recovery_logs(created_at);
 ```
 
 #### 4.5.3 복구 작업 조회
-- **경로:** `/v3/admin/incidents/{incident_id}/recovery-actions`
+- **경로:** `/v1/admin/incidents/{incident_id}/recovery-actions`
 - **메서드:** `GET`
 - **응답:**
 ```json
@@ -247,7 +247,7 @@ CREATE INDEX idx_recovery_logs_created ON recovery_logs(created_at);
 ```
 
 #### 4.5.4 수동 복구 트리거
-- **경로:** `/v3/admin/incidents/{incident_id}/recover`
+- **경로:** `/v1/admin/incidents/{incident_id}/recover`
 - **메서드:** `POST`
 - **요청 바디:**
 ```json
@@ -265,7 +265,7 @@ CREATE INDEX idx_recovery_logs_created ON recovery_logs(created_at);
 ```
 
 #### 4.5.5 롤백 트리거
-- **경로:** `/v3/admin/recovery-actions/{action_id}/rollback`
+- **경로:** `/v1/admin/recovery-actions/{action_id}/rollback`
 - **메서드:** `POST`
 - **응답:**
 ```json

@@ -77,7 +77,7 @@ class APIVersionMiddleware(BaseHTTPMiddleware):
         return response
 
     def _extract_version(self, path: str) -> Optional[str]:
-        """경로에서 버전 추출 (예: /v3/analysis -> v3)"""
+        """경로에서 버전 추출 (예: /v1/analysis -> v1)"""
         parts = path.strip("/").split("/")
         if parts and parts[0].startswith("v"):
             return parts[0]

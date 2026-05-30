@@ -159,7 +159,7 @@ class _RestorationPreviewSliderState extends State<RestorationPreviewSlider> {
   Future<Uint8List> _requestPreview(int strength) async {
     // 저해상도 프리뷰 요청 (빠른 응답)
     final response = await http.post(
-      Uri.parse('$baseUrl/v3/restoration/preview'),
+      Uri.parse('$baseUrl/v1/restoration/preview'),
       headers: {'Authorization': 'Bearer $token'},
       body: jsonEncode({
         'image_path': widget.originalImagePath,
@@ -222,7 +222,7 @@ class _RestorationPreviewSliderState extends State<RestorationPreviewSlider> {
 
 ### 3.2 서버 측 프리뷰 엔드포인트
 
-**엔드포인트:** `POST /v3/restoration/preview`
+**엔드포인트:** `POST /v1/restoration/preview`
 
 **Request:**
 ```json
@@ -312,7 +312,7 @@ class PreviewCache:
 
 **Job 생성 엔드포인트:**
 ```
-POST /v3/analysis/jobs
+POST /v1/analysis/jobs
 ```
 
 **추가 파라미터:**

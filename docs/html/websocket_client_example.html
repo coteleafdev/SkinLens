@@ -161,7 +161,7 @@
                 const formData = new FormData();
                 formData.append('file', file);
                 
-                const response = await fetch(`${SERVER_URL}/v3/analysis/jobs`, {
+                const response = await fetch(`${SERVER_URL}/v1/analysis/jobs`, {
                     method: 'POST',
                     body: formData
                 });
@@ -187,7 +187,7 @@
 
         function connectWebSocket(jobId) {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/v3/ws/analyze/${jobId}`;
+            const wsUrl = `${protocol}//${window.location.host}/v1/ws/analyze/${jobId}`;
             
             ws = new WebSocket(wsUrl);
             

@@ -88,7 +88,7 @@ def auth_client(temp_db_for_api):
 @pytest.fixture(scope="session")
 def admin_token(auth_client):
     """관리자 JWT 토큰 fixture (session-scoped)."""
-    response = auth_client.post("/v3/auth/login", data={
+    response = auth_client.post("/v1/auth/login", data={
         "customer_id": "admin",
         "password": "admin123"
     })
@@ -98,7 +98,7 @@ def admin_token(auth_client):
 @pytest.fixture(scope="session")
 def analyst_token(auth_client):
     """분석가 JWT 토큰 fixture (session-scoped)."""
-    response = auth_client.post("/v3/auth/login", data={
+    response = auth_client.post("/v1/auth/login", data={
         "customer_id": "analyst",
         "password": "analyst123"
     })
