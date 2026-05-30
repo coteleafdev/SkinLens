@@ -284,6 +284,83 @@ def _is_response_truncated(response_text: str) -> bool:
     return False
 
 
+def _identify_missing_fields(response_text: str, expected_fields: list[str]) -> list[str]:
+    """응답에서 누락된 필드 식별
+    
+    Args:
+        response_text: LLM 응답 텍스트
+        expected_fields: 기대하는 필드 목록
+    
+    Returns:
+        list[str]: 누락된 필드 목록
+    """
+    missing_fields = []
+    
+    # 마크다운 코드 블록 제거
+    if response_text.startswith("```"):
+        lines = response_text.split("\n")
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        response_text = "\n".join(lines).strip()
+    
+    for field in expected_fields:
+        if f'"{field}"' not in response_text:
+            missing_fields.append(field)
+    
+    return missing_fields
+
+
+def _build_field_completion_prompt(missing_fields: list[str], original_response: str) -> str:
+    """누락된 필드만 요청하는 프롬프트 생성
+    
+    Args:
+        missing_fields: 누락된 필드 목록
+        original_response: 기존 응답 (컨텍스트 제공용)
+    
+    Returns:
+        str: 누락된 필드만 요청하는 프롬프트
+    """
+    prompt = f"""다음 JSON 응답에서 누락된 필드만 채워주세요.
+
+**기존 응답**:
+```json
+{original_response}
+```
+
+**누락된 필드**: {', '.join(missing_fields)}
+
+**요청사항**:
+1. 누락된 필드만 JSON 형식으로 출력하세요.
+2. 기존 응답의 구조와 스타일을 유지하세요.
+3. 필드값은 적절한 값으로 채워주세요.
+4. 출력은 JSON 형식만 출력하세요 (마크다운 코드 블록 없이).
+
+출력 예시:
+{{
+  "missing_field_1": "value1",
+  "missing_field_2": "value2"
+}}
+"""
+    return prompt
+
+
+def _merge_json_responses(original: dict, completion: dict) -> dict:
+    """기존 응답과 완료 응답 병합
+    
+    Args:
+        original: 기존 응답 (누락된 필드가 있는 응답)
+        completion: 완료 응답 (누락된 필드만 포함)
+    
+    Returns:
+        dict: 병합된 응답
+    """
+    merged = original.copy()
+    merged.update(completion)
+    return merged
+
+
 class LlmSkinReporter:
     """
     원본 이미지 + 측정 점수 → LLM (LLM Vision) → 소견 생성
@@ -735,24 +812,87 @@ class LlmSkinReporter:
 
                 # 응답 완전성 검사
                 if _is_response_truncated(response_text):
-                    if attempt < self.max_retries + max_token_increase_retries:
-                        log.warning(
-                            "[RGP] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
-                            attempt + 1,
-                            current_max_tokens,
-                            len(response_text),
-                            int(current_max_tokens * 1.5)
-                        )
-                        current_max_tokens = int(current_max_tokens * 1.5)  # 1.5배 증가
-                        time.sleep(self.retry_delay)
-                        continue
-                    else:
-                        log.error(
-                            "[RGP] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
-                            attempt + 1,
-                            current_max_tokens,
-                            len(response_text)
-                        )
+                    # 누락된 필드 식별 시도
+                    try:
+                        # 마크다운 코드 블록 제거 후 JSON 파싱 시도
+                        clean_response = response_text
+                        if clean_response.startswith("```"):
+                            lines = clean_response.split("\n")
+                            if lines[0].startswith("```"):
+                                lines = lines[1:]
+                            if lines and lines[-1].startswith("```"):
+                                lines = lines[:-1]
+                            clean_response = "\n".join(lines).strip()
+                        
+                        # 부분 JSON 파싱 시도
+                        partial_json = json.loads(clean_response)
+                        
+                        # 기대하는 필드 목록
+                        expected_fields = [
+                            "reference_baseline", "score_reasons", "orig_metric_scores",
+                            "orig_metric_opinions", "orig_overall_score", "orig_perceived_age",
+                            "orig_overall_opinion", "recommendation", "ref_metric_scores", "ref_metric_reasons"
+                        ]
+                        
+                        missing_fields = _identify_missing_fields(clean_response, expected_fields)
+                        
+                        if missing_fields and len(missing_fields) < 10:  # 누락된 필드가 적으면 부분 완료 시도
+                            log.info(f"[RGP] 응답 짤림 감지 - 누락된 필드 {len(missing_fields)}개: {missing_fields}")
+                            
+                            # 누락된 필드만 요청
+                            completion_prompt = _build_field_completion_prompt(missing_fields, clean_response)
+                            completion_response = self._call_llm(
+                                system_prompt,
+                                completion_prompt,
+                                [],  # 이미지 없이 텍스트만
+                                max_output_tokens=4096,
+                            )
+                            
+                            # 완료 응답 파싱
+                            completion_json = json.loads(completion_response)
+                            
+                            # 응답 병합
+                            merged_json = _merge_json_responses(partial_json, completion_json)
+                            response_text = json.dumps(merged_json, ensure_ascii=False)
+                            
+                            log.info(f"[RGP] 누락된 필드 완료 성공 - 병합된 응답 길이: {len(response_text)}")
+                        else:
+                            # 누락된 필드가 너무 많으면 기존 방식대로 재시도
+                            if attempt < self.max_retries + max_token_increase_retries:
+                                log.warning(
+                                    "[RGP] 응답 짤림 감지 - 누락된 필드가 너무 많음 ({len(missing_fields)}개) - 토큰 증가 재시도"
+                                )
+                                current_max_tokens = int(current_max_tokens * 1.5)
+                                time.sleep(self.retry_delay)
+                                continue
+                            else:
+                                log.error(
+                                    "[RGP] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                                    attempt + 1,
+                                    current_max_tokens,
+                                    len(response_text)
+                                )
+                    except (json.JSONDecodeError, Exception) as e:
+                        # JSON 파싱 실패하면 기존 방식대로 재시도
+                        log.warning(f"[RGP] 부분 JSON 파싱 실패 - 기존 방식 재시도: {e}")
+                        if attempt < self.max_retries + max_token_increase_retries:
+                            log.warning(
+                                "[RGP] 응답 짤림 감지 - 시도=%d, 현재_tokens=%d, 응답길이=%d, 증가후_tokens=%d",
+                                attempt + 1,
+                                current_max_tokens,
+                                len(response_text),
+                                int(current_max_tokens * 1.5)
+                            )
+                            current_max_tokens = int(current_max_tokens * 1.5)
+                            time.sleep(self.retry_delay)
+                            continue
+                        else:
+                            log.error(
+                                "[RGP] 응답 짤림 최대 재시도 도달 - 시도=%d, 최종_tokens=%d, 응답길이=%d",
+                                attempt + 1,
+                                current_max_tokens,
+                                len(response_text)
+                            )
 
                 report = self._parse_reference_guided_response(
                     response_text,
