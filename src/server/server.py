@@ -55,6 +55,8 @@ from src.notification import AlertSystem
 from src.i18n import Translator
 from src.server.middleware import I18nMiddleware
 from src.server.middleware.request_logging import RequestLoggingMiddleware
+from src.server.middleware.versioning import APIVersionMiddleware
+from src.server.middleware.ip_filter import IPFilterMiddleware
 
 try:
     from watchdog.observers import Observer
@@ -64,7 +66,7 @@ except ImportError:
     WATCHDOG_AVAILABLE = False
 
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
-from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders
+from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload
 
 # config.json에서 로그 레벨 로드
 _log_level = _load_logging_level()
@@ -296,6 +298,37 @@ if request_logging_config.get("enabled", True):
 else:
     log.info("요청 로깅 미들웨어 비활성화")
 
+# API Versioning Middleware
+versioning_config = server_config.get("versioning", {})
+current_version = versioning_config.get("current_version", "v3")
+deprecated_versions = versioning_config.get("deprecated_versions", [])
+sunset_versions = versioning_config.get("sunset_versions", {})
+
+app.add_middleware(
+    APIVersionMiddleware,
+    current_version=current_version,
+    deprecated_versions=deprecated_versions,
+    sunset_versions=sunset_versions,
+)
+log.info("API 버전 관리 미들웨어 활성화 (현재 버전: %s)", current_version)
+
+# IP Filter Middleware
+ip_filter_config = server_config.get("ip_filter", {})
+whitelist = ip_filter_config.get("whitelist", [])
+blacklist = ip_filter_config.get("blacklist", [])
+trust_proxy = ip_filter_config.get("trust_proxy", False)
+
+if whitelist or blacklist:
+    app.add_middleware(
+        IPFilterMiddleware,
+        whitelist=whitelist,
+        blacklist=blacklist,
+        trust_proxy=trust_proxy,
+    )
+    log.info("IP 필터 미들웨어 활성화 (화이트리스트: %d, 블랙리스트: %d)", len(whitelist), len(blacklist))
+else:
+    log.info("IP 필터 미들웨어 비활성화 (설정 없음)")
+
 # ── 라우터 등록 ───────────────────────────────────────────────────────────
 app.include_router(jobs.router)
 app.include_router(logs.router)
@@ -306,6 +339,7 @@ app.include_router(admin.router)
 app.include_router(orders.router)
 app.include_router(websocket.router)
 app.include_router(health.router)
+app.include_router(upload.router)
 
 
 # ── 직접 실행 ─────────────────────────────────────────────────────────────

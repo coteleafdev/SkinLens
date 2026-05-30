@@ -55,6 +55,37 @@
       "max_workers": 4,
       "_note": "작업 큐 설정. max_workers: 최대 동시 작업 수"
     },
+    "versioning": {
+      "current_version": "v3",
+      "deprecated_versions": ["v1", "v2"],
+      "sunset_versions": {
+        "v2": "2026-12-31"
+      },
+      "_note": "API 버전 관리 설정. current_version: 현재 버전, deprecated_versions: 폐기된 버전, sunset_versions: 폐기 예정 버전과 일자"
+    },
+    "ip_filter": {
+      "whitelist": [],
+      "blacklist": [],
+      "trust_proxy": false,
+      "_note": "IP 필터 설정. whitelist: 허용된 IP 목록, blacklist: 차단된 IP 목록, trust_proxy: 프록시 신뢰 여부 (X-Forwarded-For 헤더 사용)"
+    },
+    "monitoring": {
+      "slack_webhook_url": null,
+      "email_smtp_server": null,
+      "email_smtp_port": 587,
+      "email_username": null,
+      "email_password": null,
+      "email_from": null,
+      "email_to": [],
+      "_note": "모니터링 및 알림 설정. slack_webhook_url: Slack 웹훅 URL, email_*: 이메일 SMTP 설정"
+    },
+    "backup": {
+      "backup_dir": "backups",
+      "db_path": "execution_history.db",
+      "max_backups": 7,
+      "backup_interval_hours": 24,
+      "_note": "백업 설정. backup_dir: 백업 디렉토리, db_path: DB 경로, max_backups: 최대 백업 개수, backup_interval_hours: 백업 간격 (시간)"
+    },
     "_note": "서버 관련 설정. 환경 변수로 오버라이드 가능."
   },
   "database": {

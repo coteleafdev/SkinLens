@@ -391,9 +391,24 @@ CREATE POLICY customer_access ON skin_analyses
 - 모든 요청 HTTPS로 리다이렉트
 - SSL/TLS 인증서 사용
 
-**2. IP 화이트리스트/블랙리스트**
-- 특정 IP만 접근 허용
-- 악성 IP 차단
+**2. IP 화이트리스트/블랙리스트 (구현 완료)**
+- 특정 IP만 접근 허용 (화이트리스트)
+- 악성 IP 차단 (블랙리스트)
+- CIDR 네트워크 범위 지원
+- 프록시 환경에서 실제 IP 추출
+
+**설정 예시 (config.json):**
+```json
+{
+  "server": {
+    "ip_filter": {
+      "whitelist": ["192.168.1.0/24", "10.0.0.1"],
+      "blacklist": ["1.2.3.4"],
+      "trust_proxy": false
+    }
+  }
+}
+```
 
 **3. Security Headers**
 ```python
@@ -457,16 +472,120 @@ app.add_middleware(
 
 ---
 
-## 7. 로그 및 감사
+## 8. 모니터링 및 알림 (Monitoring & Alerts)
 
-### 7.1 현재 구조
+### 8.1 Slack 알림
+
+**기능:**
+- 에러 발생 시 Slack으로 알림 전송
+- 로그 레벨별 색상 구분 (INFO: green, WARNING: orange, ERROR: red)
+- 타임스탬프 포함
+
+**설정 예시 (config.json):**
+```json
+{
+  "server": {
+    "monitoring": {
+      "slack_webhook_url": "https://hooks.slack.com/services/..."
+    }
+  }
+}
+```
+
+### 8.2 이메일 알림
+
+**기능:**
+- ERROR 레벨 이상 시 이메일 전송
+- SMTP 인증 지원
+- TLS/STARTTLS 지원
+
+**설정 예시 (config.json):**
+```json
+{
+  "server": {
+    "monitoring": {
+      "email_smtp_server": "smtp.gmail.com",
+      "email_smtp_port": 587,
+      "email_username": "user@gmail.com",
+      "email_password": "app_password",
+      "email_from": "noreply@example.com",
+      "email_to": ["admin@example.com"]
+    }
+  }
+}
+```
+
+### 8.3 성능 모니터링
+
+**기능:**
+- 메트릭 기록 및 조회
+- 임계값 초과 시 자동 알림
+- 메트릭 초기화 기능
+
+---
+
+## 9. 백업 및 복구 (Backup & Restore)
+
+### 9.1 자동 백업
+
+**기능:**
+- 설정된 간격으로 자동 백업
+- 데이터베이스 및 결과 파일 백업
+- ZIP 압축으로 저장
+- 메타데이터 포함
+
+**설정 예시 (config.json):**
+```json
+{
+  "server": {
+    "backup": {
+      "backup_dir": "backups",
+      "db_path": "execution_history.db",
+      "max_backups": 7,
+      "backup_interval_hours": 24
+    }
+  }
+}
+```
+
+### 9.2 백업 관리
+
+**기능:**
+- 백업 목록 조회
+- 오래된 백업 자동 정리 (max_backups 설정)
+- 백업 삭제
+- 백업 복구
+
+### 9.3 백업 파일 구조
+
+```
+backup_YYYYMMDD_HHMMSS.zip
+├── execution_history.db
+├── results/
+│   └── ...
+└── metadata.json
+```
+
+### 9.4 복구 기능
+
+**기능:**
+- 백업 파일 선택 복구
+- 기존 데이터 자동 백업
+- 데이터베이스 및 결과 파일 복구
+- 복구 실패 시 롤백
+
+---
+
+## 10. 로그 및 감사
+
+### 10.1 현재 구조
 
 **감사 로그:**
 - `ExecutionHistoryDB.record_audit_log()`
 - 접근, 수정 기록
 - API 키 사용 로그 (api_key_usage_logs 테이블)
 
-### 7.2 보안 강화 방안
+### 10.2 보안 강화 방안
 
 **1. 로그 보안**
 - 민감 정보 마스킹
@@ -482,7 +601,7 @@ app.add_middleware(
 
 ---
 
-## 8. 보안 체크리스트
+## 11. 보안 체크리스트
 
 **배포 전 확인:**
 - [ ] 모든 API 키 환경변수로 설정
@@ -499,10 +618,14 @@ app.add_middleware(
 - [ ] 감사 로그 활성화
 - [ ] 캐싱 정책 설정
 - [ ] 핫 리로드 환경 변수 설정 (개발 환경만)
+- [ ] IP 필터링 설정 (필요 시)
+- [ ] 모니터링 알림 설정 (Slack/Email)
+- [ ] 백업 스케줄링 설정
+- [ ] API 버전 관리 설정
 
 ---
 
-## 9. 참고 문서
+## 12. 참고 문서
 
 - `DEPLOYMENT_GUIDE.md` - 배포 가이드
 - `ARCHITECTURE_GUIDE.md` - 아키텍처 가이드

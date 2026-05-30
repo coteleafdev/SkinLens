@@ -776,6 +776,226 @@ WebSocket 연결 통계를 조회합니다 (관리자/분석가 전용).
 
 ---
 
+## 청크 업로드 (Chunk Upload)
+
+대용량 파일을 청크 단위로 업로드하여 네트워크 중단 시 재개 가능.
+
+### 엔드포인트
+
+#### POST /v3/upload/init
+업로드 세션 초기화.
+
+**요청 파라미터:**
+- `file_name` (string): 파일 이름
+- `file_size` (integer): 파일 크기 (bytes)
+- `chunk_size` (integer, optional): 청크 크기 (bytes, 기본 5MB)
+- `file_hash` (string, optional): 파일 SHA-256 해시
+
+**응답:**
+```json
+{
+  "session_id": "uuid",
+  "chunk_size": 5242880,
+  "total_chunks": 10,
+  "file_name": "image.jpg",
+  "file_size": 52428800
+}
+```
+
+#### POST /v3/upload/chunk
+청크 업로드.
+
+**요청 파라미터:**
+- `session_id` (string): 업로드 세션 ID
+- `chunk_number` (integer): 청크 번호 (0-based)
+- `chunk` (file): 청크 데이터
+
+**응답:**
+```json
+{
+  "status": "uploaded",
+  "chunk_number": 0,
+  "uploaded_chunks": 1,
+  "total_chunks": 10
+}
+```
+
+#### POST /v3/upload/complete
+업로드 완료 및 파일 합치기.
+
+**요청 파라미터:**
+- `session_id` (string): 업로드 세션 ID
+
+**응답:**
+```json
+{
+  "status": "completed",
+  "file_name": "image.jpg",
+  "file_size": 52428800,
+  "file_path": "/path/to/image.jpg"
+}
+```
+
+#### POST /v3/upload/cancel
+업로드 취소.
+
+**요청 파라미터:**
+- `session_id` (string): 업로드 세션 ID
+
+**응답:**
+```json
+{
+  "status": "cancelled",
+  "session_id": "uuid"
+}
+```
+
+#### GET /v3/upload/progress/{session_id}
+업로드 진행률 조회.
+
+**응답:**
+```json
+{
+  "session_id": "uuid",
+  "file_name": "image.jpg",
+  "file_size": 52428800,
+  "uploaded_chunks": 5,
+  "total_chunks": 10,
+  "progress_percent": 50.0,
+  "created_at": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+## API 버전 관리 (API Versioning)
+
+버전별 라우팅 및 폐기 정책 지원.
+
+### 응답 헤더
+
+- `API-Version`: 현재 요청의 API 버전
+- `API-Current-Version`: 현재 최신 API 버전 (현재 버전과 다를 때)
+- `Deprecation`: 폐기된 버전 사용 시 `true`
+- `Sunset`: 폐기 예정 일자
+- `Warning`: 버전 경고 메시지
+
+### 버전 정책
+
+- **현재 버전**: v3
+- **폐기된 버전**: v1, v2
+- **폐기 예정**: v2 (2026-12-31)
+
+### 사용 예시
+
+```bash
+# 현재 버전 사용
+curl https://api.example.com/v3/analysis/jobs
+
+# 폐기된 버전 사용 (경고 헤더 포함)
+curl https://api.example.com/v1/analysis/jobs
+```
+
+---
+
+## IP 필터링 (IP Filtering)
+
+IP 화이트리스트/블랙리스트 기능.
+
+### 설정 (config.json)
+
+```json
+{
+  "server": {
+    "ip_filter": {
+      "whitelist": ["192.168.1.0/24", "10.0.0.1"],
+      "blacklist": ["1.2.3.4"],
+      "trust_proxy": false
+    }
+  }
+}
+```
+
+### 기능
+
+- **화이트리스트**: 지정된 IP만 접근 허용
+- **블랙리스트**: 지정된 IP 접근 차단
+- **CIDR 지원**: 네트워크 범위 지정 가능
+- **프록시 지원**: X-Forwarded-For 헤더로 실제 IP 추출
+
+### 응답
+
+차단된 IP 접근 시 HTTP 403 응답.
+
+---
+
+## 모니터링 및 알림 (Monitoring & Alerts)
+
+### Slack 알림
+
+설정 시 에러 발생 시 Slack으로 알림 전송.
+
+### 이메일 알림
+
+설정 시 에러 발생 시 이메일로 알림 전송.
+
+### 설정 (config.json)
+
+```json
+{
+  "server": {
+    "monitoring": {
+      "slack_webhook_url": "https://hooks.slack.com/...",
+      "email_smtp_server": "smtp.gmail.com",
+      "email_smtp_port": 587,
+      "email_username": "user@gmail.com",
+      "email_password": "password",
+      "email_from": "noreply@example.com",
+      "email_to": ["admin@example.com"]
+    }
+  }
+}
+```
+
+---
+
+## 백업 및 복구 (Backup & Restore)
+
+### 자동 백업
+
+설정된 간격으로 자동 백업 수행.
+
+### 설정 (config.json)
+
+```json
+{
+  "server": {
+    "backup": {
+      "backup_dir": "backups",
+      "db_path": "execution_history.db",
+      "max_backups": 7,
+      "backup_interval_hours": 24
+    }
+  }
+}
+```
+
+### 백업 파일
+
+- 형식: ZIP
+- 포함: 데이터베이스, 결과 파일, 메타데이터
+- 명명: `backup_YYYYMMDD_HHMMSS.zip`
+
+### 기능
+
+- 자동 백업 스케줄링
+- 오래된 백업 자동 정리
+- 백업 목록 조회
+- 백업 복구
+- 백업 삭제
+
+---
+
 *작성일: 2026-05-30*  
 *버전: v1.0*  
 *마지막 수정: 2026-05-30*
