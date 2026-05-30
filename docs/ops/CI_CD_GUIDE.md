@@ -22,7 +22,7 @@ SkinLens v1은 GitHub Actions를 사용하여 CI/CD 파이프라인을 구현합
 ### CI/CD 철학
 
 1. **자동화**: 모든 푸시와 PR에 대해 자동으로 테스트 실행
-2. **다중 버전**: Python 3.9, 3.10, 3.11에서 테스트
+2. **다중 버전**: Python 3.9, 3.10, 3.11, 3.12에서 테스트
 3. **커버리지**: Codecov를 통한 커버리지 추적
 4. **캐싱**: pip 의존성 캐싱으로 빌드 시간 단축
 5. **조건부 실행**: 변경된 파일에 따라 워크플로우 선택적 실행
@@ -51,7 +51,7 @@ on:
 #### 실행 단계
 
 1. **코드 체크아웃**: 저장소 코드 가져오기
-2. **Python 설정**: Python 3.9, 3.10, 3.11 설정
+2. **Python 설정**: Python 3.9, 3.10, 3.11, 3.12 설정
 3. **의존성 캐싱**: pip 캐시로 빌드 시간 단축
 4. **의존성 설치**: pytest, pytest-asyncio, pytest-cov, httpx 설치
 5. **환경 변수 설정**: 테스트용 환경 변수 설정
@@ -175,6 +175,9 @@ py -3.10 -m pytest tests/ -v
 
 # Python 3.11
 py -3.11 -m pytest tests/ -v
+
+# Python 3.12
+py -3.12 -m pytest tests/ -v
 ```
 
 ---
@@ -308,6 +311,7 @@ brew install pyenv
 pyenv install 3.9.0
 pyenv install 3.10.0
 pyenv install 3.11.0
+pyenv install 3.12.0
 
 # Windows
 # Python.org에서 각 버전 다운로드 및 설치
