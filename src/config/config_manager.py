@@ -50,7 +50,7 @@ class ConfigManager:
         # 프로젝트 루트 경로 계산
         self._project_root = Path(__file__).resolve().parents[2]
         self._config_path = self._project_root / "config" / "config.json"
-        self._template_path = self._project_root / "docs" / "llm_prompt_template.md"
+        self._template_path = self._project_root / "docs" / "guides" / "llm_prompt_template.md"
         self._secrets_path = self._project_root / "config" / "config.secrets.json"
         
         # 하위 호환성: src/config/config/ 디렉토리도 확인

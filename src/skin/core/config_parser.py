@@ -59,9 +59,9 @@ log = logging.getLogger(__name__)
 #   parent.parent          = src/skin
 #   parent.parent.parent  = src
 #   parent.parent.parent.parent = project_root (parent 4번 필요)
-# 템플릿 경로: <project_root>/docs/llm_prompt_template.md
+# 템플릿 경로: <project_root>/docs/guides/llm_prompt_template.md
 _DEFAULT_TEMPLATE_PATH: Path = (
-    Path(__file__).parent.parent.parent.parent / "docs" / "llm_prompt_template.md"
+    Path(__file__).parent.parent.parent.parent / "docs" / "guides" / "llm_prompt_template.md"
 )
 
 
@@ -299,7 +299,7 @@ def get_metric_meta(
     """
     template = load_prompt_template(template_path)
     if not template:
-        msg = "프롬프트 템플릿을 찾을 수 없습니다. docs/llm_prompt_template.md 파일을 확인하세요."
+        msg = "프롬프트 템플릿을 찾을 수 없습니다. docs/guides/llm_prompt_template.md 파일을 확인하세요."
         if strict:
             raise ValueError(msg)
         return []
