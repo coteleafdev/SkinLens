@@ -855,7 +855,7 @@ async def update_customer_status(
         return {"message": "Customer status updated successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("고객 상태 변경 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
@@ -896,7 +896,7 @@ async def delete_customer(
         return {"message": "Customer deleted successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("고객 삭제 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
@@ -926,7 +926,7 @@ async def list_products(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         products = db.list_products(category=category, limit=limit, offset=offset)
         return {"products": products, "total": len(products)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("제품 목록 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve products")
 
@@ -970,7 +970,7 @@ async def create_product(
         return {"message": "Product created successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("제품 생성 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1018,7 +1018,7 @@ async def update_product(
         return {"message": "Product updated successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("제품 업데이트 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1059,7 +1059,7 @@ async def delete_product(
         return {"message": "Product deleted successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("제품 삭제 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1088,7 +1088,7 @@ async def list_all_analyses(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         analyses = db.get_recent_analyses(limit=limit)
         return {"analyses": analyses, "total": len(analyses)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 결과 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve analyses")
 
@@ -1124,7 +1124,7 @@ async def delete_analysis(
         return {"message": "Analysis deleted successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 결과 삭제 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1152,7 +1152,7 @@ async def get_active_sessions(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         sessions = db.get_active_sessions(limit=limit)
         return {"sessions": sessions, "total": len(sessions)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("활성 세션 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve active sessions")
 
@@ -1188,7 +1188,7 @@ async def terminate_session(
         return {"message": "Session terminated successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("세션 종료 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1216,7 +1216,7 @@ async def get_anomalies(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         anomalies = db.get_anomalies(status=status, severity=severity, limit=limit)
         return {"anomalies": anomalies, "total": len(anomalies)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("이상 활동 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve anomalies")
 
@@ -1252,7 +1252,7 @@ async def resolve_anomaly(
         return {"message": "Anomaly resolved successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("이상 활동 해결 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1287,7 +1287,7 @@ async def list_roles(
             for r in ["admin", "analyst", "customer"]:
                 users.extend(db.list_users_by_role(role=r, limit=limit))
         return {"users": users, "total": len(users)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("역할 목록 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve roles")
 
@@ -1319,7 +1319,7 @@ async def set_user_role(
             endpoint=ep, method="PUT", user_role=role, request=request, success=True
         )
         return {"message": "User role updated successfully"}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("역할 설정 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
@@ -1345,7 +1345,7 @@ async def get_blocked_ips(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         blocked_ips = db.get_blocked_ips(limit=limit)
         return {"blocked_ips": blocked_ips, "total": len(blocked_ips)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("차단된 IP 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve blocked IPs")
 
@@ -1382,7 +1382,7 @@ async def block_ip(
             endpoint=ep, method="POST", user_role=role, request=request, success=True
         )
         return {"message": "IP blocked successfully"}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("IP 차단 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1423,7 +1423,7 @@ async def unblock_ip(
         return {"message": "IP unblocked successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("IP 차단 해제 실패: %s", e)
         log_audit(
             db=db, actor_customer_id=actor_id, target_customer_id=None,
@@ -1459,7 +1459,7 @@ async def get_dashboard_overview(
             },
             "recent_stats": daily_stats,
         }
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("대시보드 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve dashboard overview")
 
@@ -1482,7 +1482,7 @@ async def get_usage_report(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         stats = db.get_daily_stats(start_date=start_date, end_date=end_date, limit=limit)
         return {"stats": stats, "total": len(stats)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("사용량 리포트 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve usage report")
 
@@ -1512,6 +1512,6 @@ async def get_revenue_report(
         ]
         
         return {"revenue": revenue_data, "total": len(revenue_data)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("수익 리포트 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve revenue report")
