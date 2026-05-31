@@ -719,7 +719,7 @@ async def get_websocket_stats(
         from src.server.routers.websocket import manager
         stats = manager.get_connection_stats()
         return stats
-    except Exception as e:
+    except (ImportError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("WebSocket 통계 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve WebSocket stats")
 
@@ -742,7 +742,7 @@ async def get_job_queue_stats(
         queue = get_job_queue()
         stats = queue.get_queue_stats()
         return stats
-    except Exception as e:
+    except (ImportError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("작업 큐 통계 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve job queue stats")
 
@@ -768,7 +768,7 @@ async def get_job_status(
         return status
     except HTTPException:
         raise
-    except Exception as e:
+    except (ImportError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("작업 상태 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve job status")
 
@@ -793,7 +793,7 @@ async def list_customers(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         customers = db.list_customers(status=status, limit=limit, offset=offset)
         return {"customers": customers, "total": len(customers)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("고객 목록 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve customers")
 
@@ -818,7 +818,7 @@ async def get_customer_detail(
         return customer
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("고객 상세 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve customer")
 
