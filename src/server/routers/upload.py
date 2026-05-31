@@ -113,11 +113,12 @@ async def init_upload(
         raise HTTPException(status_code=400, detail="Invalid file name")
 
     # 파일 크기 검증
-    from src.server.deps import MAX_UPLOAD_BYTES
-    if file_size > MAX_UPLOAD_BYTES:
+    from src.server.deps import get_max_upload_bytes
+    max_upload_bytes = get_max_upload_bytes()
+    if file_size > max_upload_bytes:
         raise HTTPException(
             status_code=400,
-            detail=f"File size exceeds maximum allowed size ({MAX_UPLOAD_BYTES} bytes)"
+            detail=f"File size exceeds maximum allowed size ({max_upload_bytes} bytes)"
         )
 
     # 세션 ID 생성

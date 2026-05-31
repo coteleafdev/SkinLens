@@ -27,7 +27,7 @@ from src.skin.core.scoring_utils import clamp as _clamp
 from src.skin.core.image_utils import imread_bgr as _imread_bgr, skin_mask as _skin_mask, skin_stat as _skin_stat
 from src.skin.core.scoring_utils import safe_region as _safe_region
 from src.skin.analyzers.pigmentation import analyze_pigmentation, make_pigment_mask
-from src.skin.analyzers.redness import analyze_redness
+from src.skin.analyzers.strategies.redness_analyzer import analyze_redness
 from src.skin.analyzers.pore import analyze_pores
 from src.skin.analyzers.wrinkle_texture import (
     analyze_wrinkles,

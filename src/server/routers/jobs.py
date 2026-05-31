@@ -29,9 +29,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPExcepti
 from fastapi.responses import FileResponse
 
 from src.server.deps import (
-    MAX_UPLOAD_BYTES,
-    ALLOWED_EXT,
-    SERVER_URL,
+    get_max_upload_bytes,
+    get_allowed_extensions,
+    get_server_url,
     JOB_SEMAPHORE,
     JOB_SEMAPHORE_TIMEOUT_SEC,
     get_shared_executor,
@@ -372,20 +372,22 @@ async def create_job(
             original_fname = upload_file.filename or f"{angle}.jpg"
             # 파일 확장자 검증 (원본 파일명 확인)
             file_ext = Path(original_fname).suffix.lower()
-            if file_ext not in ALLOWED_EXT:
+            allowed_ext = get_allowed_extensions()
+            if file_ext not in allowed_ext:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"허용되지 않은 파일 확장자: {file_ext}. 허용 확장자: {', '.join(ALLOWED_EXT)}",
+                    detail=f"허용되지 않은 파일 확장자: {file_ext}. 허용 확장자: {', '.join(allowed_ext)}",
                 )
             fname     = _safe_filename(original_fname)
             save_path = jdir / fname
             # 경로 검증 (2026-05-24): Path.is_relative_to() 사용
             validate_path_within_directory(save_path, jdir)
             data      = await upload_file.read()
-            if len(data) > MAX_UPLOAD_BYTES:
+            max_upload_bytes = get_max_upload_bytes()
+            if len(data) > max_upload_bytes:
                 raise HTTPException(
                     status_code=413,
-                    detail=f"파일 크기 초과: {upload_file.filename} ({len(data)//1024//1024}MB > {MAX_UPLOAD_BYTES//1024//1024}MB)",
+                    detail=f"파일 크기 초과: {upload_file.filename} ({len(data)//1024//1024}MB > {max_upload_bytes//1024//1024}MB)",
                 )
             save_path.write_bytes(data)
             lateral_image_paths.append({"angle": angle, "path": str(save_path)})
@@ -401,20 +403,22 @@ async def create_job(
         original_fname = image.filename or "upload.jpg"  # type: ignore[union-attr]
         # 파일 확장자 검증 (원본 파일명 확인)
         file_ext = Path(original_fname).suffix.lower()
-        if file_ext not in ALLOWED_EXT:
+        allowed_ext = get_allowed_extensions()
+        if file_ext not in allowed_ext:
             raise HTTPException(
                 status_code=400,
-                detail=f"허용되지 않은 파일 확장자: {file_ext}. 허용 확장자: {', '.join(ALLOWED_EXT)}",
+                detail=f"허용되지 않은 파일 확장자: {file_ext}. 허용 확장자: {', '.join(allowed_ext)}",
             )
         filename   = _safe_filename(original_fname)
         input_path = jdir / filename
         # 경로 검증 (2026-05-24): Path.is_relative_to() 사용
         validate_path_within_directory(input_path, jdir)
         data       = await image.read()  # type: ignore[union-attr]
-        if len(data) > MAX_UPLOAD_BYTES:
+        max_upload_bytes = get_max_upload_bytes()
+        if len(data) > max_upload_bytes:
             raise HTTPException(
                 status_code=413,
-                detail=f"파일 크기 초과: {image.filename} ({len(data)//1024//1024}MB > {MAX_UPLOAD_BYTES//1024//1024}MB)",  # type: ignore[union-attr]
+                detail=f"파일 크기 초과: {image.filename} ({len(data)//1024//1024}MB > {max_upload_bytes//1024//1024}MB)",  # type: ignore[union-attr]
             )
         input_path.write_bytes(data)
         lateral_image_paths = [{"angle": "front", "path": str(input_path)}]
