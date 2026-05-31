@@ -1,4 +1,9 @@
-# 데이터 처리 흐름
+# 데이터 처리 흐름 (JSON I/O Flow)
+
+> **문서 버전:** 1.0.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-05-31  
+> **상태:** 활성
 
 스마트폰에서 서버로 전송된 입력 데이터가 내부적으로 처리되어 출력 JSON을 생성하고 DB에 저장되는 전체 프로세스에 대한 상세 문서입니다.
 
@@ -1110,3 +1115,11 @@ WHERE customer_id = 'C001';
 - [upload-spec.md](upload-spec.md) - 클라이언트→서버 업로드 스펙
 - [supabase_setup.sql](../supabase_setup.sql) - Supabase 초기화 SQL
 - [skin_scoring_measurement_spec.md](./skin_scoring_measurement_spec.md) - 측정항목 명세
+
+---
+
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |

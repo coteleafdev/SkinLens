@@ -148,6 +148,20 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/ops/SERVER_TEST_GUIDE.md"
     },
+    "CODEFORMER_PIPELINE_ALGORITHM": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/CODEFORMER_PIPELINE_ALGORITHM.md"
+    },
+    "JSON_IO_FLOW": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/JSON_IO_FLOW.md"
+    },
 }
 
 
