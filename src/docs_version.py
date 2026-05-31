@@ -372,6 +372,13 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/design/WEBSOCKET_PROGRESS.md"
     },
+    "APP_FEATURE_RECOMMENDATIONS": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/APP_FEATURE_RECOMMENDATIONS.md"
+    },
 }
 
 
