@@ -99,6 +99,20 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/db/DATA_MODEL.md"
     },
+    "USER_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/user/USER_GUIDE.md"
+    },
+    "IMAGE_ENHANCER_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/user/IMAGE_ENHANCER_GUIDE.md"
+    },
 }
 
 
