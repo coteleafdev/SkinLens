@@ -101,7 +101,7 @@ class SkinMeasurementCompareDialog(QDialog):
         
         log.debug(f"다이얼로그 초기화: mo keys={list(mo.keys()) if mo else 'empty'}, mi keys={list(mi.keys()) if mi else 'empty'}")
 
-        # [FIX v3.0 ⑥] 항목 루프가 measurements_report(레이어 B)이므로 피부건강지수도 레이어 B 기준으로 통일
+        # [FIX v1.0 ⑥] 항목 루프가 measurements_report(레이어 B)이므로 피부건강지수도 레이어 B 기준으로 통일
         rov = _numeric_value(
             orig_result.get("overall_score_report") or orig_result.get("overall_score")
         )

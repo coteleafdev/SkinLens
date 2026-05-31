@@ -261,7 +261,7 @@ def _compose_pigmentation_scores(pig: Dict[str, float]) -> Dict[str, float]:
     pigmentation_cov  ←  L* 잔차 면적 기반 (melasma 면적)
     spot_density      ←  blob NMS 개수 기반 (freckle 개수)
 
-    [v3.2] lentigo / pigment_mark 삭제 → melasma(기미·잡티) + freckle(주근깨)
+    [v1.0] lentigo / pigment_mark 삭제 → melasma(기미·잡티) + freckle(주근깨)
     직교 보장:
       L*_area_ratio (연속 면적)  vs  blob_count (이산 개체 수)
       Corr(넓은 면적, 점 개수) ≈ 0  — 물리적 독립
@@ -362,7 +362,7 @@ def _compose_elasticity_score(elasticity: Dict[str, float]) -> Dict[str, float]:
 
     v2.6: jawline_blur가 eye_wrinkle_score를 입력으로 받는 구조
           eye_elasticity = eye_wrinkle * 0.65 + dark_circle * 0.35
-    v3.0: jawline_blur = chin Sobel_Y 단독 신호 (eye_wrinkle 의존 제거)
+    v1.0: jawline_blur = chin Sobel_Y 단독 신호 (eye_wrinkle 의존 제거)
           cheek_sagging = 너비비 + 밝기차 형태 신호
 
     elasticity_score = jawline_blur * 0.60 + cheek_sagging * 0.40

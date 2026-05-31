@@ -120,7 +120,7 @@ def _input_has_stressed_pigmentation(input_path: Path) -> Optional[bool]:
     try:
         from src.scoring.skin_scoring import SkinAnalyzer as SkinAnalyzer
     except ImportError:
-        return None   # [FIX v3.0 ⑨] 분석 불가 → 강한 튜닝 적용 방지
+        return None   # [FIX v1.0 ⑨] 분석 불가 → 강한 튜닝 적용 방지
     try:
         res = SkinAnalyzer().analyze_all(
             str(input_path.resolve()),
@@ -128,7 +128,7 @@ def _input_has_stressed_pigmentation(input_path: Path) -> Optional[bool]:
             clahe_preprocessed=False,
         )
     except Exception:
-        return None   # [FIX v3.0 ⑨] 분석 예외 → 강한 튜닝 적용 방지
+        return None   # [FIX v1.0 ⑨] 분석 예외 → 강한 튜닝 적용 방지
     m = res.get("measurements_report") or res.get("measurements") or {}
 
     def _f(key: str, default: float = 70.0) -> float:
@@ -173,7 +173,7 @@ def _apply_restore_analyzer_score_tuning(
 
     log.debug(f"색소 부담 감지 결과: pigment_heavy={pigment_heavy}")
 
-    # [FIX v3.0 ⑨] 분석 자체가 실패한 경우(None) — 강한 튜닝 적용하지 않음
+    # [FIX v1.0 ⑨] 분석 자체가 실패한 경우(None) — 강한 튜닝 적용하지 않음
     if pigment_heavy is None:
         log.warning(
             "색소 부담 판정 분석 실패 — 자동 튜닝 건너뜀 "

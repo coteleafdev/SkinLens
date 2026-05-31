@@ -171,7 +171,7 @@ class LateralFaceAnalyzer:
 
 
 class MultiViewMerger:
-    """정면 + 좌45° + 우45° 결과 병합기 (v3.0)."""
+    """정면 + 좌45° + 우45° 결과 병합기 (v1.0)."""
 
     # 각도별 특화 항목 가중치 (front, left, right)
     ANGLE_WEIGHTS: Dict[str, Dict[str, float]] = {
@@ -223,12 +223,12 @@ class MultiViewMerger:
         debug: bool = False,
     ) -> Dict[str, Any]:
         """
-        정면 + 좌45° + 우45° 결과 병합 (v3.0).
+        정면 + 좌45° + 우45° 결과 병합 (v1.0).
         
         Args:
             front_result: 정면 이미지 분석 결과
-            left_result: 좌측 45° 이미지 전체 분석 결과 (v3.0)
-            right_result: 우측 45° 이미지 전체 분석 결과 (v3.0)
+            left_result: 좌측 45° 이미지 전체 분석 결과 (v1.0)
+            right_result: 우측 45° 이미지 전체 분석 결과 (v1.0)
             left_lateral: 좌측 45° 측면 분석 결과 (레거시 호환용)
             right_lateral: 우측 45° 측면 분석 결과 (레거시 호환용)
             debug: 디버그 모드
@@ -253,7 +253,7 @@ class MultiViewMerger:
 
         detail: Dict[str, Dict] = {}
         
-        # v3.0: 전체 분석 결과가 있는 경우 모든 항목 통합
+        # v1.0: 전체 분석 결과가 있는 경우 모든 항목 통합
         if left_result is not None and right_result is not None:
             left_meas = left_result.get("measurements", {})
             right_meas = right_result.get("measurements", {})
@@ -380,7 +380,7 @@ class MultiViewMerger:
         if _stl is not None:
             merged["measurements"]["skin_type_label"] = _stl
         
-        # 각도별 개별 결과 포함 (v3.0)
+        # 각도별 개별 결과 포함 (v1.0)
         angle_results = {}
         if left_result is not None:
             angle_results["left"] = left_result.get("measurements", {})
@@ -405,7 +405,7 @@ def analyze_all_multi(
     use_full_analysis: bool = True,
 ) -> Dict[str, Any]:
     """
-    정면 + 좌45° + 우45° 3장 통합 분석 진입점 (v3.0).
+    정면 + 좌45° + 우45° 3장 통합 분석 진입점 (v1.0).
     
     Args:
         front_path: 정면 이미지 경로
@@ -413,7 +413,7 @@ def analyze_all_multi(
         right45_path: 우측 45° 이미지 경로 (선택)
         debug: 디버그 모드
         clahe_preprocessed: CLAHE 전처리 여부
-        use_full_analysis: 측면 이미지 전체 분석 여부 (v3.0)
+        use_full_analysis: 측면 이미지 전체 분석 여부 (v1.0)
     
     Returns:
         통합된 분석 결과
@@ -438,7 +438,7 @@ def analyze_all_multi(
     if left45_path is None and right45_path is None:
         return {**front_result, "multi_view_detail": {}}
 
-    # v3.0: 측면 이미지 전체 분석
+    # v1.0: 측면 이미지 전체 분석
     if use_full_analysis:
         left_result = None
         right_result = None
@@ -458,7 +458,7 @@ def analyze_all_multi(
                 log.warning("우45° 전체 분석 실패: %s", e)
         
         if debug:
-            log.debug("[다중 시점 병합 v3.0]")
+            log.debug("[다중 시점 병합 v1.0]")
         
         return MultiViewMerger().merge(
             front_result,

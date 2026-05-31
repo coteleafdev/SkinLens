@@ -406,9 +406,9 @@ class SkinAnalyzer:
                             "pig_base_a": _pig_st["base_a"], "pig_std_a": _pig_st["std_a"],
                         }
                         if debug:
-                            log.debug("[v3.6] ref_stat 자동 추출: base_L=%.1f", _stat_o["base_L"])
+                            log.debug("[v1.0] ref_stat 자동 추출: base_L=%.1f", _stat_o["base_L"])
             except Exception as _e:
-                log.warning("[v3.6] origin ref_stat 추출 실패: %s", _e)
+                log.warning("[v1.0] origin ref_stat 추출 실패: %s", _e)
 
         legacy_result = self._core.analyze_all(
             image_path, debug=debug,
@@ -474,7 +474,7 @@ def analyze_all_multi_v3(
     use_full_analysis: bool = True,
 ) -> Dict[str, Any]:
     """
-    3장 멀티뷰 진입점 v3.0.
+    3장 멀티뷰 진입점 v1.0.
     
     Args:
         front_path: 정면 이미지 경로

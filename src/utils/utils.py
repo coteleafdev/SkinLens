@@ -7,11 +7,11 @@
 - random.uniform 제거 (결정적 중간값으로 대체, safety_net.py 참고).
 - 설정 헬퍼(reload_scoring_config / get_restoration_config) 는 기존과 동일하게 유지.
 
-[FIX v3.6]
+[FIX v1.0]
 - apply_score_safety_net: analyzer_compare_gui import 를 함수 내부 lazy import 로 이동.
 - apply_score_safety_net 반환값에 실측 점수 메타데이터 추가 (투명성 개선).
 
-[ADD v3.7]
+[ADD v1.0]
 - setup_logging: 중앙 집중식 로깅 설정 함수 추가.
 """
 from __future__ import annotations
@@ -230,7 +230,7 @@ def apply_score_safety_net(
     Returns:
         (orig_result, adjusted_result, actual_result)
     """
-    # [FIX v3.6] PySide6 의존 모듈을 함수 내부에서 lazy import
+    # [FIX v1.0] PySide6 의존 모듈을 함수 내부에서 lazy import
     # [REFACTOR P1-18] GUI 의존 제거 - analyze_utils로 분리
     try:
         from src.skin.core.analyze_utils import analyze_compare_triple

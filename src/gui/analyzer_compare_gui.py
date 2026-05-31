@@ -90,12 +90,12 @@ def analyze_compare_triple(
 ) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     """비교 계산기와 동일: 이상1·2 분석 후 skin_stat 평균을 ref_stat 으로 원본 재분석.
     
-    [FIX v3.4] ref_stat 사용 제거: 독립적 측정으로 변경하여 실제 복원 효과를 점수에 반영.
+    [FIX v1.0] ref_stat 사용 제거: 독립적 측정으로 변경하여 실제 복원 효과를 점수에 반영.
     """
     an = SkinAnalyzer()
     ideal1 = an.analyze_all(str(ideal1_path), debug=False, clahe_preprocessed=False)
     ideal2 = an.analyze_all(str(ideal2_path), debug=False, clahe_preprocessed=False)
-    # [FIX v3.4] ref_stat 사용 제거: 독립적 측정
+    # [FIX v1.0] ref_stat 사용 제거: 독립적 측정
     orig = an.analyze_all(
         str(orig_path),
         debug=False,
@@ -217,7 +217,7 @@ def populate_compare_score_table(
     log.debug("조정된 원본 종합점수: %.1f", orig.get('overall_score_report', 0))
     log.debug("조정된 복원 종합점수: %.1f", ideal1.get('overall_score_report', 0))
 
-    # [FIX v3.0 ⑥] 항목 루프가 measurements_report(레이어 B)이므로 종합도 레이어 B 기준
+    # [FIX v1.0 ⑥] 항목 루프가 measurements_report(레이어 B)이므로 종합도 레이어 B 기준
     def _overall(r: Dict[str, Any]) -> float:
         v = r.get("overall_score_report") or r.get("overall_score")
         try:
@@ -244,7 +244,7 @@ def populate_compare_score_table(
     i2_overall_raw = _overall_raw(ideal2)
 
     if single_output:
-        # [FIX v3.0 ②] 복원 팝업 전용 — 이상2 열 불필요, 레이블 명확화
+        # [FIX v1.0 ②] 복원 팝업 전용 — 이상2 열 불필요, 레이블 명확화
         if show_actual_vs_adjusted:
             # 실측 vs 조정된 점수 비교 모드: 원본 raw, 원본, 복원 raw, 복원
             lbl_overall.setText(
@@ -374,7 +374,7 @@ def populate_compare_score_table(
 class RestoreScoreResultDialog(QDialog):
     """파이프라인 복원 직후: 원본 vs 복원 산출 4열 비교.
 
-    [FIX v3.0 ②] 기존 6열(이상1/이상2 동일 데이터 중복) → 4열(원본/복원/차이)로 단순화.
+    [FIX v1.0 ②] 기존 6열(이상1/이상2 동일 데이터 중복) → 4열(원본/복원/차이)로 단순화.
     종합 점수도 레이어 B(overall_score_report) 기준으로 통일.
     """
 
@@ -485,7 +485,7 @@ def show_restore_score_popup(
         f"out  | {out_r}",
         "-" * 72,
     ]
-    # [FIX v3.0 ③] 피부건강지수도 레이어 B(overall_score_report) 기준으로 로그
+    # [FIX v1.0 ③] 피부건강지수도 레이어 B(overall_score_report) 기준으로 로그
     def _ov(r: Dict[str, Any]) -> float:
         v = r.get("overall_score_report") or r.get("overall_score")
         try:

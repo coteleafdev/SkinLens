@@ -418,7 +418,7 @@ def run_analysis_pipeline(
                     if _score_key in i1:
                         analysis_result[_score_key] = i1[_score_key]
                 # measurements_report 반영 (복원 점수 조정 결과)
-                # [FIX BUG-2] measurements_v26 참조 제거 — v3.2 이후 삭제된 필드
+                # [FIX BUG-2] measurements_v26 참조 제거 — v1.0 이후 삭제된 필드
                 for _meas_key in ("measurements_report", "measurements"):
                     if _meas_key in i1:
                         analysis_result[_meas_key] = i1[_meas_key]
@@ -578,7 +578,7 @@ def run_analysis_pipeline(
     # 7. 버전 정보
     version_info = {
         "config_version": config.get("version", "unknown"),
-        "analyzer_version": "v3.0",
+        "analyzer_version": "v1.0",
         "restorer_version": cfg.restorer.value if hasattr(cfg, 'restorer') else "unknown"
     }
     

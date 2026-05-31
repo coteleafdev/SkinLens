@@ -197,7 +197,7 @@ def measurement_report_string(results: Dict[str, Any]) -> str:
 
     lines_out: List[str] = [
         "", "=" * 65,
-        f"  COTELEAF 피부 분석 v3.0  |  보고서 ({measurement_count}개 항목)",
+        f"  COTELEAF 피부 분석 v1.0  |  보고서 ({measurement_count}개 항목)",
         f"  종합 (보고서): {ov_rep}점  |  엔진 (직교): {ov_eng}점  |  인지 나이: {age}세",
         "=" * 65,
     ]
