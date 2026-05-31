@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "description": "AI-powered skin analysis engine"
   },
-  "config_version": "3.6",
+  "config_version": "1.0",
   "description": "피부 점수 측정 런타임 설정 파일 (메타데이터는 LLM_PROMPT_TEMPLATE.md에서 관리)",
   "_note": "이 파일은 런타임 설정만 포함합니다. 측정항목 메타데이터(가중치, 디스플레이 이름, 카테고리, 실측 범위)는 docs/guides/LLM_PROMPT_TEMPLATE.md를 참조하세요.",
   "logging": {

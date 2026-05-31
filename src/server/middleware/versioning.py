@@ -21,7 +21,7 @@ class APIVersionMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app: ASGIApp,
-        current_version: str = "v3",
+        current_version: str = "v1",
         deprecated_versions: Optional[list[str]] = None,
         sunset_versions: Optional[dict[str, str]] = None,
     ):

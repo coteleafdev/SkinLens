@@ -285,7 +285,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Skin Analysis API",
-    version="3.1",
+    version="1.0",
     description="CÔTELEAF AI 피부 분석 서버 (라우터 분리 버전)",
     lifespan=lifespan,
 )
@@ -319,7 +319,7 @@ else:
 
 # API Versioning Middleware
 versioning_config = server_config.get("versioning", {})
-current_version = versioning_config.get("current_version", "v3")
+current_version = versioning_config.get("current_version", "v1")
 deprecated_versions = versioning_config.get("deprecated_versions", [])
 sunset_versions = versioning_config.get("sunset_versions", {})
 

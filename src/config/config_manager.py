@@ -78,7 +78,7 @@ class ConfigManager:
         self._cache_lock = threading.Lock()
         
         # 필수 버전
-        self._required_config_version = "3.6"
+        self._required_config_version = "1.0"
         
         # secrets 파일 로드 (환경 변수 설정)
         self._load_secrets()
