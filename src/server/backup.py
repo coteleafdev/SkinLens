@@ -85,7 +85,7 @@ class BackupManager:
 
             except asyncio.CancelledError:
                 break
-            except Exception as e:
+            except (OSError, IOError, RuntimeError) as e:  # [FIX P2] 구체적 예외
                 log.error("백업 루프 오류: %s", e)
                 await asyncio.sleep(300)  # 5분 후 재시도
 
@@ -147,7 +147,7 @@ class BackupManager:
 
             return backup_path
 
-        except Exception as e:
+        except (OSError, IOError, zipfile.BadZipFile, sqlite3.Error) as e:  # [FIX P2] 구체적 예외
             log.error("백업 생성 실패: %s", e)
             if temp_dir.exists():
                 shutil.rmtree(temp_dir, ignore_errors=True)
@@ -164,7 +164,7 @@ class BackupManager:
                     old_backup.unlink()
                     log.info("오래된 백업 삭제: %s", old_backup.name)
 
-        except Exception as e:
+        except (OSError, IOError) as e:  # [FIX P2] 구체적 예외
             log.error("백업 정리 실패: %s", e)
 
     def list_backups(self) -> List[dict]:
@@ -191,7 +191,7 @@ class BackupManager:
                     "created_at": metadata.get("created_at", datetime.fromtimestamp(backup_path.stat().st_mtime).isoformat()),
                     "files": metadata.get("files", []),
                 })
-            except Exception as e:
+            except (OSError, IOError, zipfile.BadZipFile, json.JSONDecodeError) as e:  # [FIX P2] 구체적 예외
                 log.warning("백업 메타데이터 읽기 실패: %s, error=%s", backup_path.name, e)
 
         return backups
@@ -256,7 +256,7 @@ class BackupManager:
             log.info("백업 복구 완료: %s", backup_name)
             return True
 
-        except Exception as e:
+        except (OSError, IOError, zipfile.BadZipFile, sqlite3.Error) as e:  # [FIX P2] 구체적 예외
             log.error("백업 복구 실패: %s, error=%s", backup_name, e)
             if temp_dir.exists():
                 shutil.rmtree(temp_dir, ignore_errors=True)
@@ -281,7 +281,7 @@ class BackupManager:
             backup_path.unlink()
             log.info("백업 삭제 완료: %s", backup_name)
             return True
-        except Exception as e:
+        except (OSError, IOError) as e:  # [FIX P2] 구체적 예외
             log.error("백업 삭제 실패: %s, error=%s", backup_name, e)
             return False
 
