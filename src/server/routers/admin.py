@@ -538,7 +538,7 @@ async def list_api_keys(
             limit=limit,
         )
         return {"api_keys": api_keys, "count": len(api_keys)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("API 키 목록 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve API keys")
 
@@ -587,7 +587,7 @@ async def revoke_api_key(
         return {"message": "API key revoked successfully", "key_id": key_id}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("API 키 폐지 실패: %s", e)
         log_audit(
             db=db,
@@ -686,7 +686,7 @@ async def clear_cache(
             "cleared_caches": cleared_caches,
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (OSError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("캐시 초기화 실패: %s", e)
         log_audit(
             db=db,
