@@ -52,46 +52,63 @@ def check_customer_access(current_customer: Dict[str, Any], target_customer_id: 
 @router.post("/login")
 @limiter.limit("5/minute")
 async def login(
-    customer_id: str = Form(...),
-    password:    str = Form(...),
+    username: str = Form(...),
+    password: str = Form(...),
     request: Request = None,
 ):
     """로그인 및 JWT 토큰 발급.
 
-    현재: 환경변수(ADMIN_PASSWORD / ANALYST_PASSWORD) 기반 임시 인증.
-    TODO: DB 에서 bcrypt 해시 비교로 교체
-          - db.get_user(customer_id) → user_record
-          - pwd_context.verify(password, user_record["password_hash"])
+    [FIX P1] DB 기반 사용자 인증으로 전환
+    - users 테이블에서 사용자 조회
+    - bcrypt로 비밀번호 해시 검증
+    - 환경변수 기반 인증은 폴백으로 유지 (마이그레이션 기간)
     """
-    ADMIN_PASSWORD    = os.environ.get("ADMIN_PASSWORD", "")
-    ANALYST_PASSWORD  = os.environ.get("ANALYST_PASSWORD", "")
-    CUSTOMER_PASSWORD = os.environ.get("CUSTOMER_PASSWORD", "")
-
-    if not ADMIN_PASSWORD or not ANALYST_PASSWORD:
-        log.warning(
-            "ADMIN_PASSWORD / ANALYST_PASSWORD 환경변수가 설정되지 않았습니다. "
-            "프로덕션 환경에서는 반드시 설정해야 합니다."
-        )
-        # 환경변수 미설정 시 인증 실패
-        from fastapi import HTTPException
-        raise HTTPException(status_code=401, detail="Authentication not configured")
-
-    if customer_id.startswith("admin"):
-        if not ADMIN_PASSWORD or not _verify_pw(password, ADMIN_PASSWORD):
+    # [FIX P1] DB 기반 인증 시도
+    db = ExecutionHistoryDB(get_db_path_from_env())
+    user = db.get_user_by_username(username)
+    
+    if user:
+        # DB 사용자 인증
+        if not _verify_pw(password, user["password_hash"]):
             from fastapi import HTTPException
             raise HTTPException(status_code=401, detail="Invalid credentials")
-        user_role = "admin"
-    elif customer_id.startswith("analyst"):
-        if not ANALYST_PASSWORD or not _verify_pw(password, ANALYST_PASSWORD):
-            from fastapi import HTTPException
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        user_role = "analyst"
+        
+        user_role = user["role"]
+        customer_id = user.get("customer_id") or username
+        
+        log.info("[AUTH] DB 사용자 로그인 성공: username=%s, role=%s", username, user_role)
     else:
-        # customer 인증도 환경변수 기반 임시 패스워드 검증
-        if not CUSTOMER_PASSWORD or not _verify_pw(password, CUSTOMER_PASSWORD):
+        # [폴백] 환경변수 기반 인증 (마이그레이션 기간)
+        ADMIN_PASSWORD    = os.environ.get("ADMIN_PASSWORD", "")
+        ANALYST_PASSWORD  = os.environ.get("ANALYST_PASSWORD", "")
+        CUSTOMER_PASSWORD = os.environ.get("CUSTOMER_PASSWORD", "")
+
+        if not ADMIN_PASSWORD or not ANALYST_PASSWORD:
+            log.warning(
+                "ADMIN_PASSWORD / ANALYST_PASSWORD 환경변수가 설정되지 않았습니다. "
+                "프로덕션 환경에서는 반드시 설정해야 합니다."
+            )
             from fastapi import HTTPException
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        user_role = "customer"
+            raise HTTPException(status_code=401, detail="Authentication not configured")
+
+        if username.startswith("admin"):
+            if not ADMIN_PASSWORD or not _verify_pw(password, ADMIN_PASSWORD):
+                from fastapi import HTTPException
+                raise HTTPException(status_code=401, detail="Invalid credentials")
+            user_role = "admin"
+        elif username.startswith("analyst"):
+            if not ANALYST_PASSWORD or not _verify_pw(password, ANALYST_PASSWORD):
+                from fastapi import HTTPException
+                raise HTTPException(status_code=401, detail="Invalid credentials")
+            user_role = "analyst"
+        else:
+            if not CUSTOMER_PASSWORD or not _verify_pw(password, CUSTOMER_PASSWORD):
+                from fastapi import HTTPException
+                raise HTTPException(status_code=401, detail="Invalid credentials")
+            user_role = "customer"
+        
+        customer_id = username
+        log.warning("[AUTH] 환경변수 기반 인증 사용 (폴백): username=%s, role=%s", username, user_role)
 
     access_token = create_access_token(
         data={"sub": customer_id, "role": user_role},
@@ -99,7 +116,6 @@ async def login(
     )
 
     try:
-        db = ExecutionHistoryDB(get_db_path_from_env())
         log_audit(
             db=db,
             actor_customer_id=customer_id,

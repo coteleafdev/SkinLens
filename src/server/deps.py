@@ -59,10 +59,11 @@ def get_rate_limit_key(request: Any) -> str:
         auth_header = request.headers.get("authorization", "")
         if auth_header.startswith("Bearer "):
             token = auth_header[7:]
+            # [FIX P1] algorithms 수정: pwd_context.hash_name → get_algorithm()
             payload = jwt.decode(
                 token,
                 get_secret_key(),
-                algorithms=[pwd_context.hash_name],
+                algorithms=[get_algorithm()],
                 options={"verify_signature": False}  # 역할만 확인하므로 서명 검증 스킵
             )
             role = payload.get("role", "default")
@@ -619,9 +620,17 @@ def get_active_jobs_count() -> int:
 
 # ── DB Dependency ───────────────────────────────────────────────────────────
 
+_db_instance: Optional[ExecutionHistoryDB] = None
+_db_lock = threading.Lock()
+
+
 def get_db() -> ExecutionHistoryDB:
-    """FastAPI Dependency for ExecutionHistoryDB."""
-    return ExecutionHistoryDB(get_db_path_from_env())
+    """FastAPI Dependency for ExecutionHistoryDB (싱글톤)."""
+    global _db_instance
+    with _db_lock:
+        if _db_instance is None:
+            _db_instance = ExecutionHistoryDB(get_db_path_from_env())
+        return _db_instance
 
 
 # ── Shared Executor ──────────────────────────────────────────────────────────

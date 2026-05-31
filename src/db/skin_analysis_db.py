@@ -1036,6 +1036,38 @@ class SkinAnalysisDB:
             self._conn.commit()
             log.info("[DB] 고객 챌린지 참여 테이블 생성 완료 (버전 32)")
 
+        # [FIX P1] 사용자 테이블 생성 (버전 33)
+        if current_version < 33:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    role TEXT NOT NULL DEFAULT 'customer',
+                    customer_id TEXT,
+                    is_active INTEGER DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_users_username
+                ON users(username)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_users_customer_id
+                ON users(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_users_role
+                ON users(role)
+            """)
+            
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (33)")
+            self._conn.commit()
+            log.info("[DB] 사용자 테이블 생성 완료 (버전 33)")
+
         # 피부 타입 검증 테이블 생성
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS skin_type_validations (
@@ -3820,3 +3852,85 @@ class SkinAnalysisDB:
                     "created_at": row[6],
                 }
             return None
+
+    # ── 사용자 관리 (FIX P1) ─────────────────────────────────────────────────────
+    
+    def create_user(
+        self,
+        username: str,
+        password_hash: str,
+        role: str = "customer",
+        customer_id: Optional[str] = None,
+    ) -> bool:
+        """사용자 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute("""
+                    INSERT INTO users (username, password_hash, role, customer_id, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (username, password_hash, role, customer_id, datetime.now(timezone.utc), datetime.now(timezone.utc)))
+                self._conn.commit()
+                log.info("[DB] 사용자 생성: username=%s, role=%s", username, role)
+                return True
+            except sqlite3.IntegrityError:
+                log.warning("[DB] 사용자 이미 존재: username=%s", username)
+                return False
+    
+    def get_user_by_username(self, username: str) -> Optional[Dict]:
+        """username으로 사용자 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, username, password_hash, role, customer_id, is_active, created_at, updated_at
+                FROM users
+                WHERE username = ? AND is_active = 1
+            """, (username,))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "username": row[1],
+                    "password_hash": row[2],
+                    "role": row[3],
+                    "customer_id": row[4],
+                    "is_active": bool(row[5]),
+                    "created_at": row[6],
+                    "updated_at": row[7],
+                }
+            return None
+    
+    def get_user_by_customer_id(self, customer_id: str) -> Optional[Dict]:
+        """customer_id로 사용자 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, username, password_hash, role, customer_id, is_active, created_at, updated_at
+                FROM users
+                WHERE customer_id = ? AND is_active = 1
+            """, (customer_id,))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "username": row[1],
+                    "password_hash": row[2],
+                    "role": row[3],
+                    "customer_id": row[4],
+                    "is_active": bool(row[5]),
+                    "created_at": row[6],
+                    "updated_at": row[7],
+                }
+            return None
+    
+    def update_user_password(self, username: str, new_password_hash: str) -> bool:
+        """사용자 비밀번호 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                UPDATE users
+                SET password_hash = ?, updated_at = ?
+                WHERE username = ?
+            """, (new_password_hash, datetime.now(timezone.utc), username))
+            self._conn.commit()
+            return cursor.rowcount > 0
