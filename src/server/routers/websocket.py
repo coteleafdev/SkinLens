@@ -103,7 +103,7 @@ class ConnectionManager:
                 # 하트비트 갱신
                 if job_id in self.connection_metadata:
                     self.connection_metadata[job_id]["last_heartbeat"] = asyncio.get_event_loop().time()
-            except Exception as e:
+            except (RuntimeError, ConnectionError, ValueError) as e:  # [FIX P2] 구체적 예외
                 log.warning("WebSocket 진행률 전송 실패: job_id=%s, error=%s", job_id, e)
                 self.disconnect(job_id)
 
@@ -116,7 +116,7 @@ class ConnectionManager:
                     "type": "complete",
                     "result": result
                 })
-            except Exception as e:
+            except (RuntimeError, ConnectionError, ValueError) as e:  # [FIX P2] 구체적 예외
                 log.warning("WebSocket 완료 전송 실패: job_id=%s, error=%s", job_id, e)
             finally:
                 self.disconnect(job_id)
@@ -130,7 +130,7 @@ class ConnectionManager:
                     "type": "error",
                     "error": error
                 })
-            except Exception as e:
+            except (RuntimeError, ConnectionError, ValueError) as e:  # [FIX P2] 구체적 예외
                 log.warning("WebSocket 에러 전송 실패: job_id=%s, error=%s", job_id, e)
             finally:
                 self.disconnect(job_id)
@@ -154,7 +154,7 @@ class ConnectionManager:
                 if job_id in self.active_connections:
                     try:
                         await self.active_connections[job_id].close(code=1000, reason="Connection timeout")
-                    except Exception as e:
+                    except (RuntimeError, ConnectionError) as e:  # [FIX P2] 구체적 예외
                         log.error("WebSocket 타임아웃 종료 실패: job_id=%s, error=%s", job_id, e)
                     self.disconnect(job_id)
 
@@ -211,7 +211,7 @@ async def report_progress(job_id: str, stage: str, percent: int, message: str) -
                 "percent": percent,
                 "message": message
             })
-        except Exception as e:
+        except (RuntimeError, ConnectionError, ValueError) as e:  # [FIX P2] 구체적 예외
             log.warning(f"Failed to send progress message: {e}", exc_info=True)
 
 
@@ -274,13 +274,13 @@ async def websocket_analyze(websocket: WebSocket, job_id: str) -> None:
                 await websocket.send_json({"type": "ping"})
             except WebSocketDisconnect:
                 break
-            except Exception as e:
+            except (RuntimeError, ConnectionError) as e:  # [FIX P2] 구체적 예외
                 log.warning("WebSocket 수신 오류: job_id=%s, error=%s", job_id, e)
                 break
                 
     except WebSocketDisconnect:
         log.info("WebSocket 연결 종료: job_id=%s", job_id)
-    except Exception as e:
+    except (RuntimeError, ConnectionError) as e:  # [FIX P2] 구체적 예외
         log.error("WebSocket 오류: job_id=%s, error=%s", job_id, e)
     finally:
         manager.disconnect(job_id)
