@@ -74,7 +74,7 @@ def check_database_health() -> str:
         conn.execute("SELECT 1")
         conn.close()
         return "healthy"
-    except Exception as e:
+    except (sqlite3.Error, OSError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Database health check failed: {e}")
         return "unhealthy"
 
@@ -90,7 +90,7 @@ def check_disk_health() -> str:
             return "warning"
         else:
             return "critical"
-    except Exception as e:
+    except (OSError, psutil.Error) as e:  # [FIX P2] 구체적 예외
         log.error(f"Disk health check failed: {e}")
         return "unhealthy"
 
@@ -106,7 +106,7 @@ def check_memory_health() -> str:
             return "warning"
         else:
             return "critical"
-    except Exception as e:
+    except (psutil.Error, OSError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Memory health check failed: {e}")
         return "unhealthy"
 
@@ -121,7 +121,7 @@ def check_cpu_health() -> str:
             return "warning"
         else:
             return "critical"
-    except Exception as e:
+    except (psutil.Error, OSError) as e:  # [FIX P2] 구체적 예외
         log.error(f"CPU health check failed: {e}")
         return "unhealthy"
 
@@ -174,7 +174,7 @@ async def get_incidents(
             offset=offset,
         )
         return [IncidentResponse(**incident) for incident in incidents]
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Failed to get incidents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -190,7 +190,7 @@ async def get_incident(incident_id: str):
         return IncidentResponse(**incident)
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Failed to get incident {incident_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -223,7 +223,7 @@ async def trigger_recovery(incident_id: str, action: RecoveryActionCreate):
         )
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Failed to trigger recovery for incident {incident_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -235,7 +235,7 @@ async def get_recovery_actions(incident_id: str):
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         actions = db.get_recovery_actions(incident_id)
         return actions
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Failed to get recovery actions for incident {incident_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -256,6 +256,6 @@ async def trigger_rollback(action_id: str):
         return {"status": "rolling_back"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error(f"Failed to trigger rollback for action {action_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
