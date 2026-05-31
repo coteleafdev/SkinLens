@@ -57,6 +57,41 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/PROJECT_OVERVIEW.md"
     },
+    "CI_CD_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/CI_CD_GUIDE.md"
+    },
+    "DEPLOYMENT_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/DEPLOYMENT_GUIDE.md"
+    },
+    "TROUBLESHOOTING_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/TROUBLESHOOTING_GUIDE.md"
+    },
+    "MONITORING_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/MONITORING_GUIDE.md"
+    },
+    "SECURITY_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/SECURITY_GUIDE.md"
+    },
 }
 
 
