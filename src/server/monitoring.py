@@ -89,7 +89,7 @@ class AlertSystem:
             log.info("Slack 알림 전송 성공: level=%s", level)
             return True
 
-        except Exception as e:
+        except (requests.RequestException, ValueError) as e:  # [FIX P2] 구체적 예외
             log.error("Slack 알림 전송 실패: %s", e)
             return False
 
@@ -124,7 +124,7 @@ class AlertSystem:
             log.info("이메일 알림 전송 성공: subject=%s", subject)
             return True
 
-        except Exception as e:
+        except (smtplib.SMTPException, OSError, IOError) as e:  # [FIX P2] 구체적 예외
             log.error("이메일 알림 전송 실패: %s", e)
             return False
 
