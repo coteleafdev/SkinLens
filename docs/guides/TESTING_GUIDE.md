@@ -1,7 +1,7 @@
 # 테스트 가이드 (Testing Guide)
 
 > **프로젝트:** SkinLens v1.0  
-> **버전:** v3.7  
+> **버전:** v3.8  
 > **작성일:** 2026-05-30  
 > **상태:** 초안
 
@@ -40,6 +40,10 @@ tests/
 ├── test_product_repository.py     # 제품 리포지토리 단위 테스트
 ├── test_result_parser.py          # 결과 파서 단위 테스트
 ├── test_supabase_sync.py          # Supabase 동기화 단위 테스트
+├── test_restoration_base.py       # 복원 베이스 클래스 단위 테스트
+├── test_restoration_registry.py   # 복원 레지스트리 단위 테스트
+├── test_utils.py                  # 공통 유틸리티 단위 테스트
+├── test_llm_config.py             # LLM 설정 관리 단위 테스트
 ├── test_*.py                      # 기타 단위 테스트
 └── fixtures/                      # 테스트 데이터
     ├── images/
@@ -290,6 +294,124 @@ def test_from_env():
     assert config.key == "test-key"
 ```
 
+### 2.11 복원 베이스 클래스 테스트
+
+```python
+# tests/test_restoration_base.py
+import pytest
+from pathlib import Path
+from src.restoration.base import BaseRestorer
+
+class MockRestorer(BaseRestorer):
+    def restore(self, input_path, output_path, **kwargs):
+        return {"output_path": str(output_path)}
+    
+    def get_name(self):
+        return "MockRestorer"
+    
+    def get_version(self):
+        return "1.0.0"
+
+def test_init_with_config():
+    config = {"repo": "/path/to/repo", "device": "cuda"}
+    restorer = MockRestorer(config=config)
+    assert restorer.config == config
+
+def test_load_model():
+    restorer = MockRestorer()
+    assert restorer._model_loaded is False
+    restorer.load_model()
+    assert restorer._model_loaded is True
+```
+
+### 2.12 복원 레지스트리 테스트
+
+```python
+# tests/test_restoration_registry.py
+import pytest
+from src.restoration.base import BaseRestorer
+from src.restoration.registry import RestorerRegistry
+
+def test_register():
+    @RestorerRegistry.register("test1")
+    class TestRestorer(BaseRestorer):
+        def restore(self, input_path, output_path, **kwargs):
+            return {"output_path": str(output_path)}
+        
+        def get_name(self):
+            return "TestRestorer"
+        
+        def get_version(self):
+            return "1.0.0"
+    
+    assert "test1" in RestorerRegistry._restorers
+
+def test_create():
+    @RestorerRegistry.register("test1")
+    class TestRestorer(BaseRestorer):
+        def restore(self, input_path, output_path, **kwargs):
+            return {"output_path": str(output_path)}
+        
+        def get_name(self):
+            return "TestRestorer"
+        
+        def get_version(self):
+            return "1.0.0"
+    
+    restorer = RestorerRegistry.create("test1")
+    assert isinstance(restorer, TestRestorer)
+```
+
+### 2.13 공통 유틸리티 테스트
+
+```python
+# tests/test_utils.py
+import pytest
+import logging
+from src.utils.utils import setup_logging, get_logging_level
+
+def test_setup_logging():
+    setup_logging(level="DEBUG", force=True)
+    root_logger = logging.getLogger()
+    assert root_logger.level == logging.DEBUG
+
+def test_get_logging_level():
+    setup_logging(level="INFO", force=True)
+    level = get_logging_level()
+    assert level == "INFO"
+```
+
+### 2.14 LLM 설정 테스트
+
+```python
+# tests/test_llm_config.py
+import pytest
+from unittest.mock import patch
+from src.llm.llm_config import get_default_model, get_default_provider
+
+@patch('src.llm.llm_config._load_config')
+def test_get_default_model(mock_load_config):
+    mock_load_config.return_value = {
+        "llm": {
+            "default_model": "models/gemini-2.5-flash"
+        }
+    }
+    
+    model = get_default_model()
+    assert model == "models/gemini-2.5-flash"
+
+@patch('src.llm.llm_config._load_config')
+def test_get_default_provider(mock_load_config):
+    mock_load_config.return_value = {
+        "llm": {
+            "provider": "openai"
+        }
+    }
+    
+    provider = get_default_provider()
+    assert provider == "openai"
+```
+
 ---
 
 ## 3. 통합 테스트
@@ -536,6 +658,10 @@ pytest tests/test_pipeline_core.py
 pytest tests/test_product_repository.py
 pytest tests/test_result_parser.py
 pytest tests/test_supabase_sync.py
+pytest tests/test_restoration_base.py
+pytest tests/test_restoration_registry.py
+pytest tests/test_utils.py
+pytest tests/test_llm_config.py
 
 # 특정 테스트 함수
 pytest tests/test_server.py::TestE2EIntegration::test_confirm_skin_type
