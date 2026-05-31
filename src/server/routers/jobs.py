@@ -156,6 +156,25 @@ async def _run_job(job_id: str) -> None:
                     customer_id=meta.get("customer_id"),
                     input_json=meta.get("input_json"),
                 )
+                
+                # 분석 추이 기록
+                customer_id = meta.get("customer_id")
+                if customer_id:
+                    overall_score_original = result.get("overall_score_original")
+                    overall_score_restored = result.get("overall_score_restored")
+                    measurement_scores = result.get("skin_types", {})
+                    
+                    # 분석 ID 조회 (가장 최근 분석)
+                    analyses = _db.get_analyses(customer_id=customer_id, limit=1)
+                    if analyses:
+                        analysis_id = analyses[0]["id"]
+                        _db.record_analysis_trend(
+                            customer_id=customer_id,
+                            analysis_id=analysis_id,
+                            overall_score_original=overall_score_original or 0,
+                            overall_score_restored=overall_score_restored or 0,
+                            measurement_scores=measurement_scores,
+                        )
             except Exception as db_err:
                 log.warning("DB 저장 실패: %s", db_err)
 

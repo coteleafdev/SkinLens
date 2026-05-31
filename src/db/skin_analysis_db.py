@@ -578,6 +578,191 @@ class SkinAnalysisDB:
             self._conn.commit()
             log.info("[DB] OAuth 제공자 테이블 생성 완료 (버전 17)")
 
+        # 버전 18: 이미지 업로드 관리 테이블
+        if current_version < 18:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS image_uploads (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id TEXT NOT NULL,
+                    upload_id TEXT UNIQUE NOT NULL,
+                    original_filename TEXT NOT NULL,
+                    file_path TEXT NOT NULL,
+                    file_size INTEGER,
+                    width INTEGER,
+                    height INTEGER,
+                    rotation_angle INTEGER DEFAULT 0,
+                    upload_status TEXT DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    processed_at TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_image_uploads_customer
+                ON image_uploads(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_image_uploads_status
+                ON image_uploads(upload_status)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (18)")
+            self._conn.commit()
+            log.info("[DB] 이미지 업로드 테이블 생성 완료 (버전 18)")
+
+        # 버전 19: 푸시 알림 선호도 테이블
+        if current_version < 19:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS push_preferences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id TEXT UNIQUE NOT NULL,
+                    push_enabled INTEGER DEFAULT 1,
+                    analysis_complete_enabled INTEGER DEFAULT 1,
+                    promotion_enabled INTEGER DEFAULT 0,
+                    quiet_hours_start TEXT,
+                    quiet_hours_end TEXT,
+                    device_token TEXT,
+                    platform TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_push_preferences_customer
+                ON push_preferences(customer_id)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (19)")
+            self._conn.commit()
+            log.info("[DB] 푸시 알림 선호도 테이블 생성 완료 (버전 19)")
+
+        # 버전 20: A/B 테스트 관리 테이블
+        if current_version < 20:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS ab_tests (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    test_name TEXT UNIQUE NOT NULL,
+                    description TEXT,
+                    variant_a_name TEXT NOT NULL,
+                    variant_b_name TEXT NOT NULL,
+                    traffic_split REAL DEFAULT 0.5,
+                    status TEXT DEFAULT 'active',
+                    start_date TIMESTAMP,
+                    end_date TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_ab_tests_status
+                ON ab_tests(status)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (20)")
+            self._conn.commit()
+            log.info("[DB] A/B 테스트 테이블 생성 완료 (버전 20)")
+
+        # 버전 21: A/B 테스트 사용자 분배 테이블
+        if current_version < 21:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS ab_test_assignments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    test_id INTEGER NOT NULL,
+                    customer_id TEXT NOT NULL,
+                    variant TEXT NOT NULL,
+                    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (test_id) REFERENCES ab_tests(id),
+                    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+                    UNIQUE(test_id, customer_id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_ab_assignments_test
+                ON ab_test_assignments(test_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_ab_assignments_customer
+                ON ab_test_assignments(customer_id)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (21)")
+            self._conn.commit()
+            log.info("[DB] A/B 테스트 분배 테이블 생성 완료 (버전 21)")
+
+        # 버전 22: A/B 테스트 결과 테이블
+        if current_version < 22:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS ab_test_results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    test_id INTEGER NOT NULL,
+                    variant TEXT NOT NULL,
+                    metric_name TEXT NOT NULL,
+                    metric_value REAL,
+                    event_count INTEGER DEFAULT 0,
+                    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (test_id) REFERENCES ab_tests(id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_ab_results_test
+                ON ab_test_results(test_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_ab_results_variant
+                ON ab_test_results(variant)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (22)")
+            self._conn.commit()
+            log.info("[DB] A/B 테스트 결과 테이블 생성 완료 (버전 22)")
+
+        # 버전 23: 모니터링 메트릭 테이블
+        if current_version < 23:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS monitoring_metrics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    metric_name TEXT NOT NULL,
+                    metric_value REAL,
+                    metric_unit TEXT,
+                    tags TEXT,
+                    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_monitoring_name
+                ON monitoring_metrics(metric_name)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_monitoring_recorded
+                ON monitoring_metrics(recorded_at)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (23)")
+            self._conn.commit()
+            log.info("[DB] 모니터링 메트릭 테이블 생성 완료 (버전 23)")
+
+        # 버전 24: 분석 추이 테이블
+        if current_version < 24:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS analysis_trends (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id TEXT NOT NULL,
+                    analysis_id INTEGER NOT NULL,
+                    overall_score_original REAL,
+                    overall_score_restored REAL,
+                    measurement_scores TEXT,
+                    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+                    FOREIGN KEY (analysis_id) REFERENCES analyses(id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_trends_customer
+                ON analysis_trends(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_trends_recorded
+                ON analysis_trends(recorded_at)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (24)")
+            self._conn.commit()
+            log.info("[DB] 분석 추이 테이블 생성 완료 (버전 24)")
+
         # 피부 타입 검증 테이블 생성
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS skin_type_validations (
@@ -2462,6 +2647,343 @@ class SkinAnalysisDB:
             if updated:
                 log.info("[DB] 웹훅 업데이트: webhook_id=%s", webhook_id)
             return updated
+
+    # ── 이미지 업로드 관리 ───────────────────────────────────────────────────────
+
+    def create_image_upload(
+        self,
+        customer_id: str,
+        upload_id: str,
+        original_filename: str,
+        file_path: str,
+        file_size: Optional[int] = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        rotation_angle: int = 0,
+    ) -> bool:
+        """이미지 업로드 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO image_uploads 
+                    (customer_id, upload_id, original_filename, file_path, file_size, width, height, rotation_angle)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (customer_id, upload_id, original_filename, file_path, file_size, width, height, rotation_angle),
+                )
+                self._conn.commit()
+                log.info("[DB] 이미지 업로드 생성: upload_id=%s", upload_id)
+                return True
+            except sqlite3.IntegrityError:
+                log.warning("[DB] 이미지 업로드 중복: upload_id=%s", upload_id)
+                return False
+
+    def update_image_upload_status(
+        self,
+        upload_id: str,
+        upload_status: str,
+        processed_at: Optional[datetime] = None,
+    ) -> bool:
+        """이미지 업로드 상태 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                UPDATE image_uploads 
+                SET upload_status = ?, processed_at = COALESCE(?, processed_at)
+                WHERE upload_id = ?
+                """,
+                (upload_status, processed_at, upload_id),
+            )
+            self._conn.commit()
+            updated = cursor.rowcount > 0
+            if updated:
+                log.info("[DB] 이미지 업로드 상태 업데이트: upload_id=%s, status=%s", upload_id, upload_status)
+            return updated
+
+    def get_image_uploads(
+        self,
+        customer_id: Optional[str] = None,
+        upload_status: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """이미지 업로드 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = "SELECT * FROM image_uploads WHERE 1=1"
+            params = []
+            
+            if customer_id:
+                query += " AND customer_id = ?"
+                params.append(customer_id)
+            if upload_status:
+                query += " AND upload_status = ?"
+                params.append(upload_status)
+            
+            query += " ORDER BY created_at DESC LIMIT ?"
+            params.append(limit)
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
+
+    # ── 푸시 알림 선호도 ───────────────────────────────────────────────────────
+
+    def set_push_preferences(
+        self,
+        customer_id: str,
+        push_enabled: bool = True,
+        analysis_complete_enabled: bool = True,
+        promotion_enabled: bool = False,
+        quiet_hours_start: Optional[str] = None,
+        quiet_hours_end: Optional[str] = None,
+        device_token: Optional[str] = None,
+        platform: Optional[str] = None,
+    ) -> bool:
+        """푸시 알림 선호도 설정"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO push_preferences 
+                    (customer_id, push_enabled, analysis_complete_enabled, promotion_enabled, quiet_hours_start, quiet_hours_end, device_token, platform)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(customer_id) DO UPDATE SET
+                        push_enabled = excluded.push_enabled,
+                        analysis_complete_enabled = excluded.analysis_complete_enabled,
+                        promotion_enabled = excluded.promotion_enabled,
+                        quiet_hours_start = excluded.quiet_hours_start,
+                        quiet_hours_end = excluded.quiet_hours_end,
+                        device_token = excluded.device_token,
+                        platform = excluded.platform,
+                        updated_at = CURRENT_TIMESTAMP
+                    """,
+                    (customer_id, push_enabled, analysis_complete_enabled, promotion_enabled, quiet_hours_start, quiet_hours_end, device_token, platform),
+                )
+                self._conn.commit()
+                log.info("[DB] 푸시 알림 선호도 설정: customer_id=%s", customer_id)
+                return True
+            except Exception as e:
+                log.error("[DB] 푸시 알림 선호도 설정 실패: %s", e)
+                return False
+
+    def get_push_preferences(self, customer_id: str) -> Optional[Dict[str, Any]]:
+        """푸시 알림 선호도 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                "SELECT * FROM push_preferences WHERE customer_id = ?",
+                (customer_id,),
+            )
+            row = cursor.fetchone()
+            if row:
+                columns = [desc[0] for desc in cursor.description]
+                return dict(zip(columns, row))
+            return None
+
+    # ── A/B 테스트 관리 ───────────────────────────────────────────────────────
+
+    def create_ab_test(
+        self,
+        test_name: str,
+        variant_a_name: str,
+        variant_b_name: str,
+        description: Optional[str] = None,
+        traffic_split: float = 0.5,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> bool:
+        """A/B 테스트 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO ab_tests 
+                    (test_name, description, variant_a_name, variant_b_name, traffic_split, start_date, end_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (test_name, description, variant_a_name, variant_b_name, traffic_split, start_date, end_date),
+                )
+                self._conn.commit()
+                log.info("[DB] A/B 테스트 생성: test_name=%s", test_name)
+                return True
+            except sqlite3.IntegrityError:
+                log.warning("[DB] A/B 테스트 중복: test_name=%s", test_name)
+                return False
+
+    def assign_user_to_variant(
+        self,
+        test_id: int,
+        customer_id: str,
+        variant: str,
+    ) -> bool:
+        """사용자를 A/B 테스트 변형에 할당"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO ab_test_assignments (test_id, customer_id, variant)
+                    VALUES (?, ?, ?)
+                    """,
+                    (test_id, customer_id, variant),
+                )
+                self._conn.commit()
+                log.info("[DB] A/B 테스트 할당: test_id=%s, customer_id=%s, variant=%s", test_id, customer_id, variant)
+                return True
+            except sqlite3.IntegrityError:
+                log.warning("[DB] A/B 테스트 할당 중복: test_id=%s, customer_id=%s", test_id, customer_id)
+                return False
+
+    def get_user_variant(self, test_id: int, customer_id: str) -> Optional[str]:
+        """사용자의 A/B 테스트 변형 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                "SELECT variant FROM ab_test_assignments WHERE test_id = ? AND customer_id = ?",
+                (test_id, customer_id),
+            )
+            row = cursor.fetchone()
+            return row[0] if row else None
+
+    def record_ab_test_result(
+        self,
+        test_id: int,
+        variant: str,
+        metric_name: str,
+        metric_value: Optional[float] = None,
+        event_count: int = 1,
+    ) -> bool:
+        """A/B 테스트 결과 기록"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO ab_test_results (test_id, variant, metric_name, metric_value, event_count)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (test_id, variant, metric_name, metric_value, event_count),
+            )
+            self._conn.commit()
+            log.info("[DB] A/B 테스트 결과 기록: test_id=%s, variant=%s, metric=%s", test_id, variant, metric_name)
+            return True
+
+    def get_ab_test_results(self, test_id: int) -> List[Dict[str, Any]]:
+        """A/B 테스트 결과 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                SELECT variant, metric_name, AVG(metric_value) as avg_value, SUM(event_count) as total_events
+                FROM ab_test_results
+                WHERE test_id = ?
+                GROUP BY variant, metric_name
+                """,
+                (test_id,),
+            )
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
+
+    # ── 모니터링 메트릭 ───────────────────────────────────────────────────────
+
+    def record_metric(
+        self,
+        metric_name: str,
+        metric_value: float,
+        metric_unit: Optional[str] = None,
+        tags: Optional[Dict[str, str]] = None,
+    ) -> bool:
+        """모니터링 메트릭 기록"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO monitoring_metrics (metric_name, metric_value, metric_unit, tags)
+                VALUES (?, ?, ?, ?)
+                """,
+                (metric_name, metric_value, metric_unit, json.dumps(tags) if tags else None),
+            )
+            self._conn.commit()
+            return True
+
+    def get_metrics(
+        self,
+        metric_name: Optional[str] = None,
+        since: Optional[datetime] = None,
+        limit: int = 1000,
+    ) -> List[Dict[str, Any]]:
+        """모니터링 메트릭 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = "SELECT * FROM monitoring_metrics WHERE 1=1"
+            params = []
+            
+            if metric_name:
+                query += " AND metric_name = ?"
+                params.append(metric_name)
+            if since:
+                query += " AND recorded_at >= ?"
+                params.append(since)
+            
+            query += " ORDER BY recorded_at DESC LIMIT ?"
+            params.append(limit)
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
+
+    # ── 분석 추이 ───────────────────────────────────────────────────────────
+
+    def record_analysis_trend(
+        self,
+        customer_id: str,
+        analysis_id: int,
+        overall_score_original: float,
+        overall_score_restored: float,
+        measurement_scores: Dict[str, float],
+    ) -> bool:
+        """분석 추이 기록"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO analysis_trends 
+                (customer_id, analysis_id, overall_score_original, overall_score_restored, measurement_scores)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (customer_id, analysis_id, overall_score_original, overall_score_restored, json.dumps(measurement_scores)),
+            )
+            self._conn.commit()
+            log.info("[DB] 분석 추이 기록: customer_id=%s, analysis_id=%s", customer_id, analysis_id)
+            return True
+
+    def get_analysis_trends(
+        self,
+        customer_id: str,
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
+        """분석 추이 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                SELECT * FROM analysis_trends
+                WHERE customer_id = ?
+                ORDER BY recorded_at ASC
+                LIMIT ?
+                """,
+                (customer_id, limit),
+            )
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
 
     def delete_webhook(self, webhook_id: str) -> bool:
         """웹훅 삭제"""

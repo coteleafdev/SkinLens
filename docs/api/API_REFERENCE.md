@@ -65,6 +65,7 @@ graph TB
 | 고객 API | `/v1/customers/*` | 웹, 모바일 | 필수 | 고객 데이터 관리 |
 | 관리자 API | `/v1/admin/*` | 웹서버, 관리자 | 필수 (admin) | 시스템 관리 |
 | 연동 API | `/v1/webhooks/*`<br/>`/v1/integration/*`<br/>`/v1/oauth/*` | 웹서버 | 필수 (admin) | 외부 시스템 연동 |
+| 향상 기능 API | `/v1/enhancements/*` | 웹, 모바일 | 필수 | 이미지 업로드, 푸시, A/B 테스트, 모니터링 |
 | WebSocket | `/v1/ws/*` | 웹, 모바일 | 필수 | 실시간 진행률 |
 
 ---
@@ -2187,6 +2188,289 @@ ws.onmessage = (event) => {
 **환경 변수 설정 예시:**
 ```bash
 export ALLOWED_ORIGINS=https://external-server.com,https://another-domain.com
+```
+
+---
+
+## 8. 향상 기능 (Enhancements)
+
+### 8.1 이미지 업로드
+
+**POST** `/v1/enhancements/upload`
+
+이미지를 업로드합니다. 파일 크기 제한: 10MB, 지원 형식: jpg, jpeg, png.
+
+**Request:**
+- multipart/form-data
+- `file`: 이미지 파일
+- `rotation_angle`: 회전 각도 (기본값: 0)
+
+**Response (200 OK):**
+```json
+{
+  "upload_id": "uuid-string",
+  "filename": "image.jpg",
+  "file_size": 1024000,
+  "width": 1920,
+  "height": 1080,
+  "rotation_angle": 0,
+  "status": "pending"
+}
+```
+
+**GET** `/v1/enhancements/uploads`
+
+이미지 업로드 목록을 조회합니다.
+
+**Query Parameters:**
+- `upload_status`: 필터링할 상태 (선택적)
+- `limit`: 최대 개수 (기본값: 100)
+
+**Response (200 OK):**
+```json
+{
+  "uploads": [
+    {
+      "id": 1,
+      "customer_id": "CUST001",
+      "upload_id": "uuid-string",
+      "original_filename": "image.jpg",
+      "file_path": "/uploads/uuid_image.jpg",
+      "file_size": 1024000,
+      "width": 1920,
+      "height": 1080,
+      "rotation_angle": 0,
+      "upload_status": "completed",
+      "created_at": "2026-05-31T10:00:00Z",
+      "processed_at": "2026-05-31T10:01:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8.2 푸시 알림 선호도
+
+**POST** `/v1/enhancements/push/preferences`
+
+푸시 알림 선호도를 설정합니다.
+
+**Request Body:**
+```json
+{
+  "push_enabled": true,
+  "analysis_complete_enabled": true,
+  "promotion_enabled": false,
+  "quiet_hours_start": "22:00",
+  "quiet_hours_end": "08:00",
+  "device_token": "fcm-token-string",
+  "platform": "ios"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Push preferences updated successfully"
+}
+```
+
+**GET** `/v1/enhancements/push/preferences`
+
+푸시 알림 선호도를 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "push_enabled": true,
+  "analysis_complete_enabled": true,
+  "promotion_enabled": false,
+  "quiet_hours_start": "22:00",
+  "quiet_hours_end": "08:00",
+  "device_token": "fcm-token-string",
+  "platform": "ios"
+}
+```
+
+---
+
+### 8.3 A/B 테스트
+
+**POST** `/v1/enhancements/ab/tests`
+
+A/B 테스트를 생성합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "test_name": "ui_redesign_test",
+  "variant_a_name": "original_ui",
+  "variant_b_name": "new_ui",
+  "description": "UI redesign A/B test",
+  "traffic_split": 0.5,
+  "start_date": "2026-05-31T00:00:00Z",
+  "end_date": "2026-06-30T23:59:59Z"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "A/B test created successfully",
+  "test_name": "ui_redesign_test"
+}
+```
+
+**POST** `/v1/enhancements/ab/assign`
+
+사용자를 A/B 테스트 변형에 할당합니다. 트래픽 분할 비율에 따라 자동으로 변형이 할당됩니다.
+
+**Query Parameters:**
+- `test_id`: 테스트 ID
+
+**Response (200 OK):**
+```json
+{
+  "variant": "A"
+}
+```
+
+**GET** `/v1/enhancements/ab/variant/{test_id}`
+
+사용자의 A/B 테스트 변형을 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "variant": "A"
+}
+```
+
+**POST** `/v1/enhancements/ab/results`
+
+A/B 테스트 결과를 기록합니다.
+
+**Request Body:**
+```json
+{
+  "test_id": 1,
+  "variant": "A",
+  "metric_name": "click_rate",
+  "metric_value": 0.05,
+  "event_count": 100
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Test result recorded successfully"
+}
+```
+
+**GET** `/v1/enhancements/ab/results/{test_id}`
+
+A/B 테스트 결과를 조회합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "results": [
+    {
+      "variant": "A",
+      "metric_name": "click_rate",
+      "avg_value": 0.05,
+      "total_events": 1000
+    },
+    {
+      "variant": "B",
+      "metric_name": "click_rate",
+      "avg_value": 0.07,
+      "total_events": 950
+    }
+  ]
+}
+```
+
+---
+
+### 8.4 모니터링 메트릭
+
+**POST** `/v1/enhancements/metrics`
+
+모니터링 메트릭을 기록합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "metric_name": "api_response_time",
+  "metric_value": 0.5,
+  "metric_unit": "seconds",
+  "tags": {
+    "endpoint": "/v1/analysis/jobs",
+    "method": "POST"
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Metric recorded successfully"
+}
+```
+
+**GET** `/v1/enhancements/metrics`
+
+모니터링 메트릭을 조회합니다 (관리자 전용).
+
+**Query Parameters:**
+- `metric_name`: 필터링할 메트릭 이름 (선택적)
+- `limit`: 최대 개수 (기본값: 1000)
+
+**Response (200 OK):**
+```json
+{
+  "metrics": [
+    {
+      "id": 1,
+      "metric_name": "api_response_time",
+      "metric_value": 0.5,
+      "metric_unit": "seconds",
+      "tags": "{\"endpoint\": \"/v1/analysis/jobs\"}",
+      "recorded_at": "2026-05-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8.5 분석 추이
+
+**GET** `/v1/enhancements/trends`
+
+분석 추이를 조회합니다 (시계열 데이터).
+
+**Query Parameters:**
+- `limit`: 최대 개수 (기본값: 50)
+
+**Response (200 OK):**
+```json
+{
+  "trends": [
+    {
+      "id": 1,
+      "customer_id": "CUST001",
+      "analysis_id": 100,
+      "overall_score_original": 60,
+      "overall_score_restored": 75,
+      "measurement_scores": "{\"melasma_score\": 50, \"redness_score\": 40}",
+      "recorded_at": "2026-05-31T10:00:00Z"
+    }
+  ]
+}
 ```
 
 ---

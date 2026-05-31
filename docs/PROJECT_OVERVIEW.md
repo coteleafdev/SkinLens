@@ -1,6 +1,6 @@
 # SkinLens v1.0 - 프로젝트 개요
 
-> **버전:** v3.7
+> **버전:** v3.8
 > **수정일:** 2026-05-31
 
 ## 문서 목적
@@ -309,6 +309,93 @@ result = restorer.restore("input.jpg", "output.jpg")
 - REST API: 표준 HTTP 기반 통신
 
 **자세한 가이드**: [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md)
+
+---
+
+### 3.9 이미지 업로드 개선
+
+**개요**: 향상된 이미지 업로드 기능을 제공합니다.
+
+**특징**:
+- 파일 크기 제한 (10MB)
+- 지원 형식 (jpg, jpeg, png)
+- 자동 회전 지원
+- 이미지 크기 자동 감지
+- 업로드 상태 추적
+
+**API**:
+- POST `/v1/enhancements/upload` - 이미지 업로드
+- GET `/v1/enhancements/uploads` - 업로드 목록 조회
+
+---
+
+### 3.10 푸시 알림 개인화
+
+**개요**: 사용자 선호도 기반 푸시 알림을 제공합니다.
+
+**특징**:
+- 푸시 알림 ON/OFF
+- 알림 유형별 설정 (분석 완료, 프로모션)
+- 조용한 시간 설정
+- 디바이스 토큰 관리
+- 플랫폼별 설정 (iOS, Android)
+
+**API**:
+- POST `/v1/enhancements/push/preferences` - 선호도 설정
+- GET `/v1/enhancements/push/preferences` - 선호도 조회
+
+---
+
+### 3.11 A/B 테스트 프레임워크
+
+**개요**: A/B 테스트를 위한 프레임워크를 제공합니다.
+
+**특징**:
+- 테스트 생성/관리
+- 사용자 자동 분배
+- 트래픽 분할 비율 설정
+- 결과 기록 및 분석
+- 변형별 메트릭 비교
+
+**API**:
+- POST `/v1/enhancements/ab/tests` - 테스트 생성
+- POST `/v1/enhancements/ab/assign` - 사용자 할당
+- GET `/v1/enhancements/ab/variant/{test_id}` - 변형 조회
+- POST `/v1/enhancements/ab/results` - 결과 기록
+- GET `/v1/enhancements/ab/results/{test_id}` - 결과 조회
+
+---
+
+### 3.12 모니터링 대시보드
+
+**개요**: 시스템 모니터링을 위한 메트릭 수집 기능을 제공합니다.
+
+**특징**:
+- 메트릭 기록 (이름, 값, 단위)
+- 태그 기반 필터링
+- 시계열 데이터 조회
+- 실시간 모니터링 지원
+
+**API**:
+- POST `/v1/enhancements/metrics` - 메트릭 기록
+- GET `/v1/enhancements/metrics` - 메트릭 조회
+
+---
+
+### 3.13 분석 추이
+
+**개요**: 시계열 분석 추이 데이터를 제공합니다.
+
+**특징**:
+- 전체 점수 추이
+- 측정항목별 추이
+- 시계열 그래프 지원
+- 과거 분석 비교
+
+**API**:
+- GET `/v1/enhancements/trends` - 추이 조회
+
+**자세한 가이드**: [API_REFERENCE.md](api/API_REFERENCE.md)
 
 ---
 
@@ -1287,6 +1374,20 @@ chmod +x deploy.sh
 - 아키텍처 가이드 보완 (전체 시스템 아키텍처 섹션 추가)
 - API 레퍼런스 보완 (API 아키텍처 개요 추가)
 - 연동 API 테스트 완료 (webhook, sync, OAuth)
+
+### v3.8 주요 변경 사항 상세
+
+**향상된 기능 구현 (단기 우선순위)**
+- 데이터베이스 스키마 확장 (image_uploads, push_preferences, ab_tests, ab_test_assignments, ab_test_results, monitoring_metrics, analysis_trends 테이블)
+- 이미지 업로드 개선 API 구현 (/v1/enhancements/upload, /v1/enhancements/uploads)
+- 푸시 알림 개인화 API 구현 (/v1/enhancements/push/preferences)
+- A/B 테스트 프레임워크 API 구현 (/v1/enhancements/ab/*)
+- 모니터링 메트릭 API 구현 (/v1/enhancements/metrics)
+- 분석 추이 API 구현 (/v1/enhancements/trends)
+- 분석 완료 시 자동 추이 기록 추가
+- 향상 기능 API 테스트 작성 (test_enhancements_api.py)
+- API 레퍼런스 보완 (향상 기능 섹션 추가)
+- 프로젝트 개요 보완 (향상 기능 섹션 추가)
 
 ### v3.6 주요 변경 사항 상세
 

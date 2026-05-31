@@ -66,7 +66,7 @@ except ImportError:
     WATCHDOG_AVAILABLE = False
 
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
-from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload, integration
+from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload, integration, enhancements
 
 # config.json에서 로그 레벨 로드
 _log_level = _load_logging_level()
@@ -341,6 +341,7 @@ app.include_router(websocket.router)
 app.include_router(health.router)
 app.include_router(upload.router)
 app.include_router(integration.router)
+app.include_router(enhancements.router)
 
 
 # ── 직접 실행 ─────────────────────────────────────────────────────────────
