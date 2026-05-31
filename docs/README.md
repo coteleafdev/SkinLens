@@ -40,6 +40,7 @@ docs/
 | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | 프로젝트 전체 개요, 아키텍처, 기능 설명 | 모든 사용자 |
 | [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md) | 외부 시스템 연동 가이드 (웹훅, 콜백, OAuth, WebSocket) | 개발자, DevOps |
 | [INTEGRATION_TEST_GUIDE.md](INTEGRATION_TEST_GUIDE.md) | 연동 테스트 가이드 | 개발자, QA |
+| [APP_FEATURE_RECOMMENDATIONS.md](APP_FEATURE_RECOMMENDATIONS.md) | 앱 기능 추천 | 제품 디자이너, 개발자 |
 
 ### 🔌 API 문서 (api/)
 
@@ -172,8 +173,12 @@ docs/
 2. [MOBILE_APP_GUIDE.md](user/MOBILE_APP_GUIDE.md) - 모바일 앱 사용법
 3. [PRODUCT_PURCHASE_GUIDE.md](user/PRODUCT_PURCHASE_GUIDE.md) - 제품 구매 방법
 4. [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](user/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md) - 세럼 처방 안내
+5. [APP_FEATURE_RECOMMENDATIONS.md](APP_FEATURE_RECOMMENDATIONS.md) - 앱 기능 추천
 
 ### 주제별 검색
+
+#### 앱 기능
+- [APP_FEATURE_RECOMMENDATIONS.md](APP_FEATURE_RECOMMENDATIONS.md) - 앱 기능 추천
 
 #### 향상된 기능
 - [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#39-이미지-업로드-개선) - 이미지 업로드 개선
