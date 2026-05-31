@@ -1,7 +1,9 @@
-# In-Process Model 상주 아키텍처 설계
+# In-Process Model 상주 아키텍처 설계 (In-Process Model Architecture)
 
-> **작성일:** 2026-05-24  
-> **목적:** subprocess cold-start → in-process 모델 상주 아키텍처 변경 계획
+> **문서 버전:** 1.0.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-05-31  
+> **상태:** 활성
 
 ---
 
@@ -239,3 +241,12 @@ def check_memory_usage():
   - `src/restoration/strategies/codeformer_restorer.py`
   - `src/restoration/strategies/restoreformer_restorer.py`
   - `src/pipeline/pipeline_core.py`
+
+---
+
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
+| 0.1.0 | 2026-05-24 | In-Process Model 상주 아키텍처 설계 문서 초기 작성 | Cascade |

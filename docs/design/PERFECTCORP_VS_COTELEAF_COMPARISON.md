@@ -1,8 +1,9 @@
-# Perfect Corp vs COTELEAF skin_scoring — 측정항목 비교
+# Perfect Corp vs COTELEAF 측정항목 비교 (Perfect Corp vs COTELEAF Comparison)
 
-> Perfect Corp 출처: perfectcorp.com/business/products/ai-skin-diagnostic (2026-04-29 기준)  
-> COTELEAF 출처: `skin_scoring.py` v3.2  
-> Perfect Corp 15개 / COTELEAF 17개 (9 카테고리)
+> **문서 버전:** 1.0.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-05-31  
+> **상태:** 활성
 
 ---
 
@@ -119,6 +120,9 @@
 
 ---
 
-*생성일: 2026-04-29*  
-*Perfect Corp 공식 사이트: perfectcorp.com/business/products/ai-skin-diagnostic*  
-*COTELEAF 기준: skin_scoring.py v3.2*
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
+| 0.1.0 | 2026-04-29 | Perfect Corp vs COTELEAF 측정항목 비교 문서 초기 작성 | Cascade |

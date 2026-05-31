@@ -211,6 +211,167 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/project/CODE_REVIEW_HISTORY.md"
     },
+    "AB_TESTING_FRAMEWORK_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/AB_TESTING_FRAMEWORK_DESIGN.md"
+    },
+    "ANALYSIS_RESULT_SHARING_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/ANALYSIS_RESULT_SHARING_DESIGN.md"
+    },
+    "AUTO_RECOVERY_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/AUTO_RECOVERY_DESIGN.md"
+    },
+    "AUTO_SCALING_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/AUTO_SCALING_DESIGN.md"
+    },
+    "DESIGN_REFERENCE_GUIDED_SCORING": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/DESIGN_REFERENCE_GUIDED_SCORING.md"
+    },
+    "DIAGNOSIS_FEEDBACK_LOOP_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md"
+    },
+    "FACE_AUTHENTICATION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/FACE_AUTHENTICATION_DESIGN.md"
+    },
+    "GDPR_COMPLIANCE_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/GDPR_COMPLIANCE_DESIGN.md"
+    },
+    "IMAGE_ENCRYPTION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/IMAGE_ENCRYPTION_DESIGN.md"
+    },
+    "IN_PROCESS_MODEL_ARCHITECTURE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/IN_PROCESS_MODEL_ARCHITECTURE.md"
+    },
+    "MULTI_IMAGE_ANALYSIS_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/MULTI_IMAGE_ANALYSIS_DESIGN.md"
+    },
+    "MULTI_LANGUAGE_SUPPORT_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/MULTI_LANGUAGE_SUPPORT_DESIGN.md"
+    },
+    "PERFECTCORP_VS_COTELEAF_COMPARISON": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PERFECTCORP_VS_COTELEAF_COMPARISON.md"
+    },
+    "PRESCRIPTION_HISTORY_TRACKING_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PRESCRIPTION_HISTORY_TRACKING_DESIGN.md"
+    },
+    "PRICE_FILTER_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PRICE_FILTER_DESIGN.md"
+    },
+    "PRODUCT_REVIEW_AND_OFFLINE_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PRODUCT_REVIEW_AND_OFFLINE_DESIGN.md"
+    },
+    "PUSH_NOTIFICATION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PUSH_NOTIFICATION_DESIGN.md"
+    },
+    "REALTIME_RESTORATION_PREVIEW_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/REALTIME_RESTORATION_PREVIEW_DESIGN.md"
+    },
+    "REGIONAL_RESTORATION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/REGIONAL_RESTORATION_DESIGN.md"
+    },
+    "SCORE_CORRECTION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/SCORE_CORRECTION_DESIGN.md"
+    },
+    "SKIN_TYPE_AUTO_DETECTION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/SKIN_TYPE_AUTO_DETECTION_DESIGN.md"
+    },
+    "TIME_SERIES_ANALYSIS_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/TIME_SERIES_ANALYSIS_DESIGN.md"
+    },
+    "WEBSOCKET_PROGRESS": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/WEBSOCKET_PROGRESS.md"
+    },
 }
 
 
