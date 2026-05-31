@@ -32,6 +32,7 @@ from src.server.deps import (
     get_max_upload_bytes,
     get_allowed_extensions,
     get_server_url,
+    SERVER_URL,
     JOB_SEMAPHORE,
     JOB_SEMAPHORE_TIMEOUT_SEC,
     get_shared_executor,

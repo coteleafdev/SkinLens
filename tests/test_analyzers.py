@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from src.skin.analyzers.pigmentation import analyze_pigmentation, make_pigment_mask
-from src.skin.analyzers.redness import analyze_redness
+from src.skin.analyzers.strategies.redness_analyzer import analyze_redness
 from src.skin.analyzers.pore import analyze_pores
 from src.skin.analyzers.wrinkle_texture import (
     analyze_wrinkles,

@@ -27,9 +27,9 @@ from fastapi.responses import JSONResponse
 
 from src.db.skin_analysis_db import SkinAnalysisDB
 from src.server.deps import get_current_customer
-from src.utils.logging import get_logger
+import logging
 
-log = get_logger(__name__)
+log = logging.getLogger(__name__)
 
 router = APIRouter(tags=["integration"])
 

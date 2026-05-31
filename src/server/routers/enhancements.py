@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from pydantic import BaseModel, Field
 
 from src.db.skin_analysis_db import SkinAnalysisDB
-from src.server.auth import get_current_customer, get_current_admin
+from src.server.deps import get_current_customer
 from src.utils.config import load_config
 
 log = logging.getLogger(__name__)
@@ -200,10 +200,12 @@ async def get_push_preferences(
 @router.post("/ab/tests")
 async def create_ab_test(
     request: ABTestCreateRequest,
-    admin_id: str = Depends(get_current_admin),
+    current_customer: dict = Depends(get_current_customer),
     db: SkinAnalysisDB = Depends(get_db),
 ):
     """A/B 테스트 생성 (관리자 전용)"""
+    if current_customer.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     success = db.create_ab_test(
         test_name=request.test_name,
         variant_a_name=request.variant_a_name,
@@ -291,10 +293,12 @@ async def record_ab_test_result(
 @router.get("/ab/results/{test_id}")
 async def get_ab_test_results(
     test_id: int,
-    admin_id: str = Depends(get_current_admin),
+    current_customer: dict = Depends(get_current_customer),
     db: SkinAnalysisDB = Depends(get_db),
 ):
     """A/B 테스트 결과 조회 (관리자 전용)"""
+    if current_customer.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     results = db.get_ab_test_results(test_id=test_id)
     return {"results": results}
 
@@ -303,10 +307,12 @@ async def get_ab_test_results(
 @router.post("/metrics")
 async def record_metric(
     request: MetricRecordRequest,
-    admin_id: str = Depends(get_current_admin),
+    current_customer: dict = Depends(get_current_customer),
     db: SkinAnalysisDB = Depends(get_db),
 ):
     """모니터링 메트릭 기록 (관리자 전용)"""
+    if current_customer.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     success = db.record_metric(
         metric_name=request.metric_name,
         metric_value=request.metric_value,
@@ -326,10 +332,12 @@ async def record_metric(
 async def get_metrics(
     metric_name: Optional[str] = None,
     limit: int = 1000,
-    admin_id: str = Depends(get_current_admin),
+    current_customer: dict = Depends(get_current_customer),
     db: SkinAnalysisDB = Depends(get_db),
 ):
     """모니터링 메트릭 조회 (관리자 전용)"""
+    if current_customer.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     metrics = db.get_metrics(
         metric_name=metric_name,
         limit=limit,
