@@ -260,9 +260,25 @@ def test_full_flow_image_upload_to_result_retrieval(
     assert upload_response.status_code == 202
     job_id = upload_response.json()["job_id"]
     
-    # 2. 엔진 서버: 백그라운드 분석 수행
+    # 2. 엔진 서버: 백그라운드 분석 수행 (폴링 방식)
     import time
-    time.sleep(2)  # 분석 완료 대기
+    max_wait_time = 30
+    poll_interval = 1
+    elapsed_time = 0
+    
+    while elapsed_time < max_wait_time:
+        result_response = authenticated_client.get(
+            f"/v1/analysis/jobs/{job_id}",
+            headers=admin_auth_headers
+        )
+        
+        if result_response.status_code == 200:
+            result_data = result_response.json()
+            if result_data["status"] in ["completed", "failed"]:
+                break
+        
+        time.sleep(poll_interval)
+        elapsed_time += poll_interval
     
     # 3. 웹 서버: 결과 조회
     result_response = authenticated_client.get(
@@ -270,12 +286,10 @@ def test_full_flow_image_upload_to_result_retrieval(
         headers=admin_auth_headers
     )
     
-    assert result_response.status_code in [200, 202]
-    
-    if result_response.status_code == 200:
-        result_data = result_response.json()
-        assert result_data["status"] in ["completed", "failed"]
-        assert result_data["customer_id"] == "CUST001"
+    assert result_response.status_code == 200
+    result_data = result_response.json()
+    assert result_data["status"] in ["completed", "failed"]
+    assert result_data["customer_id"] == "CUST001"
 
 def test_engine_server_analysis_direct(temp_dir, test_image):
     """엔진 서버 직접 호출 테스트"""
@@ -289,6 +303,29 @@ def test_engine_server_analysis_direct(temp_dir, test_image):
     assert "measurements" in result
     assert 0 <= result["overall_score"] <= 100
 ```
+
+#### 추가 통합 테스트
+
+전체 시스템 통합 테스트에는 다음과 같은 추가 테스트가 포함됩니다:
+
+**에러 핸들링 테스트**
+- `test_error_handling_invalid_image`: 잘못된 이미지 업로드 테스트
+- `test_error_handling_missing_required_fields`: 필수 필드 누락 테스트
+- `test_error_handling_nonexistent_job`: 존재하지 않는 Job 조회 테스트
+
+**DB 데이터 검증**
+- `test_db_data_verification`: 분석 결과가 DB에 저장되는지 확인
+
+**동시성 테스트**
+- `test_concurrent_requests`: 여러 요청 동시 처리 테스트
+
+**기능 테스트**
+- `test_websocket_progress_updates`: WebSocket 진행률 업데이트 테스트
+- `test_image_restoration`: 이미지 복원 기능 테스트
+- `test_llm_report_generation`: LLM 보고서 생성 테스트
+
+**데이터 정리**
+- `test_data_cleanup`: 테스트 데이터 정리 확인
 
 ---
 
