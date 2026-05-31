@@ -68,8 +68,8 @@ def get_rate_limit_key(request: Any) -> str:
             )
             role = payload.get("role", "default")
             return f"{ip}:{role}"
-    except Exception:
-        pass
+    except (jwt.DecodeError, jwt.InvalidTokenError, ValueError):
+        pass  # [FIX P2] 구체적 예외
 
     # 토큰이 없거나 파싱 실패 시 IP만 사용
     return f"{ip}:default"

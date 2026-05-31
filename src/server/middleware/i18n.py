@@ -76,6 +76,6 @@ class I18nMiddleware(BaseHTTPMiddleware):
                 status_code=response.status_code,
                 headers=dict(response.headers),
             )
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:  # [FIX P2] 구체적 예외
             log.error(f"[I18n] 응답 번역 실패: {e}")
             return response

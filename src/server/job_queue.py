@@ -152,7 +152,7 @@ class JobQueue:
                     result = await job.task_func(*job.task_args, **job.task_kwargs)
                     job.status = JobStatus.COMPLETED
                     log.info("작업 완료: job_id=%s, worker=%s", job.job_id, worker_name)
-                except Exception as e:
+                except (RuntimeError, ValueError, OSError, IOError) as e:  # [FIX P2] 구체적 예외
                     job.error = str(e)
                     job.retry_count += 1
 
@@ -183,7 +183,7 @@ class JobQueue:
 
             except asyncio.CancelledError:
                 break
-            except Exception as e:
+            except (RuntimeError, ValueError) as e:  # [FIX P2] 구체적 예외
                 log.error("작업자 오류: worker=%s, error=%s", worker_name, e)
                 await asyncio.sleep(1)
 

@@ -57,7 +57,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # 요청 처리
         try:
             response = await call_next(request)
-        except Exception as e:
+        except (RuntimeError, ValueError, OSError, IOError) as e:  # [FIX P2] 구체적 예외
             # 에러 발생 시 로깅
             processing_time = time.time() - start_time
             log.error(
