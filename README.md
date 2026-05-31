@@ -567,6 +567,12 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - **백그라운드 태스크 참조 보관**: `server.py`에서 `asyncio.create_task()`로 생성된 태스크를 변수로 잡아두지 않아 GC 대상이 될 수 있음. 모듈/`app.state`에 `set`으로 보관 완료
 - **DB 커넥션 누수 수정**: `_system_health_monitor`가 5분마다 `ExecutionHistoryDB(...)`를 새로 생성하고 닫지 않음. 싱글톤 사용으로 수정 완료
 
+#### 기타 개선 (P2) - 완료
+
+- **GUI 종료 처리 단순화**: image_enhancer.py에서 이중/삼중 종료 예약 제거, 단일 quit 호출로 단순화
+- **telegram/notifier.py 파일 분할**: 1,239 LOC를 3개 파일로 분리 (notifier.py, statistics_collector.py, fault_reporter.py)
+- **패키징 문제**: .gitignore에 이미 필요한 파일 포함됨 (backup/, results/*.db, __pycache__/, archive/ 등)
+
 #### Phase 2 안정성 개선 (2026-05-16)
 
 - **Phase 2.2**: strip-norm 루프 3중 복제 제거 (_strip_normalize_L 공통 함수 추가)
