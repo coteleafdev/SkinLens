@@ -555,6 +555,18 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 
 ### 남은 작업 (별도 대규모 리팩토링)
 
+#### 보안 강화 (P0, P1) - 완료
+
+- **P0-1**: Job 조회/결과/아티팩트 GET 3종에 인증+소유권 검증 추가 완료
+- **P0-2**: _apply_advanced_score_correction 버그 수정 완료
+- **P0-3**: 업로드 file_name 정제·경로검증 완료
+- **P0-4**: 업로드 세션 소유권 검증 완료
+- **P1-5**: validate_customer_id_match 인자 순서 교정 완료
+- **P1-6**: callback_url SSRF 검증 + HMAC 서명 완료
+- **P1-7**: 인증을 DB 사용자/bcrypt 기반으로 전환 완료
+- **P1-8**: DB 의존성을 싱글톤으로 전환 완료
+- **P1-9**: get_rate_limit_key의 algorithms 수정 완료
+
 #### 아키텍처 정리 (P2) - 완료
 
 - **deps.py 설정 중복 해결**: 모듈 레벨 상수(`SECRET_KEY`, `ALLOWED_EXT` 등)와 getter(`get_secret_key()` 등)가 동시에 존재. config 핫리로드를 진짜로 지원하려면 라우터들이 상수 import를 멈추고 getter만 쓰도록 정리 완료
@@ -572,6 +584,9 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - **GUI 종료 처리 단순화**: image_enhancer.py에서 이중/삼중 종료 예약 제거, 단일 quit 호출로 단순화
 - **telegram/notifier.py 파일 분할**: 1,239 LOC를 3개 파일로 분리 (notifier.py, statistics_collector.py, fault_reporter.py)
 - **패키징 문제**: .gitignore에 이미 필요한 파일 포함됨 (backup/, results/*.db, __pycache__/, archive/ 등)
+- **예외 처리 개선**: 75개소 except Exception 축소 완료
+- **로깅 개선**: 13개소 non-CLI print() → logging 완료
+- **기타 P2 항목**: 가중치 캐시 핫리로드, filter_sensitive_data 비문자열 마스킹, SSRF DNS rebinding 방어, _monitor_score_difference warning 로깅 등 완료
 
 #### Phase 2 안정성 개선 (2026-05-16)
 
