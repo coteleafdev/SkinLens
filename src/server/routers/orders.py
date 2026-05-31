@@ -1,7 +1,7 @@
 """
 orders.py — 주문 관련 API 라우터
 
-주문 생성, 상태 조회, 취소, 고객 구매 이력 조회 기능 제공
+주문 생성, 상태 조회, 취소, 고객 구매 이력 조회, 결제 콜백, 배송 상태 업데이트, 피드백 기능 제공
 """
 from __future__ import annotations
 
@@ -13,7 +13,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from src.server.deps import log
+from src.server.deps import log, get_db
+from src.db.skin_analysis_db import SkinAnalysisDB
 
 log = logging.getLogger(__name__)
 
@@ -81,6 +82,60 @@ class PurchaseHistoryResponse(BaseModel):
     total_orders: int
     total_spent: float
     orders: List[dict]
+
+
+class PaymentCallbackRequest(BaseModel):
+    order_id: str = Field(..., description="주문 ID")
+    payment_id: str = Field(..., description="결제 ID")
+    payment_status: str = Field(..., description="결제 상태 (success, failed)")
+    paid_amount: float = Field(..., description="결제 금액")
+    paid_at: str = Field(..., description="결제 시간")
+
+
+class PaymentCallbackResponse(BaseModel):
+    order_id: str
+    status: str
+    payment_status: str
+    message: str
+
+
+class UpdateShippingStatusRequest(BaseModel):
+    order_id: str = Field(..., description="주문 ID")
+    shipping_status: str = Field(..., description="배송 상태 (pending, shipped, delivered)")
+    tracking_number: Optional[str] = Field(None, description="운송장 번호")
+    shipped_at: Optional[str] = Field(None, description="발송 시간")
+    delivered_at: Optional[str] = Field(None, description="배송 완료 시간")
+
+
+class ShippingStatusResponse(BaseModel):
+    order_id: str
+    shipping_status: str
+    tracking_number: Optional[str]
+    message: str
+
+
+class ProductFeedbackRequest(BaseModel):
+    order_id: str = Field(..., description="주문 ID")
+    product_id: str = Field(..., description="제품 ID")
+    rating: int = Field(..., ge=1, le=5, description="평점 (1-5)")
+    comment: Optional[str] = Field(None, description="리뷰 코멘트")
+    would_repurchase: Optional[bool] = Field(None, description="재구매 의사")
+
+
+class ProductFeedbackResponse(BaseModel):
+    feedback_id: str
+    order_id: str
+    product_id: str
+    rating: int
+    created_at: str
+    message: str
+
+
+class ProductFeedbackListResponse(BaseModel):
+    product_id: str
+    total_reviews: int
+    average_rating: float
+    reviews: List[dict]
 
 
 # ── 데이터베이스 (임시 메모리 저장소) ─────────────────────────────────────────────
@@ -290,4 +345,162 @@ async def get_purchase_history(
         total_orders=total_orders,
         total_spent=total_spent,
         orders=orders,
+    )
+
+
+@router.post("/payment/callback", response_model=PaymentCallbackResponse)
+async def payment_callback(request: PaymentCallbackRequest):
+    """
+    결제 콜백 (결제 게이트웨이에서 호출)
+    
+    - 결제 완료 시 주문 상태 업데이트
+    - 결제 실패 시 주문 취소 처리
+    """
+    if request.order_id not in _orders_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"주문을 찾을 수 없습니다: {request.order_id}"
+        )
+    
+    order = _orders_db[request.order_id]
+    
+    if request.payment_status == "success":
+        # 결제 성공 처리
+        order["status"] = "paid"
+        order["payment_status"] = "paid"
+        order["payment_id"] = request.payment_id
+        order["paid_amount"] = request.paid_amount
+        order["paid_at"] = request.paid_at
+        order["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        log.info(f"결제 완료: {request.order_id}, 결제 ID: {request.payment_id}, 금액: {request.paid_amount}")
+        
+        return PaymentCallbackResponse(
+            order_id=request.order_id,
+            status="paid",
+            payment_status="paid",
+            message="결제가 완료되었습니다."
+        )
+    else:
+        # 결제 실패 처리
+        order["status"] = "payment_failed"
+        order["payment_status"] = "failed"
+        order["payment_id"] = request.payment_id
+        order["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        log.warning(f"결제 실패: {request.order_id}, 결제 ID: {request.payment_id}")
+        
+        return PaymentCallbackResponse(
+            order_id=request.order_id,
+            status="payment_failed",
+            payment_status="failed",
+            message="결제에 실패했습니다."
+        )
+
+
+@router.post("/shipping/status", response_model=ShippingStatusResponse)
+async def update_shipping_status(request: UpdateShippingStatusRequest):
+    """
+    배송 상태 업데이트 (관리자 또는 배송 시스템에서 호출)
+    
+    - 배송 시작: 운송장 번호 등록
+    - 배송 완료: 배송 완료 시간 기록
+    """
+    if request.order_id not in _orders_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"주문을 찾을 수 없습니다: {request.order_id}"
+        )
+    
+    order = _orders_db[request.order_id]
+    
+    # 배송 상태 업데이트
+    order["shipping_status"] = request.shipping_status
+    order["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    if request.tracking_number:
+        order["tracking_number"] = request.tracking_number
+    
+    if request.shipped_at:
+        order["shipped_at"] = request.shipped_at
+        order["status"] = "shipped"
+    
+    if request.delivered_at:
+        order["delivered_at"] = request.delivered_at
+        order["status"] = "delivered"
+    
+    log.info(f"배송 상태 업데이트: {request.order_id}, 상태: {request.shipping_status}")
+    
+    return ShippingStatusResponse(
+        order_id=request.order_id,
+        shipping_status=request.shipping_status,
+        tracking_number=request.tracking_number,
+        message="배송 상태가 업데이트되었습니다."
+    )
+
+
+@router.post("/feedback", response_model=ProductFeedbackResponse)
+async def submit_product_feedback(request: ProductFeedbackRequest, db: SkinAnalysisDB = Depends(get_db)):
+    """
+    제품 피드백 등록
+    
+    - 구매한 제품에 대한 리뷰 등록
+    - 평점, 코멘트, 재구매 의사 저장
+    """
+    # 피드백 ID 생성
+    feedback_id = f"FB-{uuid.uuid4().hex[:8]}"
+    
+    # DB에 피드백 저장
+    db.create_product_feedback(
+        feedback_id=feedback_id,
+        order_id=request.order_id,
+        customer_id="",  # 주문에서 customer_id 조회 필요
+        product_id=request.product_id,
+        rating=request.rating,
+        comment=request.comment,
+        would_repurchase=request.would_repurchase,
+    )
+    
+    log.info(f"피드백 등록: {feedback_id}, 제품: {request.product_id}, 평점: {request.rating}")
+    
+    return ProductFeedbackResponse(
+        feedback_id=feedback_id,
+        order_id=request.order_id,
+        product_id=request.product_id,
+        rating=request.rating,
+        created_at=datetime.now(timezone.utc).isoformat(),
+        message="피드백이 등록되었습니다."
+    )
+
+
+@router.get("/products/{product_id}/feedback", response_model=ProductFeedbackListResponse)
+async def get_product_feedback(product_id: str, limit: int = 20, db: SkinAnalysisDB = Depends(get_db)):
+    """
+    제품 피드백 조회
+    
+    - 특정 제품의 모든 리뷰 조회
+    - 평균 평점 계산
+    """
+    # DB에서 피드백 조회
+    feedbacks = db.get_product_feedback(product_id, limit)
+    
+    # 평균 평점 조회
+    average_rating = db.get_product_average_rating(product_id)
+    
+    # 리뷰 목록 구성
+    reviews = []
+    for feedback in feedbacks:
+        reviews.append({
+            "feedback_id": feedback["feedback_id"],
+            "rating": feedback["rating"],
+            "comment": feedback.get("comment"),
+            "would_repurchase": bool(feedback.get("would_repurchase")) if feedback.get("would_repurchase") is not None else None,
+            "created_at": feedback["created_at"],
+        })
+    
+    return ProductFeedbackListResponse(
+        product_id=product_id,
+        total_reviews=len(feedbacks),
+        average_rating=average_rating,
+        reviews=reviews,
     )

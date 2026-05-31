@@ -763,6 +763,47 @@ class SkinAnalysisDB:
             self._conn.commit()
             log.info("[DB] 분석 추이 테이블 생성 완료 (버전 24)")
 
+        # 제품 피드백 테이블 생성 (버전 25)
+        cursor.execute("SELECT MAX(version) FROM schema_version")
+        current_version = cursor.fetchone()[0] or 0
+        if current_version < 25:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS product_feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    feedback_id TEXT UNIQUE NOT NULL,
+                    order_id TEXT NOT NULL,
+                    customer_id TEXT NOT NULL,
+                    product_id TEXT NOT NULL,
+                    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+                    comment TEXT,
+                    would_repurchase INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # 인덱스 추가
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_pf_order_id
+                ON product_feedback(order_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_pf_product_id
+                ON product_feedback(product_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_pf_customer_id
+                ON product_feedback(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_pf_created
+                ON product_feedback(created_at)
+            """)
+            
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (25)")
+            self._conn.commit()
+            log.info("[DB] 제품 피드백 테이블 생성 완료 (버전 25)")
+
         # 피부 타입 검증 테이블 생성
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS skin_type_validations (
@@ -2558,6 +2599,84 @@ class SkinAnalysisDB:
                 }
                 for row in rows
             ]
+
+    # ── 제품 피드백 ───────────────────────────────────────────────────────────
+
+    def create_product_feedback(
+        self,
+        feedback_id: str,
+        order_id: str,
+        customer_id: str,
+        product_id: str,
+        rating: int,
+        comment: Optional[str] = None,
+        would_repurchase: Optional[bool] = None,
+    ) -> bool:
+        """제품 피드백 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO product_feedback 
+                (feedback_id, order_id, customer_id, product_id, rating, comment, would_repurchase)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (feedback_id, order_id, customer_id, product_id, rating, comment, 1 if would_repurchase else 0 if would_repurchase is not None else None),
+            )
+            self._conn.commit()
+            log.info("[DB] 제품 피드백 생성: feedback_id=%s, product_id=%s, rating=%s", feedback_id, product_id, rating)
+            return True
+
+    def get_product_feedback(self, product_id: str, limit: int = 20) -> List[Dict]:
+        """제품별 피드백 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                SELECT feedback_id, order_id, customer_id, product_id, rating, comment, would_repurchase, created_at
+                FROM product_feedback
+                WHERE product_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (product_id, limit),
+            )
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
+
+    def get_customer_feedback(self, customer_id: str, limit: int = 20) -> List[Dict]:
+        """고객별 피드백 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                SELECT feedback_id, order_id, customer_id, product_id, rating, comment, would_repurchase, created_at
+                FROM product_feedback
+                WHERE customer_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (customer_id, limit),
+            )
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
+
+    def get_product_average_rating(self, product_id: str) -> float:
+        """제품 평균 평점 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute(
+                """
+                SELECT AVG(rating) as avg_rating
+                FROM product_feedback
+                WHERE product_id = ?
+                """,
+                (product_id,),
+            )
+            row = cursor.fetchone()
+            return round(row[0], 1) if row and row[0] else 0.0
 
     # ── 웹훅 관련 메서드 ───────────────────────────────────────────────────────
 
