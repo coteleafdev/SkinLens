@@ -1194,26 +1194,13 @@ def _run_gui() -> int:
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
     w = SkinAnalysisWindow()
-    # 메인 창이 파괴되면 이벤트 루프 종료를 이중 예약해 app.exec() 미반환을 방지.
-    w.destroyed.connect(lambda *_: QTimer.singleShot(0, app.quit))
-    w.destroyed.connect(lambda *_: QTimer.singleShot(250, lambda: app.exit(0)))
-    w.destroyed.connect(lambda *_: QTimer.singleShot(1400, lambda: __import__("os")._exit(0)))
+    # [FIX P2] 종료 처리 단순화: 단일 quit 호출로 충분
+    w.destroyed.connect(app.quit)
     w.show()
     _center_window_on_screen(w)
     _ret = app.exec()
     exit_code = int(_ret) if isinstance(_ret, int) else 0
-    # app.exec() 가 반환되면 즉시 프로세스를 끝내 터미널 복귀를 보장한다.
-    if sys.platform.startswith("win"):
-        try:
-            import subprocess
-
-            subprocess.Popen(
-                ["taskkill", "/PID", str(__import__("os").getpid()), "/T", "/F"],
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
-        except Exception as ex:
-            log.error(f"[오류] taskkill 실행 실패: {ex!r}")
-    __import__("os")._exit(exit_code)
+    return exit_code
 
 
 def _run_compare_dialog(orig: Path, ideal: Path, llm_scores: bool = False, llm_json_path: Path = None) -> int:
