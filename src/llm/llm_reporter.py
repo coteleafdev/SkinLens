@@ -250,6 +250,12 @@ def _monitor_score_difference(
             f"[점수 차이] {metric_name}: 심각한 차이 발생 "
             f"(자체={analyzer_score:.1f}, LLM={llm_score:.1f}, 차이={score_diff:.1f})"
         )
+    elif score_diff >= warning_threshold:
+        # [FIX P2] warning 구간 로깅 추가
+        log.warning(
+            f"[점수 차이] {metric_name}: 경고 수준 차이 발생 "
+            f"(자체={analyzer_score:.1f}, LLM={llm_score:.1f}, 차이={score_diff:.1f})"
+        )
 
 
 def _is_response_truncated(response_text: str) -> bool:

@@ -10,7 +10,7 @@ import logging
 import shutil
 import sqlite3
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional, List
 import asyncio
@@ -95,7 +95,7 @@ class BackupManager:
         Returns:
             백업 파일 경로
         """
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         backup_name = f"backup_{timestamp}.zip"
         backup_path = self.backup_dir / backup_name
 
@@ -121,7 +121,7 @@ class BackupManager:
             # 백업 메타데이터 생성
             metadata = {
                 "timestamp": timestamp,
-                "created_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
                 "db_path": str(self.db_path),
                 "results_dir": str(self.results_dir),
                 "files": [f.name for f in temp_dir.rglob("*") if f.is_file()],
@@ -215,7 +215,7 @@ class BackupManager:
 
         try:
             # 임시 디렉토리 생성
-            temp_dir = self.backup_dir / f"restore_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+            temp_dir = self.backup_dir / f"restore_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
             temp_dir.mkdir(parents=True, exist_ok=True)
 
             # 백업 압축 해제
@@ -227,7 +227,7 @@ class BackupManager:
             if db_backup.exists():
                 # 기존 데이터베이스 백업
                 if self.db_path.exists():
-                    db_backup_path = self.db_path.with_suffix(f".backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}")
+                    db_backup_path = self.db_path.with_suffix(f".backup_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}")
                     shutil.copy2(self.db_path, db_backup_path)
                     log.info("기존 데이터베이스 백업: %s", db_backup_path.name)
 
@@ -240,7 +240,7 @@ class BackupManager:
             if results_backup.exists():
                 # 기존 결과 파일 백업
                 if self.results_dir.exists():
-                    results_backup_path = self.results_dir.parent / f"results_backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+                    results_backup_path = self.results_dir.parent / f"results_backup_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
                     shutil.copytree(self.results_dir, results_backup_path)
                     log.info("기존 결과 파일 백업: %s", results_backup_path.name)
 

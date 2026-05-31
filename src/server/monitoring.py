@@ -11,7 +11,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 
 log = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class AlertSystem:
                         "title": f"SkinLens Alert [{level}]",
                         "text": message,
                         "footer": "SkinLens Monitoring",
-                        "ts": int(datetime.utcnow().timestamp()),
+                        "ts": int(datetime.now(timezone.utc).timestamp()),
                     }
                 ]
             }
@@ -166,7 +166,7 @@ class PerformanceMonitor:
         """
         self.metrics[name] = {
             "value": value,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         # 임계값 초과 시 알림

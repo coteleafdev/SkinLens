@@ -420,7 +420,8 @@ def filter_sensitive_data(data: Dict[str, Any], user_role: str) -> Dict[str, Any
     filtered = data.copy()
     for field in SENSITIVE_FIELDS:
         if field in filtered:
-            filtered[field] = "***REDACTED***" if isinstance(filtered[field], str) else filtered.pop(field, None)
+            # [FIX P2] 비문자열도 마스킹 (기존: pop으로 제거만 함)
+            filtered[field] = "***REDACTED***"
     return filtered
 
 

@@ -21,7 +21,7 @@ import os
 import shutil
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -46,7 +46,7 @@ class UploadSession:
     chunk_size: int
     total_chunks: int
     uploaded_chunks: set[int] = field(default_factory=set)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     temp_dir: Optional[Path] = None
     file_hash: Optional[str] = None
     owner_customer_id: Optional[str] = None  # [FIX P0] 세션 소유권 검증용

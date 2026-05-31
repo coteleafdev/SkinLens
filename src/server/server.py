@@ -100,11 +100,13 @@ if WATCHDOG_AVAILABLE and ENABLE_HOT_RELOAD:
                 from src.config.config_manager import ConfigManager
                 from src.scoring._breakpoints import _clear_breakpoints_cache
                 from src.llm.llm_metadata import clear_metadata_cache
+                from src.skin.compose.score_composition import reload_weights_cache
 
                 # 캐시 초기화
                 ConfigManager._instance = None
                 _clear_breakpoints_cache()
                 clear_metadata_cache()
+                reload_weights_cache()  # [FIX P2] 가중치 캐시 무효화 추가
 
                 # 로그 레벨 재로드
                 new_level = _load_logging_level()
@@ -203,9 +205,12 @@ async def _auto_backup_task() -> None:
 
 async def _system_health_monitor() -> None:
     """시스템 헬스 DB 기록 (5분마다)."""
+    # [FIX P2] DB 싱글톤 사용 (커넥션 누스 방지)
+    from src.server.deps import get_db
+    db = get_db()
+    
     while True:
         try:
-            db = ExecutionHistoryDB(get_db_path_from_env())
             db.record_system_health(
                 active_jobs=get_active_jobs_count(),
                 queue_size=0,
@@ -230,23 +235,36 @@ async def lifespan(app: FastAPI):
     # 캐시 초기화 - config.json 변경 반영
     from src.scoring._breakpoints import _clear_breakpoints_cache
     from src.llm.llm_metadata import clear_metadata_cache
+    from src.skin.compose.score_composition import reload_weights_cache
     _clear_breakpoints_cache()
     clear_metadata_cache()
+    reload_weights_cache()  # [FIX P2] 가중치 캐시 무효화 추가
     log.info("메타데이터 캐시 초기화 완료")
     
     # 메인 이벤트 루프 저장 (ThreadPool에서 WebSocket 전달용)
     main_loop = asyncio.get_running_loop()
     set_main_loop(main_loop)
-    asyncio.create_task(_cleanup_expired_jobs())
-    asyncio.create_task(_system_health_monitor())
-    asyncio.create_task(_auto_backup_task())
+    
+    # [FIX P2] 백그라운드 태스크 강참조 보관 (GC 방지)
+    background_tasks = set()
+    app.state.background_tasks = background_tasks
+    
+    def _create_task(coro):
+        task = asyncio.create_task(coro)
+        background_tasks.add(task)
+        task.add_done_callback(background_tasks.discard)
+        return task
+    
+    _create_task(_cleanup_expired_jobs())
+    _create_task(_system_health_monitor())
+    _create_task(_auto_backup_task())
 
     # 자동 복구 엔진 초기화
     db = SkinAnalysisDB(db_path="results/skin_analysis.db")
     alert_system = AlertSystem()
     recovery_engine = RecoveryEngine(db, alert_system)
     health_monitor = HealthMonitor(recovery_engine)
-    asyncio.create_task(health_monitor.start_monitoring())
+    _create_task(health_monitor.start_monitoring())  # [FIX P2] 백그라운드 태스크 강참조
     log.info("자동 복구 엔진 시작 완료")
 
     # 공유 executor 초기화

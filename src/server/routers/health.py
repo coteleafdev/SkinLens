@@ -12,7 +12,7 @@ health.py — 헬스 체크 및 장애 자동 복구 관련 라우터
 import logging
 import sqlite3
 import psutil
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -151,7 +151,7 @@ async def health_check():
     return HealthCheckResponse(
         status=overall_status,
         services=services,
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
     )
 
 

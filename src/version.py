@@ -4,6 +4,7 @@ This module provides version information for the SkinLens project.
 All version information should be sourced from this single file to ensure consistency.
 """
 from __future__ import annotations
+from typing import Dict
 
 __version__ = "1.0.0"
 __project_name__ = "SkinLens"
