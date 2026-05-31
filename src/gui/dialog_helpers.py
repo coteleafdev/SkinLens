@@ -213,13 +213,13 @@ def show_skin_measurement_compare_dialog(
             if parent:
                 QMessageBox.warning(parent, "분석", f"원본 파일이 없습니다:\n{orig_path}")
             else:
-                print(f"원본 파일이 없습니다: {orig_path}", file=sys.stderr)
+                log.error("원본 파일이 없습니다: %s", orig_path)
             return
         if not ideal_path.is_file():
             if parent:
                 QMessageBox.warning(parent, "분석", f"보정(이상) 이미지가 없습니다:\n{ideal_path}")
             else:
-                print(f"보정(이상) 이미지가 없습니다: {ideal_path}", file=sys.stderr)
+                log.error("보정(이상) 이미지가 없습니다: %s", ideal_path)
             return
         log.debug("파일 확인 완료: orig=%s, ideal=%s", orig_path.name, ideal_path.name)
 
@@ -246,11 +246,10 @@ def show_skin_measurement_compare_dialog(
         # 파이프라인에서는 ref_stat을 전달하지 않으므로 여기서도 비활성화
         use_ref = False  # 파이프라인과 동일한 설정
         if _env_debug_enabled():
-            print(
-                f"[skin_measurement_chart] UI: ProgressDialog 표시 후 processEvents "
-                f"(+{time.perf_counter() - t_ui:.3f}s) — "
-                f"max_side={max_side} ref_stat={use_ref}",
-                flush=True,
+            log.debug(
+                "[skin_measurement_chart] UI: ProgressDialog 표시 후 processEvents "
+                "(+%.3fs) — max_side=%d ref_stat=%s",
+                time.perf_counter() - t_ui, max_side, use_ref
             )
 
         thread = QThread()
@@ -356,10 +355,10 @@ def show_skin_measurement_compare_dialog(
                         "이미지가 큰 경우 AI_SKIN_ANALYSIS_MAX_SIDE 를 낮춰 다시 시도하세요.",
                     )
                 else:
-                    print(
-                        f"피부 분석이 {hard_timeout_sec}초를 넘겨 중단했습니다.\n"
+                    log.error(
+                        "피부 분석이 %d초를 넘겨 중단했습니다. "
                         "이미지가 큰 경우 AI_SKIN_ANALYSIS_MAX_SIDE 를 낮춰 다시 시도하세요.",
-                        file=sys.stderr
+                        hard_timeout_sec
                     )
                 return
             base = progress_holder[0] or "피부 분석 실행 중…"
@@ -517,7 +516,7 @@ def show_skin_measurement_compare_dialog(
             if parent:
                 QMessageBox.critical(parent, "분석 오류", msg)
             else:
-                print(f"분석 오류: {msg}", file=sys.stderr)
+                log.error("분석 오류: %s", msg)
 
         def on_ok(o: object, i: object) -> None:
             if aborted[0] or cleaned[0]:
@@ -582,7 +581,7 @@ def show_skin_measurement_compare_dialog(
                 f"오류가 발생했습니다:\n{str(e)}"
             )
         else:
-            print(f"{measurement_count}항목 비교 오류: {str(e)}", file=sys.stderr)
+            log.error("%d항목 비교 오류: %s", measurement_count, str(e))
         if modal:
             return None
         return None

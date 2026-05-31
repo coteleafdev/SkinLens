@@ -117,9 +117,7 @@ def _dlog(msg: str, *, t0: float) -> None:
     """터미널 추적용(옵션) + logging.debug 항상."""
     elapsed = time.perf_counter() - t0
     line = f"[skin_measurement_chart +{elapsed:.2f}s] {msg}"
-    log.debug("%s", line)
-    if _env_debug_enabled():
-        print(line, flush=True)
+    log.debug("%s", line)  # [FIX P2] print() 제거, logging만 사용
 
 
 def _flatten_measurement_keys() -> List[str]:

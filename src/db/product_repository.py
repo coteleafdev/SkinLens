@@ -578,12 +578,12 @@ if __name__ == "__main__":
         scores={"acne_score": 50, "redness_score": 67}
     )
     
-    print("\n=== 매칭된 제품 ===")
+    log.info("=== 매칭된 제품 ===")
     for product in matched:
-        print(f"\n{product['product_name']} (매칭 점수: {product['match_score']:.1f})")
-        print(f"  카테고리: {product['category']}")
-        print(f"  주요 성분: {', '.join(product['key_ingredients'])}")
-        print(f"  효능: {product['efficacy']}")
-        print(f"  매칭 사유: {product['match_reason']}")
+        log.info("%s (매칭 점수: %.1f)", product['product_name'], product['match_score'])
+        log.info("  카테고리: %s", product['category'])
+        log.info("  주요 성분: %s", ', '.join(product['key_ingredients']))
+        log.info("  효능: %s", product['efficacy'])
+        log.info("  매칭 사유: %s", product['match_reason'])
     
     repo.close()

@@ -1169,20 +1169,14 @@ def _run_gui() -> int:
         from PySide6.QtCore import QTimer, Qt
         from PySide6.QtWidgets import QApplication
     except ImportError as e:
-        print(f"[오류] PySide6 가 설치되어 있지 않습니다: {e}", file=sys.stderr)
-        print("  pip install PySide6", file=sys.stderr)
+        log.error("PySide6 가 설치되어 있지 않습니다: %s", e)
+        log.error("  pip install PySide6")
         return 1
     try:
         from src.gui.skin_analysis_gui import SkinAnalysisWindow, _center_window_on_screen
     except ImportError as e:
-        print(
-            f"[오류] GUI 모듈을 불러오지 못했습니다 (PySide6 외 의존성): {e}",
-            file=sys.stderr,
-        )
-        print(
-            "  프로젝트 루트에서 실행하는지, skin_scoring 가 요구하는 모듈이 있는지 확인하세요.",
-            file=sys.stderr,
-        )
+        log.error("GUI 모듈을 불러오지 못했습니다 (PySide6 외 의존성): %s", e)
+        log.error("  프로젝트 루트에서 실행하는지, skin_scoring 가 요구하는 모듈이 있는지 확인하세요.")
         return 1
 
     # Windows에서 종료 직전 일시 정지 시 뜨는 "응답 없음(ghost window)" 표시를 억제.
