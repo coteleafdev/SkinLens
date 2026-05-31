@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sqlite3
 import tempfile
 import zipfile
 import logging
@@ -103,7 +104,7 @@ async def get_my_score_trends(
         filtered = [filter_sensitive_data(r, role) for r in rows]
         _audit(db, cid, ep, "GET", role, request, ok=True)
         return {"trends": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("점수 추이 조회 실패: %s", e)
         _audit(db, cid, ep, "GET", role, request, ok=False, error=str(e))
         raise HTTPException(status_code=500, detail="Failed to retrieve score trends")
@@ -124,7 +125,7 @@ async def get_my_analysis_stats(
         filtered = [filter_sensitive_data(r, role) for r in rows]
         _audit(db, cid, ep, "GET", role, request, ok=True)
         return {"stats": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 통계 조회 실패: %s", e)
         _audit(db, cid, ep, "GET", role, request, ok=False, error=str(e))
         raise HTTPException(status_code=500, detail="Failed to retrieve analysis stats")
@@ -146,7 +147,7 @@ async def get_my_errors(
         filtered = [filter_sensitive_data(r, role) for r in rows]
         _audit(db, cid, ep, "GET", role, request, ok=True)
         return {"errors": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("에러 조회 실패: %s", e)
         _audit(db, cid, ep, "GET", role, request, ok=False, error=str(e))
         raise HTTPException(status_code=500, detail="Failed to retrieve errors")
@@ -165,7 +166,7 @@ async def delete_my_data(
         deleted = db.delete_customer_data(cid)
         _audit(db, cid, ep, "DELETE", role, request, ok=True)
         return {"message": "Data deleted successfully", "deleted_records": deleted}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("데이터 삭제 실패: %s", e)
         _audit(db, cid, ep, "DELETE", role, request, ok=False, error=str(e))
         raise HTTPException(status_code=500, detail="Failed to delete data")
@@ -202,7 +203,7 @@ async def export_my_data(
         atexit.register(lambda: shutil.rmtree(temp_dir, ignore_errors=True))
 
         return response
-    except Exception as e:
+    except (OSError, IOError, zipfile.BadZipFile) as e:  # [FIX P2] 구체적 예외
         log.error("데이터 내보내기 실패: %s", e)
         _audit(db, cid, ep, "GET", role, request, ok=False, error=str(e))
         raise HTTPException(status_code=500, detail="Failed to export data")
@@ -231,7 +232,7 @@ async def get_my_preferences(
                 "timezone": "Asia/Seoul",
             }
         return preferences
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("설정 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve preferences")
 
@@ -257,7 +258,7 @@ async def set_my_language(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         db.set_user_language(customer_id, language)
         return {"message": "Language updated successfully", "language": language}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("언어 설정 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to update language")
 
@@ -278,7 +279,7 @@ async def set_my_timezone(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         db.set_user_timezone(customer_id, timezone)
         return {"message": "Timezone updated successfully", "timezone": timezone}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("시간대 설정 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to update timezone")
 
@@ -309,7 +310,7 @@ async def get_my_analyses(
             "limit": limit,
             "offset": offset
         }
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 기록 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve analyses")
 
@@ -336,7 +337,7 @@ async def get_my_analysis_detail(
         return analysis
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 상세 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve analysis detail")
 
@@ -385,7 +386,7 @@ async def get_my_analysis_image(
         )
     except HTTPException:
         raise
-    except Exception as e:
+    except (OSError, IOError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("이미지 다운로드 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to download image")
 
@@ -459,7 +460,7 @@ async def compare_analyses(
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 비교 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to compare analyses")
 
@@ -489,7 +490,7 @@ async def get_my_recommendations(
             "recommendations": recommendations,
             "total": len(recommendations)
         }
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("제품 추천 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve recommendations")
 
@@ -523,7 +524,7 @@ async def add_bookmark(
         return {"message": "Bookmark added successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("북마크 추가 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to add bookmark")
 
@@ -550,7 +551,7 @@ async def remove_bookmark(
         return {"message": "Bookmark removed successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("북마크 삭제 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to remove bookmark")
 
@@ -578,7 +579,7 @@ async def get_my_bookmarks(
             "limit": limit,
             "offset": offset
         }
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("북마크 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve bookmarks")
 
@@ -598,7 +599,7 @@ async def get_notification_settings(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         settings = db.get_notification_settings(customer_id)
         return settings
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("알림 설정 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve notification settings")
 
@@ -634,6 +635,6 @@ async def update_notification_settings(
         return {"message": "Notification settings updated successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("알림 설정 업데이트 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to update notification settings")
