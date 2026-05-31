@@ -399,6 +399,77 @@ result = restorer.restore("input.jpg", "output.jpg")
 
 ---
 
+## 3.14 버전 관리
+
+SkinLens v1.0은 여러 층위에서 버전을 관리합니다. 각 버전은 독립적인 목적을 가지며 서로 다른 주기로 업데이트됩니다.
+
+### 버전 종류
+
+| 버전 | 위치 | 현재 값 | 목적 | 업데이트 주기 |
+|------|------|---------|------|--------------|
+| **프로젝트 버전** | `src/version.py`<br/>`pyproject.toml`<br/>`docs/PROJECT_OVERVIEW.md` | `1.0.0` | 전체 프로젝트 릴리스 버전 | 메이저 릴리스 시 |
+| **API 버전** | `src/server/server.py`<br/>`config.json` | `v3` | API 호환성 관리 | API 변경 시 |
+| **설정 버전** | `src/config/config_manager.py`<br/>`config.json` | `3.6` | config.json 구조 버전 | 설정 구조 변경 시 |
+| **DB 스키마 버전** | `src/db/skin_analysis_db.py`<br/>`schema_version` 테이블 | `24` | 데이터베이스 마이그레이션 버전 | 스키마 변경 시 |
+| **프롬프트 버전** | `src/llm/prompt_manager.py`<br/>프롬프트 파일명 | `v1` | LLM 프롬프트 템플릿 버전 | 프롬프트 변경 시 |
+| **텔레그램 모듈 버전** | `src/telegram/__init__.py` | `3.0.0` | 텔레그램 봇 모듈 버전 | 텔레그램 기능 변경 시 |
+
+### 버전 관리 정책
+
+**프로젝트 버전 (1.0.0)**
+- 전체 프로젝트의 릴리스 버전
+- 문서와 배포 패키지에 표시
+- 세마틱 버전 관리 (Major.Minor.Patch)
+- 메이저 변경 시에만 업데이트
+
+**API 버전 (v3)**
+- URL 경로에 포함 (`/v1/`, `/v2/`, `/v3/`)
+- API 호환성이 깨지는 변경 시에만 증가
+- `API-Version` 헤더로 현재 버전 응답
+- 폐기된 버전 사용 시 경고 로그
+
+**설정 버전 (3.6)**
+- config.json의 구조 버전
+- 설정 파일 호환성 검증
+- 구조 변경 시 `_required_config_version` 업데이트
+- 버전 불일치 시 경고 및 마이그레이션 가이드 제공
+
+**DB 스키마 버전 (24)**
+- 데이터베이스 마이그레이션 관리
+- `schema_version` 테이블에 현재 버전 저장
+- 스키마 변경 시 마이그레이션 자동 실행
+- 롤백 지원
+
+**프롬프트 버전 (v1)**
+- LLM 프롬프트 템플릿 버전
+- 파일명에 버전 포함 (`prompt_v1.txt`)
+- 여러 버전 동시 지원
+- A/B 테스트 지원
+
+**텔레그램 모듈 버전 (3.0.0)**
+- 텔레그램 봇 기능 버전
+- 독립적인 모듈로 관리
+- 텔레그램 API 변경 시 업데이트
+
+### 버전 확인 방법
+
+```bash
+# 프로젝트 버전 확인
+python -c "from src.version import __version__; print(__version__)"
+
+# API 버전 확인 (서버 응답 헤더)
+curl -I http://localhost:8000/v1/health
+# API-Version: v3
+
+# DB 스키마 버전 확인
+python -c "from src.db.skin_analysis_db import SkinAnalysisDB; db = SkinAnalysisDB(); print(db.get_current_version())"
+
+# 설정 버전 확인
+python -c "from src.config.config_manager import ConfigManager; cm = ConfigManager(); print(cm._required_config_version)"
+```
+
+---
+
 ## 4. 아키텍처
 
 ### 4.1 시스템 구성도
