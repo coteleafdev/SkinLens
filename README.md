@@ -522,6 +522,42 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - **P0-1**: src.gemini → src.llm import 경로 수정 (이미 해결됨)
 - **P1-5**: datetime.utcnow() → datetime.now(timezone.utc) 수정 (이미 해결됨)
 - **P1-1**: utils.py GUI 직접 의존 → lazy import 수정 (이미 해결됨)
+
+### 코드 리뷰 반영 (SkinLens_v1_코드리뷰.md 기반) (2026-05-31)
+
+#### P0 (Critical) - 완료 (6개 항목)
+
+- **jobs.py**: Job 조회/결과/아티팩트 GET 인가 추가
+- **jobs.py**: validate_customer_id_match 인자 순서 교정
+- **jobs.py**: callback_url SSRF 검증 + HMAC 서명
+- **llm_reporter.py**: 점수보정 계산 버그 수정 (`llm_weight * llm_weight` → `llm_score * llm_weight`)
+- **upload.py**: 업로드 경로 traversal 수정
+- **upload.py**: 업로드 세션 소유권 검증
+
+#### P1 (High) - 완료 (3개 항목)
+
+- **deps.py**: get_rate_limit_key algorithms 수정
+- **deps.py**: DB 의존성 싱글톤 패턴 적용
+- **auth.py**: DB 사용자/bcrypt 기반 인증 전환 (users 테이블 추가)
+
+#### P2 (Medium) - 완료 (13개 항목)
+
+- **server.py**: 가중치 캐시 핫리로드 무효화
+- **deps.py**: filter_sensitive_data 비문자열 마스킹
+- **server.py**: 백그라운드 태스크 강참조 보관 (GC 방지)
+- **llm_reporter.py**: _monitor_score_difference warning 로깅 복구
+- **8개 파일**: datetime.utcnow() → datetime.now(timezone.utc) 교체
+- **version.py**: Dict import 추가
+- **jobs.py, upload.py**: except Exception 축소 (4개소)
+- **customer.py**: except Exception 축소 (18개 엔드포인트)
+- **health.py**: except Exception 축소 (9개 함수)
+- **admin.py**: except Exception 축소 (2개소, 부분)
+
+#### 남은 P2 이슈 (별도 작업)
+
+- **except Exception 축소**: admin.py (48개소), stats.py, websocket.py, logs.py, integration.py, backup.py, monitoring.py, server.py, middleware 등 (총 100+ 개소)
+- **non-CLI print() → logging**: GUI/CLI 출력 유지 필요
+- **아키텍처 정리**: 대규모 리팩토링
 - **P1-4**: server.py asyncio 패턴 수정 (BackgroundTasks 사용, _run_job_sync 래퍼 추가)
 - **P2-1**: pipeline_core.py print() → log 수정 (이미 해결됨)
 - **안정성**: 런타임 크래시 방지, Python 3.12+ 호환성 확보
