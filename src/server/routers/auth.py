@@ -45,6 +45,11 @@ def _verify_pw(plain: str, stored: str) -> bool:
     return hmac.compare_digest(plain.encode(), stored.encode())
 
 
+def _verify_pw_env(plain: str, stored: str) -> bool:
+    """환경변수 기반 인증용 비밀번호 검증 (단순 비교)"""
+    return hmac.compare_digest(plain.encode(), stored.encode())
+
+
 def check_customer_access(current_customer: Dict[str, Any], target_customer_id: str) -> None:
     """JWT sub 클레임이 요청 customer_id와 일치하는지 검증.
     
@@ -102,17 +107,17 @@ async def login(
             raise HTTPException(status_code=401, detail="Authentication not configured")
 
         if username.startswith("admin"):
-            if not ADMIN_PASSWORD or not _verify_pw(password, ADMIN_PASSWORD):
+            if not ADMIN_PASSWORD or not _verify_pw_env(password, ADMIN_PASSWORD):
                 from fastapi import HTTPException
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             user_role = "admin"
         elif username.startswith("analyst"):
-            if not ANALYST_PASSWORD or not _verify_pw(password, ANALYST_PASSWORD):
+            if not ANALYST_PASSWORD or not _verify_pw_env(password, ANALYST_PASSWORD):
                 from fastapi import HTTPException
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             user_role = "analyst"
         else:
-            if not CUSTOMER_PASSWORD or not _verify_pw(password, CUSTOMER_PASSWORD):
+            if not CUSTOMER_PASSWORD or not _verify_pw_env(password, CUSTOMER_PASSWORD):
                 from fastapi import HTTPException
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             user_role = "customer"
@@ -136,7 +141,7 @@ async def login(
             request=request,
             success=True,
         )
-    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
+    except (sqlite3.Error, ValueError, AttributeError) as e:  # [FIX P2] 구체적 예외 + AttributeError 추가
         log.warning("감사 로그 기록 실패: %s", e)
 
     return {
