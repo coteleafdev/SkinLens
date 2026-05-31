@@ -67,6 +67,7 @@ graph TB
 | 연동 API | `/v1/webhooks/*`<br/>`/v1/integration/*`<br/>`/v1/oauth/*` | 웹서버 | 필수 (admin) | 외부 시스템 연동 |
 | 향상 기능 API | `/v1/enhancements/*` | 웹, 모바일 | 필수 | 이미지 업로드, 푸시, A/B 테스트, 모니터링 |
 | 주문 API | `/v1/orders/*` | 웹, 모바일 | 필수 | 주문 생성, 결제, 배송, 피드백 |
+| 앱 기능 API | `/v1/app/*` | 웹, 모바일 | 필수 | 피부 일기, 목표, 업적, 구독, 챌린지 |
 | WebSocket | `/v1/ws/*` | 웹, 모바일 | 필수 | 실시간 진행률 |
 
 ---
@@ -2630,6 +2631,412 @@ A/B 테스트 결과를 조회합니다 (관리자 전용).
       "comment": "피부가 좋아졌습니다.",
       "would_repurchase": true,
       "created_at": "2026-05-31T15:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## 10. 앱 기능 (App Features)
+
+### 10.1 피부 일기 엔트리 생성
+
+**POST** `/v1/app/diary`
+
+피부 일기 엔트리를 생성합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "analysis_id": 123,
+  "image_url": "https://storage.example.com/image.jpg",
+  "overall_score": 75.5,
+  "measurement_scores": {"melasma_score": 50, "redness_score": 40},
+  "notes": "오늘 피부 상태가 좋음",
+  "mood": "happy",
+  "weather": "sunny"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "entry_id": "DIARY-abc12345",
+  "customer_id": "CUST001",
+  "created_at": "2026-05-31T10:00:00Z",
+  "message": "피부 일기 엔트리가 생성되었습니다."
+}
+```
+
+---
+
+### 10.2 피부 일기 조회
+
+**GET** `/v1/app/diary/{customer_id}`
+
+고객 피부 일기 엔트리를 조회합니다.
+
+**Query Parameters:**
+- `limit`: 최대 개수 (기본값: 30)
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "total_entries": 10,
+  "entries": [
+    {
+      "entry_id": "DIARY-abc12345",
+      "customer_id": "CUST001",
+      "analysis_id": 123,
+      "image_url": "https://storage.example.com/image.jpg",
+      "overall_score": 75.5,
+      "measurement_scores": "{\"melasma_score\": 50, \"redness_score\": 40}",
+      "notes": "오늘 피부 상태가 좋음",
+      "mood": "happy",
+      "weather": "sunny",
+      "created_at": "2026-05-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 10.3 고객 목표 생성
+
+**POST** `/v1/app/goals`
+
+고객 목표를 생성합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "goal_type": "skin_score",
+  "target_value": 80.0,
+  "start_date": "2026-05-31",
+  "end_date": "2026-06-30"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "goal_id": "GOAL-abc12345",
+  "customer_id": "CUST001",
+  "goal_type": "skin_score",
+  "target_value": 80.0,
+  "current_value": 0.0,
+  "start_date": "2026-05-31",
+  "end_date": "2026-06-30",
+  "status": "active",
+  "message": "고객 목표가 생성되었습니다."
+}
+```
+
+---
+
+### 10.4 목표 진행률 업데이트
+
+**PUT** `/v1/app/goals/{goal_id}/progress`
+
+고객 목표 진행률을 업데이트합니다.
+
+**Query Parameters:**
+- `current_value`: 현재 값
+
+**Response (200 OK):**
+```json
+{
+  "goal_id": "GOAL-abc12345",
+  "current_value": 75.0,
+  "message": "목표 진행률이 업데이트되었습니다."
+}
+```
+
+---
+
+### 10.5 고객 목표 조회
+
+**GET** `/v1/app/goals/{customer_id}`
+
+고객 목표를 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "total_goals": 3,
+  "goals": [
+    {
+      "goal_id": "GOAL-abc12345",
+      "customer_id": "CUST001",
+      "goal_type": "skin_score",
+      "target_value": 80.0,
+      "current_value": 75.0,
+      "start_date": "2026-05-31",
+      "end_date": "2026-06-30",
+      "status": "active",
+      "created_at": "2026-05-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 10.6 업적 생성
+
+**POST** `/v1/app/achievements`
+
+업적을 생성합니다 (관리자용).
+
+**Request Body:**
+```json
+{
+  "achievement_id": "ACH-FIRST-ANALYSIS",
+  "name": "첫 분석 완료",
+  "description": "첫 피부 분석을 완료함",
+  "icon": "🎯",
+  "requirement_type": "analysis_count",
+  "requirement_value": 1,
+  "reward_points": 100
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "achievement_id": "ACH-FIRST-ANALYSIS",
+  "name": "첫 분석 완료",
+  "message": "업적이 생성되었습니다."
+}
+```
+
+---
+
+### 10.7 업적 획득
+
+**POST** `/v1/app/achievements/earn`
+
+고객 업적을 획득합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "achievement_id": "ACH-FIRST-ANALYSIS"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "achievement_id": "ACH-FIRST-ANALYSIS",
+  "earned_at": "2026-05-31T10:00:00Z",
+  "message": "업적을 획득했습니다."
+}
+```
+
+---
+
+### 10.8 고객 업적 조회
+
+**GET** `/v1/app/achievements/{customer_id}`
+
+고객 업적을 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "total_achievements": 5,
+  "achievements": [
+    {
+      "customer_id": "CUST001",
+      "achievement_id": "ACH-FIRST-ANALYSIS",
+      "earned_at": "2026-05-31T10:00:00Z",
+      "name": "첫 분석 완료",
+      "description": "첫 피부 분석을 완료함",
+      "icon": "🎯",
+      "reward_points": 100
+    }
+  ]
+}
+```
+
+---
+
+### 10.9 제품 구독 생성
+
+**POST** `/v1/app/subscriptions`
+
+제품 구독을 생성합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "product_id": "PROD001",
+  "frequency": "monthly",
+  "next_delivery_date": "2026-06-30"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "subscription_id": "SUB-abc12345",
+  "customer_id": "CUST001",
+  "product_id": "PROD001",
+  "frequency": "monthly",
+  "next_delivery_date": "2026-06-30",
+  "message": "제품 구독이 생성되었습니다."
+}
+```
+
+---
+
+### 10.10 고객 구독 조회
+
+**GET** `/v1/app/subscriptions/{customer_id}`
+
+고객 구독을 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "total_subscriptions": 2,
+  "subscriptions": [
+    {
+      "subscription_id": "SUB-abc12345",
+      "customer_id": "CUST001",
+      "product_id": "PROD001",
+      "frequency": "monthly",
+      "next_delivery_date": "2026-06-30",
+      "status": "active",
+      "created_at": "2026-05-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 10.11 챌린지 생성
+
+**POST** `/v1/app/challenges`
+
+챌린지를 생성합니다 (관리자용).
+
+**Request Body:**
+```json
+{
+  "challenge_id": "CH-30DAY-SKIN",
+  "name": "30일 피부 개선 챌린지",
+  "description": "30일 동안 피부 점수를 10점 향상",
+  "duration_days": 30,
+  "start_date": "2026-06-01",
+  "end_date": "2026-06-30",
+  "reward_points": 500
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "challenge_id": "CH-30DAY-SKIN",
+  "name": "30일 피부 개선 챌린지",
+  "message": "챌린지가 생성되었습니다."
+}
+```
+
+---
+
+### 10.12 챌린지 참여
+
+**POST** `/v1/app/challenges/join`
+
+챌린지에 참여합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "challenge_id": "CH-30DAY-SKIN",
+  "start_date": "2026-06-01",
+  "end_date": "2026-06-30"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "challenge_id": "CH-30DAY-SKIN",
+  "start_date": "2026-06-01",
+  "end_date": "2026-06-30",
+  "message": "챌린지에 참여했습니다."
+}
+```
+
+---
+
+### 10.13 챌린지 진행률 업데이트
+
+**PUT** `/v1/app/challenges/progress`
+
+챌린지 진행률을 업데이트합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "challenge_id": "CH-30DAY-SKIN",
+  "progress": 50.0
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "challenge_id": "CH-30DAY-SKIN",
+  "progress": 50.0,
+  "message": "챌린지 진행률이 업데이트되었습니다."
+}
+```
+
+---
+
+### 10.14 고객 챌린지 조회
+
+**GET** `/v1/app/challenges/{customer_id}`
+
+고객 챌린지를 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "total_challenges": 1,
+  "challenges": [
+    {
+      "customer_id": "CUST001",
+      "challenge_id": "CH-30DAY-SKIN",
+      "start_date": "2026-06-01",
+      "end_date": "2026-06-30",
+      "progress": 50.0,
+      "status": "active",
+      "created_at": "2026-06-01T10:00:00Z",
+      "name": "30일 피부 개선 챌린지",
+      "description": "30일 동안 피부 점수를 10점 향상",
+      "reward_points": 500
     }
   ]
 }
