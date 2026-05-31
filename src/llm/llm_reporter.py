@@ -133,7 +133,8 @@ def _apply_advanced_score_correction(
         analyzer_weight /= total_weight
         llm_weight /= total_weight
     
-    corrected_score = analyzer_score * analyzer_weight + llm_weight * llm_weight
+    # [FIX P0] llm_weight * llm_weight → llm_score * llm_weight
+    corrected_score = analyzer_score * analyzer_weight + llm_score * llm_weight
     log.debug(f"[고급 보정] {metric_key}: 분석기={analyzer_score}({analyzer_weight}) + LLM={llm_score}({llm_weight}) = {corrected_score}")
     return corrected_score
 

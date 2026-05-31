@@ -28,7 +28,7 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
-from src.server.deps import get_current_customer, limiter, log
+from src.server.deps import get_current_customer, limiter, log, _safe_filename, validate_path_within_directory
 
 log = logging.getLogger(__name__)
 
@@ -49,10 +49,23 @@ class UploadSession:
     created_at: datetime = field(default_factory=datetime.utcnow)
     temp_dir: Optional[Path] = None
     file_hash: Optional[str] = None
+    owner_customer_id: Optional[str] = None  # [FIX P0] 세션 소유권 검증용
 
 
 # 전역 업로드 세션 저장소
 _upload_sessions: Dict[str, UploadSession] = {}
+
+
+def _validate_session_ownership(session: UploadSession, current_customer: Dict) -> None:
+    """[FIX P0] 세션 소유권 검증"""
+    if session.owner_customer_id is None:
+        raise HTTPException(status_code=500, detail="Session has no owner")
+    
+    customer_id = current_customer.get("sub")
+    if customer_id != session.owner_customer_id:
+        # 관리자는 모든 세션에 접근 가능
+        if current_customer.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Access denied: not the session owner")
 
 
 def _get_temp_dir() -> Path:
@@ -94,6 +107,11 @@ async def init_upload(
     if current_customer is None:
         raise HTTPException(status_code=401, detail="Authentication required")
 
+    # [FIX P0] 파일 이름 정제 (traversal 방지)
+    safe_file_name = _safe_filename(file_name)
+    if not safe_file_name:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+
     # 파일 크기 검증
     from src.server.deps import MAX_UPLOAD_BYTES
     if file_size > MAX_UPLOAD_BYTES:
@@ -115,12 +133,13 @@ async def init_upload(
     # 세션 생성
     session = UploadSession(
         session_id=session_id,
-        file_name=file_name,
+        file_name=safe_file_name,  # [FIX P0] 정제된 파일 이름 사용
         file_size=file_size,
         chunk_size=chunk_size,
         total_chunks=total_chunks,
         temp_dir=temp_dir,
         file_hash=file_hash,
+        owner_customer_id=current_customer.get("sub"),  # [FIX P0] 소유자 저장
     )
     _upload_sessions[session_id] = session
 
@@ -160,6 +179,9 @@ async def upload_chunk(
         raise HTTPException(status_code=404, detail="Upload session not found")
 
     session = _upload_sessions[session_id]
+    
+    # [FIX P0] 세션 소유권 검증
+    _validate_session_ownership(session, current_customer)
 
     # 청크 번호 검증
     if chunk_number < 0 or chunk_number >= session.total_chunks:
@@ -210,6 +232,9 @@ async def complete_upload(
         raise HTTPException(status_code=404, detail="Upload session not found")
 
     session = _upload_sessions[session_id]
+    
+    # [FIX P0] 세션 소유권 검증
+    _validate_session_ownership(session, current_customer)
 
     # 모든 청크 업로드 확인
     if len(session.uploaded_chunks) != session.total_chunks:
@@ -245,6 +270,10 @@ async def complete_upload(
         # 최종 파일 경로 반환 (jobs 디렉토리로 이동)
         from src.server.deps import jobs_root
         final_path = jobs_root() / session.file_name
+        
+        # [FIX P0] 경로 traversal 방지
+        validate_path_within_directory(final_path, jobs_root())
+        
         shutil.move(str(output_path), str(final_path))
 
         # 세션 정리
@@ -281,6 +310,11 @@ async def cancel_upload(
     if session_id not in _upload_sessions:
         raise HTTPException(status_code=404, detail="Upload session not found")
 
+    session = _upload_sessions[session_id]
+    
+    # [FIX P0] 세션 소유권 검증
+    _validate_session_ownership(session, current_customer)
+
     log.info("업로드 취소: session_id=%s", session_id)
 
     # 세션 정리
@@ -307,6 +341,9 @@ async def get_upload_progress(
         raise HTTPException(status_code=404, detail="Upload session not found")
 
     session = _upload_sessions[session_id]
+    
+    # [FIX P0] 세션 소유권 검증
+    _validate_session_ownership(session, current_customer)
 
     progress_percent = (len(session.uploaded_chunks) / session.total_chunks) * 100
 

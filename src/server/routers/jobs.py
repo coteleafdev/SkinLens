@@ -9,6 +9,8 @@ GET    /v1/analysis/jobs/{job_id}/artifacts/{name}
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
 import json
 import logging
 import os
@@ -47,6 +49,8 @@ from src.server.deps import (
     validate_customer_id_match,
     validate_path_within_directory,
     get_main_loop,
+    is_ssrf_blocked_host,
+    get_secret_key,
 )
 from src.cli.execution_history import ExecutionHistoryDB
 from src.utils.config import get_db_path_from_env
@@ -192,6 +196,12 @@ async def _run_job(job_id: str) -> None:
         callback_url = meta.get("callback_url")
         if callback_url and meta["status"] == "succeeded":
             try:
+                # [FIX P1] SSRF 검증
+                parsed = urlparse(callback_url)
+                if is_ssrf_blocked_host(parsed.hostname):
+                    log.warning("콜백 URL 차단 (SSRF): %s", callback_url)
+                    raise ValueError("Blocked callback URL")
+                
                 import httpx
                 callback_payload = {
                     "job_id": job_id,
@@ -204,8 +214,18 @@ async def _run_job(job_id: str) -> None:
                     },
                     "finished_at": meta["finished_at"],
                 }
+                
+                # [FIX P1] HMAC 서명 추가
+                payload_str = json.dumps(callback_payload, sort_keys=True)
+                signature = hmac.new(
+                    get_secret_key().encode(),
+                    payload_str.encode(),
+                    hashlib.sha256
+                ).hexdigest()
+                
+                headers = {"X-Webhook-Signature": f"sha256={signature}"}
                 async with httpx.AsyncClient(timeout=10) as client:
-                    await client.post(callback_url, json=callback_payload)
+                    await client.post(callback_url, json=callback_payload, headers=headers)
                 log.info("콜백 URL 호출 성공: %s", callback_url)
             except Exception as callback_err:
                 log.warning("콜백 URL 호출 실패: %s", callback_err)
@@ -469,12 +489,16 @@ async def create_job(
 
 
 @router.get("/jobs/{job_id}", response_model=None)
-def get_job(job_id: str) -> Dict[str, Any]:
+def get_job(job_id: str, current_customer: Dict[str, Any] = Depends(get_current_customer)) -> Dict[str, Any]:
     """Job 상태 조회."""
     try:
         meta = read_job_meta(job_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="job not found")
+    
+    # [FIX P0] 소유권 검증
+    validate_customer_id_match(current_customer, meta.get("customer_id"))
+    
     return {
         "job_id":      meta.get("job_id"),
         "status":      meta.get("status"),
@@ -487,12 +511,15 @@ def get_job(job_id: str) -> Dict[str, Any]:
 
 
 @router.get("/jobs/{job_id}/result", response_model=None)
-def get_job_result(job_id: str) -> Dict[str, Any]:
+def get_job_result(job_id: str, current_customer: Dict[str, Any] = Depends(get_current_customer)) -> Dict[str, Any]:
     """완료된 Job 의 분석 결과 반환."""
     try:
         meta = read_job_meta(job_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="job not found")
+    
+    # [FIX P0] 소유권 검증
+    validate_customer_id_match(current_customer, meta.get("customer_id"))
 
     if meta.get("status") not in ("succeeded", "failed"):
         raise HTTPException(status_code=409, detail="job not finished")
@@ -520,12 +547,15 @@ def get_job_result(job_id: str) -> Dict[str, Any]:
 
 
 @router.get("/jobs/{job_id}/artifacts/{name}")
-def download_artifact(job_id: str, name: str):
+def download_artifact(job_id: str, name: str, current_customer: Dict[str, Any] = Depends(get_current_customer)):
     """아티팩트 파일 다운로드."""
     try:
         meta = read_job_meta(job_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="job not found")
+    
+    # [FIX P0] 소유권 검증
+    validate_customer_id_match(current_customer, meta.get("customer_id"))
 
     artifacts_local = meta.get("artifacts_local") or {}
     local_path      = artifacts_local.get(name)
@@ -564,8 +594,8 @@ async def confirm_skin_type(
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="job not found")
     
-    # 고객 권한 확인
-    validate_customer_id_match(meta, current_customer)
+    # [FIX P1] 고객 권한 확인 (인자 순서 교정)
+    validate_customer_id_match(current_customer, meta.get("customer_id"))
     
     # 분석 결과 로드
     result_path = Path(job_dir(job_id)) / "artifacts" / "results.json"
@@ -639,8 +669,8 @@ async def reclassify_skin_type(
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="job not found")
     
-    # 고객 권한 확인
-    validate_customer_id_match(meta, current_customer)
+    # [FIX P1] 고객 권한 확인 (인자 순서 교정)
+    validate_customer_id_match(current_customer, meta.get("customer_id"))
     
     # 분석 결과 로드
     result_path = Path(job_dir(job_id)) / "artifacts" / "results.json"
