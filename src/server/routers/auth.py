@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import hmac
 import os
+import sqlite3
 from datetime import timedelta
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, Form, Request
 
-from src.cli.execution_history import ExecutionHistoryDB
-from src.utils.config import get_db_path_from_env
+from src.db.skin_analysis_db import SkinAnalysisDB
+from src.utils.config import load_config
 from src.server.deps import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     create_access_token,
@@ -26,6 +27,15 @@ from src.server.deps import (
 )
 
 router = APIRouter(prefix="/v1/auth", tags=["auth"])
+
+
+# ── 의존성 ───────────────────────────────────────────────────────────────────
+
+def get_auth_db():
+    """SkinAnalysisDB 인스턴스 반환 (인증용)"""
+    config = load_config()
+    db_path = config.get("database", {}).get("sqlite_path", "results/skin_analysis.db")
+    return SkinAnalysisDB(db_path=db_path)
 
 
 def _verify_pw(plain: str, stored: str) -> bool:
@@ -64,8 +74,7 @@ async def login(
     - 환경변수 기반 인증은 폴백으로 유지 (마이그레이션 기간)
     """
     # [FIX P1] DB 기반 인증 시도
-    from src.server.deps import get_db
-    db = get_db()
+    db = get_auth_db()
     user = db.get_user_by_username(username)
     
     if user:
