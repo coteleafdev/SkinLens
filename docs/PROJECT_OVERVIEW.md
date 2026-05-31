@@ -398,6 +398,64 @@ flowchart TB
 - 결과 기록 및 분석
 - 변형별 메트릭 비교
 
+**사용 예시**
+
+1. **테스트 생성**: 관리자가 새로운 A/B 테스트를 생성합니다.
+   ```bash
+   POST /v1/enhancements/ab/tests
+   {
+     "test_name": "ui_redesign_test",
+     "variant_a_name": "original_ui",
+     "variant_b_name": "new_ui",
+     "traffic_split": 0.5
+   }
+   ```
+
+2. **사용자 할당**: 사용자가 접속하면 자동으로 변형에 할당됩니다.
+   ```bash
+   POST /v1/enhancements/ab/assign?test_id=1
+   # 응답: {"variant": "A"} 또는 {"variant": "B"}
+   ```
+
+3. **결과 기록**: 사용자 행동을 메트릭으로 기록합니다.
+   ```bash
+   POST /v1/enhancements/ab/results
+   {
+     "test_id": 1,
+     "variant": "A",
+     "metric_name": "click_rate",
+     "metric_value": 0.05
+   }
+   ```
+
+4. **결과 분석**: 관리자가 결과를 조회하여 통계적 유의성을 확인합니다.
+   ```bash
+   GET /v1/enhancements/ab/results/1
+   # 응답: 변형별 평균 메트릭, 이벤트 수 등
+   ```
+
+**테스트 시나리오 예시**
+
+- **UI 디자인 비교**: 기존 UI vs 새로운 UI의 클릭률 비교
+- **CTA 버튼 색상**: 파란색 vs 초록색 버튼의 전환율 비교
+- **레이아웃 변경**: 단열 vs 다열 레이아웃의 이탈률 비교
+- **알림 타이밍**: 즉시 vs 1시간 후 알림의 참여율 비교
+
+**모범 사례**
+
+- **명확한 가설 설정**: "새로운 UI가 클릭률을 10% 향상시킬 것이다"
+- **충분한 샘플 크기**: 통계적 유의성을 위해 최소 1,000명 이상의 사용자
+- **단일 변수 테스트**: 한 번에 하나의 요소만 변경
+- **테스트 기간 설정**: 최소 1주 이상의 테스트 기간
+- **세그먼트 분석**: 사용자 그룹별 결과 분석
+
+**주의사항**
+
+- **노벨티 효과 주의**: 새로운 요소에 대한 일시적인 관심
+- **계절성 고려**: 특정 시기에만 나타나는 패턴
+- **장기 추적**: 단기 효과뿐만 아니라 장기 효과도 확인
+- **윤리적 고려**: 사용자에게 테스트 참여를 투명하게 공개
+
 **API**:
 - POST `/v1/enhancements/ab/tests` - 테스트 생성
 - POST `/v1/enhancements/ab/assign` - 사용자 할당
