@@ -333,7 +333,7 @@ async def update_log_level(
             "timestamp": datetime.now().isoformat(),
             "message": f"Log level changed from {previous_level} to {new_level}" + (" (persisted to config.json)" if persist else " (runtime only)")
         }
-    except Exception as e:
+    except (OSError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("로그 레벨 변경 실패: %s", e)
         log_audit(
             db=db,
@@ -436,7 +436,7 @@ async def get_system_metrics(
         _metrics_cache["timestamp"] = current_time
 
         return result
-    except Exception as e:
+    except (OSError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("시스템 메트릭 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve system metrics")
 
@@ -499,7 +499,7 @@ async def create_api_key(
         )
 
         return result
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("API 키 생성 실패: %s", e)
         log_audit(
             db=db,
