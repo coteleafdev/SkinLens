@@ -24,6 +24,7 @@ tests/
 ├── test_customer_api.py           # 고객 API 테스트
 ├── test_db_api.py                 # 데이터베이스 API 테스트
 ├── test_enhancements_api.py       # 향상 기능 API 테스트
+├── test_full_integration.py       # 전체 시스템 통합 테스트 (앱-엔진서버-웹서버-DB)
 ├── test_health_api.py             # 헬스 체크 API 테스트
 ├── test_integration_api.py        # 통합 API 테스트
 ├── test_logs_api.py               # 로그 API 테스트
@@ -244,6 +245,9 @@ pytest --cov=src --cov-report=html
 ```bash
 # 앱 기능 API 테스트
 pytest tests/test_app_features_api.py
+
+# 전체 시스템 통합 테스트
+pytest tests/test_full_integration.py
 
 # 서버 통합 테스트
 pytest tests/test_server.py
