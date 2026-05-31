@@ -547,46 +547,39 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - **구조 개선**: 리사이징 로직이 전처리 단으로 이동하여 파이프라인 구조 개선
 - **확장성**: 향후 노이즈 제거, 색상 보정, 대비 조정, 아티팩트 제거 등 로직 추가 예정
 
-#### 코드 품질 개선 (AI_Skin_v3_deep_review.md 기반) (2026-05-16)
+### 완료된 작업
 
-- **P0-1**: src.gemini → src.llm import 경로 수정 (이미 해결됨)
-- **P1-5**: datetime.utcnow() → datetime.now(timezone.utc) 수정 (이미 해결됨)
-- **P1-1**: utils.py GUI 직접 의존 → lazy import 수정 (이미 해결됨)
+#### 코드 리뷰 반영 (SkinLens_v1_코드리뷰.md 기반) (2026-05-31)
 
-### 남은 작업 (별도 대규모 리팩토링)
+- **보안 강화 (P0, P1)**: 9개 항목 완료
+  - Job 조회/결과/아티팩트 GET 3종에 인증+소유권 검증 추가
+  - _apply_advanced_score_correction 버그 수정
+  - 업로드 file_name 정제·경로검증
+  - 업로드 세션 소유권 검증
+  - validate_customer_id_match 인자 순서 교정
+  - callback_url SSRF 검증 + HMAC 서명
+  - 인증을 DB 사용자/bcrypt 기반으로 전환
+  - DB 의존성을 싱글톤으로 전환
+  - get_rate_limit_key의 algorithms 수정
 
-#### 보안 강화 (P0, P1) - 완료
+- **아키텍처 정리 (P2)**: 4개 항목 완료
+  - deps.py 설정 중복 해결 (getter 함수 사용)
+  - 분석기 이중 아키텍처 수렴 (redness.py → redness_analyzer.py)
+  - 백그라운드 태스크 강참조 보관
+  - DB 커넥션 누수 수정 (싱글톤 사용)
 
-- **P0-1**: Job 조회/결과/아티팩트 GET 3종에 인증+소유권 검증 추가 완료
-- **P0-2**: _apply_advanced_score_correction 버그 수정 완료
-- **P0-3**: 업로드 file_name 정제·경로검증 완료
-- **P0-4**: 업로드 세션 소유권 검증 완료
-- **P1-5**: validate_customer_id_match 인자 순서 교정 완료
-- **P1-6**: callback_url SSRF 검증 + HMAC 서명 완료
-- **P1-7**: 인증을 DB 사용자/bcrypt 기반으로 전환 완료
-- **P1-8**: DB 의존성을 싱글톤으로 전환 완료
-- **P1-9**: get_rate_limit_key의 algorithms 수정 완료
-
-#### 아키텍처 정리 (P2) - 완료
-
-- **deps.py 설정 중복 해결**: 모듈 레벨 상수(`SECRET_KEY`, `ALLOWED_EXT` 등)와 getter(`get_secret_key()` 등)가 동시에 존재. config 핫리로드를 진짜로 지원하려면 라우터들이 상수 import를 멈추고 getter만 쓰도록 정리 완료
-  - upload.py: MAX_UPLOAD_BYTES → get_max_upload_bytes() getter 사용
-  - jobs.py: MAX_UPLOAD_BYTES, ALLOWED_EXT, SERVER_URL → getter 사용
-- **분석기 이중 아키텍처 수렴**: `redness.py`(standalone 함수)와 `strategies/redness_analyzer.py`(BaseAnalyzer 래퍼)가 공존. 단일 진실을 위해 한쪽으로 수렴 완료
-  - redness.py 알고리즘을 redness_analyzer.py로 통합
-  - 하위 호환성을 위한 analyze_redness() 별칭 함수 유지
-  - redness.py 삭제
-- **백그라운드 태스크 참조 보관**: `server.py`에서 `asyncio.create_task()`로 생성된 태스크를 변수로 잡아두지 않아 GC 대상이 될 수 있음. 모듈/`app.state`에 `set`으로 보관 완료
-- **DB 커넥션 누수 수정**: `_system_health_monitor`가 5분마다 `ExecutionHistoryDB(...)`를 새로 생성하고 닫지 않음. 싱글톤 사용으로 수정 완료
-
-#### 기타 개선 (P2) - 완료
-
-- **GUI 종료 처리 단순화**: image_enhancer.py에서 이중/삼중 종료 예약 제거, 단일 quit 호출로 단순화
-- **telegram/notifier.py 파일 분할**: 1,239 LOC를 3개 파일로 분리 (notifier.py, statistics_collector.py, fault_reporter.py)
-- **패키징 문제**: .gitignore에 이미 필요한 파일 포함됨 (backup/, results/*.db, __pycache__/, archive/ 등)
-- **예외 처리 개선**: 75개소 except Exception 축소 완료
-- **로깅 개선**: 13개소 non-CLI print() → logging 완료
-- **기타 P2 항목**: 가중치 캐시 핫리로드, filter_sensitive_data 비문자열 마스킹, SSRF DNS rebinding 방어, _monitor_score_difference warning 로깅 등 완료
+- **기타 개선 (P2)**: 12개 항목 완료
+  - 예외 처리 개선: 75개소 except Exception 축소
+  - 로깅 개선: 13개소 non-CLI print() → logging
+  - GUI 종료 처리 단순화
+  - telegram/notifier.py 파일 분할 (1,239 LOC → 3개 파일)
+  - 가중치 캐시 핫리로드 무효화
+  - filter_sensitive_data 비문자열 마스킹
+  - SSRF DNS rebinding 방어
+  - _monitor_score_difference warning 로깅
+  - datetime.utcnow() 교체
+  - version.py Dict import 추가
+  - 패키징 문제 해결 (.gitignore 확인)
 
 #### Phase 2 안정성 개선 (2026-05-16)
 
@@ -634,9 +627,7 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - **조건부 동작**: ProductTable 데이터가 없을 때는 에러 없이 진행, 데이터 추가 시 자동 동작
 - **결과 JSON**: llm_analysis.product_recommendations 포함
 
-자세한 내용은 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#32-데이터-처리-흐름) 및 [JSON_IO_FLOW.md](docs/JSON_IO_FLOW.md)를 참조하세요.
-
-자세한 내용은 [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#16-sd-기능-제거-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#17-복원-엔진-전처리후처리-확장-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#18-모공-완화-기능-제거-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#19-코드-품질-개선-ai_skin_v3_deep_reviewmd-기반-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#20-phase-2-안정성-개선-완료-2026-05-16), [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#21-phase-3-로깅-개선-완료-2026-05-16), 및 [DATABASE_ARCHITECTURE.md](docs/DATABASE_ARCHITECTURE.md#22-매직넘버-외부-주입-완료-2026-05-16)를 참조하세요.
+자세한 내용은 [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) 및 [JSON_IO_FLOW.md](docs/guides/JSON_IO_FLOW.md)를 참조하세요.
 
 ## 배포
 
