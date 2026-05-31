@@ -1,8 +1,9 @@
-# 가중치 체계 문서화
+# 가중치 체계 문서화 (Weight System Documentation)
 
-> **작성일:** 2026-05-24  
-> **버전:** 1.0  
-> **목적:** SkinLens v1.0의 가중치 체계 삼원화 구조 설명
+> **문서 버전:** 1.0.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-05-31  
+> **상태:** 활성
 
 ---
 
@@ -176,5 +177,12 @@ overall_score = sum(measurement * weight for measurement, weight in measurement_
 - **config.json:** `config/config.json`
 - **LLM 프롬프트 템플릿:** `docs/LLM_PROMPT_TEMPLATE.md`
 - **스코어 합성:** `src/skin/compose/score_composition.py`
-- **레이어 B:** `src/scoring/_report.py`
-- **코드 리뷰:** `SkinLens_v1_Parts_Review.md` (B-1 섹션)
+
+---
+
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.0.0 | 2026-05-31 | 초기 버전 (v1.0에서 마이그레이션) | Cascade |
+| 0.1.0 | 2026-05-24 | 가중치 체계 문서화 초기 작성 | Cascade |

@@ -1,4 +1,9 @@
-# 복원 엔진 추가 가이드
+# 복원 엔진 추가 가이드 (Restoration Engine Guide)
+
+> **문서 버전:** 1.0.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-05-31  
+> **상태:** 활성
 
 이 가이드는 SkinLens에 새로운 복원 엔진을 추가하는 방법을 설명합니다.
 
@@ -220,3 +225,11 @@ engines = RestorerRegistry.list_available()
 기존 엔진 구현을 참고하세요:
 - `src/restoration/strategies/codeformer_restorer.py`
 - `src/restoration/strategies/restoreformer_restorer.py`
+
+---
+
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |

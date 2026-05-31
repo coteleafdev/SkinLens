@@ -162,6 +162,41 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/guides/JSON_IO_FLOW.md"
     },
+    "LLM_PROMPT_TEMPLATE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/LLM_PROMPT_TEMPLATE.md"
+    },
+    "PRESCRIPTION_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/PRESCRIPTION_GUIDE.md"
+    },
+    "RESTORATION_ENGINE_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/RESTORATION_ENGINE_GUIDE.md"
+    },
+    "SKIN_SCORING_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/SKIN_SCORING_GUIDE.md"
+    },
+    "WEIGHT_SYSTEM_DOCUMENTATION": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/WEIGHT_SYSTEM_DOCUMENTATION.md"
+    },
 }
 
 
