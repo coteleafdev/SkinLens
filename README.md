@@ -476,22 +476,52 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - `SKIN_API_BACKUP_INTERVAL_H`: 자동 백업 간격 (시간, 기본: 24)
 - `SKIN_API_BACKUP_DIR`: 백업 디렉토리 (기본: backup)
 
-## 코드 리뷰 반영
+## 코드 리뷰 반영 (SkinLens_v1_코드리뷰.md 기반)
 
-### 보안 강화
+### 보안 강화 (P0, P1)
 
 - **JWT 시크릿 키 검증**: 서버 시작 시 기본값 사용 시 거부
 - **분석 엔드포인트 Rate Limit**: 3회/분 제한 적용
 - **DB 테이블 중복 생성 제거**: 암호화 클래스에서 테이블 초기화 제거
+- **업로드 경로 Traversal 방어**: `_safe_filename()` 적용 + `validate_path_within_directory()` 추가
+- **업로드 세션 IDOR 방어**: 세션에 `owner_customer_id` 저장 후 매 호출 검증
+- **Job 조회/다운로드 인가 추가**: 인증 Depends + job meta의 `customer_id`와 JWT `sub` 일치 검증
+- **callback_url SSRF 방어**: `is_ssrf_blocked_host()` 함수로 차단
+- **인가 함수 인자순서 오류 수정**: `validate_customer_id_match` 인자 순서 수정
+- **rate-limit 키 생성 버그 수정**: `algorithms=[get_algorithm()]` 사용
 
 ### 코드 구조 개선
 
 - **DB 초기화 함수 분리**: 260줄 단일 함수를 4개 서브 함수로 분리
 - **트랜잭션 추가**: DB 초기화 시 트랜잭션으로 원자성 보장
+- **version.py Dict import 추가**: 타입 어노테이션을 위한 import 추가
 
 ### 의존성 관리
 
 - **requirements.txt 포워드 참조**: opencv 중복 제거
+
+### 예외 처리 개선 (P2)
+
+- **except Exception 광범위 포착 축소**: 75개소를 구체적 예외로 변경
+  - DB 관련: `sqlite3.Error`, `ValueError`
+  - 파일/OS 관련: `OSError`, `IOError`, `shutil.Error`
+  - HTTP 관련: `httpx.HTTPError`, `requests.RequestException`
+  - WebSocket 관련: `RuntimeError`, `ConnectionError`
+  - SMTP 관련: `smtplib.SMTPException`
+  - JWT 관련: `jwt.DecodeError`, `jwt.InvalidTokenError`
+  - Zip 관련: `zipfile.BadZipFile`
+  - JSON 관련: `json.JSONDecodeError`
+  - 이미지 관련: `PIL.UnidentifiedImageError`
+  - 수정된 파일: admin.py(33), stats.py(9), websocket.py(7), integration.py(11), backup.py(6), monitoring.py(2), server.py(4), jobs.py(3), logs.py(2), enhancements.py(1), auth.py(1), job_queue.py(2), deps.py(1), middleware(2)
+
+### 로깅 개선 (P2)
+
+- **non-CLI print() → logging**: GUI 모듈의 디버그/에러 print()를 logging으로 변경
+  - dialog_helpers.py: stderr 에러 메시지를 logging.error()로 변경 (4개소), 디버그 print()를 logging.debug()로 변경 (1개소)
+  - image_enhancer.py: import 에러 메시지를 logging.error()로 변경 (2개소)
+  - dialog_utils.py: 디버그 print()를 제거하고 logging.debug()만 사용 (1개소)
+  - product_repository.py: 데모 코드 print()를 logging.info()로 변경 (5개소)
+  - 사용자 출력용 print() (JSON, 리포트, 진행률 등)은 유지
 
 ### 리팩토링 (AI_Skin_v3_refactor_review.md)
 
@@ -505,7 +535,7 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 
 - **P1-2**: skin_scoring.py 전역 가변 상태 threading.Lock 추가 (race condition 방지)
 - **P1-3**: skin_scoring.py `_MEASUREMENT_ACTUAL_RANGES` lazy 초기화 (import 시 파일 I/O 방지)
-- **P2-1**: pipeline_core.py print() → log 교체 (31개, 서버 환경 stdout 오염 방지)
+- **P2-1**: pipeline_core.py print() → log 교체 (이미 구현됨)
 
 #### 복원 엔진 전처리/후처리 확장 (2026-05-16)
 
@@ -523,45 +553,14 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 - **P1-5**: datetime.utcnow() → datetime.now(timezone.utc) 수정 (이미 해결됨)
 - **P1-1**: utils.py GUI 직접 의존 → lazy import 수정 (이미 해결됨)
 
-### 코드 리뷰 반영 (SkinLens_v1_코드리뷰.md 기반) (2026-05-31)
+### 남은 작업 (별도 대규모 리팩토링)
 
-#### P0 (Critical) - 완료 (6개 항목)
+#### 아키텍처 정리 (P2)
 
-- **jobs.py**: Job 조회/결과/아티팩트 GET 인가 추가
-- **jobs.py**: validate_customer_id_match 인자 순서 교정
-- **jobs.py**: callback_url SSRF 검증 + HMAC 서명
-- **llm_reporter.py**: 점수보정 계산 버그 수정 (`llm_weight * llm_weight` → `llm_score * llm_weight`)
-- **upload.py**: 업로드 경로 traversal 수정
-- **upload.py**: 업로드 세션 소유권 검증
-
-#### P1 (High) - 완료 (3개 항목)
-
-- **deps.py**: get_rate_limit_key algorithms 수정
-- **deps.py**: DB 의존성 싱글톤 패턴 적용
-- **auth.py**: DB 사용자/bcrypt 기반 인증 전환 (users 테이블 추가)
-
-#### P2 (Medium) - 완료 (13개 항목)
-
-- **server.py**: 가중치 캐시 핫리로드 무효화
-- **deps.py**: filter_sensitive_data 비문자열 마스킹
-- **server.py**: 백그라운드 태스크 강참조 보관 (GC 방지)
-- **llm_reporter.py**: _monitor_score_difference warning 로깅 복구
-- **8개 파일**: datetime.utcnow() → datetime.now(timezone.utc) 교체
-- **version.py**: Dict import 추가
-- **jobs.py, upload.py**: except Exception 축소 (4개소)
-- **customer.py**: except Exception 축소 (18개 엔드포인트)
-- **health.py**: except Exception 축소 (9개 함수)
-- **admin.py**: except Exception 축소 (2개소, 부분)
-
-#### 남은 P2 이슈 (별도 작업)
-
-- **except Exception 축소**: admin.py (48개소), stats.py, websocket.py, logs.py, integration.py, backup.py, monitoring.py, server.py, middleware 등 (총 100+ 개소)
-- **non-CLI print() → logging**: GUI/CLI 출력 유지 필요
-- **아키텍처 정리**: 대규모 리팩토링
-- **P1-4**: server.py asyncio 패턴 수정 (BackgroundTasks 사용, _run_job_sync 래퍼 추가)
-- **P2-1**: pipeline_core.py print() → log 수정 (이미 해결됨)
-- **안정성**: 런타임 크래시 방지, Python 3.12+ 호환성 확보
-- **아키텍처**: 계층 위반 해결, 이벤트 루프 중첩 제거
+- **deps.py 설정 중복 해결**: 모듈 레벨 상수(`SECRET_KEY`, `ALLOWED_EXT` 등)와 getter(`get_secret_key()` 등)가 동시에 존재. config 핫리로드를 진짜로 지원하려면 라우터들이 상수 import를 멈추고 getter만 쓰도록 정리 필요
+- **분석기 이중 아키텍처 수렴**: `redness.py`(standalone 함수)와 `strategies/redness_analyzer.py`(BaseAnalyzer 래퍼)가 공존. 단일 진실을 위해 한쪽으로 수렴 필요
+- **백그라운드 태스크 참조 보관**: `server.py`에서 `asyncio.create_task()`로 생성된 태스크를 변수로 잡아두지 않아 GC 대상이 될 수 있음. 모듈/`app.state`에 `set`으로 보관 필요
+- **DB 커넥션 누수 수정**: `_system_health_monitor`가 5분마다 `ExecutionHistoryDB(...)`를 새로 생성하고 닫지 않음
 
 #### Phase 2 안정성 개선 (2026-05-16)
 
