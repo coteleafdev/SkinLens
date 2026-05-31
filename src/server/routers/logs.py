@@ -7,6 +7,7 @@ GET /v1/logs/download
 from __future__ import annotations
 
 import os
+import sqlite3
 import tempfile
 import logging
 from datetime import datetime
@@ -76,7 +77,7 @@ async def download_logs(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (OSError, IOError) as e:  # [FIX P2] 구체적 예외
         log.error("로그 다운로드 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to download logs")
 
@@ -105,6 +106,6 @@ async def get_logs(
     try:
         logs = db.get_logs(level=level, limit=limit, hours=hours)
         return {"logs": logs, "count": len(logs)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("로그 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve logs")

@@ -429,7 +429,7 @@ async def create_job(
         validate_path_within_directory(input_path, jdir)
         try:
             download_image_to(str(image_url), input_path)
-        except Exception as e:
+        except (OSError, IOError, httpx.HTTPError) as e:  # [FIX P2] 구체적 예외
             raise HTTPException(status_code=400, detail=f"Failed to download image_url: {e}")
         lateral_image_paths = [{"angle": "front", "path": str(input_path)}]
 
@@ -534,7 +534,7 @@ def get_job_result(job_id: str, current_customer: Dict[str, Any] = Depends(get_c
             try:
                 with open(p, "r", encoding="utf-8") as f:
                     analysis_payload = json.load(f)
-            except Exception as e:
+            except (OSError, IOError, json.JSONDecodeError) as e:  # [FIX P2] 구체적 예외
                 log.warning(f"Failed to load results.json: {e}", exc_info=True)
 
     return {
@@ -637,7 +637,7 @@ async def confirm_skin_type(
             )
         
         log.info(f"[피부 타입 확인] job_id={job_id}, customer_id={customer_id}, skin_types={skin_types}")
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.warning(f"[피부 타입 확인] DB 저장 실패: {e}")
         # DB 저장 실패해도 분석 결과 업데이트는 계속 진행
     

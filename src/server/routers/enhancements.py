@@ -104,11 +104,11 @@ async def upload_image(
         f.write(content)
     
     # 이미지 크기 확인
-    from PIL import Image
+    from PIL import Image, UnidentifiedImageError
     try:
         img = Image.open(file_path)
         width, height = img.size
-    except Exception as e:
+    except (UnidentifiedImageError, OSError, IOError) as e:  # [FIX P2] 구체적 예외
         log.error(f"이미지 열기 실패: {e}")
         width, height = None, None
     

@@ -126,7 +126,7 @@ async def login(
             request=request,
             success=True,
         )
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.warning("감사 로그 기록 실패: %s", e)
 
     return {
