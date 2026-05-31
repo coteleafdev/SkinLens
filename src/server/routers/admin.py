@@ -190,7 +190,7 @@ async def get_db_metrics(
         log_audit(db=db, actor_customer_id=actor_id, target_customer_id=None,
                   endpoint=ep, method="GET", user_role=role, request=request, success=True)
         return metrics
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("DB metrics retrieval failed: %s", e)
         log_audit(db=db, actor_customer_id=actor_id, target_customer_id=None,
                   endpoint=ep, method="GET", user_role=role, request=request,
@@ -245,7 +245,7 @@ async def get_audit_summary(
         log_audit(db=db, actor_customer_id=actor_id, target_customer_id=None,
                   endpoint=ep, method="GET", user_role=role, request=request, success=True)
         return summary
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("Audit summary retrieval failed: %s", e)
         log_audit(db=db, actor_customer_id=actor_id, target_customer_id=None,
                   endpoint=ep, method="GET", user_role=role, request=request,
