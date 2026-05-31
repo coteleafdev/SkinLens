@@ -274,7 +274,7 @@ async def get_current_log_level(
             "available_levels": ["DEBUG", "INFO", "WARNING", "ERROR"],
             "timestamp": datetime.now().isoformat(),
         }
-    except Exception as e:
+    except (OSError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("로그 레벨 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve log level")
 
