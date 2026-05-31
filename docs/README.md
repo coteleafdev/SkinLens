@@ -23,7 +23,6 @@ docs/
 ├── db/                                 # 데이터베이스 문서 (2개)
 ├── design/                             # 디자인 문서 (23개)
 ├── guides/                             # 개발 가이드 (11개)
-├── html/                               # HTML 문서 (6개)
 ├── ops/                                # 운영 가이드 (8개)
 ├── project/                            # 프로젝트 관리 (3개)
 └── user/                               # 사용자 가이드 (5개)
@@ -98,17 +97,6 @@ docs/
 | [CODEFORMER_PIPELINE_ALGORITHM.md](guides/CODEFORMER_PIPELINE_ALGORITHM.md) | CodeFormer 파이프라인 알고리즘 | 개발자 |
 | [LLM_PROMPT_TEMPLATE.md](guides/LLM_PROMPT_TEMPLATE.md) | LLM 프롬프트 템플릿 | 개발자 |
 | [WEIGHT_SYSTEM_DOCUMENTATION.md](guides/WEIGHT_SYSTEM_DOCUMENTATION.md) | 가중치 체계 문서 | 개발자 |
-
-### 🌐 HTML 문서 (html/)
-
-| 파일 | 설명 | 대상 |
-|------|------|------|
-| [17_SCORE_EXPLANATION.html](html/17_SCORE_EXPLANATION.html) | 17점 점수 설명 (HTML) | 모든 사용자 |
-| [API_GUIDE.html](html/API_GUIDE.html) | API 가이드 (HTML) | 개발자 |
-| [JSON_IO_FLOW.html](html/JSON_IO_FLOW.html) | JSON 입출력 흐름 (HTML) | 개발자 |
-| [PRESCRIPTION_MAPPING.html](html/PRESCRIPTION_MAPPING.html) | 처방 매핑 (HTML) | 모든 사용자 |
-| [PROJECT_OVERVIEW.html](html/PROJECT_OVERVIEW.html) | 프로젝트 개요 (HTML) | 모든 사용자 |
-| [websocket_client_example.html](html/websocket_client_example.html) | WebSocket 클라이언트 예제 (HTML) | 개발자 |
 
 ### ⚙️ 운영 가이드 (ops/)
 
