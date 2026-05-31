@@ -528,7 +528,65 @@ graph LR
 
 ---
 
-## 3.14 버전 관리
+### 3.14 제품 구매 및 피드백
+
+**개요**: 제품 구매 처리 과정과 피드백 시스템을 제공합니다.
+
+```mermaid
+sequenceDiagram
+    participant App as 모바일/웹 앱
+    participant API as 엔진 서버<br/>(FastAPI)
+    participant PG as 결제 게이트웨이
+    participant Ship as 배송 시스템
+    participant DB as 데이터베이스
+
+    App->>API: 1. 주문 생성<br/>POST /v1/orders
+    API->>DB: 주문 저장 (pending_payment)
+    DB-->>API: 저장 완료
+    API-->>App: 결제 URL 반환
+
+    App->>PG: 2. 결제 진행
+    PG-->>App: 결제 완료
+    PG->>API: 3. 결제 콜백<br/>POST /payment/callback
+    API->>DB: 주문 상태 업데이트 (paid)
+    DB-->>API: 업데이트 완료
+    API-->>PG: 콜백 확인
+
+    Ship->>API: 4. 배송 상태 업데이트<br/>POST /shipping/status
+    API->>DB: 배송 상태 저장 (shipped/delivered)
+    DB-->>API: 저장 완료
+    API-->>Ship: 업데이트 확인
+
+    App->>API: 5. 피드백 등록<br/>POST /feedback
+    API->>DB: 피드백 저장
+    DB-->>API: 저장 완료
+    API-->>App: 등록 완료
+
+    App->>API: 6. 피드백 조회<br/>GET /products/{id}/feedback
+    API->>DB: 피드백 조회
+    DB-->>API: 피드백 데이터
+    API-->>App: 리뷰 목록
+```
+
+**특징**:
+- 결제 콜백 처리 (결제 게이트웨이 연동)
+- 배송 상태 추적 (운송장 번호, 발송/배송 완료 시간)
+- 제품 피드백 시스템 (평점, 코멘트, 재구매 의사)
+- 평균 평점 계산
+- 고객별/제품별 피드백 조회
+
+**API**:
+- POST `/v1/orders` - 주문 생성
+- POST `/v1/orders/payment/callback` - 결제 콜백
+- POST `/v1/orders/shipping/status` - 배송 상태 업데이트
+- POST `/v1/orders/feedback` - 피드백 등록
+- GET `/v1/orders/products/{product_id}/feedback` - 제품 피드백 조회
+
+**자세한 가이드**: [API_REFERENCE.md](api/API_REFERENCE.md)
+
+---
+
+## 3.15 버전 관리
 
 SkinLens v1.0은 여러 층위에서 버전을 관리합니다. 각 버전은 독립적인 목적을 가지며 서로 다른 주기로 업데이트됩니다.
 

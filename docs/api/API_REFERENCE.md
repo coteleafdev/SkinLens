@@ -66,6 +66,7 @@ graph TB
 | 관리자 API | `/v1/admin/*` | 웹서버, 관리자 | 필수 (admin) | 시스템 관리 |
 | 연동 API | `/v1/webhooks/*`<br/>`/v1/integration/*`<br/>`/v1/oauth/*` | 웹서버 | 필수 (admin) | 외부 시스템 연동 |
 | 향상 기능 API | `/v1/enhancements/*` | 웹, 모바일 | 필수 | 이미지 업로드, 푸시, A/B 테스트, 모니터링 |
+| 주문 API | `/v1/orders/*` | 웹, 모바일 | 필수 | 주문 생성, 결제, 배송, 피드백 |
 | WebSocket | `/v1/ws/*` | 웹, 모바일 | 필수 | 실시간 진행률 |
 
 ---
@@ -2468,6 +2469,167 @@ A/B 테스트 결과를 조회합니다 (관리자 전용).
       "overall_score_restored": 75,
       "measurement_scores": "{\"melasma_score\": 50, \"redness_score\": 40}",
       "recorded_at": "2026-05-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## 9. 주문 (Orders)
+
+### 9.1 주문 생성
+
+**POST** `/v1/orders`
+
+주문을 생성합니다.
+
+**Request Body:**
+```json
+{
+  "customer_id": "CUST001",
+  "items": [
+    {
+      "product_id": "PROD001",
+      "quantity": 2,
+      "price": 50000
+    }
+  ],
+  "shipping_address": {
+    "recipient": "홍길동",
+    "phone": "010-1234-5678",
+    "address": "서울시 강남구",
+    "zip_code": "06000"
+  },
+  "payment_method": "credit_card",
+  "recommendation_source": "skin_analysis",
+  "analysis_job_id": "job-123"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "order_id": "ORD-20260531-1234",
+  "status": "pending_payment",
+  "total_amount": 100000,
+  "created_at": "2026-05-31T10:00:00Z",
+  "payment_url": "https://payment.example.com/pay/ORD-20260531-1234"
+}
+```
+
+---
+
+### 9.2 결제 콜백
+
+**POST** `/v1/orders/payment/callback`
+
+결제 게이트웨이에서 결제 결과를 콜백합니다.
+
+**Request Body:**
+```json
+{
+  "order_id": "ORD-20260531-1234",
+  "payment_id": "PAY-123456",
+  "payment_status": "success",
+  "paid_amount": 100000,
+  "paid_at": "2026-05-31T10:05:00Z"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "order_id": "ORD-20260531-1234",
+  "status": "paid",
+  "payment_status": "paid",
+  "message": "결제가 완료되었습니다."
+}
+```
+
+---
+
+### 9.3 배송 상태 업데이트
+
+**POST** `/v1/orders/shipping/status`
+
+배송 상태를 업데이트합니다 (관리자 또는 배송 시스템).
+
+**Request Body:**
+```json
+{
+  "order_id": "ORD-20260531-1234",
+  "shipping_status": "shipped",
+  "tracking_number": "KR123456789",
+  "shipped_at": "2026-05-31T12:00:00Z"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "order_id": "ORD-20260531-1234",
+  "shipping_status": "shipped",
+  "tracking_number": "KR123456789",
+  "message": "배송 상태가 업데이트되었습니다."
+}
+```
+
+---
+
+### 9.4 제품 피드백 등록
+
+**POST** `/v1/orders/feedback`
+
+제품 피드백을 등록합니다.
+
+**Request Body:**
+```json
+{
+  "order_id": "ORD-20260531-1234",
+  "product_id": "PROD001",
+  "rating": 5,
+  "comment": "피부가 좋아졌습니다.",
+  "would_repurchase": true
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "feedback_id": "FB-abc12345",
+  "order_id": "ORD-20260531-1234",
+  "product_id": "PROD001",
+  "rating": 5,
+  "created_at": "2026-05-31T15:00:00Z",
+  "message": "피드백이 등록되었습니다."
+}
+```
+
+---
+
+### 9.5 제품 피드백 조회
+
+**GET** `/v1/orders/products/{product_id}/feedback`
+
+제품별 피드백을 조회합니다.
+
+**Query Parameters:**
+- `limit`: 최대 개수 (기본값: 20)
+
+**Response (200 OK):**
+```json
+{
+  "product_id": "PROD001",
+  "total_reviews": 10,
+  "average_rating": 4.5,
+  "reviews": [
+    {
+      "feedback_id": "FB-abc12345",
+      "rating": 5,
+      "comment": "피부가 좋아졌습니다.",
+      "would_repurchase": true,
+      "created_at": "2026-05-31T15:00:00Z"
     }
   ]
 }

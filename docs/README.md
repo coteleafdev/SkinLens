@@ -181,9 +181,13 @@ docs/
 - [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#311-ab-테스트-프레임워크) - A/B 테스트 프레임워크
 - [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#312-모니터링-대시보드) - 모니터링 대시보드
 - [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#313-분석-추이) - 분석 추이
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#314-제품-구매-및-피드백) - 제품 구매 및 피드백
 
 #### API 관련
 - [API_REFERENCE.md](api/API_REFERENCE.md) - API 엔드포인트 상세
+
+#### 주문/결제 관련
+- [API_REFERENCE.md](api/API_REFERENCE.md#9-주문-orders) - 주문 API 상세
 
 #### 데이터베이스 관련
 - [DATA_MODEL.md](db/DATA_MODEL.md) - 데이터 모델, 스키마
