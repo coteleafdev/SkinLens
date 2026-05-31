@@ -31,6 +31,7 @@ GET  /v1/admin/reports/revenue
 """
 from __future__ import annotations
 
+import sqlite3
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
@@ -130,7 +131,7 @@ async def get_audit_logs(
         log_audit(db=db, actor_customer_id=actor_id, target_customer_id=None,
                   endpoint=ep, method="GET", user_role=role, request=request, success=True)
         return {"audit_logs": logs, "count": len(logs)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("감사 로그 조회 실패: %s", e)
         log_audit(db=db, actor_customer_id=actor_id, target_customer_id=None,
                   endpoint=ep, method="GET", user_role=role, request=request,
@@ -154,7 +155,7 @@ async def check_db_health(
         db = ExecutionHistoryDB(get_db_path_from_env())
         health = db.check_health()
         return JSONResponse(content=health, status_code=200 if health.get("healthy") else 503)
-    except Exception as e:
+    except (sqlite3.Error, OSError) as e:  # [FIX P2] 구체적 예외
         log.error("DB health check failed: %s", e)
         return JSONResponse(content={"healthy": False, "error": str(e)}, status_code=503)
 
