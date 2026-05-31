@@ -113,6 +113,20 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/user/IMAGE_ENHANCER_GUIDE.md"
     },
+    "EXTERNAL_SYSTEM_INTEGRATION_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md"
+    },
+    "INTEGRATION_TEST_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/INTEGRATION_TEST_GUIDE.md"
+    },
 }
 
 
