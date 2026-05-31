@@ -15,6 +15,7 @@ POST /v1/oauth/providers
 """
 from __future__ import annotations
 
+import sqlite3
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -102,7 +103,7 @@ async def create_webhook(
         return {"webhook_id": webhook_id, "message": "Webhook created successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("웹훅 생성 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to create webhook")
 
@@ -122,7 +123,7 @@ async def list_webhooks(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         webhooks = db.get_webhooks(customer_id=customer_id, active_only=active_only)
         return {"webhooks": webhooks, "total": len(webhooks)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("웹훅 목록 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve webhooks")
 
@@ -152,7 +153,7 @@ async def update_webhook(
         return {"message": "Webhook updated successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("웹훅 업데이트 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to update webhook")
 
@@ -176,7 +177,7 @@ async def delete_webhook(
         return {"message": "Webhook deleted successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("웹훅 삭제 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to delete webhook")
 
@@ -209,7 +210,7 @@ async def trigger_webhook(
                 headers=headers,
             )
             return response.status_code == 200
-    except Exception as e:
+    except (httpx.HTTPError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("웹훅 호출 실패: %s", e)
         return False
 
@@ -251,7 +252,7 @@ async def sync_customers(
         db.update_sync_log(log_id, status="completed", records_count=records_count)
         
         return {"sync_log_id": log_id, "records_count": records_count, "status": "completed"}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("고객 동기화 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to sync customers")
 
@@ -289,7 +290,7 @@ async def sync_products(
         db.update_sync_log(log_id, status="completed", records_count=records_count)
         
         return {"sync_log_id": log_id, "records_count": records_count, "status": "completed"}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("제품 동기화 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to sync products")
 
@@ -312,7 +313,7 @@ async def get_sync_logs(
         db = SkinAnalysisDB(db_path="results/skin_analysis.db")
         logs = db.get_sync_logs(sync_type=sync_type, status=status, limit=limit)
         return {"logs": logs, "total": len(logs)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("동기화 로그 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve sync logs")
 
@@ -350,7 +351,7 @@ async def create_oauth_provider(
         return {"provider_id": provider_id, "message": "OAuth provider created successfully"}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("OAuth 제공자 등록 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to create OAuth provider")
 
@@ -393,7 +394,7 @@ async def oauth_authorize(
         return {"auth_url": auth_url, "state": state}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("OAuth 인증 URL 생성 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to generate auth URL")
 
@@ -429,6 +430,6 @@ async def oauth_token(
         return {"access_token": access_token, "token_type": "Bearer", "expires_in": 3600}
     except HTTPException:
         raise
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("OAuth 토큰 교환 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to exchange token")
