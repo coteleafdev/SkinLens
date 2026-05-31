@@ -289,9 +289,9 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "path": "docs/design/MULTI_LANGUAGE_SUPPORT_DESIGN.md"
     },
     "PERFECTCORP_VS_COTELEAF_COMPARISON": {
-        "version": "1.0.0",
+        "version": "1.1.0",
         "target_project_version": "1.0.0",
-        "last_updated": "2026-05-31",
+        "last_updated": "2026-06-01",
         "status": "active",
         "path": "docs/design/PERFECTCORP_VS_COTELEAF_COMPARISON.md"
     },
