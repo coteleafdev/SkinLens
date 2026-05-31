@@ -1034,6 +1034,66 @@ flowchart TB
 
 ---
 
+### 4.3 앱-엔진서버-웹서버 데이터 흐름
+
+```mermaid
+sequenceDiagram
+    participant App as 모바일/웹 앱
+    participant API as 엔진 서버<br/>(FastAPI)
+    participant DB as 데이터베이스<br/>(SQLite/Supabase)
+    participant Engine as 분석 엔진<br/>(Pipeline Core)
+    participant LLM as LLM 서비스<br/>(Gemini)
+    participant Ext as 외부 시스템<br/>(웹훅/콜백)
+
+    App->>API: 1. 이미지 업로드<br/>POST /v1/enhancements/upload
+    API->>DB: 업로드 정보 저장
+    DB-->>API: 저장 완료
+    API-->>App: upload_id 반환
+
+    App->>API: 2. 분석 요청<br/>POST /v1/analysis/jobs
+    API->>DB: 고객 정보 조회
+    DB-->>API: 고객 데이터
+    API->>Engine: 분석 작업 생성
+    Engine->>Engine: 이미지 복원<br/>(RestoreFormer++/CodeFormer)
+    Engine->>Engine: 피부 분석<br/>(SkinAnalyzerV3)
+    Engine->>LLM: AI 소견 생성 요청
+    LLM-->>Engine: 소견 결과
+    Engine->>DB: 분석 결과 저장
+    DB-->>Engine: 저장 완료
+    Engine->>DB: 추이 데이터 기록
+    Engine-->>API: 분석 완료
+    API->>Ext: 웹훅/콜백 알림
+    API-->>App: 분석 결과 반환
+
+    App->>API: 3. 추이 조회<br/>GET /v1/enhancements/trends
+    API->>DB: 추이 데이터 조회
+    DB-->>API: 시계열 데이터
+    API-->>App: 그래프 데이터
+
+    App->>API: 4. 푸시 설정<br/>POST /v1/enhancements/push/preferences
+    API->>DB: 선호도 저장
+    DB-->>API: 저장 완료
+    API-->>App: 설정 완료
+
+    App->>API: 5. A/B 테스트 할당<br/>POST /v1/enhancements/ab/assign
+    API->>DB: 변형 할당
+    DB-->>API: 할당 완료
+    API-->>App: 변형 정보
+```
+
+**데이터 흐름 설명**
+
+1. **이미지 업로드**: 앱이 이미지를 업로드하고 엔진 서버가 DB에 저장
+2. **분석 요청**: 앱이 분석을 요청하면 엔진 서버가 파이프라인 실행
+   - 이미지 복원 → 피부 분석 → AI 소견 생성
+   - 결과를 DB에 저장하고 추이 데이터 기록
+   - 외부 시스템에 웹훅/콜백 알림
+3. **추이 조회**: 앱이 시계열 데이터를 조회하여 그래프 표시
+4. **푸시 설정**: 사용자 선호도를 DB에 저장
+5. **A/B 테스트**: 사용자를 변형에 할당하고 결과 기록
+
+---
+
 ## 5. 디렉토리 구조
 
 ```
