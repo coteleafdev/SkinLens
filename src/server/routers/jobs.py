@@ -11,10 +11,12 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import hmac
+import httpx
 import json
 import logging
 import os
 import shutil
+import sqlite3
 import traceback
 import uuid
 from pathlib import Path
@@ -179,7 +181,7 @@ async def _run_job(job_id: str) -> None:
                             overall_score_restored=overall_score_restored or 0,
                             measurement_scores=measurement_scores,
                         )
-            except Exception as db_err:
+            except (sqlite3.Error, Exception) as db_err:  # [FIX P2] 구체적 예외
                 log.warning("DB 저장 실패: %s", db_err)
 
         meta["status"]         = "succeeded" if "error" not in result else "failed"
@@ -202,7 +204,6 @@ async def _run_job(job_id: str) -> None:
                     log.warning("콜백 URL 차단 (SSRF): %s", callback_url)
                     raise ValueError("Blocked callback URL")
                 
-                import httpx
                 callback_payload = {
                     "job_id": job_id,
                     "status": meta["status"],
@@ -227,10 +228,10 @@ async def _run_job(job_id: str) -> None:
                 async with httpx.AsyncClient(timeout=10) as client:
                     await client.post(callback_url, json=callback_payload, headers=headers)
                 log.info("콜백 URL 호출 성공: %s", callback_url)
-            except Exception as callback_err:
+            except (httpx.HTTPError, ValueError) as callback_err:  # [FIX P2] 구체적 예외
                 log.warning("콜백 URL 호출 실패: %s", callback_err)
 
-    except Exception as e:
+    except (OSError, IOError, RuntimeError, ValueError, KeyError, TypeError) as e:  # [FIX P2] 구체적 예외
         meta = meta if isinstance(meta, dict) else {}
         meta["status"]      = "failed"
         meta["finished_at"] = _utc_now_iso()
@@ -263,7 +264,7 @@ def _run_job_sync(job_id: str) -> None:
             meta["error"]       = "대기 타임아웃: 서버 동시 처리 한계 초과 (5분 대기 후 실패)"
             meta["finished_at"] = _utc_now_iso()
             write_job_meta(job_id, meta)
-        except Exception as e:
+        except (OSError, IOError) as e:  # [FIX P2] 구체적 예외
             log.warning(f"Failed to write job meta: {e}", exc_info=True)
         return
     try:

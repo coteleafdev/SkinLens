@@ -202,7 +202,7 @@ async def upload_chunk(
             "청크 업로드 완료: session_id=%s, chunk_number=%d, progress=%d/%d",
             session_id, chunk_number, len(session.uploaded_chunks), session.total_chunks
         )
-    except Exception as e:
+    except (OSError, IOError) as e:  # [FIX P2] 구체적 예외
         log.error("청크 업로드 실패: session_id=%s, chunk_number=%d, error=%s", session_id, chunk_number, e)
         raise HTTPException(status_code=500, detail=f"Failed to upload chunk: {str(e)}")
 
@@ -288,7 +288,7 @@ async def complete_upload(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (OSError, IOError, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("업로드 완료 실패: session_id=%s, error=%s", session_id, e)
         raise HTTPException(status_code=500, detail=f"Failed to complete upload: {str(e)}")
 
