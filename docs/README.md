@@ -152,6 +152,7 @@ docs/
 3. [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md) - 아키텍처 이해
 4. [API_REFERENCE.md](api/API_REFERENCE.md) - API 사용 방법
 5. [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md) - 외부 시스템 연동
+6. [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#314-버전-관리) - 버전 관리 정책
 
 #### 🔧 DevOps 엔지니어
 1. [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md) - 배포 방법
@@ -173,6 +174,13 @@ docs/
 4. [SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md](user/SERUM_PRESCRIPTION_CUSTOMER_GUIDE.md) - 세럼 처방 안내
 
 ### 주제별 검색
+
+#### 향상된 기능
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#39-이미지-업로드-개선) - 이미지 업로드 개선
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#310-푸시-알림-개인화) - 푸시 알림 개인화
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#311-ab-테스트-프레임워크) - A/B 테스트 프레임워크
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#312-모니터링-대시보드) - 모니터링 대시보드
+- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#313-분석-추이) - 분석 추이
 
 #### API 관련
 - [API_REFERENCE.md](api/API_REFERENCE.md) - API 엔드포인트 상세

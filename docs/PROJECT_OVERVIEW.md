@@ -339,6 +339,8 @@ flowchart LR
 - POST `/v1/enhancements/upload` - 이미지 업로드
 - GET `/v1/enhancements/uploads` - 업로드 목록 조회
 
+**자세한 가이드**: [API_REFERENCE.md](api/API_REFERENCE.md)
+
 ---
 
 ### 3.10 푸시 알림 개인화
@@ -355,6 +357,8 @@ flowchart LR
 **API**:
 - POST `/v1/enhancements/push/preferences` - 선호도 설정
 - GET `/v1/enhancements/push/preferences` - 선호도 조회
+
+**자세한 가이드**: [API_REFERENCE.md](api/API_REFERENCE.md)
 
 ---
 
@@ -463,6 +467,8 @@ flowchart TB
 - POST `/v1/enhancements/ab/results` - 결과 기록
 - GET `/v1/enhancements/ab/results/{test_id}` - 결과 조회
 
+**자세한 가이드**: [API_REFERENCE.md](api/API_REFERENCE.md)
+
 ---
 
 ### 3.12 모니터링 대시보드
@@ -478,6 +484,8 @@ flowchart TB
 **API**:
 - POST `/v1/enhancements/metrics` - 메트릭 기록
 - GET `/v1/enhancements/metrics` - 메트릭 조회
+
+**자세한 가이드**: [API_REFERENCE.md](api/API_REFERENCE.md)
 
 ---
 
