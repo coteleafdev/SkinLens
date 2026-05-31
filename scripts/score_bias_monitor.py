@@ -29,7 +29,7 @@ score_bias_monitor.py — 피부 분석 점수 편향 모니터링 (ML v4.0)
   mon.report()
 
   # 버전 비교
-  mon.compare_versions("v0.9", "v1.0")
+  mon.compare_versions("이전_버전", "v1.0")
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CLI
