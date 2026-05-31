@@ -21,6 +21,7 @@ import asyncio
 import logging
 import os
 import shutil
+import sqlite3
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -152,9 +153,9 @@ async def _cleanup_expired_jobs() -> None:
                     if created < cutoff and meta.get("status") in ("succeeded", "failed"):
                         shutil.rmtree(jdir, ignore_errors=True)
                         log.info("만료 Job 삭제: %s", jdir.name)
-                except Exception as e:
+                except (OSError, IOError, ValueError) as e:  # [FIX P2] 구체적 예외
                     log.warning(f"Failed to cleanup job {jdir.name}: {e}", exc_info=True)
-        except Exception as e:
+        except (OSError, IOError) as e:  # [FIX P2] 구체적 예외
             log.warning(f"Cleanup expired jobs failed: {e}", exc_info=True)
 
 
@@ -199,7 +200,7 @@ async def _auto_backup_task() -> None:
                     if ftime < cutoff:
                         os.remove(fpath)
                         log.info("Old backup deleted: %s", fname)
-        except Exception as e:
+        except (OSError, IOError, shutil.Error) as e:  # [FIX P2] 구체적 예외
             log.error("Auto backup failed: %s", e)
 
 
@@ -217,7 +218,7 @@ async def _system_health_monitor() -> None:
                 network_status="ok",
             )
             log.info("시스템 헬스 기록 완료 (active_jobs=%d)", get_active_jobs_count())
-        except Exception as e:
+        except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
             log.warning("시스템 헬스 기록 실패: %s", e)
         await asyncio.sleep(300)
 
