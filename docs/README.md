@@ -19,6 +19,7 @@ docs/
 ├── PROJECT_OVERVIEW.md                 # 프로젝트 전체 개요
 ├── EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md # 외부 시스템 연동 가이드
 ├── INTEGRATION_TEST_GUIDE.md          # 연동 테스트 가이드
+├── APP_FEATURE_RECOMMENDATIONS.md     # 앱 기능 추천
 ├── api/                                # API 문서 (1개)
 ├── db/                                 # 데이터베이스 문서 (2개)
 ├── design/                             # 디자인 문서 (23개)
@@ -167,15 +168,6 @@ docs/
 
 #### 앱 기능
 - [APP_FEATURE_RECOMMENDATIONS.md](APP_FEATURE_RECOMMENDATIONS.md) - 앱 기능 추천
-
-#### 향상된 기능
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#39-이미지-업로드-개선) - 이미지 업로드 개선
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#310-푸시-알림-개인화) - 푸시 알림 개인화
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#311-ab-테스트-프레임워크) - A/B 테스트 프레임워크
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#312-모니터링-대시보드) - 모니터링 대시보드
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#313-분석-추이) - 분석 추이
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#314-제품-구매-및-피드백) - 제품 구매 및 피드백
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#315-앱-기능) - 앱 기능 (피부 일기, 목표, 업적, 구독, 챌린지)
 
 #### API 관련
 - [API_REFERENCE.md](api/API_REFERENCE.md) - API 엔드포인트 상세
