@@ -169,6 +169,28 @@ async def _run_job(job_id: str) -> None:
         # 진행률 보고: 완료
         await report_progress(job_id, "complete", 100, "작업 완료")
 
+        # 콜백 URL 호출 (연동 기능)
+        callback_url = meta.get("callback_url")
+        if callback_url and meta["status"] == "succeeded":
+            try:
+                import httpx
+                callback_payload = {
+                    "job_id": job_id,
+                    "status": meta["status"],
+                    "external_reference_id": meta.get("external_reference_id"),
+                    "result": {
+                        "overall_score_original": result.get("overall_score_original"),
+                        "overall_score_restored": result.get("overall_score_restored"),
+                        "skin_types": result.get("skin_types"),
+                    },
+                    "finished_at": meta["finished_at"],
+                }
+                async with httpx.AsyncClient(timeout=10) as client:
+                    await client.post(callback_url, json=callback_payload)
+                log.info("콜백 URL 호출 성공: %s", callback_url)
+            except Exception as callback_err:
+                log.warning("콜백 URL 호출 실패: %s", callback_err)
+
     except Exception as e:
         meta = meta if isinstance(meta, dict) else {}
         meta["status"]      = "failed"
@@ -254,6 +276,9 @@ async def create_job(
     # ── 설문·메타 ────────────────────────────────────────────────────────
     survey:      Optional[str]       = Form(None),
     client_meta: Optional[str]       = Form(None),
+    # ── 연동 옵션 ────────────────────────────────────────────────────────
+    callback_url: Optional[str]      = Form(None),
+    external_reference_id: Optional[str] = Form(None),
     # ── 인증 (P0: 미인증 GPU 남용 방지) ─────────────────────────────────
     # [FIX 2026-05-24] Optional 제거 - 인증 필수화
     current_customer: Dict[str, Any] = Depends(require_current_customer),
@@ -413,6 +438,8 @@ async def create_job(
         "input_json":       input_json or None,
         "error":            None,
         "artifacts":        {},
+        "callback_url":     callback_url,
+        "external_reference_id": external_reference_id,
     }
     write_job_meta(job_id, meta)
 

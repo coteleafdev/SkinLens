@@ -351,3 +351,266 @@ class TestAdminAPI:
         
         # 11번째 요청은 속도 제한으로 실패해야 함
         assert response.status_code in (200, 429)
+
+
+class TestCustomerManagement:
+    """고객 관리 API 테스트"""
+
+    def test_list_customers_unauthorized(self, auth_client):
+        """인증 없이 고객 목록 조회 실패"""
+        response = auth_client.get("/v1/admin/customers")
+        assert response.status_code == 401
+
+    def test_list_customers_forbidden_customer(self, auth_client, user_token):
+        """고객 권한으로 고객 목록 조회 실패"""
+        response = auth_client.get(
+            "/v1/admin/customers",
+            headers={"Authorization": f"Bearer {user_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_list_customers_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 고객 목록 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/customers",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "customers" in data
+        assert "total" in data
+
+    def test_get_customer_detail_authorized_admin(self, auth_client, admin_token):
+        """관리자 권한으로 고객 상세 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/customers/test_customer_123",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        # 고객이 없을 수 있으므로 404 또는 200 모두 허용
+        assert response.status_code in (200, 404)
+
+    def test_update_customer_status_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 고객 상태 변경 실패"""
+        response = auth_client.put(
+            "/v1/admin/customers/test_customer_123/status",
+            json={"status": "inactive"},
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_delete_customer_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 고객 삭제 실패"""
+        response = auth_client.delete(
+            "/v1/admin/customers/test_customer_123",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+
+class TestProductManagement:
+    """제품 관리 API 테스트"""
+
+    def test_list_products_unauthorized(self, auth_client):
+        """인증 없이 제품 목록 조회 실패"""
+        response = auth_client.get("/v1/admin/products")
+        assert response.status_code == 401
+
+    def test_list_products_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 제품 목록 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/products",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "products" in data
+
+    def test_create_product_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 제품 생성 실패"""
+        response = auth_client.post(
+            "/v1/admin/products",
+            json={
+                "product_id": "TEST001",
+                "product_name": "Test Product",
+                "category": "테스트",
+                "key_ingredients": ["ingredient1"],
+                "efficacy": "Test efficacy"
+            },
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_update_product_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 제품 업데이트 실패"""
+        response = auth_client.put(
+            "/v1/admin/products/TEST001",
+            json={"product_name": "Updated Name"},
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_delete_product_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 제품 삭제 실패"""
+        response = auth_client.delete(
+            "/v1/admin/products/TEST001",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+
+class TestAnalysisManagement:
+    """분석 결과 관리 API 테스트"""
+
+    def test_list_all_analyses_unauthorized(self, auth_client):
+        """인증 없이 전체 분석 목록 조회 실패"""
+        response = auth_client.get("/v1/admin/analyses")
+        assert response.status_code == 401
+
+    def test_list_all_analyses_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 전체 분석 목록 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/analyses",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "analyses" in data
+
+    def test_delete_analysis_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 분석 삭제 실패"""
+        response = auth_client.delete(
+            "/v1/admin/analyses/1",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+
+class TestActivityMonitoring:
+    """사용자 활동 모니터링 API 테스트"""
+
+    def test_get_active_sessions_unauthorized(self, auth_client):
+        """인증 없이 활성 세션 조회 실패"""
+        response = auth_client.get("/v1/admin/active-sessions")
+        assert response.status_code == 401
+
+    def test_get_active_sessions_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 활성 세션 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/active-sessions",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "sessions" in data
+
+    def test_terminate_session_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 세션 종료 실패"""
+        response = auth_client.delete(
+            "/v1/admin/active-sessions/session123",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_get_anomalies_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 이상 활동 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/anomalies",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "anomalies" in data
+
+    def test_resolve_anomaly_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 이상 활동 해결 실패"""
+        response = auth_client.post(
+            "/v1/admin/anomalies/anomaly123/resolve",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+
+class TestSecurityManagement:
+    """보안 관리 API 테스트"""
+
+    def test_list_roles_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 역할 목록 조회 실패"""
+        response = auth_client.get(
+            "/v1/admin/roles",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_set_user_role_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 역할 설정 실패"""
+        response = auth_client.put(
+            "/v1/admin/customers/test_customer_123/role",
+            json={"role": "admin"},
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_get_blocked_ips_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 차단된 IP 조회 실패"""
+        response = auth_client.get(
+            "/v1/admin/blocked-ips",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_block_ip_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 IP 차단 실패"""
+        response = auth_client.post(
+            "/v1/admin/blocked-ips",
+            json={"ip_address": "192.168.1.1", "reason": "Test"},
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+    def test_unblock_ip_forbidden_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 IP 차단 해제 실패"""
+        response = auth_client.delete(
+            "/v1/admin/blocked-ips/192.168.1.1",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 403
+
+
+class TestBusinessIntelligence:
+    """비즈니스 인텔리전스 API 테스트"""
+
+    def test_get_dashboard_overview_unauthorized(self, auth_client):
+        """인증 없이 대시보드 조회 실패"""
+        response = auth_client.get("/v1/admin/dashboard/overview")
+        assert response.status_code == 401
+
+    def test_get_dashboard_overview_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 대시보드 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/dashboard/overview",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "overview" in data
+        assert "recent_stats" in data
+
+    def test_get_usage_report_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 사용량 리포트 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/reports/usage",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "stats" in data
+
+    def test_get_revenue_report_authorized_analyst(self, auth_client, analyst_token):
+        """분석가 권한으로 수익 리포트 조회 성공"""
+        response = auth_client.get(
+            "/v1/admin/reports/revenue",
+            headers={"Authorization": f"Bearer {analyst_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "revenue" in data

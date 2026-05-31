@@ -6,6 +6,16 @@ GET    /v1/customer/my/analysis
 GET    /v1/customer/my/errors
 DELETE /v1/customer/my/data
 GET    /v1/customer/my/data/export
+GET    /v1/customer/my/analyses
+GET    /v1/customer/my/analyses/{analysis_id}
+GET    /v1/customer/my/analyses/{analysis_id}/image/{image_type}
+GET    /v1/customer/my/analyses/compare
+GET    /v1/customer/my/recommendations
+POST   /v1/customer/my/analyses/{analysis_id}/bookmark
+DELETE /v1/customer/my/analyses/{analysis_id}/bookmark
+GET    /v1/customer/my/bookmarks
+GET    /v1/customer/my/notifications/settings
+PUT    /v1/customer/my/notifications/settings
 """
 from __future__ import annotations
 
@@ -15,7 +25,9 @@ import tempfile
 import zipfile
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional, List
+from pathlib import Path
+from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +47,25 @@ from src.server.deps import (
 from src.db.skin_analysis_db import SkinAnalysisDB
 
 router = APIRouter(prefix="/v1/customer/my", tags=["customer"])
+
+
+# ── Pydantic Models ─────────────────────────────────────────────────────────────
+
+class BookmarkRequest(BaseModel):
+    notes: Optional[str] = None
+
+
+class NotificationSettingsRequest(BaseModel):
+    analysis_complete: Optional[bool] = None
+    score_improvement: Optional[bool] = None
+    care_reminder: Optional[bool] = None
+    marketing: Optional[bool] = None
+    reminder_hours: Optional[int] = None
+
+
+class CompareRequest(BaseModel):
+    analysis_id_1: int
+    analysis_id_2: int
 
 
 def _ctx(current_customer: Dict[str, Any], db: ExecutionHistoryDB):
@@ -250,3 +281,359 @@ async def set_my_timezone(
     except Exception as e:
         log.error("시간대 설정 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to update timezone")
+
+
+@router.get("/analyses", response_model=None)
+async def get_my_analyses(
+    limit: int = 50,
+    offset: int = 0,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """인증된 고객의 전체 분석 기록 목록 조회."""
+    ep = "/v1/customer/my/analyses"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        analyses = db.get_customer_analyses(customer_id)
+        
+        # 페이지네이션 적용
+        paginated_analyses = analyses[offset:offset + limit]
+        
+        return {
+            "analyses": paginated_analyses,
+            "total": len(analyses),
+            "limit": limit,
+            "offset": offset
+        }
+    except Exception as e:
+        log.error("분석 기록 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve analyses")
+
+
+@router.get("/analyses/{analysis_id}", response_model=None)
+async def get_my_analysis_detail(
+    analysis_id: int,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """인증된 고객의 특정 분석 상세 정보 조회."""
+    ep = f"/v1/customer/my/analyses/{analysis_id}"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
+        
+        if analysis is None:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        return analysis
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("분석 상세 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve analysis detail")
+
+
+@router.get("/analyses/{analysis_id}/image/{image_type}", response_model=None)
+async def get_my_analysis_image(
+    analysis_id: int,
+    image_type: str,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """인증된 고객의 분석 이미지 다운로드 (original 또는 restored)."""
+    ep = f"/v1/customer/my/analyses/{analysis_id}/image/{image_type}"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    # 이미지 타입 검증
+    if image_type not in ["original", "restored"]:
+        raise HTTPException(status_code=400, detail="Invalid image type. Must be 'original' or 'restored'")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
+        
+        if analysis is None:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        # 이미지 경로 결정
+        if image_type == "original":
+            image_path = analysis["original_image_path"]
+        else:
+            image_path = analysis["restored_image_path"]
+        
+        # 파일 존재 확인
+        if not os.path.exists(image_path):
+            raise HTTPException(status_code=404, detail="Image file not found")
+        
+        # 파일명 추출
+        filename = os.path.basename(image_path)
+        
+        return FileResponse(
+            image_path,
+            media_type="image/jpeg",
+            filename=filename
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("이미지 다운로드 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to download image")
+
+
+@router.post("/analyses/compare", response_model=None)
+async def compare_analyses(
+    request_data: CompareRequest,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """두 분석 결과 비교."""
+    ep = "/v1/customer/my/analyses/compare"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        
+        # 두 분석 결과 조회
+        analysis_1 = db.get_customer_analysis_detail(customer_id, request_data.analysis_id_1)
+        analysis_2 = db.get_customer_analysis_detail(customer_id, request_data.analysis_id_2)
+        
+        if analysis_1 is None or analysis_2 is None:
+            raise HTTPException(status_code=404, detail="One or both analyses not found")
+        
+        # 점수 비교
+        result_1 = analysis_1.get("json_result", {})
+        result_2 = analysis_2.get("json_result", {})
+        
+        internal_1 = result_1.get("internal_analysis", {}).get("restored", {})
+        internal_2 = result_2.get("internal_analysis", {}).get("restored", {})
+        
+        # 주요 점수 추출
+        def extract_scores(internal):
+            return {
+                "overall_score": internal.get("overall_score", 0),
+                "melasma_score": internal.get("melasma_score", 0),
+                "redness_score": internal.get("redness_score", 0),
+                "wrinkle_score": internal.get("wrinkle_score", 0),
+                "pore_score": internal.get("pore_score", 0),
+            }
+        
+        scores_1 = extract_scores(internal_1)
+        scores_2 = extract_scores(internal_2)
+        
+        # 변화 계산
+        changes = {}
+        for key in scores_1:
+            change = scores_2[key] - scores_1[key]
+            changes[key] = {
+                "before": scores_1[key],
+                "after": scores_2[key],
+                "change": change,
+                "improved": change > 0
+            }
+        
+        return {
+            "analysis_1": {
+                "id": analysis_1["id"],
+                "date": analysis_1["created_at"],
+                "scores": scores_1
+            },
+            "analysis_2": {
+                "id": analysis_2["id"],
+                "date": analysis_2["created_at"],
+                "scores": scores_2
+            },
+            "changes": changes,
+            "overall_improvement": changes["overall_score"]["change"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("분석 비교 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to compare analyses")
+
+
+@router.get("/recommendations", response_model=None)
+async def get_my_recommendations(
+    analysis_id: Optional[int] = None,
+    limit: int = 10,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """맞춤형 제품 추천 조회."""
+    ep = "/v1/customer/my/recommendations"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        
+        if analysis_id:
+            recommendations = db.get_product_recommendations(customer_id, analysis_id, limit)
+        else:
+            recommendations = db.get_latest_recommendations(customer_id, limit)
+        
+        return {
+            "recommendations": recommendations,
+            "total": len(recommendations)
+        }
+    except Exception as e:
+        log.error("제품 추천 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve recommendations")
+
+
+@router.post("/analyses/{analysis_id}/bookmark", response_model=None)
+async def add_bookmark(
+    analysis_id: int,
+    bookmark_data: BookmarkRequest,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """분석 결과 북마크 추가."""
+    ep = f"/v1/customer/my/analyses/{analysis_id}/bookmark"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        
+        # 분석 존재 확인
+        analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
+        if analysis is None:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        success = db.add_bookmark(customer_id, analysis_id, bookmark_data.notes)
+        
+        if not success:
+            raise HTTPException(status_code=409, detail="Already bookmarked")
+        
+        return {"message": "Bookmark added successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("북마크 추가 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to add bookmark")
+
+
+@router.delete("/analyses/{analysis_id}/bookmark", response_model=None)
+async def remove_bookmark(
+    analysis_id: int,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """분석 결과 북마크 삭제."""
+    ep = f"/v1/customer/my/analyses/{analysis_id}/bookmark"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db.remove_bookmark(customer_id, analysis_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Bookmark not found")
+        
+        return {"message": "Bookmark removed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("북마크 삭제 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to remove bookmark")
+
+
+@router.get("/bookmarks", response_model=None)
+async def get_my_bookmarks(
+    limit: int = 50,
+    offset: int = 0,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """북마크된 분석 목록 조회."""
+    ep = "/v1/customer/my/bookmarks"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        bookmarks = db.get_bookmarks(customer_id, limit, offset)
+        
+        return {
+            "bookmarks": bookmarks,
+            "total": len(bookmarks),
+            "limit": limit,
+            "offset": offset
+        }
+    except Exception as e:
+        log.error("북마크 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve bookmarks")
+
+
+@router.get("/notifications/settings", response_model=None)
+async def get_notification_settings(
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """알림 설정 조회."""
+    ep = "/v1/customer/my/notifications/settings"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        settings = db.get_notification_settings(customer_id)
+        return settings
+    except Exception as e:
+        log.error("알림 설정 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve notification settings")
+
+
+@router.put("/notifications/settings", response_model=None)
+async def update_notification_settings(
+    settings_data: NotificationSettingsRequest,
+    current_customer: Dict[str, Any] = Depends(get_current_customer),
+    request: Request = None,
+):
+    """알림 설정 업데이트."""
+    ep = "/v1/customer/my/notifications/settings"
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    customer_id = current_customer.get("sub")
+    
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        
+        # 제공된 필드만 업데이트
+        success = db.update_notification_settings(
+            customer_id=customer_id,
+            analysis_complete=settings_data.analysis_complete,
+            score_improvement=settings_data.score_improvement,
+            care_reminder=settings_data.care_reminder,
+            marketing=settings_data.marketing,
+            reminder_hours=settings_data.reminder_hours,
+        )
+        
+        if not success:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
+        
+        return {"message": "Notification settings updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("알림 설정 업데이트 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to update notification settings")

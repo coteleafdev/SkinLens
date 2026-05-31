@@ -271,6 +271,313 @@ class SkinAnalysisDB:
             self._conn.commit()
             log.info("[DB] 사용자 설정 테이블 생성 완료 (버전 5)")
 
+        # 마이그레이션: 북마크 테이블 추가 (버전 6)
+        if current_version < 6:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS analysis_bookmarks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id TEXT NOT NULL,
+                    analysis_id INTEGER NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    notes TEXT,
+                    FOREIGN KEY (analysis_id) REFERENCES analyses(id) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_bookmarks_customer
+                ON analysis_bookmarks(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_bookmarks_analysis
+                ON analysis_bookmarks(analysis_id)
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_customer_analysis
+                ON analysis_bookmarks(customer_id, analysis_id)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (6)")
+            self._conn.commit()
+            log.info("[DB] 북마크 테이블 생성 완료 (버전 6)")
+
+        # 마이그레이션: 알림 설정 테이블 추가 (버전 7)
+        if current_version < 7:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS notification_settings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id TEXT UNIQUE NOT NULL,
+                    analysis_complete BOOLEAN DEFAULT 1,
+                    score_improvement BOOLEAN DEFAULT 1,
+                    care_reminder BOOLEAN DEFAULT 0,
+                    marketing BOOLEAN DEFAULT 0,
+                    reminder_hours INTEGER DEFAULT 168,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_notification_settings_customer
+                ON notification_settings(customer_id)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (7)")
+            self._conn.commit()
+            log.info("[DB] 알림 설정 테이블 생성 완료 (버전 7)")
+
+        # 마이그레이션: 제품 추천 테이블 추가 (버전 8)
+        if current_version < 8:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS product_recommendations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id TEXT NOT NULL,
+                    analysis_id INTEGER NOT NULL,
+                    product_id TEXT NOT NULL,
+                    match_score REAL,
+                    recommendation_reason TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (analysis_id) REFERENCES analyses(id) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_recommendations_customer
+                ON product_recommendations(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_recommendations_analysis
+                ON product_recommendations(analysis_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_recommendations_product
+                ON product_recommendations(product_id)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (8)")
+            self._conn.commit()
+            log.info("[DB] 제품 추천 테이블 생성 완료 (버전 8)")
+
+        # 마이그레이션: 고객 관리 테이블 추가 (버전 9)
+        if current_version < 9:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS customer_profiles (
+                    customer_id TEXT PRIMARY KEY,
+                    email TEXT,
+                    name TEXT,
+                    status TEXT DEFAULT 'active',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_login_at TIMESTAMP,
+                    total_analyses INTEGER DEFAULT 0,
+                    FOREIGN KEY (customer_id) REFERENCES analyses(customer_id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_customer_profiles_status
+                ON customer_profiles(status)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (9)")
+            self._conn.commit()
+            log.info("[DB] 고객 프로필 테이블 생성 완료 (버전 9)")
+
+        # 마이그레이션: 사용자 세션 테이블 추가 (버전 10)
+        if current_version < 10:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_sessions (
+                    id TEXT PRIMARY KEY,
+                    customer_id TEXT NOT NULL,
+                    ip_address TEXT,
+                    user_agent TEXT,
+                    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_activity_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    is_active BOOLEAN DEFAULT 1
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_sessions_customer
+                ON user_sessions(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_sessions_active
+                ON user_sessions(is_active)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (10)")
+            self._conn.commit()
+            log.info("[DB] 사용자 세션 테이블 생성 완료 (버전 10)")
+
+        # 마이그레이션: 이상 활동 테이블 추가 (버전 11)
+        if current_version < 11:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS security_anomalies (
+                    id TEXT PRIMARY KEY,
+                    anomaly_type TEXT NOT NULL,
+                    customer_id TEXT,
+                    ip_address TEXT,
+                    description TEXT,
+                    severity TEXT DEFAULT 'medium',
+                    detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    resolved_at TIMESTAMP,
+                    status TEXT DEFAULT 'detected'
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_anomalies_type
+                ON security_anomalies(anomaly_type)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_anomalies_status
+                ON security_anomalies(status)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (11)")
+            self._conn.commit()
+            log.info("[DB] 이상 활동 테이블 생성 완료 (버전 11)")
+
+        # 마이그레이션: 역할 테이블 추가 (버전 12)
+        if current_version < 12:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_roles (
+                    customer_id TEXT PRIMARY KEY,
+                    role TEXT DEFAULT 'customer',
+                    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    granted_by TEXT
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_user_roles_role
+                ON user_roles(role)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (12)")
+            self._conn.commit()
+            log.info("[DB] 사용자 역할 테이블 생성 완료 (버전 12)")
+
+        # 마이그레이션: 차단된 IP 테이블 추가 (버전 13)
+        if current_version < 13:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS blocked_ips (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ip_address TEXT UNIQUE NOT NULL,
+                    blocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    blocked_by TEXT,
+                    reason TEXT,
+                    expires_at TIMESTAMP,
+                    is_permanent BOOLEAN DEFAULT 0
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_blocked_ips_address
+                ON blocked_ips(ip_address)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (13)")
+            self._conn.commit()
+            log.info("[DB] 차단된 IP 테이블 생성 완료 (버전 13)")
+
+        # 마이그레이션: 일일 통계 테이블 추가 (버전 14)
+        if current_version < 14:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS daily_stats (
+                    date TEXT PRIMARY KEY,
+                    total_analyses INTEGER DEFAULT 0,
+                    unique_customers INTEGER DEFAULT 0,
+                    successful_analyses INTEGER DEFAULT 0,
+                    failed_analyses INTEGER DEFAULT 0,
+                    avg_score REAL,
+                    total_revenue REAL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (14)")
+            self._conn.commit()
+            log.info("[DB] 일일 통계 테이블 생성 완료 (버전 14)")
+
+        # 마이그레이션: 웹훅 테이블 추가 (버전 15)
+        if current_version < 15:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS webhooks (
+                    id TEXT PRIMARY KEY,
+                    customer_id TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    events TEXT NOT NULL,
+                    secret_key TEXT,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES analyses(customer_id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_webhooks_customer
+                ON webhooks(customer_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_webhooks_active
+                ON webhooks(is_active)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (15)")
+            self._conn.commit()
+            log.info("[DB] 웹훅 테이블 생성 완료 (버전 15)")
+
+        # 마이그레이션: 외부 동기화 로그 테이블 추가 (버전 16)
+        if current_version < 16:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS external_sync_logs (
+                    id TEXT PRIMARY KEY,
+                    sync_type TEXT NOT NULL,
+                    direction TEXT NOT NULL,
+                    status TEXT DEFAULT 'pending',
+                    source_system TEXT,
+                    target_system TEXT,
+                    records_count INTEGER DEFAULT 0,
+                    error_message TEXT,
+                    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_sync_logs_type
+                ON external_sync_logs(sync_type)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_sync_logs_status
+                ON external_sync_logs(status)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (16)")
+            self._conn.commit()
+            log.info("[DB] 외부 동기화 로그 테이블 생성 완료 (버전 16)")
+
+        # 마이그레이션: OAuth 제공자 테이블 추가 (버전 17)
+        if current_version < 17:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS oauth_providers (
+                    id TEXT PRIMARY KEY,
+                    provider_name TEXT NOT NULL,
+                    client_id TEXT NOT NULL,
+                    client_secret TEXT NOT NULL,
+                    redirect_uri TEXT NOT NULL,
+                    scopes TEXT,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_oauth_provider_name
+                ON oauth_providers(provider_name)
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS oauth_tokens (
+                    id TEXT PRIMARY KEY,
+                    customer_id TEXT NOT NULL,
+                    provider_id TEXT NOT NULL,
+                    access_token TEXT NOT NULL,
+                    refresh_token TEXT,
+                    expires_at TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES analyses(customer_id),
+                    FOREIGN KEY (provider_id) REFERENCES oauth_providers(id)
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_oauth_tokens_customer
+                ON oauth_tokens(customer_id)
+            """)
+            cursor.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (17)")
+            self._conn.commit()
+            log.info("[DB] OAuth 제공자 테이블 생성 완료 (버전 17)")
+
         # 피부 타입 검증 테이블 생성
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS skin_type_validations (
@@ -510,6 +817,33 @@ class SkinAnalysisDB:
                 }
                 for row in rows
             ]
+
+    def get_customer_analysis_detail(self, customer_id: str, analysis_id: int) -> Optional[Dict[str, Any]]:
+        """고객의 특정 분석 상세 정보 조회 (이미지 경로 포함)"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, customer_id, original_image_path, restored_image_path,
+                       json_result, input_json, original_filename, created_at,
+                       overall_score_original, overall_score_restored
+                FROM analyses
+                WHERE customer_id = ? AND id = ?
+            """, (customer_id, analysis_id))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "customer_id": row[1],
+                    "original_image_path": row[2],
+                    "restored_image_path": row[3],
+                    "json_result": json.loads(row[4]) if row[4] else None,
+                    "input_json": json.loads(row[5]) if row[5] else None,
+                    "original_filename": row[6],
+                    "created_at": row[7],
+                    "overall_score_original": row[8],
+                    "overall_score_restored": row[9],
+                }
+            return None
 
     def get_recent_analyses(self, limit: int = 10) -> List[Dict[str, Any]]:
         """최근 분석 기록 조회"""
@@ -1192,5 +1526,1139 @@ class SkinAnalysisDB:
                     "timezone": row[2],
                     "created_at": row[3],
                     "updated_at": row[4],
+                }
+            return None
+
+    # ── 북마크 관련 메서드 ─────────────────────────────────────────────────────
+
+    def add_bookmark(self, customer_id: str, analysis_id: int, notes: Optional[str] = None) -> bool:
+        """분석 결과 북마크 추가"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute("""
+                    INSERT INTO analysis_bookmarks (customer_id, analysis_id, notes)
+                    VALUES (?, ?, ?)
+                """, (customer_id, analysis_id, notes))
+                self._conn.commit()
+                log.info("[DB] 북마크 추가: customer_id=%s, analysis_id=%d", customer_id, analysis_id)
+                return True
+            except sqlite3.IntegrityError:
+                # 이미 북마크된 경우
+                return False
+
+    def remove_bookmark(self, customer_id: str, analysis_id: int) -> bool:
+        """분석 결과 북마크 삭제"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                DELETE FROM analysis_bookmarks
+                WHERE customer_id = ? AND analysis_id = ?
+            """, (customer_id, analysis_id))
+            deleted = cursor.rowcount > 0
+            self._conn.commit()
+            if deleted:
+                log.info("[DB] 북마크 삭제: customer_id=%s, analysis_id=%d", customer_id, analysis_id)
+            return deleted
+
+    def get_bookmarks(self, customer_id: str, limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
+        """고객의 북마크 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT b.id, b.analysis_id, b.notes, b.created_at,
+                       a.original_filename, a.created_at as analysis_date,
+                       a.overall_score_original, a.overall_score_restored
+                FROM analysis_bookmarks b
+                JOIN analyses a ON b.analysis_id = a.id
+                WHERE b.customer_id = ?
+                ORDER BY b.created_at DESC
+                LIMIT ? OFFSET ?
+            """, (customer_id, limit, offset))
+            rows = cursor.fetchall()
+            return [
+                {
+                    "bookmark_id": row[0],
+                    "analysis_id": row[1],
+                    "notes": row[2],
+                    "bookmarked_at": row[3],
+                    "original_filename": row[4],
+                    "analysis_date": row[5],
+                    "overall_score_original": row[6],
+                    "overall_score_restored": row[7],
+                }
+                for row in rows
+            ]
+
+    def is_bookmarked(self, customer_id: str, analysis_id: int) -> bool:
+        """분석 결과 북마크 여부 확인"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT COUNT(*) FROM analysis_bookmarks
+                WHERE customer_id = ? AND analysis_id = ?
+            """, (customer_id, analysis_id))
+            return cursor.fetchone()[0] > 0
+
+    # ── 알림 설정 관련 메서드 ─────────────────────────────────────────────────
+
+    def get_notification_settings(self, customer_id: str) -> Dict[str, Any]:
+        """알림 설정 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT analysis_complete, score_improvement, care_reminder,
+                       marketing, reminder_hours, created_at, updated_at
+                FROM notification_settings WHERE customer_id = ?
+            """, (customer_id,))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "customer_id": customer_id,
+                    "analysis_complete": bool(row[0]),
+                    "score_improvement": bool(row[1]),
+                    "care_reminder": bool(row[2]),
+                    "marketing": bool(row[3]),
+                    "reminder_hours": row[4],
+                    "created_at": row[5],
+                    "updated_at": row[6],
+                }
+            # 기본 설정 반환
+            return {
+                "customer_id": customer_id,
+                "analysis_complete": True,
+                "score_improvement": True,
+                "care_reminder": False,
+                "marketing": False,
+                "reminder_hours": 168,
+            }
+
+    def update_notification_settings(
+        self,
+        customer_id: str,
+        analysis_complete: Optional[bool] = None,
+        score_improvement: Optional[bool] = None,
+        care_reminder: Optional[bool] = None,
+        marketing: Optional[bool] = None,
+        reminder_hours: Optional[int] = None,
+    ) -> bool:
+        """알림 설정 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            
+            # 업데이트할 필드만 동적으로 구성
+            updates = []
+            params = []
+            
+            if analysis_complete is not None:
+                updates.append("analysis_complete = ?")
+                params.append(1 if analysis_complete else 0)
+            if score_improvement is not None:
+                updates.append("score_improvement = ?")
+                params.append(1 if score_improvement else 0)
+            if care_reminder is not None:
+                updates.append("care_reminder = ?")
+                params.append(1 if care_reminder else 0)
+            if marketing is not None:
+                updates.append("marketing = ?")
+                params.append(1 if marketing else 0)
+            if reminder_hours is not None:
+                updates.append("reminder_hours = ?")
+                params.append(reminder_hours)
+            
+            if not updates:
+                return False
+            
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+            params.append(customer_id)
+            
+            query = f"""
+                INSERT INTO notification_settings (customer_id)
+                VALUES (?)
+                ON CONFLICT(customer_id) DO UPDATE SET {', '.join(updates)}
+            """
+            
+            cursor.execute(query, params)
+            self._conn.commit()
+            log.info("[DB] 알림 설정 업데이트: customer_id=%s", customer_id)
+            return True
+
+    # ── 제품 추천 관련 메서드 ─────────────────────────────────────────────────
+
+    def save_product_recommendation(
+        self,
+        customer_id: str,
+        analysis_id: int,
+        product_id: str,
+        match_score: float,
+        recommendation_reason: str,
+    ) -> bool:
+        """제품 추천 저장"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                INSERT INTO product_recommendations
+                (customer_id, analysis_id, product_id, match_score, recommendation_reason)
+                VALUES (?, ?, ?, ?, ?)
+            """, (customer_id, analysis_id, product_id, match_score, recommendation_reason))
+            self._conn.commit()
+            log.info("[DB] 제품 추천 저장: customer_id=%s, product_id=%s", customer_id, product_id)
+            return True
+
+    def get_product_recommendations(
+        self,
+        customer_id: str,
+        analysis_id: Optional[int] = None,
+        limit: int = 10,
+    ) -> List[Dict[str, Any]]:
+        """고객의 제품 추천 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            
+            if analysis_id:
+                cursor.execute("""
+                    SELECT pr.id, pr.analysis_id, pr.product_id, pr.match_score,
+                           pr.recommendation_reason, pr.created_at,
+                           p.product_name, p.category, p.key_ingredients, p.efficacy
+                    FROM product_recommendations pr
+                    JOIN products p ON pr.product_id = p.product_id
+                    WHERE pr.customer_id = ? AND pr.analysis_id = ?
+                    ORDER BY pr.match_score DESC
+                    LIMIT ?
+                """, (customer_id, analysis_id, limit))
+            else:
+                cursor.execute("""
+                    SELECT pr.id, pr.analysis_id, pr.product_id, pr.match_score,
+                           pr.recommendation_reason, pr.created_at,
+                           p.product_name, p.category, p.key_ingredients, p.efficacy
+                    FROM product_recommendations pr
+                    JOIN products p ON pr.product_id = p.product_id
+                    WHERE pr.customer_id = ?
+                    ORDER BY pr.created_at DESC
+                    LIMIT ?
+                """, (customer_id, limit))
+            
+            rows = cursor.fetchall()
+            return [
+                {
+                    "recommendation_id": row[0],
+                    "analysis_id": row[1],
+                    "product_id": row[2],
+                    "match_score": row[3],
+                    "recommendation_reason": row[4],
+                    "recommended_at": row[5],
+                    "product_name": row[6],
+                    "category": row[7],
+                    "key_ingredients": json.loads(row[8]) if row[8] else [],
+                    "efficacy": row[9],
+                }
+                for row in rows
+            ]
+
+    def get_latest_recommendations(self, customer_id: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """최근 분석 기반 제품 추천 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT pr.id, pr.analysis_id, pr.product_id, pr.match_score,
+                       pr.recommendation_reason, pr.created_at,
+                       p.product_name, p.category, p.key_ingredients, p.efficacy,
+                       a.overall_score_restored
+                FROM product_recommendations pr
+                JOIN products p ON pr.product_id = p.product_id
+                JOIN analyses a ON pr.analysis_id = a.id
+                WHERE pr.customer_id = ?
+                ORDER BY pr.created_at DESC
+                LIMIT ?
+            """, (customer_id, limit))
+            
+            rows = cursor.fetchall()
+            return [
+                {
+                    "recommendation_id": row[0],
+                    "analysis_id": row[1],
+                    "product_id": row[2],
+                    "match_score": row[3],
+                    "recommendation_reason": row[4],
+                    "recommended_at": row[5],
+                    "product_name": row[6],
+                    "category": row[7],
+                    "key_ingredients": json.loads(row[8]) if row[8] else [],
+                    "efficacy": row[9],
+                    "latest_score": row[10],
+                }
+                for row in rows
+            ]
+
+    # ── 고객 관리 관련 메서드 ─────────────────────────────────────────────────
+
+    def create_customer_profile(
+        self,
+        customer_id: str,
+        email: Optional[str] = None,
+        name: Optional[str] = None,
+    ) -> bool:
+        """고객 프로필 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute("""
+                    INSERT INTO customer_profiles (customer_id, email, name)
+                    VALUES (?, ?, ?)
+                """, (customer_id, email, name))
+                self._conn.commit()
+                log.info("[DB] 고객 프로필 생성: customer_id=%s", customer_id)
+                return True
+            except sqlite3.IntegrityError:
+                return False
+
+    def get_customer_profile(self, customer_id: str) -> Optional[Dict[str, Any]]:
+        """고객 프로필 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT customer_id, email, name, status, created_at, updated_at,
+                       last_login_at, total_analyses
+                FROM customer_profiles WHERE customer_id = ?
+            """, (customer_id,))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "customer_id": row[0],
+                    "email": row[1],
+                    "name": row[2],
+                    "status": row[3],
+                    "created_at": row[4],
+                    "updated_at": row[5],
+                    "last_login_at": row[6],
+                    "total_analyses": row[7],
+                }
+            return None
+
+    def update_customer_status(self, customer_id: str, status: str) -> bool:
+        """고객 상태 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                UPDATE customer_profiles
+                SET status = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE customer_id = ?
+            """, (status, customer_id))
+            self._conn.commit()
+            updated = cursor.rowcount > 0
+            if updated:
+                log.info("[DB] 고객 상태 업데이트: customer_id=%s, status=%s", customer_id, status)
+            return updated
+
+    def list_customers(
+        self,
+        status: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Dict[str, Any]]:
+        """고객 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = """
+                SELECT customer_id, email, name, status, created_at, updated_at,
+                       last_login_at, total_analyses
+                FROM customer_profiles
+                WHERE 1=1
+            """
+            params = []
+            if status:
+                query += " AND status = ?"
+                params.append(status)
+            query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+            params.extend([limit, offset])
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [
+                {
+                    "customer_id": row[0],
+                    "email": row[1],
+                    "name": row[2],
+                    "status": row[3],
+                    "created_at": row[4],
+                    "updated_at": row[5],
+                    "last_login_at": row[6],
+                    "total_analyses": row[7],
+                }
+                for row in rows
+            ]
+
+    def delete_customer_profile(self, customer_id: str) -> bool:
+        """고객 프로필 삭제"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                DELETE FROM customer_profiles WHERE customer_id = ?
+            """, (customer_id,))
+            deleted = cursor.rowcount > 0
+            self._conn.commit()
+            if deleted:
+                log.info("[DB] 고객 프로필 삭제: customer_id=%s", customer_id)
+            return deleted
+
+    # ── 제품 관리 관련 메서드 ─────────────────────────────────────────────────
+
+    def create_product(
+        self,
+        product_id: str,
+        product_name: str,
+        category: str,
+        key_ingredients: List[str],
+        efficacy: str,
+        target_skin_types: Optional[List[str]] = None,
+        target_concerns: Optional[List[str]] = None,
+    ) -> bool:
+        """제품 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute("""
+                    INSERT INTO products
+                    (product_id, product_name, category, key_ingredients, efficacy,
+                     target_skin_types, target_concerns)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    product_id,
+                    product_name,
+                    category,
+                    json.dumps(key_ingredients, ensure_ascii=False),
+                    efficacy,
+                    json.dumps(target_skin_types, ensure_ascii=False) if target_skin_types else None,
+                    json.dumps(target_concerns, ensure_ascii=False) if target_concerns else None,
+                ))
+                self._conn.commit()
+                log.info("[DB] 제품 생성: product_id=%s", product_id)
+                return True
+            except sqlite3.IntegrityError:
+                return False
+
+    def update_product(
+        self,
+        product_id: str,
+        product_name: Optional[str] = None,
+        category: Optional[str] = None,
+        key_ingredients: Optional[List[str]] = None,
+        efficacy: Optional[str] = None,
+    ) -> bool:
+        """제품 정보 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            updates = []
+            params = []
+            
+            if product_name:
+                updates.append("product_name = ?")
+                params.append(product_name)
+            if category:
+                updates.append("category = ?")
+                params.append(category)
+            if key_ingredients:
+                updates.append("key_ingredients = ?")
+                params.append(json.dumps(key_ingredients, ensure_ascii=False))
+            if efficacy:
+                updates.append("efficacy = ?")
+                params.append(efficacy)
+            
+            if not updates:
+                return False
+            
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+            params.append(product_id)
+            
+            query = f"UPDATE products SET {', '.join(updates)} WHERE product_id = ?"
+            cursor.execute(query, params)
+            self._conn.commit()
+            updated = cursor.rowcount > 0
+            if updated:
+                log.info("[DB] 제품 업데이트: product_id=%s", product_id)
+            return updated
+
+    def delete_product(self, product_id: str) -> bool:
+        """제품 삭제"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                DELETE FROM products WHERE product_id = ?
+            """, (product_id,))
+            deleted = cursor.rowcount > 0
+            self._conn.commit()
+            if deleted:
+                log.info("[DB] 제품 삭제: product_id=%s", product_id)
+            return deleted
+
+    def list_products(
+        self,
+        category: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Dict[str, Any]]:
+        """제품 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = """
+                SELECT product_id, product_name, category, key_ingredients, efficacy,
+                       target_skin_types, target_concerns, created_at, updated_at
+                FROM products
+                WHERE 1=1
+            """
+            params = []
+            if category:
+                query += " AND category = ?"
+                params.append(category)
+            query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+            params.extend([limit, offset])
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [
+                {
+                    "product_id": row[0],
+                    "product_name": row[1],
+                    "category": row[2],
+                    "key_ingredients": json.loads(row[3]) if row[3] else [],
+                    "efficacy": row[4],
+                    "target_skin_types": json.loads(row[5]) if row[5] else [],
+                    "target_concerns": json.loads(row[6]) if row[6] else [],
+                    "created_at": row[7],
+                    "updated_at": row[8],
+                }
+                for row in rows
+            ]
+
+    # ── 사용자 세션 관련 메서드 ─────────────────────────────────────────────
+
+    def create_session(
+        self,
+        session_id: str,
+        customer_id: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+    ) -> bool:
+        """사용자 세션 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                INSERT INTO user_sessions (id, customer_id, ip_address, user_agent)
+                VALUES (?, ?, ?, ?)
+            """, (session_id, customer_id, ip_address, user_agent))
+            self._conn.commit()
+            return True
+
+    def update_session_activity(self, session_id: str) -> bool:
+        """세션 활동 시간 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                UPDATE user_sessions
+                SET last_activity_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (session_id,))
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    def end_session(self, session_id: str) -> bool:
+        """세션 종료"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                UPDATE user_sessions
+                SET is_active = 0
+                WHERE id = ?
+            """, (session_id,))
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    def get_active_sessions(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """활성 세션 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, customer_id, ip_address, user_agent, started_at, last_activity_at
+                FROM user_sessions
+                WHERE is_active = 1
+                ORDER BY last_activity_at DESC
+                LIMIT ?
+            """, (limit,))
+            rows = cursor.fetchall()
+            return [
+                {
+                    "session_id": row[0],
+                    "customer_id": row[1],
+                    "ip_address": row[2],
+                    "user_agent": row[3],
+                    "started_at": row[4],
+                    "last_activity_at": row[5],
+                }
+                for row in rows
+            ]
+
+    # ── 이상 활동 관련 메서드 ─────────────────────────────────────────────────
+
+    def create_anomaly(
+        self,
+        anomaly_type: str,
+        customer_id: Optional[str] = None,
+        ip_address: Optional[str] = None,
+        description: Optional[str] = None,
+        severity: str = "medium",
+    ) -> str:
+        """이상 활동 기록"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            import uuid
+            anomaly_id = str(uuid.uuid4())
+            cursor.execute("""
+                INSERT INTO security_anomalies
+                (id, anomaly_type, customer_id, ip_address, description, severity)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (anomaly_id, anomaly_type, customer_id, ip_address, description, severity))
+            self._conn.commit()
+            log.warning("[DB] 이상 활동 탐지: type=%s, customer_id=%s, ip=%s", 
+                      anomaly_type, customer_id, ip_address)
+            return anomaly_id
+
+    def get_anomalies(
+        self,
+        status: Optional[str] = None,
+        severity: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """이상 활동 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = """
+                SELECT id, anomaly_type, customer_id, ip_address, description,
+                       severity, detected_at, resolved_at, status
+                FROM security_anomalies
+                WHERE 1=1
+            """
+            params = []
+            if status:
+                query += " AND status = ?"
+                params.append(status)
+            if severity:
+                query += " AND severity = ?"
+                params.append(severity)
+            query += " ORDER BY detected_at DESC LIMIT ?"
+            params.append(limit)
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [
+                {
+                    "id": row[0],
+                    "anomaly_type": row[1],
+                    "customer_id": row[2],
+                    "ip_address": row[3],
+                    "description": row[4],
+                    "severity": row[5],
+                    "detected_at": row[6],
+                    "resolved_at": row[7],
+                    "status": row[8],
+                }
+                for row in rows
+            ]
+
+    def resolve_anomaly(self, anomaly_id: str) -> bool:
+        """이상 활동 해결"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                UPDATE security_anomalies
+                SET status = 'resolved', resolved_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (anomaly_id,))
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    # ── 사용자 역할 관련 메서드 ─────────────────────────────────────────────
+
+    def set_user_role(
+        self,
+        customer_id: str,
+        role: str,
+        granted_by: Optional[str] = None,
+    ) -> bool:
+        """사용자 역할 설정"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                INSERT INTO user_roles (customer_id, role, granted_by)
+                VALUES (?, ?, ?)
+                ON CONFLICT(customer_id) DO UPDATE SET
+                    role = ?, granted_by = ?, granted_at = CURRENT_TIMESTAMP
+            """, (customer_id, role, granted_by, role, granted_by))
+            self._conn.commit()
+            log.info("[DB] 사용자 역할 설정: customer_id=%s, role=%s", customer_id, role)
+            return True
+
+    def get_user_role(self, customer_id: str) -> Optional[str]:
+        """사용자 역할 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT role FROM user_roles WHERE customer_id = ?
+            """, (customer_id,))
+            row = cursor.fetchone()
+            return row[0] if row else "customer"
+
+    def list_users_by_role(self, role: str, limit: int = 100) -> List[Dict[str, Any]]:
+        """역할별 사용자 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT customer_id, role, granted_at, granted_by
+                FROM user_roles
+                WHERE role = ?
+                ORDER BY granted_at DESC
+                LIMIT ?
+            """, (role, limit))
+            rows = cursor.fetchall()
+            return [
+                {
+                    "customer_id": row[0],
+                    "role": row[1],
+                    "granted_at": row[2],
+                    "granted_by": row[3],
+                }
+                for row in rows
+            ]
+
+    # ── 차단된 IP 관련 메서드 ───────────────────────────────────────────────
+
+    def block_ip(
+        self,
+        ip_address: str,
+        reason: Optional[str] = None,
+        blocked_by: Optional[str] = None,
+        expires_in_hours: Optional[int] = None,
+        is_permanent: bool = False,
+    ) -> bool:
+        """IP 차단"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            expires_at = None
+            if expires_in_hours and not is_permanent:
+                expires_at = (datetime.now() + timedelta(hours=expires_in_hours)).isoformat()
+            
+            cursor.execute("""
+                INSERT INTO blocked_ips (ip_address, reason, blocked_by, expires_at, is_permanent)
+                VALUES (?, ?, ?, ?, ?)
+            """, (ip_address, reason, blocked_by, expires_at, 1 if is_permanent else 0))
+            self._conn.commit()
+            log.warning("[DB] IP 차단: ip=%s, reason=%s", ip_address, reason)
+            return True
+
+    def unblock_ip(self, ip_address: str) -> bool:
+        """IP 차단 해제"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                DELETE FROM blocked_ips WHERE ip_address = ?
+            """, (ip_address,))
+            deleted = cursor.rowcount > 0
+            self._conn.commit()
+            if deleted:
+                log.info("[DB] IP 차단 해제: ip=%s", ip_address)
+            return deleted
+
+    def is_ip_blocked(self, ip_address: str) -> bool:
+        """IP 차단 여부 확인"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT COUNT(*) FROM blocked_ips
+                WHERE ip_address = ? AND (is_permanent = 1 OR expires_at > CURRENT_TIMESTAMP)
+            """, (ip_address,))
+            return cursor.fetchone()[0] > 0
+
+    def get_blocked_ips(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """차단된 IP 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT ip_address, blocked_at, blocked_by, reason, expires_at, is_permanent
+                FROM blocked_ips
+                WHERE is_permanent = 1 OR expires_at > CURRENT_TIMESTAMP
+                ORDER BY blocked_at DESC
+                LIMIT ?
+            """, (limit,))
+            rows = cursor.fetchall()
+            return [
+                {
+                    "ip_address": row[0],
+                    "blocked_at": row[1],
+                    "blocked_by": row[2],
+                    "reason": row[3],
+                    "expires_at": row[4],
+                    "is_permanent": bool(row[5]),
+                }
+                for row in rows
+            ]
+
+    # ── 일일 통계 관련 메서드 ───────────────────────────────────────────────
+
+    def record_daily_stats(
+        self,
+        date: str,
+        total_analyses: int,
+        unique_customers: int,
+        successful_analyses: int,
+        failed_analyses: int,
+        avg_score: Optional[float] = None,
+        total_revenue: float = 0.0,
+    ) -> bool:
+        """일일 통계 기록"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                INSERT INTO daily_stats
+                (date, total_analyses, unique_customers, successful_analyses,
+                 failed_analyses, avg_score, total_revenue)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(date) DO UPDATE SET
+                    total_analyses = ?, unique_customers = ?,
+                    successful_analyses = ?, failed_analyses = ?,
+                    avg_score = ?, total_revenue = ?
+            """, (
+                date, total_analyses, unique_customers, successful_analyses,
+                failed_analyses, avg_score, total_revenue,
+                total_analyses, unique_customers, successful_analyses,
+                failed_analyses, avg_score, total_revenue,
+            ))
+            self._conn.commit()
+            return True
+
+    def get_daily_stats(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 30,
+    ) -> List[Dict[str, Any]]:
+        """일일 통계 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = """
+                SELECT date, total_analyses, unique_customers, successful_analyses,
+                       failed_analyses, avg_score, total_revenue
+                FROM daily_stats
+                WHERE 1=1
+            """
+            params = []
+            if start_date:
+                query += " AND date >= ?"
+                params.append(start_date)
+            if end_date:
+                query += " AND date <= ?"
+                params.append(end_date)
+            query += " ORDER BY date DESC LIMIT ?"
+            params.append(limit)
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [
+                {
+                    "date": row[0],
+                    "total_analyses": row[1],
+                    "unique_customers": row[2],
+                    "successful_analyses": row[3],
+                    "failed_analyses": row[4],
+                    "avg_score": row[5],
+                    "total_revenue": row[6],
+                }
+                for row in rows
+            ]
+
+    # ── 웹훅 관련 메서드 ───────────────────────────────────────────────────────
+
+    def create_webhook(
+        self,
+        webhook_id: str,
+        customer_id: str,
+        url: str,
+        events: List[str],
+        secret_key: Optional[str] = None,
+    ) -> bool:
+        """웹훅 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute("""
+                    INSERT INTO webhooks (id, customer_id, url, events, secret_key)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (webhook_id, customer_id, url, json.dumps(events, ensure_ascii=False), secret_key))
+                self._conn.commit()
+                log.info("[DB] 웹훅 생성: webhook_id=%s, customer_id=%s", webhook_id, customer_id)
+                return True
+            except sqlite3.IntegrityError:
+                return False
+
+    def get_webhooks(self, customer_id: str, active_only: bool = True) -> List[Dict[str, Any]]:
+        """웹훅 목록 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = """
+                SELECT id, customer_id, url, events, secret_key, is_active, created_at, updated_at
+                FROM webhooks
+                WHERE customer_id = ?
+            """
+            params = [customer_id]
+            if active_only:
+                query += " AND is_active = 1"
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [
+                {
+                    "id": row[0],
+                    "customer_id": row[1],
+                    "url": row[2],
+                    "events": json.loads(row[3]) if row[3] else [],
+                    "secret_key": row[4],
+                    "is_active": bool(row[5]),
+                    "created_at": row[6],
+                    "updated_at": row[7],
+                }
+                for row in rows
+            ]
+
+    def update_webhook(
+        self,
+        webhook_id: str,
+        url: Optional[str] = None,
+        events: Optional[List[str]] = None,
+        is_active: Optional[bool] = None,
+    ) -> bool:
+        """웹훅 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            updates = []
+            params = []
+            
+            if url:
+                updates.append("url = ?")
+                params.append(url)
+            if events:
+                updates.append("events = ?")
+                params.append(json.dumps(events, ensure_ascii=False))
+            if is_active is not None:
+                updates.append("is_active = ?")
+                params.append(1 if is_active else 0)
+            
+            if not updates:
+                return False
+            
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+            params.append(webhook_id)
+            
+            query = f"UPDATE webhooks SET {', '.join(updates)} WHERE id = ?"
+            cursor.execute(query, params)
+            self._conn.commit()
+            updated = cursor.rowcount > 0
+            if updated:
+                log.info("[DB] 웹훅 업데이트: webhook_id=%s", webhook_id)
+            return updated
+
+    def delete_webhook(self, webhook_id: str) -> bool:
+        """웹훅 삭제"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                DELETE FROM webhooks WHERE id = ?
+            """, (webhook_id,))
+            deleted = cursor.rowcount > 0
+            self._conn.commit()
+            if deleted:
+                log.info("[DB] 웹훅 삭제: webhook_id=%s", webhook_id)
+            return deleted
+
+    # ── 외부 동기화 로그 관련 메서드 ───────────────────────────────────────────
+
+    def create_sync_log(
+        self,
+        sync_type: str,
+        direction: str,
+        source_system: Optional[str] = None,
+        target_system: Optional[str] = None,
+    ) -> str:
+        """동기화 로그 생성"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            import uuid
+            log_id = str(uuid.uuid4())
+            cursor.execute("""
+                INSERT INTO external_sync_logs (id, sync_type, direction, source_system, target_system)
+                VALUES (?, ?, ?, ?, ?)
+            """, (log_id, sync_type, direction, source_system, target_system))
+            self._conn.commit()
+            log.info("[DB] 동기화 로그 생성: log_id=%s, type=%s", log_id, sync_type)
+            return log_id
+
+    def update_sync_log(
+        self,
+        log_id: str,
+        status: str,
+        records_count: int = 0,
+        error_message: Optional[str] = None,
+    ) -> bool:
+        """동기화 로그 업데이트"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                UPDATE external_sync_logs
+                SET status = ?, records_count = ?, error_message = ?, completed_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (status, records_count, error_message, log_id))
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    def get_sync_logs(
+        self,
+        sync_type: Optional[str] = None,
+        status: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """동기화 로그 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            query = """
+                SELECT id, sync_type, direction, status, source_system, target_system,
+                       records_count, error_message, started_at, completed_at
+                FROM external_sync_logs
+                WHERE 1=1
+            """
+            params = []
+            if sync_type:
+                query += " AND sync_type = ?"
+                params.append(sync_type)
+            if status:
+                query += " AND status = ?"
+                params.append(status)
+            query += " ORDER BY started_at DESC LIMIT ?"
+            params.append(limit)
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [
+                {
+                    "id": row[0],
+                    "sync_type": row[1],
+                    "direction": row[2],
+                    "status": row[3],
+                    "source_system": row[4],
+                    "target_system": row[5],
+                    "records_count": row[6],
+                    "error_message": row[7],
+                    "started_at": row[8],
+                    "completed_at": row[9],
+                }
+                for row in rows
+            ]
+
+    # ── OAuth 관련 메서드 ─────────────────────────────────────────────────────
+
+    def create_oauth_provider(
+        self,
+        provider_id: str,
+        provider_name: str,
+        client_id: str,
+        client_secret: str,
+        redirect_uri: str,
+        scopes: Optional[List[str]] = None,
+    ) -> bool:
+        """OAuth 제공자 등록"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            try:
+                cursor.execute("""
+                    INSERT INTO oauth_providers (id, provider_name, client_id, client_secret, redirect_uri, scopes)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    provider_id,
+                    provider_name,
+                    client_id,
+                    client_secret,
+                    redirect_uri,
+                    json.dumps(scopes, ensure_ascii=False) if scopes else None,
+                ))
+                self._conn.commit()
+                log.info("[DB] OAuth 제공자 등록: provider_name=%s", provider_name)
+                return True
+            except sqlite3.IntegrityError:
+                return False
+
+    def get_oauth_provider(self, provider_name: str) -> Optional[Dict[str, Any]]:
+        """OAuth 제공자 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, provider_name, client_id, client_secret, redirect_uri, scopes, is_active, created_at
+                FROM oauth_providers
+                WHERE provider_name = ? AND is_active = 1
+            """, (provider_name,))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "provider_name": row[1],
+                    "client_id": row[2],
+                    "client_secret": row[3],
+                    "redirect_uri": row[4],
+                    "scopes": json.loads(row[5]) if row[5] else [],
+                    "is_active": bool(row[6]),
+                    "created_at": row[7],
+                }
+            return None
+
+    def save_oauth_token(
+        self,
+        token_id: str,
+        customer_id: str,
+        provider_id: str,
+        access_token: str,
+        refresh_token: Optional[str] = None,
+        expires_in: Optional[int] = None,
+    ) -> bool:
+        """OAuth 토큰 저장"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            expires_at = None
+            if expires_in:
+                from datetime import datetime, timedelta
+                expires_at = (datetime.now() + timedelta(seconds=expires_in)).isoformat()
+            
+            cursor.execute("""
+                INSERT INTO oauth_tokens (id, customer_id, provider_id, access_token, refresh_token, expires_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (token_id, customer_id, provider_id, access_token, refresh_token, expires_at))
+            self._conn.commit()
+            log.info("[DB] OAuth 토큰 저장: customer_id=%s, provider_id=%s", customer_id, provider_id)
+            return True
+
+    def get_oauth_token(self, customer_id: str, provider_id: str) -> Optional[Dict[str, Any]]:
+        """OAuth 토큰 조회"""
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, customer_id, provider_id, access_token, refresh_token, expires_at, created_at
+                FROM oauth_tokens
+                WHERE customer_id = ? AND provider_id = ?
+                ORDER BY created_at DESC
+                LIMIT 1
+            """, (customer_id, provider_id))
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "customer_id": row[1],
+                    "provider_id": row[2],
+                    "access_token": row[3],
+                    "refresh_token": row[4],
+                    "expires_at": row[5],
+                    "created_at": row[6],
                 }
             return None

@@ -5,11 +5,35 @@ GET  /v1/admin/audit-logs
 GET  /v1/admin/db/metrics
 GET  /v1/admin/audit/summary
 GET  /v1/health/db          ← 관리자·분석가 전용 (prefix 없음)
+GET  /v1/admin/customers
+GET  /v1/admin/customers/{customer_id}
+PUT  /v1/admin/customers/{customer_id}/status
+DELETE /v1/admin/customers/{customer_id}
+GET  /v1/admin/products
+POST /v1/admin/products
+PUT  /v1/admin/products/{product_id}
+DELETE /v1/admin/products/{product_id}
+GET  /v1/admin/analyses
+DELETE /v1/admin/analyses/{analysis_id}
+GET  /v1/admin/active-sessions
+DELETE /v1/admin/active-sessions/{session_id}
+GET  /v1/admin/anomalies
+POST /v1/admin/anomalies/{id}/resolve
+GET  /v1/admin/roles
+POST /v1/admin/roles
+PUT  /v1/admin/customers/{customer_id}/role
+GET  /v1/admin/blocked-ips
+POST /v1/admin/blocked-ips
+DELETE /v1/admin/blocked-ips/{ip_address}
+GET  /v1/admin/dashboard/overview
+GET  /v1/admin/reports/usage
+GET  /v1/admin/reports/revenue
 """
 from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -35,6 +59,40 @@ except ImportError:
     PSUTIL_AVAILABLE = False
 
 router = APIRouter(tags=["admin"])
+
+
+# ── Pydantic Models ─────────────────────────────────────────────────────────────
+
+class CustomerStatusRequest(BaseModel):
+    status: str
+
+
+class ProductCreateRequest(BaseModel):
+    product_id: str
+    product_name: str
+    category: str
+    key_ingredients: List[str]
+    efficacy: str
+    target_skin_types: Optional[List[str]] = None
+    target_concerns: Optional[List[str]] = None
+
+
+class ProductUpdateRequest(BaseModel):
+    product_name: Optional[str] = None
+    category: Optional[str] = None
+    key_ingredients: Optional[List[str]] = None
+    efficacy: Optional[str] = None
+
+
+class UserRoleRequest(BaseModel):
+    role: str
+
+
+class BlockIPRequest(BaseModel):
+    ip_address: str
+    reason: Optional[str] = None
+    expires_in_hours: Optional[int] = None
+    is_permanent: bool = False
 
 
 # ── 캐싱 ─────────────────────────────────────────────────────────────────────
@@ -712,3 +770,747 @@ async def get_job_status(
     except Exception as e:
         log.error("작업 상태 조회 실패: %s", e)
         raise HTTPException(status_code=500, detail="Failed to retrieve job status")
+
+
+# ── 고객 관리 ─────────────────────────────────────────────────────────────
+
+@router.get("/v1/admin/customers")
+async def list_customers(
+    status: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """고객 목록 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        customers = db.list_customers(status=status, limit=limit, offset=offset)
+        return {"customers": customers, "total": len(customers)}
+    except Exception as e:
+        log.error("고객 목록 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve customers")
+
+
+@router.get("/v1/admin/customers/{customer_id}")
+async def get_customer_detail(
+    customer_id: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """고객 상세 정보 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        customer = db.get_customer_profile(customer_id)
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        return customer
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("고객 상세 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve customer")
+
+
+@router.put("/v1/admin/customers/{customer_id}/status")
+async def update_customer_status(
+    customer_id: str,
+    request_data: CustomerStatusRequest,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """고객 상태 변경 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/customers/{customer_id}/status"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.update_customer_status(customer_id, request_data.status)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Customer not found")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
+            endpoint=ep, method="PUT", user_role=role, request=request, success=True
+        )
+        return {"message": "Customer status updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("고객 상태 변경 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
+            endpoint=ep, method="PUT", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to update customer status")
+
+
+@router.delete("/v1/admin/customers/{customer_id}")
+async def delete_customer(
+    customer_id: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """고객 삭제 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/customers/{customer_id}"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.delete_customer_profile(customer_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Customer not found")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
+            endpoint=ep, method="DELETE", user_role=role, request=request, success=True
+        )
+        return {"message": "Customer deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("고객 삭제 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
+            endpoint=ep, method="DELETE", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to delete customer")
+
+
+# ── 제품 관리 ─────────────────────────────────────────────────────────────
+
+@router.get("/v1/admin/products")
+async def list_products(
+    category: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """제품 목록 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        products = db.list_products(category=category, limit=limit, offset=offset)
+        return {"products": products, "total": len(products)}
+    except Exception as e:
+        log.error("제품 목록 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve products")
+
+
+@router.post("/v1/admin/products")
+async def create_product(
+    request_data: ProductCreateRequest,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """제품 생성 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = "/v1/admin/products"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.create_product(
+            product_id=request_data.product_id,
+            product_name=request_data.product_name,
+            category=request_data.category,
+            key_ingredients=request_data.key_ingredients,
+            efficacy=request_data.efficacy,
+            target_skin_types=request_data.target_skin_types,
+            target_concerns=request_data.target_concerns,
+        )
+        
+        if not success:
+            raise HTTPException(status_code=409, detail="Product ID already exists")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="POST", user_role=role, request=request, success=True
+        )
+        return {"message": "Product created successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("제품 생성 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="POST", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to create product")
+
+
+@router.put("/v1/admin/products/{product_id}")
+async def update_product(
+    product_id: str,
+    request_data: ProductUpdateRequest,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """제품 정보 업데이트 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/products/{product_id}"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.update_product(
+            product_id=product_id,
+            product_name=request_data.product_name,
+            category=request_data.category,
+            key_ingredients=request_data.key_ingredients,
+            efficacy=request_data.efficacy,
+        )
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Product not found or no changes")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="PUT", user_role=role, request=request, success=True
+        )
+        return {"message": "Product updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("제품 업데이트 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="PUT", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to update product")
+
+
+@router.delete("/v1/admin/products/{product_id}")
+async def delete_product(
+    product_id: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """제품 삭제 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/products/{product_id}"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.delete_product(product_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request, success=True
+        )
+        return {"message": "Product deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("제품 삭제 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to delete product")
+
+
+# ── 분석 결과 관리 ─────────────────────────────────────────────────────────
+
+@router.get("/v1/admin/analyses")
+async def list_all_analyses(
+    limit: int = 100,
+    offset: int = 0,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """전체 분석 결과 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        analyses = db.get_recent_analyses(limit=limit)
+        return {"analyses": analyses, "total": len(analyses)}
+    except Exception as e:
+        log.error("분석 결과 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve analyses")
+
+
+@router.delete("/v1/admin/analyses/{analysis_id}")
+async def delete_analysis(
+    analysis_id: int,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """분석 결과 삭제 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/analyses/{analysis_id}"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.delete_analysis(analysis_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request, success=True
+        )
+        return {"message": "Analysis deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("분석 결과 삭제 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to delete analysis")
+
+
+# ── 사용자 활동 모니터링 ─────────────────────────────────────────────────────
+
+@router.get("/v1/admin/active-sessions")
+async def get_active_sessions(
+    limit: int = 100,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """활성 세션 목록 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        sessions = db.get_active_sessions(limit=limit)
+        return {"sessions": sessions, "total": len(sessions)}
+    except Exception as e:
+        log.error("활성 세션 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve active sessions")
+
+
+@router.delete("/v1/admin/active-sessions/{session_id}")
+async def terminate_session(
+    session_id: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """세션 강제 종료 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/active-sessions/{session_id}"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.end_session(session_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request, success=True
+        )
+        return {"message": "Session terminated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("세션 종료 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to terminate session")
+
+
+@router.get("/v1/admin/anomalies")
+async def get_anomalies(
+    status: Optional[str] = None,
+    severity: Optional[str] = None,
+    limit: int = 100,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """이상 활동 목록 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        anomalies = db.get_anomalies(status=status, severity=severity, limit=limit)
+        return {"anomalies": anomalies, "total": len(anomalies)}
+    except Exception as e:
+        log.error("이상 활동 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve anomalies")
+
+
+@router.post("/v1/admin/anomalies/{anomaly_id}/resolve")
+async def resolve_anomaly(
+    anomaly_id: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """이상 활동 해결 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/anomalies/{anomaly_id}/resolve"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.resolve_anomaly(anomaly_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Anomaly not found")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="POST", user_role=role, request=request, success=True
+        )
+        return {"message": "Anomaly resolved successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("이상 활동 해결 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="POST", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to resolve anomaly")
+
+
+# ── 보안 관리 ─────────────────────────────────────────────────────────────
+
+@router.get("/v1/admin/roles")
+async def list_roles(
+    role: Optional[str] = None,
+    limit: int = 100,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """역할별 사용자 목록 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    admin_role = current_customer.get("role", "customer")
+    if admin_role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        if role:
+            users = db.list_users_by_role(role=role, limit=limit)
+        else:
+            # 모든 역할의 사용자 반환
+            users = []
+            for r in ["admin", "analyst", "customer"]:
+                users.extend(db.list_users_by_role(role=r, limit=limit))
+        return {"users": users, "total": len(users)}
+    except Exception as e:
+        log.error("역할 목록 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve roles")
+
+
+@router.put("/v1/admin/customers/{customer_id}/role")
+async def set_user_role(
+    customer_id: str,
+    request_data: UserRoleRequest,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """사용자 역할 설정 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/customers/{customer_id}/role"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db_skin.set_user_role(customer_id=customer_id, role=request_data.role, granted_by=actor_id)
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
+            endpoint=ep, method="PUT", user_role=role, request=request, success=True
+        )
+        return {"message": "User role updated successfully"}
+    except Exception as e:
+        log.error("역할 설정 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=customer_id,
+            endpoint=ep, method="PUT", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to update user role")
+
+
+@router.get("/v1/admin/blocked-ips")
+async def get_blocked_ips(
+    limit: int = 100,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """차단된 IP 목록 조회 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        blocked_ips = db.get_blocked_ips(limit=limit)
+        return {"blocked_ips": blocked_ips, "total": len(blocked_ips)}
+    except Exception as e:
+        log.error("차단된 IP 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve blocked IPs")
+
+
+@router.post("/v1/admin/blocked-ips")
+async def block_ip(
+    request_data: BlockIPRequest,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """IP 차단 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = "/v1/admin/blocked-ips"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db_skin.block_ip(
+            ip_address=request_data.ip_address,
+            reason=request_data.reason,
+            blocked_by=actor_id,
+            expires_in_hours=request_data.expires_in_hours,
+            is_permanent=request_data.is_permanent,
+        )
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="POST", user_role=role, request=request, success=True
+        )
+        return {"message": "IP blocked successfully"}
+    except Exception as e:
+        log.error("IP 차단 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="POST", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to block IP")
+
+
+@router.delete("/v1/admin/blocked-ips/{ip_address}")
+async def unblock_ip(
+    ip_address: str,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+    db: ExecutionHistoryDB = Depends(get_db),
+    request: Request = None,
+):
+    """IP 차단 해제 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin",):
+        raise HTTPException(status_code=403, detail="Admin 권한이 필요합니다.")
+
+    ep = f"/v1/admin/blocked-ips/{ip_address}"
+    actor_id = current_customer.get("sub")
+
+    try:
+        db_skin = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        success = db_skin.unblock_ip(ip_address)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="IP not found in blocked list")
+
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request, success=True
+        )
+        return {"message": "IP unblocked successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("IP 차단 해제 실패: %s", e)
+        log_audit(
+            db=db, actor_customer_id=actor_id, target_customer_id=None,
+            endpoint=ep, method="DELETE", user_role=role, request=request,
+            success=False, error_message=str(e)
+        )
+        raise HTTPException(status_code=500, detail="Failed to unblock IP")
+
+
+# ── 비즈니스 인텔리전스 ─────────────────────────────────────────────────────
+
+@router.get("/v1/admin/dashboard/overview")
+async def get_dashboard_overview(
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """관리자 대시보드 개요 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        stats = db.get_stats()
+        daily_stats = db.get_daily_stats(limit=7)
+        
+        return {
+            "overview": {
+                "total_analyses": stats.get("total_analyses", 0),
+                "total_customers": stats.get("total_customers", 0),
+                "last_analysis": stats.get("last_analysis"),
+            },
+            "recent_stats": daily_stats,
+        }
+    except Exception as e:
+        log.error("대시보드 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve dashboard overview")
+
+
+@router.get("/v1/admin/reports/usage")
+async def get_usage_report(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    limit: int = 30,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """사용량 리포트 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        stats = db.get_daily_stats(start_date=start_date, end_date=end_date, limit=limit)
+        return {"stats": stats, "total": len(stats)}
+    except Exception as e:
+        log.error("사용량 리포트 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve usage report")
+
+
+@router.get("/v1/admin/reports/revenue")
+async def get_revenue_report(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    limit: int = 30,
+    current_customer: Optional[Dict[str, Any]] = Depends(get_current_customer),
+):
+    """수익 리포트 (관리자 전용)."""
+    if current_customer is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    role = current_customer.get("role", "customer")
+    if role not in ("admin", "analyst"):
+        raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
+
+    try:
+        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        stats = db.get_daily_stats(start_date=start_date, end_date=end_date, limit=limit)
+        
+        # 수익 데이터만 필터링
+        revenue_data = [
+            {"date": s["date"], "total_revenue": s["total_revenue"]}
+            for s in stats
+        ]
+        
+        return {"revenue": revenue_data, "total": len(revenue_data)}
+    except Exception as e:
+        log.error("수익 리포트 조회 실패: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to retrieve revenue report")

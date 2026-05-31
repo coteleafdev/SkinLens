@@ -1,8 +1,9 @@
 # API 레퍼런스 (API Reference)
 
 > **프로젝트:** SkinLens v1.0  
-> **버전:** v1.0  
+> **버전:** v1.1  
 > **작성일:** 2026-05-30  
+> **수정일:** 2026-05-31  
 > **상태:** 초안
 
 ---
@@ -12,9 +13,59 @@
 SkinLens REST API 엔드포인트 상세 설명입니다.
 
 **참고 문서:**
+- 전체 시스템 아키텍처: `docs/guides/ARCHITECTURE_GUIDE.md`
+- 외부 시스템 연동 가이드: `docs/EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md`
 - 백엔드 개발자용 상세 가이드: `API_GUIDE.md`
 - 데이터 모델: `docs/db/DATA_MODEL.md`
 - 보안 가이드: `docs/ops/SECURITY_GUIDE.md`
+
+---
+
+## 전체 API 아키텍처
+
+### API 구성
+
+```mermaid
+graph TB
+    subgraph "API 카테고리"
+        A1[인증 API<br/>/v1/auth/*]
+        A2[분석 API<br/>/v1/analysis/*]
+        A3[고객 API<br/>/v1/customers/*]
+        A4[관리자 API<br/>/v1/admin/*]
+        A5[연동 API<br/>/v1/webhooks/*<br/>/v1/integration/*<br/>/v1/oauth/*]
+        A6[WebSocket<br/>/v1/ws/*]
+    end
+    
+    subgraph "클라이언트"
+        B1[웹 브라우저]
+        B2[모바일 앱]
+        B3[기존 웹서버]
+    end
+    
+    B1 --> A1
+    B1 --> A2
+    B1 --> A3
+    B1 --> A6
+    
+    B2 --> A1
+    B2 --> A2
+    B2 --> A3
+    B2 --> A6
+    
+    B3 --> A4
+    B3 --> A5
+```
+
+### API 카테고리별 특징
+
+| 카테고리 | 경로 | 주요 클라이언트 | 인증 | 설명 |
+|---------|------|---------------|------|------|
+| 인증 API | `/v1/auth/*` | 모든 클라이언트 | 불필요 | 로그인, 토큰 갱신 |
+| 분석 API | `/v1/analysis/*` | 웹, 모바일 | 필수 | 피부 분석 요청/조회 |
+| 고객 API | `/v1/customers/*` | 웹, 모바일 | 필수 | 고객 데이터 관리 |
+| 관리자 API | `/v1/admin/*` | 웹서버, 관리자 | 필수 (admin) | 시스템 관리 |
+| 연동 API | `/v1/webhooks/*`<br/>`/v1/integration/*`<br/>`/v1/oauth/*` | 웹서버 | 필수 (admin) | 외부 시스템 연동 |
+| WebSocket | `/v1/ws/*` | 웹, 모바일 | 필수 | 실시간 진행률 |
 
 ---
 
@@ -283,6 +334,254 @@ Job을 취소합니다.
 
 ---
 
+### 3.3 분석 상세 조회
+
+**GET** `/v1/customer/my/analyses/{analysis_id}`
+
+특정 분석의 상세 정보를 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "customer_id": "CUST001",
+  "original_image_path": "/path/to/original.jpg",
+  "restored_image_path": "/path/to/restored.jpg",
+  "json_result": { ... },
+  "input_json": { ... },
+  "original_filename": "test.jpg",
+  "created_at": "2026-05-30T10:00:00Z",
+  "overall_score_original": 60,
+  "overall_score_restored": 75
+}
+```
+
+---
+
+### 3.4 분석 이미지 다운로드
+
+**GET** `/v1/customer/my/analyses/{analysis_id}/image/{image_type}`
+
+분석 이미지를 다운로드합니다.
+
+**Path Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| analysis_id | integer | 예 | 분석 ID |
+| image_type | string | 예 | 이미지 타입 (original 또는 restored) |
+
+**Response (200 OK):** 이미지 파일 (JPEG)
+
+---
+
+### 3.5 분석 결과 비교
+
+**POST** `/v1/customer/my/analyses/compare`
+
+두 분석 결과를 비교합니다.
+
+**Request Body:**
+```json
+{
+  "analysis_id_1": 1,
+  "analysis_id_2": 2
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "analysis_1": {
+    "id": 1,
+    "date": "2026-05-01T00:00:00Z",
+    "scores": {
+      "overall_score": 60,
+      "melasma_score": 50,
+      "redness_score": 70,
+      "wrinkle_score": 55,
+      "pore_score": 65
+    }
+  },
+  "analysis_2": {
+    "id": 2,
+    "date": "2026-05-15T00:00:00Z",
+    "scores": {
+      "overall_score": 70,
+      "melasma_score": 55,
+      "redness_score": 65,
+      "wrinkle_score": 60,
+      "pore_score": 70
+    }
+  },
+  "changes": {
+    "overall_score": {
+      "before": 60,
+      "after": 70,
+      "change": 10,
+      "improved": true
+    },
+    ...
+  },
+  "overall_improvement": 10
+}
+```
+
+---
+
+### 3.6 제품 추천 조회
+
+**GET** `/v1/customer/my/recommendations`
+
+맞춤형 제품 추천을 조회합니다.
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| analysis_id | integer | 아니오 | 특정 분석 ID (지정 시 해당 분석 기반 추천) |
+| limit | integer | 아니오 | 최대 개수 (기본: 10) |
+
+**Response (200 OK):**
+```json
+{
+  "recommendations": [
+    {
+      "recommendation_id": 1,
+      "analysis_id": 1,
+      "product_id": "P001",
+      "product_name": "CÔTELEAF 트러블 케어 세럼",
+      "category": "트러블 케어",
+      "match_score": 0.85,
+      "recommendation_reason": "트러블 및 모공 개선에 효과적",
+      "key_ingredients": ["나이아신아마이드", "살리실산"],
+      "efficacy": "트러블 억제, 모공 관리"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+### 3.7 북마크 추가
+
+**POST** `/v1/customer/my/analyses/{analysis_id}/bookmark`
+
+분석 결과를 북마크합니다.
+
+**Request Body:**
+```json
+{
+  "notes": "좋은 결과"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Bookmark added successfully"
+}
+```
+
+---
+
+### 3.8 북마크 삭제
+
+**DELETE** `/v1/customer/my/analyses/{analysis_id}/bookmark`
+
+북마크를 삭제합니다.
+
+**Response (200 OK):**
+```json
+{
+  "message": "Bookmark removed successfully"
+}
+```
+
+---
+
+### 3.9 북마크 목록 조회
+
+**GET** `/v1/customer/my/bookmarks`
+
+북마크된 분석 목록을 조회합니다.
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| limit | integer | 아니오 | 최대 개수 (기본: 50) |
+| offset | integer | 아니오 | 오프셋 (기본: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "bookmarks": [
+    {
+      "bookmark_id": 1,
+      "analysis_id": 1,
+      "notes": "좋은 결과",
+      "bookmarked_at": "2026-05-30T10:00:00Z",
+      "original_filename": "test.jpg",
+      "analysis_date": "2026-05-30T09:00:00Z",
+      "overall_score_original": 60,
+      "overall_score_restored": 75
+    }
+  ],
+  "total": 1,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+---
+
+### 3.10 알림 설정 조회
+
+**GET** `/v1/customer/my/notifications/settings`
+
+알림 설정을 조회합니다.
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "analysis_complete": true,
+  "score_improvement": true,
+  "care_reminder": false,
+  "marketing": false,
+  "reminder_hours": 168,
+  "created_at": "2026-05-01T00:00:00Z",
+  "updated_at": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+### 3.11 알림 설정 업데이트
+
+**PUT** `/v1/customer/my/notifications/settings`
+
+알림 설정을 업데이트합니다.
+
+**Request Body:**
+```json
+{
+  "analysis_complete": true,
+  "score_improvement": true,
+  "care_reminder": true,
+  "marketing": false,
+  "reminder_hours": 72
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Notification settings updated successfully"
+}
+```
+
+---
+
 ## 4. 통계 (Stats)
 
 ### 4.1 분석 통계 조회
@@ -371,9 +670,536 @@ Job을 취소합니다.
 
 ---
 
-### 6.2 DB 헬스체크
+### 6.2 고객 관리
 
-**GET** `/v1/admin/health/db`
+#### 6.2.1 고객 목록 조회
+
+**GET** `/v1/admin/customers`
+
+고객 목록을 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| status | string | 아니오 | 상태 필터 (active, inactive, suspended) |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+| offset | integer | 아니오 | 오프셋 (기본: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "customers": [
+    {
+      "customer_id": "CUST001",
+      "email": "customer@example.com",
+      "name": "홍길동",
+      "status": "active",
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-05-30T10:00:00Z",
+      "last_login_at": "2026-05-30T09:00:00Z",
+      "total_analyses": 15
+    }
+  ],
+  "total": 100
+}
+```
+
+#### 6.2.2 고객 상세 조회
+
+**GET** `/v1/admin/customers/{customer_id}`
+
+특정 고객의 상세 정보를 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "CUST001",
+  "email": "customer@example.com",
+  "name": "홍길동",
+  "status": "active",
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-05-30T10:00:00Z",
+  "last_login_at": "2026-05-30T09:00:00Z",
+  "total_analyses": 15
+}
+```
+
+#### 6.2.3 고객 상태 변경
+
+**PUT** `/v1/admin/customers/{customer_id}/status`
+
+고객 상태를 변경합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "status": "inactive"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Customer status updated successfully"
+}
+```
+
+#### 6.2.4 고객 삭제
+
+**DELETE** `/v1/admin/customers/{customer_id}`
+
+고객을 삭제합니다 (관리자 전용, GDPR).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Customer deleted successfully"
+}
+```
+
+---
+
+### 6.3 제품 관리
+
+#### 6.3.1 제품 목록 조회
+
+**GET** `/v1/admin/products`
+
+제품 목록을 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| category | string | 아니오 | 카테고리 필터 |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+| offset | integer | 아니오 | 오프셋 (기본: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "products": [
+    {
+      "product_id": "P001",
+      "product_name": "CÔTELEAF 트러블 케어 세럼",
+      "category": "트러블 케어",
+      "key_ingredients": ["나이아신아마이드", "살리실산"],
+      "efficacy": "트러블 억제, 모공 관리",
+      "target_skin_types": ["지성", "트러블성"],
+      "target_concerns": ["여드름", "모공"],
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-05-30T10:00:00Z"
+    }
+  ],
+  "total": 50
+}
+```
+
+#### 6.3.2 제품 생성
+
+**POST** `/v1/admin/products`
+
+새 제품을 등록합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "product_id": "P002",
+  "product_name": "CÔTELEAF 모이스처라이저",
+  "category": "보습",
+  "key_ingredients": ["히알루론산", "세라마이드"],
+  "efficacy": "깊은 보습, 피부 장벽 강화",
+  "target_skin_types": ["건성", "민감성"],
+  "target_concerns": ["건조", "각질"]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Product created successfully"
+}
+```
+
+#### 6.3.3 제품 업데이트
+
+**PUT** `/v1/admin/products/{product_id}`
+
+제품 정보를 업데이트합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "product_name": "Updated Product Name",
+  "category": "새 카테고리"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Product updated successfully"
+}
+```
+
+#### 6.3.4 제품 삭제
+
+**DELETE** `/v1/admin/products/{product_id}`
+
+제품을 삭제합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Product deleted successfully"
+}
+```
+
+---
+
+### 6.4 분석 결과 관리
+
+#### 6.4.1 전체 분석 목록 조회
+
+**GET** `/v1/admin/analyses`
+
+전체 분석 결과를 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+| offset | integer | 아니오 | 오프셋 (기본: 0) |
+
+**Response (200 OK):**
+```json
+{
+  "analyses": [
+    {
+      "id": 1,
+      "customer_id": "CUST001",
+      "original_filename": "test.jpg",
+      "created_at": "2026-05-30T10:00:00Z",
+      "overall_score_original": 60,
+      "overall_score_restored": 75
+    }
+  ],
+  "total": 1000
+}
+```
+
+#### 6.4.2 분석 결과 삭제
+
+**DELETE** `/v1/admin/analyses/{analysis_id}`
+
+분석 결과를 삭제합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Analysis deleted successfully"
+}
+```
+
+---
+
+### 6.5 사용자 활동 모니터링
+
+#### 6.5.1 활성 세션 조회
+
+**GET** `/v1/admin/active-sessions`
+
+활성 세션 목록을 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "sessions": [
+    {
+      "session_id": "session123",
+      "customer_id": "CUST001",
+      "ip_address": "192.168.1.1",
+      "user_agent": "Mozilla/5.0...",
+      "started_at": "2026-05-30T09:00:00Z",
+      "last_activity_at": "2026-05-30T10:00:00Z"
+    }
+  ],
+  "total": 50
+}
+```
+
+#### 6.5.2 세션 강제 종료
+
+**DELETE** `/v1/admin/active-sessions/{session_id}`
+
+세션을 강제 종료합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Session terminated successfully"
+}
+```
+
+#### 6.5.3 이상 활동 조회
+
+**GET** `/v1/admin/anomalies`
+
+이상 활동 목록을 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| status | string | 아니오 | 상태 필터 (detected, resolved) |
+| severity | string | 아니오 | 심각도 필터 (low, medium, high) |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "anomalies": [
+    {
+      "id": "anomaly123",
+      "anomaly_type": "multiple_failed_logins",
+      "customer_id": "CUST001",
+      "ip_address": "192.168.1.1",
+      "description": "5회 연속 로그인 실패",
+      "severity": "high",
+      "detected_at": "2026-05-30T10:00:00Z",
+      "resolved_at": null,
+      "status": "detected"
+    }
+  ],
+  "total": 10
+}
+```
+
+#### 6.5.4 이상 활동 해결
+
+**POST** `/v1/admin/anomalies/{anomaly_id}/resolve`
+
+이상 활동을 해결 처리합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Anomaly resolved successfully"
+}
+```
+
+---
+
+### 6.6 보안 관리
+
+#### 6.6.1 역할 목록 조회
+
+**GET** `/v1/admin/roles`
+
+역할별 사용자 목록을 조회합니다 (관리자 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| role | string | 아니오 | 특정 역할 필터 |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "users": [
+    {
+      "customer_id": "ADMIN001",
+      "role": "admin",
+      "granted_at": "2026-01-01T00:00:00Z",
+      "granted_by": "system"
+    }
+  ],
+  "total": 10
+}
+```
+
+#### 6.6.2 사용자 역할 설정
+
+**PUT** `/v1/admin/customers/{customer_id}/role`
+
+사용자 역할을 설정합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "role": "analyst"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "User role updated successfully"
+}
+```
+
+#### 6.6.3 차단된 IP 목록 조회
+
+**GET** `/v1/admin/blocked-ips`
+
+차단된 IP 목록을 조회합니다 (관리자 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "blocked_ips": [
+    {
+      "ip_address": "192.168.1.100",
+      "blocked_at": "2026-05-30T10:00:00Z",
+      "blocked_by": "ADMIN001",
+      "reason": "악의적인 접근 시도",
+      "expires_at": "2026-06-30T10:00:00Z",
+      "is_permanent": false
+    }
+  ],
+  "total": 5
+}
+```
+
+#### 6.6.4 IP 차단
+
+**POST** `/v1/admin/blocked-ips`
+
+IP를 차단합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "ip_address": "192.168.1.100",
+  "reason": "악의적인 접근 시도",
+  "expires_in_hours": 720,
+  "is_permanent": false
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "IP blocked successfully"
+}
+```
+
+#### 6.6.5 IP 차단 해제
+
+**DELETE** `/v1/admin/blocked-ips/{ip_address}`
+
+IP 차단을 해제합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "message": "IP unblocked successfully"
+}
+```
+
+---
+
+### 6.7 비즈니스 인텔리전스
+
+#### 6.7.1 대시보드 개요
+
+**GET** `/v1/admin/dashboard/overview`
+
+관리자 대시보드 개요를 조회합니다 (관리자/분석가 전용).
+
+**Response (200 OK):**
+```json
+{
+  "overview": {
+    "total_analyses": 1000,
+    "total_customers": 150,
+    "last_analysis": "2026-05-30T10:00:00Z"
+  },
+  "recent_stats": [
+    {
+      "date": "2026-05-30",
+      "total_analyses": 50,
+      "unique_customers": 30,
+      "successful_analyses": 48,
+      "failed_analyses": 2,
+      "avg_score": 72.5,
+      "total_revenue": 15000.0
+    }
+  ]
+}
+```
+
+#### 6.7.2 사용량 리포트
+
+**GET** `/v1/admin/reports/usage`
+
+사용량 리포트를 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| start_date | string | 아니오 | 시작 날짜 (YYYY-MM-DD) |
+| end_date | string | 아니오 | 종료 날짜 (YYYY-MM-DD) |
+| limit | integer | 아니오 | 최대 개수 (기본: 30) |
+
+**Response (200 OK):**
+```json
+{
+  "stats": [
+    {
+      "date": "2026-05-30",
+      "total_analyses": 50,
+      "unique_customers": 30,
+      "successful_analyses": 48,
+      "failed_analyses": 2,
+      "avg_score": 72.5,
+      "total_revenue": 15000.0
+    }
+  ],
+  "total": 30
+}
+```
+
+#### 6.7.3 수익 리포트
+
+**GET** `/v1/admin/reports/revenue`
+
+수익 리포트를 조회합니다 (관리자/분석가 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| start_date | string | 아니오 | 시작 날짜 (YYYY-MM-DD) |
+| end_date | string | 아니오 | 종료 날짜 (YYYY-MM-DD) |
+| limit | integer | 아니오 | 최대 개수 (기본: 30) |
+
+**Response (200 OK):**
+```json
+{
+  "revenue": [
+    {
+      "date": "2026-05-30",
+      "total_revenue": 15000.0
+    }
+  ],
+  "total": 30
+}
+```
+
+---
+
+### 6.8 DB 헬스체크
+
+**GET** `/v1/health/db`
 
 데이터베이스 상태를 확인합니다 (관리자/분석가 전용).
 
@@ -996,6 +1822,375 @@ IP 화이트리스트/블랙리스트 기능.
 
 ---
 
+## 7. 외부 시스템 연동 (Integration)
+
+### 7.1 웹훅 관리
+
+#### 7.1.1 웹훅 등록
+
+**POST** `/v1/webhooks`
+
+웹훅을 등록합니다 (인증 필수).
+
+**Request Body:**
+```json
+{
+  "url": "https://external-server.com/webhook",
+  "events": ["analysis.completed", "analysis.failed"],
+  "secret_key": "optional_secret_key"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "webhook_id": "webhook-uuid",
+  "message": "Webhook created successfully"
+}
+```
+
+#### 7.1.2 웹훅 목록 조회
+
+**GET** `/v1/webhooks`
+
+등록된 웹훅 목록을 조회합니다 (인증 필수).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| active_only | boolean | 아니오 | 활성 웹훅만 조회 (기본: true) |
+
+**Response (200 OK):**
+```json
+{
+  "webhooks": [
+    {
+      "id": "webhook-uuid",
+      "customer_id": "CUST001",
+      "url": "https://external-server.com/webhook",
+      "events": ["analysis.completed"],
+      "secret_key": "optional_secret_key",
+      "is_active": true,
+      "created_at": "2026-05-30T10:00:00Z",
+      "updated_at": "2026-05-30T10:00:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### 7.1.3 웹훅 업데이트
+
+**PUT** `/v1/webhooks/{webhook_id}`
+
+웹훅을 업데이트합니다 (인증 필수).
+
+**Request Body:**
+```json
+{
+  "url": "https://external-server.com/webhook-updated",
+  "events": ["analysis.completed", "analysis.failed"],
+  "is_active": false
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Webhook updated successfully"
+}
+```
+
+#### 7.1.4 웹훅 삭제
+
+**DELETE** `/v1/webhooks/{webhook_id}`
+
+웹훅을 삭제합니다 (인증 필수).
+
+**Response (200 OK):**
+```json
+{
+  "message": "Webhook deleted successfully"
+}
+```
+
+---
+
+### 7.2 콜백 URL 지원
+
+분석 요청 시 콜백 URL을 지정하여 완료 시 결과를 전송받을 수 있습니다.
+
+**POST** `/v1/analysis/jobs`
+
+**Request Body (추가 파라미터):**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| callback_url | string | 아니오 | 완료 시 결과를 전송할 URL |
+| external_reference_id | string | 아니오 | 외부 시스템의 참조 ID |
+
+**콜백 페이로드 예시:**
+```json
+{
+  "job_id": "job-uuid",
+  "status": "succeeded",
+  "external_reference_id": "ORDER-12345",
+  "result": {
+    "overall_score_original": 60,
+    "overall_score_restored": 75,
+    "skin_types": ["지성", "트러블성"]
+  },
+  "finished_at": "2026-05-30T10:00:00Z"
+}
+```
+
+---
+
+### 7.3 외부 시스템 동기화
+
+#### 7.3.1 고객 데이터 동기화
+
+**POST** `/v1/integration/customers/sync`
+
+고객 데이터를 외부 시스템과 동기화합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "source_system": "external-crm",
+  "target_system": "skinlens",
+  "direction": "in"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "sync_log_id": "sync-uuid",
+  "records_count": 150,
+  "status": "completed"
+}
+```
+
+#### 7.3.2 제품 데이터 동기화
+
+**POST** `/v1/integration/products/sync`
+
+제품 데이터를 외부 시스템과 동기화합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "source_system": "external-pim",
+  "target_system": "skinlens",
+  "direction": "in"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "sync_log_id": "sync-uuid",
+  "records_count": 50,
+  "status": "completed"
+}
+```
+
+#### 7.3.3 동기화 로그 조회
+
+**GET** `/v1/integration/sync-logs`
+
+동기화 로그를 조회합니다 (관리자 전용).
+
+**Query Parameters:**
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| sync_type | string | 아니오 | 동기화 타입 필터 (customers, products) |
+| status | string | 아니오 | 상태 필터 (pending, completed, failed) |
+| limit | integer | 아니오 | 최대 개수 (기본: 100) |
+
+**Response (200 OK):**
+```json
+{
+  "logs": [
+    {
+      "id": "sync-uuid",
+      "sync_type": "customers",
+      "direction": "in",
+      "status": "completed",
+      "source_system": "external-crm",
+      "target_system": "skinlens",
+      "records_count": 150,
+      "error_message": null,
+      "started_at": "2026-05-30T10:00:00Z",
+      "completed_at": "2026-05-30T10:05:00Z"
+    }
+  ],
+  "total": 10
+}
+```
+
+---
+
+### 7.4 OAuth/SSO
+
+#### 7.4.1 OAuth 제공자 등록
+
+**POST** `/v1/oauth/providers`
+
+OAuth 제공자를 등록합니다 (관리자 전용).
+
+**Request Body:**
+```json
+{
+  "provider_name": "google",
+  "client_id": "your-client-id",
+  "client_secret": "your-client-secret",
+  "redirect_uri": "https://your-domain.com/oauth/callback",
+  "scopes": ["openid", "profile", "email"]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "provider_id": "provider-uuid",
+  "message": "OAuth provider created successfully"
+}
+```
+
+#### 7.4.2 OAuth 제공자 목록 조회
+
+**GET** `/v1/oauth/providers`
+
+등록된 OAuth 제공자 목록을 조회합니다 (관리자 전용).
+
+**Response (200 OK):**
+```json
+{
+  "providers": [],
+  "total": 0
+}
+```
+
+#### 7.4.3 OAuth 인증 URL 생성
+
+**POST** `/v1/oauth/authorize`
+
+OAuth 인증 URL을 생성합니다 (인증 필수).
+
+**Request Body:**
+```json
+{
+  "provider_name": "google",
+  "customer_id": "CUST001"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "auth_url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...",
+  "state": "state-uuid"
+}
+```
+
+#### 7.4.4 OAuth 토큰 교환
+
+**POST** `/v1/oauth/token`
+
+OAuth 인증 코드를 액세스 토큰으로 교환합니다 (인증 필수).
+
+**Request Body:**
+```json
+{
+  "provider_name": "google",
+  "customer_id": "CUST001",
+  "code": "authorization_code"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "access_token": "access-token-string",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+---
+
+### 7.5 WebSocket 이벤트 스트리밍
+
+**WS** `/v1/ws/analyze/{job_id}`
+
+분석 작업의 진행률을 실시간으로 수신합니다.
+
+**메시지 형식:**
+
+진행률:
+```json
+{
+  "type": "progress",
+  "stage": "restore",
+  "percent": 30,
+  "message": "복원 중..."
+}
+```
+
+완료:
+```json
+{
+  "type": "complete",
+  "result": {
+    "overall_score_original": 60,
+    "overall_score_restored": 75
+  }
+}
+```
+
+에러:
+```json
+{
+  "type": "error",
+  "error": "에러 메시지"
+}
+```
+
+**클라이언트 연결 예시 (JavaScript):**
+```javascript
+const ws = new WebSocket(`ws://server/v1/ws/analyze/${jobId}`);
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'progress') {
+    updateProgressBar(data.percent, data.message);
+  } else if (data.type === 'complete') {
+    showResult(data.result);
+  } else if (data.type === 'error') {
+    showError(data.error);
+  }
+};
+```
+
+---
+
+### 7.6 CORS 설정
+
+서버는 외부 도메인에서의 API 호출을 허용하기 위해 CORS를 지원합니다.
+
+**기본 설정:**
+- `allow_origins`: 환경 변수 `ALLOWED_ORIGINS` 또는 config.json 설정
+- `allow_credentials`: true
+- `allow_methods`: POST, GET, DELETE, PUT, OPTIONS
+- `allow_headers`: Content-Type, Authorization, X-Webhook-Signature
+
+**환경 변수 설정 예시:**
+```bash
+export ALLOWED_ORIGINS=https://external-server.com,https://another-domain.com
+```
+
+---
+
 *작성일: 2026-05-30*  
 *버전: v1.0*  
-*마지막 수정: 2026-05-30*
+*마지막 수정: 2026-05-31*

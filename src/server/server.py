@@ -66,7 +66,7 @@ except ImportError:
     WATCHDOG_AVAILABLE = False
 
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
-from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload
+from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload, integration
 
 # config.json에서 로그 레벨 로드
 _log_level = _load_logging_level()
@@ -279,9 +279,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=False,
-    allow_methods=["POST", "GET", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_credentials=True,
+    allow_methods=["POST", "GET", "DELETE", "PUT", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Webhook-Signature"],
 )
 
 # I18n Middleware
@@ -340,6 +340,7 @@ app.include_router(orders.router)
 app.include_router(websocket.router)
 app.include_router(health.router)
 app.include_router(upload.router)
+app.include_router(integration.router)
 
 
 # ── 직접 실행 ─────────────────────────────────────────────────────────────
