@@ -612,8 +612,8 @@ async def confirm_skin_type(
     
     # 피부 타입 검증 데이터 저장 (DB에 저장)
     try:
-        from src.utils.config import get_db_path_from_env
-        db = ExecutionHistoryDB(get_db_path_from_env())
+        from src.server.deps import get_db
+        db = get_db()
         
         # 감사 로그 기록
         customer_id = current_customer.get("sub") if current_customer else None

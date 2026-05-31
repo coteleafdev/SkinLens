@@ -64,7 +64,8 @@ async def login(
     - 환경변수 기반 인증은 폴백으로 유지 (마이그레이션 기간)
     """
     # [FIX P1] DB 기반 인증 시도
-    db = ExecutionHistoryDB(get_db_path_from_env())
+    from src.server.deps import get_db
+    db = get_db()
     user = db.get_user_by_username(username)
     
     if user:

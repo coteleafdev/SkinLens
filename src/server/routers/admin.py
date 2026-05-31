@@ -152,7 +152,8 @@ async def check_db_health(
     if role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Admin 또는 Analyst 권한이 필요합니다.")
     try:
-        db = ExecutionHistoryDB(get_db_path_from_env())
+        from src.server.deps import get_db
+        db = get_db()
         health = db.check_health()
         return JSONResponse(content=health, status_code=200 if health.get("healthy") else 503)
     except (sqlite3.Error, OSError) as e:  # [FIX P2] 구체적 예외
