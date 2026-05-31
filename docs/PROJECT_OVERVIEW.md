@@ -741,291 +741,37 @@ python -c "from src.config.config_manager import ConfigManager; cm = ConfigManag
 
 ## 4. 아키텍처
 
+자세한 아키텍처 정보는 [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md)를 참조하세요.
+
 ### 4.1 시스템 구성도
 
-```mermaid
-graph TB
-    subgraph "사용자 인터페이스"
-        GUI[GUI 모드<br/>PySide6]
-        CLI[CLI 모드<br/>argparse]
-        API[API 서버<br/>FastAPI]
-        TG[텔레그램<br/>Bot]
-    end
+전체 시스템 아키텍처는 다음과 같습니다:
 
-    subgraph "파이프라인 코어"
-        PC[파이프라인 코어<br/>pipeline_core.py]
-    end
-
-    subgraph "복원 모델"
-        RF[RestoreFormer++]
-        CF[CodeFormer]
-    end
-
-    subgraph "피부 분석"
-        SA[SkinAnalyzerV3<br/>18개 측정항목]
-    end
-
-    subgraph "Gemini AI"
-        GM[Gemini AI<br/>소견 생성]
-    end
-
-    subgraph "실행 이력"
-        EH[SQLite<br/>execution_history.py<br/>실행 이력 + 로그]
-    end
-
-    GUI --> PC
-    CLI --> PC
-    API --> PC
-    TG --> PC
-
-    PC --> RF
-    PC --> CF
-    PC --> SA
-
-    RF --> SA
-    CF --> SA
-
-    SA --> GM
-    PC --> EH
-    SA --> EH
-```
+- **사용자 인터페이스**: GUI (PySide6), CLI (argparse), API 서버 (FastAPI), 텔레그램 Bot
+- **파이프라인 코어**: pipeline_core.py
+- **복원 모델**: RestoreFormer++, CodeFormer
+- **피부 분석**: SkinAnalyzerV3 (18개 측정항목)
+- **Gemini AI**: 소견 생성
+- **실행 이력**: SQLite (execution_history.py)
 
 ### 4.2 데이터 처리 흐름
 
-```mermaid
-flowchart TB
-    subgraph "입력 단계"
-        IN[입력 이미지<br/>파일/URL]
-        SV[설문 JSON<br/>survey]
-        CM[클라이언트 메타<br/>client_meta]
-        CFG[config.json<br/>설정 로드]
-        IJ[input_json<br/>병합]
-    end
+데이터 처리 흐름은 다음과 같습니다:
 
-    subgraph "복원 엔진"
-        RR[RestorerRegistry<br/>레지스트리]
-        CF[CodeFormerRestorer]
-        RF[RestoreFormerRestorer]
-        SEL_RESTorer[복원 백엔드 선택<br/>codeformer_v1<br/>restoreformer_v1]
-    end
+1. **입력 단계**: 이미지, 설문 JSON, 클라이언트 메타, config.json
+2. **복원 엔진**: RestorerRegistry → CodeFormer/RestoreFormer
+3. **분석기 엔진**: AnalyzerRegistry → 6개 분석기
+4. **데이터베이스**: ExecutionHistoryDB, SkinAnalysisDB, ProductTable
+5. **LLM 엔진**: LLMRegistry → GeminiLLM
+6. **처방 시스템**: PrescriptionCalculator, ProductRepository
 
-    subgraph "분석기 엔진"
-        AR[AnalyzerRegistry<br/>레지스트리]
-        PA[PigmentationAnalyzerV1]
-        RA[RednessAnalyzerV1]
-        POA[PoreAnalyzerV1]
-        WA[WrinkleAnalyzerV1]
-        TEA[ToneElasticityAnalyzerV1]
-        AA[AcneAnalyzerV1]
-        SEL_Analyzer[분석기 선택<br/>pigmentation_v1<br/>redness_v1<br/>pore_v1<br/>wrinkle_v1<br/>tone_elasticity_v1<br/>acne_v1]
-    end
+### 4.3 프로젝트 구조
 
-    subgraph "데이터베이스"
-        EH[ExecutionHistoryDB<br/>실행 이력]
-        SH[SkinAnalysisDB<br/>분석 결과]
-        PT[ProductTable<br/>맞춤형 화장품<br/>성분 정보]
-    end
+자세한 프로젝트 구조는 [JSON_IO_FLOW.md](guides/JSON_IO_FLOW.md)를 참조하세요.
 
-    subgraph "LLM 엔진"
-        LR[LLMRegistry<br/>레지스트리]
-        GL[GeminiLLM]
-        SEL_LLM[LLM 선택<br/>gemini_v1]
-        PI[성분 정보<br/>ProductTable 조회]
-    end
+---
 
-    subgraph "처방 시스템"
-        PCAL[PrescriptionCalculator<br/>처방 계산]
-        PRE[ProductRepository<br/>제품 매칭]
-    end
-
-    subgraph "출력"
-        JSON[결과 JSON<br/>metadata 포함]
-        IMG[복원 이미지]
-        LOG[로그 파일]
-        REC[최종 처방전<br/>성분 기반 추천]
-    end
-
-    IN --> CFG
-    SV --> IJ
-    CM --> IJ
-    CFG --> RR
-    CFG --> AR
-    CFG --> LR
-
-    RR --> SEL_RESTorer
-    SEL_RESTorer --> CF
-    SEL_RESTorer --> RF
-    CF --> IMG
-    RF --> IMG
-
-    AR --> SEL_Analyzer
-    SEL_Analyzer --> PA
-    SEL_Analyzer --> RA
-    SEL_Analyzer --> POA
-    SEL_Analyzer --> WA
-    SEL_Analyzer --> TEA
-    SEL_Analyzer --> AA
-
-    IMG --> PA
-    IMG --> RA
-    IMG --> POA
-    IMG --> WA
-    IMG --> TEA
-    IMG --> AA
-
-    PA --> SCORES[18개 측정항목 점수]
-    RA --> SCORES
-    POA --> SCORES
-    WA --> SCORES
-    TEA --> SCORES
-    AA --> SCORES
-
-    SCORES --> LR
-    LR --> SEL_LLM
-    SEL_LLM --> GL
-    GL --> PI
-    PT --> PI
-    PI --> OPINIONS[LLM 소견<br/>+ 처방전]
-    SV --> PI
-
-    SCORES --> PCAL
-    PCAL --> PRE
-    PRE --> OPINIONS
-
-    SCORES --> JSON
-    OPINIONS --> JSON
-    IMG --> JSON
-    CFG --> JSON
-    IJ --> JSON
-
-    OPINIONS --> REC
-    REC --> JSON
-
-    JSON --> SH
-    JSON --> EH
-    EH --> LOG
-```
-
-#### 데이터 흐름 상세 설명
-
-1. **입력 단계**
-   - 사용자가 이미지 파일 또는 URL을 입력
-   - 설문 JSON (`survey`) 수신: 동의 여부, 인구통계학적 정보, 피부 타입, 관심사, 고민사항 등
-   - 클라이언트 메타 (`client_meta`) 수신: 앱 버전, 플랫폼, 디바이스 정보 등
-   - `input_json` 병합: survey + client_meta
-   - `config.json`에서 설정 로드 (분석기, 복원 백엔드, LLM 선택)
-
-2. **복원 엔진**
-   - `RestorerRegistry`에서 복원 백엔드 선택 (`codeformer_v1`, `restoreformer_v1`)
-   - 선택된 복원 백엔드로 이미지 복원 처리
-   - 복원된 이미지 출력
-
-3. **분석기 엔진**
-   - `AnalyzerRegistry`에서 분석기 선택 (6개 분석기)
-   - 원본 및 복원 이미지에 대해 각 분석기 실행
-   - 18개 측정항목 점수 산출
-
-4. **LLM 엔진**
-   - `LLMRegistry`에서 LLM 선택 (`gemini_v1`)
-   - `ProductTable`에서 맞춤형 화장품 성분 정보 조회
-   - 설문(survey)의 피부 고민사항, 관심사와 매칭되는 성분 정보 필터링
-   - 측정항목 점수를 기반으로 LLM 소견 생성
-   - 원본/복원 이미지 비교 소견 생성
-   - **최종 처방전(recommendation) 제공**: 점수, 소견, 성분 정보가 반영된 맞춤형 화장품 추천
-
-5. **처방 시스템**
-   - `PrescriptionCalculator`로 피부 측정 점수 기반 처방전 생성
-   - `create_prescription()` 호출로 완전한 처방전 구조 생성 (base 비율 포함)
-   - `ProductRepository.match_products_by_prescription()`로 처방 항목과 화장품 성분 매칭
-   - 최대 3개 제품 추천
-   - 처방 정보를 JSON으로 변환하여 LLM 프롬프트에 포함
-
-6. **데이터베이스**
-   - `ExecutionHistoryDB`: 실행 이력, 로그 저장
-   - `SkinAnalysisDB`: 분석 결과 JSON 저장
-   - `ProductTable`: 맞춤형 화장품 성분 정보 (제품명, 성분, 효능, 적용 피부 타입 등)
-
-7. **출력**
-   - 결과 JSON (metadata 포함: 사용된 분석기, 복원 백엔드, LLM 정보)
-   - 결과 JSON (input_json 포함: survey + client_meta)
-   - 결과 JSON (최종 처방전 포함: recommendation - 점수/소견/성분 기반 맞춤형 화장품 추천)
-   - 복원 이미지
-   - 로그 파일
-
-#### 메타데이터 구조
-
-결과 JSON에 포함되는 메타데이터:
-
-```json
-{
-  "metadata": {
-    "analyzers": {
-      "pigmentation": "pigmentation_v1",
-      "redness": "redness_v1",
-      "pore": "pore_v1",
-      "wrinkle": "wrinkle_v1",
-      "tone_elasticity": "tone_elasticity_v1",
-      "acne": "acne_v1"
-    },
-    "restorer": {
-      "name": "codeformer_v1",
-      "config": {
-        "repo": null,
-        "fidelity": 1.0,
-        "upscale": 1,
-        "bg_upsampler": "none"
-      }
-    },
-    "llm": {
-      "name": "gemini_v1",
-      "model": "models/gemini-2.5-pro",
-      "config": {
-        "model": "models/gemini-2.5-pro",
-        "timeout_sec": 300,
-        "max_retries": 3
-      }
-    }
-  }
-}
-```
-
-#### config.json 설정 중앙화
-
-`config.json`이 단일 진실 원천(Single Source of Truth)으로 작동합니다:
-
-- **category_count**: 카테고리 개수 (현재 9)
-- **measurement_count**: 측정항목 개수 (현재 18)
-- **orthogonal_count**: 직교 항목 개수 (현재 10)
-- **scoring.measurements**: 18개 측정항목 메타데이터
-- **scoring.categories**: 9개 카테고리 메타데이터
-- **scoring.orthogonal_categories**: 10개 직교 신호 + 가중치
-- **scoring.composition_functions**: 합성 함수 레지스트리
-- **scoring.analyzers**: 7개 분석기 클래스 + 모듈 경로 + enabled 플래그
-- **scoring.measurement_to_analyzer_mapping**: 측정항목-분석기 매핑
-- **scoring.measurement_to_mix_code_mapping**: 측정항목-믹스코드 매핑
-- **scoring.mix_codes**: 믹스 코드 정의 (M01~M10)
-- **_structure_guide**: 추가/변경/삭제 절차 가이드
-
-설정 변경 시 코드 수정 없이 `config.json`만 수정하면 됩니다.
-
-#### 입력 JSON 구조 (input_json)
-
-결과 JSON에 포함되는 입력 데이터 (survey + client_meta):
-
-```json
-{
-  "input_json": {
-    "survey": {
-      "consent_agreed": true,
-      "gender": "female",
-      "age_group": "30s",
-      "ethnicity": "korean",
-      "skin_types": ["combination", "sensitive"],
-      "skin_concerns": ["acne", "red_marks"],
-      "current_products": ["cleanser", "toner", "sunscreen"],
-      "improvement_goals": ["pore_reduction", "tone_brightening"],
-      "want_recommendation": true,
-      "saved_at": "2026-05-15T10:30:00+09:00"
+## 5. 사용법
     },
     "client_meta": {
       "app_version": "1.0.3",
