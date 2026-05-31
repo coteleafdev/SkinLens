@@ -555,12 +555,17 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 
 ### 남은 작업 (별도 대규모 리팩토링)
 
-#### 아키텍처 정리 (P2)
+#### 아키텍처 정리 (P2) - 완료
 
-- **deps.py 설정 중복 해결**: 모듈 레벨 상수(`SECRET_KEY`, `ALLOWED_EXT` 등)와 getter(`get_secret_key()` 등)가 동시에 존재. config 핫리로드를 진짜로 지원하려면 라우터들이 상수 import를 멈추고 getter만 쓰도록 정리 필요
-- **분석기 이중 아키텍처 수렴**: `redness.py`(standalone 함수)와 `strategies/redness_analyzer.py`(BaseAnalyzer 래퍼)가 공존. 단일 진실을 위해 한쪽으로 수렴 필요
-- **백그라운드 태스크 참조 보관**: `server.py`에서 `asyncio.create_task()`로 생성된 태스크를 변수로 잡아두지 않아 GC 대상이 될 수 있음. 모듈/`app.state`에 `set`으로 보관 필요
-- **DB 커넥션 누수 수정**: `_system_health_monitor`가 5분마다 `ExecutionHistoryDB(...)`를 새로 생성하고 닫지 않음
+- **deps.py 설정 중복 해결**: 모듈 레벨 상수(`SECRET_KEY`, `ALLOWED_EXT` 등)와 getter(`get_secret_key()` 등)가 동시에 존재. config 핫리로드를 진짜로 지원하려면 라우터들이 상수 import를 멈추고 getter만 쓰도록 정리 완료
+  - upload.py: MAX_UPLOAD_BYTES → get_max_upload_bytes() getter 사용
+  - jobs.py: MAX_UPLOAD_BYTES, ALLOWED_EXT, SERVER_URL → getter 사용
+- **분석기 이중 아키텍처 수렴**: `redness.py`(standalone 함수)와 `strategies/redness_analyzer.py`(BaseAnalyzer 래퍼)가 공존. 단일 진실을 위해 한쪽으로 수렴 완료
+  - redness.py 알고리즘을 redness_analyzer.py로 통합
+  - 하위 호환성을 위한 analyze_redness() 별칭 함수 유지
+  - redness.py 삭제
+- **백그라운드 태스크 참조 보관**: `server.py`에서 `asyncio.create_task()`로 생성된 태스크를 변수로 잡아두지 않아 GC 대상이 될 수 있음. 모듈/`app.state`에 `set`으로 보관 완료
+- **DB 커넥션 누수 수정**: `_system_health_monitor`가 5분마다 `ExecutionHistoryDB(...)`를 새로 생성하고 닫지 않음. 싱글톤 사용으로 수정 완료
 
 #### Phase 2 안정성 개선 (2026-05-16)
 
