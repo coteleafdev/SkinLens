@@ -1,6 +1,9 @@
-# SkinLens v1.0 - 개발 가이드
+# 개발 가이드 (Development Guide)
 
-> 최종 수정: 2026-05-27
+> **문서 버전:** 1.0.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-05-31  
+> **상태:** 활성
 
 이 문서는 SkinLens v1.0 프로젝트의 개발 표준, 모범 사례, 아키텍처 가이드라인, 코드 품질 체크리스트, 테스트 전략을 설명합니다.
 
@@ -504,5 +507,12 @@ setup_logging(enable_db_logging=True)
 ## 9. 참고 문서
 
 - [Python Import System](https://docs.python.org/3/reference/import.html)
-- [Circular Imports in Python](https://stackoverflow.com/questions/73206603/python-circular-imports)
-- [Lazy Loading in Python](https://docs.python.org/3/library/importlib.html)
+
+---
+
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
+| 0.1.0 | 2026-05-27 | 개발 가이드 초기 작성 | Cascade |
