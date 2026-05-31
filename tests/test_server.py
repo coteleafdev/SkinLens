@@ -1113,6 +1113,85 @@ class TestE2EIntegration:
         data = response.json()
         assert "job_id" in data
 
+    def test_confirm_skin_type(self, client, temp_dir):
+        """피부 타입 사용자 확인 테스트"""
+        # 테스트용 job 메타데이터 생성
+        job_id = "test-confirm-skin-type"
+        job_path = temp_dir / "api_jobs" / job_id
+        job_path.mkdir(parents=True, exist_ok=True)
+        
+        # job meta 파일 생성
+        meta = {
+            "customer_id": "customer123",
+            "status": "completed"
+        }
+        with open(job_path / "meta.json", "w") as f:
+            json.dump(meta, f)
+        
+        # results.json 파일 생성
+        artifacts_path = job_path / "artifacts"
+        artifacts_path.mkdir(exist_ok=True)
+        with open(artifacts_path / "results.json", "w") as f:
+            json.dump({"overall_score": 75.0}, f)
+        
+        # 로그인
+        os.environ["ADMIN_PASSWORD"] = "admin123"
+        login_response = client.post("/v1/auth/login", data={
+            "customer_id": "admin",
+            "password": "admin123"
+        })
+        token = login_response.json()["access_token"]
+        
+        # 피부 타입 확인 요청
+        with patch('src.server.routers.jobs.jobs_root', return_value=temp_dir / "api_jobs"):
+            response = client.post(
+                f"/v1/analysis/jobs/{job_id}/confirm-skin-type",
+                headers={"Authorization": f"Bearer {token}"},
+                data={"skin_types": ["oily", "dry"]}
+            )
+            assert response.status_code == 200
+
+    def test_reclassify_skin_type(self, client, temp_dir):
+        """피부 타입 재감지 테스트"""
+        # 테스트용 job 메타데이터 생성
+        job_id = "test-reclassify-skin-type"
+        job_path = temp_dir / "api_jobs" / job_id
+        job_path.mkdir(parents=True, exist_ok=True)
+        
+        # job meta 파일 생성
+        meta = {
+            "customer_id": "customer123",
+            "status": "completed"
+        }
+        with open(job_path / "meta.json", "w") as f:
+            json.dump(meta, f)
+        
+        # results.json 파일 생성
+        artifacts_path = job_path / "artifacts"
+        artifacts_path.mkdir(exist_ok=True)
+        with open(artifacts_path / "results.json", "w") as f:
+            json.dump({"overall_score": 75.0}, f)
+        
+        # 로그인
+        os.environ["ADMIN_PASSWORD"] = "admin123"
+        login_response = client.post("/v1/auth/login", data={
+            "customer_id": "admin",
+            "password": "admin123"
+        })
+        token = login_response.json()["access_token"]
+        
+        # 피부 타입 재감지 요청
+        with patch('src.server.routers.jobs.jobs_root', return_value=temp_dir / "api_jobs"):
+            with patch('src.scoring.skin_scoring.detect_skin_type') as mock_detect:
+                mock_detect.return_value = {"skin_type": "oily", "confidence": 0.9}
+                
+                response = client.post(
+                    f"/v1/analysis/jobs/{job_id}/reclassify-skin-type",
+                    headers={"Authorization": f"Bearer {token}"},
+                    data={"force_reclassification": "true"}
+                )
+                assert response.status_code == 200
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
