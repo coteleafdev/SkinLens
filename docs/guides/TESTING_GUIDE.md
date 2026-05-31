@@ -1,7 +1,7 @@
 # 테스트 가이드 (Testing Guide)
 
 > **프로젝트:** SkinLens v1.0  
-> **버전:** v3.6  
+> **버전:** v3.7  
 > **작성일:** 2026-05-30  
 > **상태:** 초안
 
@@ -33,6 +33,13 @@ tests/
 ├── test_stats_api.py              # 통계 API 테스트
 ├── test_server.py                 # 서버 통합 테스트 (jobs 라우터 포함)
 ├── test_upload.py                 # 업로드 테스트
+├── test_alert_system.py           # 알림 시스템 단위 테스트
+├── test_prescription_calculator.py # 처방 계산기 단위 테스트
+├── test_pipeline_image_utils.py   # 이미지 유틸리티 단위 테스트
+├── test_pipeline_core.py          # 파이프라인 코어 단위 테스트
+├── test_product_repository.py     # 제품 리포지토리 단위 테스트
+├── test_result_parser.py          # 결과 파서 단위 테스트
+├── test_supabase_sync.py          # Supabase 동기화 단위 테스트
 ├── test_*.py                      # 기타 단위 테스트
 └── fixtures/                      # 테스트 데이터
     ├── images/
@@ -121,6 +128,166 @@ def test_generate_content(mock_model):
     result = provider.generate_content("Test prompt")
     
     assert result == "Test response"
+```
+
+### 2.4 알림 시스템 테스트
+
+```python
+# tests/test_alert_system.py
+import pytest
+from src.notification.alert_system import AlertConfig, AlertSystem
+
+def test_alert_config_defaults():
+    config = AlertConfig()
+    assert config.slack_webhook_url is None
+    assert config.pagerduty_integration_key is None
+    assert config.email_enabled is False
+
+def test_alert_system_initialization():
+    config = AlertConfig(
+        slack_webhook_url="https://hooks.slack.com/test",
+        email_enabled=True
+    )
+    system = AlertSystem(config=config)
+    assert system.config.slack_webhook_url == "https://hooks.slack.com/test"
+```
+
+### 2.5 처방 계산기 테스트
+
+```python
+# tests/test_prescription_calculator.py
+import pytest
+from src.prescription.prescription_calculator import (
+    calculate_skin_assessment_percentage,
+    calculate_skin_assessment_recipe
+)
+
+def test_calculate_percentage_good():
+    percentage = calculate_skin_assessment_percentage(80)
+    assert percentage == 0.0
+
+def test_calculate_percentage_critical():
+    percentage = calculate_skin_assessment_percentage(30)
+    assert percentage == 3.0
+
+def test_calculate_recipe_none_input():
+    recipe = calculate_skin_assessment_recipe(None)
+    assert recipe == {}
+```
+
+### 2.6 이미지 유틸리티 테스트
+
+```python
+# tests/test_pipeline_image_utils.py
+import pytest
+from pathlib import Path
+from src.pipeline.image_utils import _ensure_match_resolution
+
+def test_ensure_match_resolution_same_size(tmp_path):
+    img = Image.new('RGB', (1000, 1000), color='white')
+    input_path = tmp_path / "test.png"
+    img.save(input_path)
+    
+    result_path = _ensure_match_resolution(input_path, (1000, 1000))
+    assert result_path == input_path.resolve()
+```
+
+### 2.7 파이프라인 코어 테스트
+
+```python
+# tests/test_pipeline_core.py
+import pytest
+from src.pipeline.pipeline_core import (
+    format_duration,
+    Restorer,
+    PipelineSettings
+)
+
+def test_format_duration_seconds():
+    assert format_duration(5.5) == "5.50s"
+
+def test_format_duration_minutes():
+    assert format_duration(90) == "1m 30s"
+
+def test_restorer_values():
+    assert Restorer.RESTOREFORMER == "restoreformer"
+    assert Restorer.CODEFORMER == "codeformer"
+```
+
+### 2.8 제품 리포지토리 테스트
+
+```python
+# tests/test_product_repository.py
+import pytest
+from src.db.product_repository import ProductRepository
+
+def test_add_product(repository):
+    product_id = repository.add_product(
+        product_id="TEST001",
+        product_name="Test Product",
+        category="트러블 케어",
+        key_ingredients=["니아시나마이드"],
+        efficacy="Test efficacy"
+    )
+    assert product_id > 0
+
+def test_get_product(repository):
+    repository.add_product(
+        product_id="TEST001",
+        product_name="Test Product",
+        category="트러블 케어",
+        key_ingredients=["니아시나마이드"],
+        efficacy="Test efficacy"
+    )
+    
+    product = repository.get_product("TEST001")
+    assert product is not None
+    assert product["product_name"] == "Test Product"
+```
+
+### 2.9 결과 파서 테스트
+
+```python
+# tests/test_result_parser.py
+import pytest
+from src.db.result_parser import extract_overall_scores
+
+def test_extract_overall_scores_normal():
+    json_result = {
+        "analysis_result": {
+            "overall_score": 75.5,
+            "overall_score_report": 80.0
+        }
+    }
+    
+    orig, rest = extract_overall_scores(json_result)
+    assert orig == 75.5
+    assert rest == 80.0
+```
+
+### 2.10 Supabase 동기화 테스트
+
+```python
+# tests/test_supabase_sync.py
+import pytest
+from src.db.supabase_sync import SupabaseConfig
+
+def test_default_config():
+    config = SupabaseConfig()
+    assert config.url == ""
+    assert config.key == ""
+    assert config.bucket == "skin-images"
+    assert config.table == "skin_analyses"
+    assert config.enabled is True
+
+@patch.dict('os.environ', {
+    'SUPABASE_URL': 'https://test.supabase.co',
+    'SUPABASE_KEY': 'test-key'
+})
+def test_from_env():
+    config = SupabaseConfig.from_env()
+    assert config.url == "https://test.supabase.co"
+    assert config.key == "test-key"
 ```
 
 ---
@@ -361,6 +528,15 @@ pytest tests/test_auth_api.py
 pytest tests/test_admin_api.py
 pytest tests/test_customer_api.py
 
+# 단위 테스트 (새로 추가된 모듈)
+pytest tests/test_alert_system.py
+pytest tests/test_prescription_calculator.py
+pytest tests/test_pipeline_image_utils.py
+pytest tests/test_pipeline_core.py
+pytest tests/test_product_repository.py
+pytest tests/test_result_parser.py
+pytest tests/test_supabase_sync.py
+
 # 특정 테스트 함수
 pytest tests/test_server.py::TestE2EIntegration::test_confirm_skin_type
 pytest tests/test_server.py::TestE2EIntegration::test_reclassify_skin_type
@@ -526,4 +702,4 @@ def test_example():
 
 *작성일: 2026-05-30*  
 *버전: v1.0*  
-*마지막 수정: 2026-05-30*
+*마지막 수정: 2026-05-31*
