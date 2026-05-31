@@ -13,6 +13,7 @@ GET  /v1/stats/summary
 """
 from __future__ import annotations
 
+import sqlite3
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -91,7 +92,7 @@ async def get_analysis_stats(
         if current_customer:
             _audit_ok(db, actor_id, customer_id, ep, "GET", user_role, request)
         return {"stats": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("분석 통계 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, customer_id, ep, "GET", user_role, request, str(e))
@@ -117,7 +118,7 @@ async def get_model_performance(
         if current_customer:
             _audit_ok(db, actor_id, None, ep, "GET", user_role, request)
         return {"performance": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("모델 성능 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, None, ep, "GET", user_role, request, str(e))
@@ -147,7 +148,7 @@ async def get_score_trends(
         if current_customer:
             _audit_ok(db, actor_id, customer_id, ep, "GET", user_role, request)
         return {"trends": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("점수 추이 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, customer_id, ep, "GET", user_role, request, str(e))
@@ -176,7 +177,7 @@ async def get_llm_api_stats(
         if current_customer:
             _audit_ok(db, actor_id, customer_id, ep, "GET", user_role, request)
         return {"stats": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("LLM API 통계 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, customer_id, ep, "GET", user_role, request, str(e))
@@ -201,7 +202,7 @@ async def get_image_metadata(
         if current_customer:
             _audit_ok(db, actor_id, None, ep, "GET", user_role, request)
         return {"metadata": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("이미지 메타데이터 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, None, ep, "GET", user_role, request, str(e))
@@ -228,7 +229,7 @@ async def get_errors(
         if current_customer:
             _audit_ok(db, actor_id, None, ep, "GET", user_role, request)
         return {"errors": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("에러 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, None, ep, "GET", user_role, request, str(e))
@@ -259,7 +260,7 @@ async def resolve_error(
         if current_customer:
             _audit_ok(db, actor_id, None, ep, "POST", user_role, request)
         return {"message": "Error resolved successfully", "error_id": error_id}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("에러 해결 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, None, ep, "POST", user_role, request, str(e))
@@ -284,7 +285,7 @@ async def get_system_health(
         if current_customer:
             _audit_ok(db, actor_id, None, ep, "GET", user_role, request)
         return {"health": filtered, "count": len(filtered)}
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("시스템 헬스 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, None, ep, "GET", user_role, request, str(e))
@@ -319,7 +320,7 @@ async def get_stats_summary(
         if current_customer:
             _audit_ok(db, actor_id, None, ep, "GET", user_role, request)
         return filtered
-    except Exception as e:
+    except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
         log.error("통계 요약 조회 실패: %s", e)
         if current_customer:
             _audit_fail(db, actor_id, None, ep, "GET", user_role, request, str(e))
