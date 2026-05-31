@@ -130,4 +130,4 @@
 |-----------|------|----------|--------|
 | 1.1.0 | 2026-06-01 | v1.0 기준 갱신: 보고서용 항목 17개 → 18개, oily_score, cheek_sagging_score 추가. OUTPUT_KEYS 총 24개 (내부 처리용 6개 포함). 코드 버전 v3.4 → v1.0으로 통일 | Cascade |
 | 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
-| 0.1.0 | 2026-04-29 | Perfect Corp vs COTELEAF 측정항목 비교 문서 초기 작성 (v3.2 기준) | Cascade |
+| 0.1.0 | 2026-04-29 | Perfect Corp vs COTELEAF 측정항목 비교 문서 초기 작성 (v0.9 기준) | Cascade |

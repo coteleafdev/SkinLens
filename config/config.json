@@ -857,7 +857,7 @@
     "dullness_score"
   ],
   "_note_raw_preserve": "레이어 B 직접 복원용 raw 값 보존 항목. [FIX P2-4] 설정 기반 관리로 개선.",
-  "_skin_only_weights_note": "피부 항목만의 종합점수 계산용. 합계 1.000 (measurement_weights에서 복원품질 3개 제외 후 정규화). [FIX BUG-9] v3.6까지 0.786으로 정규화 누락 → 수정됨.",
+  "_skin_only_weights_note": "피부 항목만의 종합점수 계산용. 합계 1.000 (measurement_weights에서 복원품질 3개 제외 후 정규화). [FIX BUG-9] v1.0까지 0.786으로 정규화 누락 → 수정됨.",
   "bp_optimizer": {
     "min_samples": 30,
     "_note": "[FIX DESIGN-6] BPOptimizer.MIN_SAMPLES 기본값. 항목당 GT 샘플 수 임계. 50~100 권장 (데이터 충분 시)."

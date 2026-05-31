@@ -601,7 +601,7 @@ curl http://localhost:8000/v1/admin/audit/summary?days=30 \
 
 #### 매직넘버 외부 주입 (2026-05-16)
 
-- **V3_WEIGHTS**: v3.0 종합점수 가중치를 config.json으로 이동 (10개 항목)
+- **V1_WEIGHTS**: v1.0 종합점수 가중치를 config.json으로 이동 (10개 항목)
 - **이미지 처리 파라미터**: CLAHE, blob_detection, freckle_detection 파라미터를 config.json으로 이동
 - **Breakpoints**: 점수 매핑 브레이크포인트 14개를 config.json으로 이동
   - melasma_score, freckle_score, freckle_score_count, redness_score

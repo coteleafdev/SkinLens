@@ -23,20 +23,20 @@ score_bias_monitor.py — 피부 분석 점수 편향 모니터링 (ML v4.0)
 
   # 분석 결과 기록
   mon.record(image_path="face.jpg", result=analyzer.analyze_all("face.jpg"),
-             brightness=brightness_estimate, analyzer_version="v3.6")
+             brightness=brightness_estimate, analyzer_version="v1.0")
 
   # 편향 리포트 출력
   mon.report()
 
   # 버전 비교
-  mon.compare_versions("v3.5", "v3.6")
+  mon.compare_versions("v0.9", "v1.0")
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CLI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   python score_bias_monitor.py --db monitor.db --report
-  python score_bias_monitor.py --db monitor.db --compare v3.5 v3.6
+  python score_bias_monitor.py --db monitor.db --compare v0.9 v1.0
   python score_bias_monitor.py --db monitor.db --brightness-bias
 """
 from __future__ import annotations
@@ -185,7 +185,7 @@ class ScoreBiasMonitor:
             image_path:       원본 이미지 경로 (기록용, 분석 불필요).
             image_bgr:        BGR 이미지 배열 (ITA 추정에 사용).
             ita:              ITA 각도 직접 지정 (image_bgr 우선).
-            analyzer_version: 버전 문자열 (예: "v3.6").
+            analyzer_version: 버전 문자열 (예: "v1.0").
             face_detected:    얼굴 검출 성공 여부 (False면 폴백 경로).
         """
         if image_bgr is not None:
