@@ -1,6 +1,6 @@
-"""COTELEAF 피부 분석 시스템 v3.4 — 퍼사드 (Facade)
+"""COTELEAF 피부 분석 시스템 v1.0 — 퍼사드 (Facade)
 
-[REFACTOR v3.3 → v3.4] God Module 분해 완료.
+[REFACTOR v1.0] God Module 분해 완료.
   이 파일은 공개 API를 단일 진입점으로 re-export하는 퍼사드만 담당한다.
   실제 구현은 아래 내부 모듈에 있다:
 

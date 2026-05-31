@@ -38,9 +38,9 @@
 | 14 | Radiance | `dullness_score` (칙칙함) | ⚠ | 역방향 측정 (Radiance↑ = dullness↓). 개념 동일. PC: 딥러닝 / COTELEAF: L\*·S·highlight 가중합 |
 | 15 | — | `uneven_tone_score` (톤 불균일) | ➕ | PC 미포함. COTELEAF 고유: strip-norm L\* 분산 + 비대칭 |
 | 16 | Firmness | `jawline_blur_score` (턱선 탄력) | ⚠ | PC: 전체 얼굴 탄력. COTELEAF: 턱선 ROI Canny edge 한정 |
-| 17 | Firmness | `cheek_sagging_score` (볼 처짐) | ➕ | PC 미포함. COTELEAF v3.4 추가: 볼 영역 처짐 측정 |
+| 17 | Firmness | `cheek_sagging_score` (볼 처짐) | ➕ | PC 미포함. COTELEAF v1.0 추가: 볼 영역 처짐 측정 |
 | 18 | Moisture | `skin_type_score` (수분) | ✅ | 동일 개념. PC: 딥러닝 / COTELEAF: HSV 각질 + dry_pixel_ratio |
-| 19 | Oiliness | `oily_score` (피지) | ✅ | PC: 딥러닝 / COTELEAF: HSV S채널 기반 (v3.4 추가) |
+| 19 | Oiliness | `oily_score` (피지) | ✅ | PC: 딥러닝 / COTELEAF: HSV S채널 기반 (v1.0 추가) |
 | 20 | Dark Circles | — | ➖ | COTELEAF 미포함. 눈 밑 다크서클 측정 항목 부재 |
 | 21 | Eyebags | — | ➖ | COTELEAF 미포함. 눈 밑 지방 팽창 측정 항목 부재 |
 | 22 | Tear Trough | — | ➖ | COTELEAF 미포함. 눈물고랑(꺼짐) 측정 항목 부재 |
@@ -51,7 +51,7 @@
 
 ## 2. 카테고리별 커버리지 요약
 
-| 카테고리 | Perfect Corp | COTELEAF v3.4 | 차이 |
+| 카테고리 | Perfect Corp | COTELEAF v1.0 | 차이 |
 |---|---|---|---|
 | **색소** | Spots (통합 1개) | melasma + freckle (2개) | COTELEAF가 기미·주근깨 세분화 |
 | **홍조** | Redness (1개) | redness + post_inflammatory_erythema_score (2개) | COTELEAF가 미만성·염증성 세분화 |
@@ -77,7 +77,7 @@
 | `skin_tone_score` | ITA 각도 기반 피부 톤 | 색조 화장품 추천에 연계 가능. PC는 별도 제품 |
 | `uneven_tone_score` | 톤 불균일 (L\* 분산·비대칭) | 피부 균일도 정밀 측정. PC 미포함 |
 | `post_inflammatory_erythema_score` | 염증후 홍반 세분화 | 미만성·집중형 홍조 구분. 치료 타깃팅 정밀화 |
-| `cheek_sagging_score` | 볼 처짐 (v3.4 추가) | 턱선 외 볼 영역 처짐 측정. PC 미포함 |
+| `cheek_sagging_score` | 볼 처짐 (v1.0 추가) | 턱선 외 볼 영역 처짐 측정. PC 미포함 |
 
 ---
 
@@ -111,7 +111,7 @@
 
 ## 6. 항목 수 비교 요약
 
-| 구분 | Perfect Corp | COTELEAF v3.4 |
+| 구분 | Perfect Corp | COTELEAF v1.0 |
 |---|---|---|
 | 총 항목 수 | **15개** | **18개** |
 | 완전 대응 | — | 9개 ✅ |
@@ -120,7 +120,7 @@
 | Perfect Corp 전용 | 6개 ➖ | — |
 | 미커버 카테고리 | — | 눈 주변(4개) + 피지(1개) |
 
-> **참고:** COTELEAF v3.4 OUTPUT_KEYS에는 총 24개 항목이 있으나, 보고서용 카테고리(_LEGACY_MEASUREMENT_CATEGORIES)에는 18개 항목만 포함됩니다. 추가 항목(6개: pih_score, focal_lesion, noise_score, color_balance_score, detail_score, oily_score)은 내부 처리용으로 사용됩니다.
+> **참고:** COTELEAF v1.0 OUTPUT_KEYS에는 총 24개 항목이 있으나, 보고서용 카테고리(_LEGACY_MEASUREMENT_CATEGORIES)에는 18개 항목만 포함됩니다. 추가 항목(6개: pih_score, focal_lesion, noise_score, color_balance_score, detail_score, oily_score)은 내부 처리용으로 사용됩니다.
 
 ---
 
@@ -128,6 +128,6 @@
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
-| 1.1.0 | 2026-06-01 | v3.4 기준 갱신: 보고서용 항목 17개 → 18개, oily_score, cheek_sagging_score 추가. OUTPUT_KEYS 총 24개 (내부 처리용 6개 포함) | Cascade |
+| 1.1.0 | 2026-06-01 | v1.0 기준 갱신: 보고서용 항목 17개 → 18개, oily_score, cheek_sagging_score 추가. OUTPUT_KEYS 총 24개 (내부 처리용 6개 포함). 코드 버전 v3.4 → v1.0으로 통일 | Cascade |
 | 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
 | 0.1.0 | 2026-04-29 | Perfect Corp vs COTELEAF 측정항목 비교 문서 초기 작성 (v3.2 기준) | Cascade |
