@@ -92,6 +92,13 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/ops/SECURITY_GUIDE.md"
     },
+    "DATA_MODEL": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/db/DATA_MODEL.md"
+    },
 }
 
 
