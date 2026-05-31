@@ -223,6 +223,73 @@ def test_get_job_status():
     assert "status" in response.json()
 ```
 
+### 4.2 전체 시스템 통합 테스트
+
+```python
+# tests/test_full_integration.py
+"""
+전체 시스템 통합 테스트: 앱-엔진서버-웹서버-DB 연동
+
+테스트 시나리오:
+1. 앱 클라이언트가 웹 서버에 이미지 업로드
+2. 웹 서버가 엔진 서버에 분석 요청
+3. 엔진 서버가 이미지 분석 수행
+4. 분석 결과를 DB에 저장
+5. 앱 클라이언트가 결과 조회
+"""
+
+def test_full_flow_image_upload_to_result_retrieval(
+    authenticated_client, admin_auth_headers, temp_dir, test_image
+):
+    """전체 플로우 테스트: 이미지 업로드 → 엔진 서버 분석 → DB 저장 → 결과 조회"""
+    
+    # 1. 앱 클라이언트: 이미지 업로드
+    with open(test_image, "rb") as f:
+        upload_response = authenticated_client.post(
+            "/v1/analysis/jobs",
+            files={"image": ("test.jpg", f, "image/jpeg")},
+            data={
+                "customer_id": "CUST001",
+                "gender": "female",
+                "age": 30,
+                "do_restore": "false"
+            },
+            headers=admin_auth_headers
+        )
+    
+    assert upload_response.status_code == 202
+    job_id = upload_response.json()["job_id"]
+    
+    # 2. 엔진 서버: 백그라운드 분석 수행
+    import time
+    time.sleep(2)  # 분석 완료 대기
+    
+    # 3. 웹 서버: 결과 조회
+    result_response = authenticated_client.get(
+        f"/v1/analysis/jobs/{job_id}",
+        headers=admin_auth_headers
+    )
+    
+    assert result_response.status_code in [200, 202]
+    
+    if result_response.status_code == 200:
+        result_data = result_response.json()
+        assert result_data["status"] in ["completed", "failed"]
+        assert result_data["customer_id"] == "CUST001"
+
+def test_engine_server_analysis_direct(temp_dir, test_image):
+    """엔진 서버 직접 호출 테스트"""
+    from src.scoring.skin_scoring import SkinAnalyzer
+    
+    analyzer = SkinAnalyzer()
+    result = analyzer.analyze_all(str(test_image), debug=False)
+    
+    assert result is not None
+    assert "overall_score" in result
+    assert "measurements" in result
+    assert 0 <= result["overall_score"] <= 100
+```
+
 ---
 
 ## 5. 테스트 실행
