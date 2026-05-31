@@ -46,11 +46,6 @@
 | 22 | Tear Trough | — | ➖ | COTELEAF 미포함. 눈물고랑(꺼짐) 측정 항목 부재 |
 | 23 | Droopy Upper Eyelid | — | ➖ | COTELEAF 미포함. 눈꺼풀 처짐 측정 항목 부재 |
 | 24 | Droopy Lower Eyelid | — | ➖ | COTELEAF 미포함. 아래 눈꺼풀 처짐 측정 항목 부재 |
-| 25 | — | `pih_score` (색소침착과) | ➕ | PC 미포함. COTELEAF v3.4 추가: 광범위 PIH 측정 |
-| 26 | — | `focal_lesion` (국소 병변) | ➕ | PC 미포함. COTELEAF v3.4 추가: 국소 병변 검출 |
-| 27 | — | `noise_score` (이미지 노이즈) | ➕ | PC 미포함. COTELEAF v3.4 추가: 이미지 품질 평가 |
-| 28 | — | `color_balance_score` (색상 밸런스) | ➕ | PC 미포함. COTELEAF v3.4 추가: 색상 균형 평가 |
-| 29 | — | `detail_score` (디테일) | ➕ | PC 미포함. COTELEAF v3.4 추가: 디테일 보존 평가 |
 
 ---
 
@@ -58,18 +53,17 @@
 
 | 카테고리 | Perfect Corp | COTELEAF v3.4 | 차이 |
 |---|---|---|---|
-| **색소** | Spots (통합 1개) | melasma + freckle + pih (3개) | COTELEAF가 기미·주근깨·PIH 세분화 |
+| **색소** | Spots (통합 1개) | melasma + freckle (2개) | COTELEAF가 기미·주근깨 세분화 |
 | **홍조** | Redness (1개) | redness + post_inflammatory_erythema_score (2개) | COTELEAF가 미만성·염증성 세분화 |
-| **트러블·흔적** | Acne (1개) | acne + post_acne_pigment + focal_lesion (3개) | COTELEAF에 자국·국소 병변 추가 |
+| **트러블·흔적** | Acne (1개) | acne + post_acne_pigment (2개) | COTELEAF에 자국(흔적) 항목 추가 |
 | **모공** | Pores (1개) | pore_size + pore_sagging (2개) | COTELEAF가 크기·처짐 세분화 |
 | **주름** | Wrinkles (1개, 세부 분류 제공) | eye + nasolabial + fine_deep (3개) | COTELEAF가 ROI별 독립 측정 |
 | **텍스처** | Texture (1개) | roughness (1개) | 동일 |
 | **톤·밝기** | Radiance (1개) | skin_tone + dullness + uneven_tone (3개) | COTELEAF가 색조·광채·균일도 세분화 |
 | **탄력** | Firmness (1개) | jawline_blur + cheek_sagging (2개) | PC: 전체 얼굴 / COTELEAF: 턱선·볼 세분화 |
 | **수분** | Moisture (1개) | skin_type_score (1개) | 동일 |
-| **피지** | Oiliness (1개) | oily_score (1개) | 동일 (v3.4 추가) |
+| **피지** | Oiliness (1개) | **없음** | ❌ COTELEAF 미커버 (oily_score는 내부 처리용) |
 | **눈 주변** | Dark Circles + Eyebags + Tear Trough + Droopy ×2 (5개) | **없음** | ❌ COTELEAF 미커버 |
-| **이미지 품질** | — | noise + color_balance + detail (3개) | COTELEAF v3.4 추가 |
 | **피부 톤** | (Fitzpatrick 별도 제품) | skin_tone + uneven_tone (2개) | COTELEAF가 ITA·분산 측정 |
 
 ---
@@ -84,11 +78,6 @@
 | `uneven_tone_score` | 톤 불균일 (L\* 분산·비대칭) | 피부 균일도 정밀 측정. PC 미포함 |
 | `post_inflammatory_erythema_score` | 염증후 홍반 세분화 | 미만성·집중형 홍조 구분. 치료 타깃팅 정밀화 |
 | `cheek_sagging_score` | 볼 처짐 (v3.4 추가) | 턱선 외 볼 영역 처짐 측정. PC 미포함 |
-| `pih_score` | 색소침착과 (v3.4 추가) | 광범위 PIH 측정. PC 미포함 |
-| `focal_lesion` | 국소 병변 (v3.4 추가) | 국소 병변 검출. PC 미포함 |
-| `noise_score` | 이미지 노이즈 (v3.4 추가) | 이미지 품질 평가. PC 미포함 |
-| `color_balance_score` | 색상 밸런스 (v3.4 추가) | 색상 균형 평가. PC 미포함 |
-| `detail_score` | 디테일 (v3.4 추가) | 디테일 보존 평가. PC 미포함 |
 
 ---
 
@@ -99,6 +88,7 @@
 | Dark Circles | 눈 밑 다크서클 | 눈 주변 ROI + L\* 명도 기반으로 추가 가능 |
 | Eyebags | 눈 밑 지방 팽창 | 눈 주변 3D 형태 분석 필요 (현재 2D CV 한계) |
 | Tear Trough | 눈물고랑 꺼짐 | 3D depth 또는 shadow 분석 필요 |
+| Oiliness | 피지·유분 | oily_score는 내부 처리용으로 보고서 미포함. 보고서용으로 추가 필요 |
 | Droopy Upper Eyelid | 위 눈꺼풀 처짐 | 랜드마크 기반 눈꺼풀 비율 분석으로 추가 가능 |
 | Droopy Lower Eyelid | 아래 눈꺼풀 처짐 | 동일 |
 
@@ -123,12 +113,14 @@
 
 | 구분 | Perfect Corp | COTELEAF v3.4 |
 |---|---|---|
-| 총 항목 수 | **15개** | **24개** |
-| 완전 대응 | — | 10개 ✅ |
+| 총 항목 수 | **15개** | **18개** |
+| 완전 대응 | — | 9개 ✅ |
 | 부분 대응 | — | 2개 ⚠ |
-| COTELEAF 전용 | — | 12개 ➕ |
-| Perfect Corp 전용 | 5개 ➖ | — |
-| 미커버 카테고리 | — | 눈 주변(4개) |
+| COTELEAF 전용 | — | 5개 ➕ |
+| Perfect Corp 전용 | 6개 ➖ | — |
+| 미커버 카테고리 | — | 눈 주변(4개) + 피지(1개) |
+
+> **참고:** COTELEAF v3.4 OUTPUT_KEYS에는 총 24개 항목이 있으나, 보고서용 카테고리(_LEGACY_MEASUREMENT_CATEGORIES)에는 18개 항목만 포함됩니다. 추가 항목(6개: pih_score, focal_lesion, noise_score, color_balance_score, detail_score, oily_score)은 내부 처리용으로 사용됩니다.
 
 ---
 
@@ -136,6 +128,6 @@
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
-| 1.1.0 | 2026-06-01 | v3.4 기준 갱신: 항목 17개 → 24개, oily_score, cheek_sagging_score, pih_score, focal_lesion, noise_score, color_balance_score, detail_score 추가 | Cascade |
+| 1.1.0 | 2026-06-01 | v3.4 기준 갱신: 보고서용 항목 17개 → 18개, oily_score, cheek_sagging_score 추가. OUTPUT_KEYS 총 24개 (내부 처리용 6개 포함) | Cascade |
 | 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
 | 0.1.0 | 2026-04-29 | Perfect Corp vs COTELEAF 측정항목 비교 문서 초기 작성 (v3.2 기준) | Cascade |
