@@ -628,7 +628,7 @@ Job을 취소합니다.
 ```json
 {
   "status": "healthy",
-  "version": "v3.6",
+  "version": "v1.0",
   "timestamp": "2026-05-30T10:00:00Z"
 }
 ```

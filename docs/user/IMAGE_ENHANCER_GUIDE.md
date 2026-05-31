@@ -11,16 +11,16 @@
 
 `image_enhancer.py`는 AI Skin Image Enhancer의 v3 진입점 파일입니다. `pipeline_core.py`에 구현된 파이프라인 엔진을 통해 Stable Diffusion(SD) img2img와 RestoreFormer++/CodeFormer 복원 모델을 결합하여 피부 이미지를 보정하고, 모공·주름·트러블 후처리를 적용합니다.
 
-### v3.0 주요 변경사항
+### v1.0 주요 변경사항
 
-- **skin_scoring 통합**: 피부 분석 시스템이 v3.0으로 업그레이드되어 이중구조 출력 지원
+- **skin_scoring 통합**: 피부 분석 시스템이 v1.0으로 업그레이드되어 이중구조 출력 지원
   - **레이어A (10개 직교 항목)**: 엔진 정확도용 신호 분해 출력
   - **레이어B (17개 보고서 항목)**: 고객 보고서용 역매핑 출력
 - **GUI/CLI 통합**: 단일 파일에서 GUI(PySide6)와 CLI 모두 지원
 - **복원 백엔드 선택**: RestoreFormer++와 CodeFormer 중 선택 가능
 - **점수 팝업**: 파이프라인 완료 후 원본 vs 결과 점수 비교 팝업 지원
 
-### v3.1 버그수정 / 개선사항
+### v1.1 버그수정 / 개선사항
 
 - **`skin_stat` 반환**: `SkinAnalyzerV3.analyze_all()`이 `skin_stat`과 `ref_stat` 파라미터를 지원해 이상 이미지 기준 상대 측정이 활성화됨
 - **`dullness_score` 정밀 복원**: `raw_measurements` 보존 경로 구현으로 `tone_score×0.88` 근사 대신 원신호 직접 사용
@@ -34,7 +34,7 @@
 - **SD 모델 캐시 lock 개선**: 수 분 소요되는 `from_pretrained`를 lock 범위 밖에서 실행해 GUI freeze 방지
 - **VRAM 해제 강화**: `clear_diffusion_pipeline_cache()` 호출 시 `torch.cuda.empty_cache()` 추가
 
-### v3.2 GUI 버그수정 / 개선사항
+### v1.2 GUI 버그수정 / 개선사항
 
 - **비교 프로세스 고아 방지**: 메인 창 종료 시 `--compare` 서브프로세스도 `kill()` 처리
 - **파이프라인 로그 순서 보장**: 메인 프로세스에 `MergedChannels` 적용 — RF++/CF stderr 출력이 로그창 순서대로 표시
@@ -44,13 +44,13 @@
 - **로그 멀티라인 분리**: 버퍼 단위 수신 시 개행 포함 데이터가 단일 단락으로 뭉치던 문제 해결
 - **비교 프로세스 슬롯 분리**: `finished` 튜플 람다 → `_on_compare_finished` 전용 메서드로 분리
 
-### v3.3 `skin_pore_soften.py` 버그수정 / 개선사항
+### v1.3 `skin_pore_soften.py` 버그수정 / 개선사항
 
 - **`params_from_pipeline` TypeError 크래시 수정**: 기존에는 파라미터를 수동 열거해서 `hf_gamma`, `bilateral_d`, `bilateral_sigma_*`, 피부 마스크 임계값 등 `pipeline_core.PoreSoftenParams`에 없는 필드가 전달되면 `TypeError`가 발생했습니다. `dataclasses.fields()` 기반 자동 동기화로 교체하여 알 수 없는 키를 무시하고, 필드 추가 시 수동 동기화도 불필요해졌습니다.
 - **`trouble_sample_radius=0` 무성 무력화 차단**: `_validate_params`에 `trouble_sample_radius < 1` 및 `trouble_max_radius < 1` 검증 추가. 0이면 환형 샘플 두께가 0이 되어 트러블 완화 전체가 조용히 비활성화되던 문제를 경고 + 최솟값 1 클램프로 차단합니다.
 - **처리 순서 개선 — 모공 先, 톤 後**: `soften_skin_full` 내부 단계 순서를 `[4]톤 균일화 → [5]모공 억제`에서 `[5]모공 억제 → [4]톤 균일화`로 변경. 고주파 L 감쇠 후 저주파 조정이 적용되어 두 효과가 서로를 상쇄하지 않습니다.
 
-### v3.4 듀얼 이미지 Gemini AI 통합 (2026-05-13)
+### v1.4 듀얼 이미지 Gemini AI 통합 (2026-05-13)
 
 - **듀얼 이미지 Gemini AI 통합**: `gemini_skin_report.py`에 듀얼 이미지 모드 구현
   - 원본/복원 이미지를 한 번의 API 호출로 Gemini에 전송
@@ -65,7 +65,7 @@
 - **파이프라인 끝 점수 팝업 비활성화**: GUI 체크박스 숨김 및 기능 비활성화
 - **트러블 진행 로그 개선**: 고정 20분할 진행 카운트에서 경과 시간 기반(10초마다 1회)으로 변경. 성분 수에 무관하게 장시간 처리 시 균일하게 진행 상황을 표시합니다.
 
-### v3.4 GUI/CLI 파라미터 제어 개선
+### v1.4 GUI/CLI 파라미터 제어 개선
 
 - **복원 백엔드 기본값 CodeFormer로 변경**: RestoreFormer++에서 CodeFormer로 기본 복원 백엔드 변경
   - CLI: `--restorer codeformer` 기본
@@ -128,7 +128,7 @@ markdown>=3.5.0
   - SD 모델 모듈 레벨 캐시 (`_sd_cache`)
   - 파이프라인 모드 Enum 분기 (`_PipelineMode`)
 
-- `skin_scoring.py` — 피부 분석 시스템 v3.0
+- `skin_scoring.py` — 피부 분석 시스템 v1.0
   - 레이어A: 10개 직교 항목 (엔진 출력)
   - 레이어B: 17개 보고서 항목 (표시 출력)
   - 이중구조 출력 지원
@@ -188,7 +188,7 @@ python image_enhancer.py
 **기능:** 입력 이미지 선택, 파라미터 설정 (SD strength·복원 백엔드·CodeFormer 파라미터·모공 완화 등), 파이프라인 실행 및 로그 표시, 미리보기, 17항목 비교 다이얼로그
 
 **GUI 레이아웃:**
-- **입출력·모드 탭**: 입력 이미지, 산출 폴더, 동작 모드 체크박스들 (횡 배치, v3.4)
+- **입출력·모드 탭**: 입력 이미지, 산출 폴더, 동작 모드 체크박스들 (횡 배치, v1.4)
 - **얼굴 복원 백엔드 그룹박스**: 복원 백엔드 선택(RF++/CodeFormer), CodeFormer 추가 복원 체크박스, CF 파라미터(fidelity, 업스케일)
   - "입출력·모드" 탭의 "동작 모드" 그룹박스 아래에 별도 배치
   - 횡 배치로 공간 효율적 사용
@@ -198,7 +198,7 @@ python image_enhancer.py
 - **주름 완화 탭**: 주름 완화 파라미터
 - **트러블 완화 탭**: 트러블 완화 파라미터
 
-**GUI 전용 체크박스 (v3.2 추가):**
+**GUI 전용 체크박스 (v1.2 추가):**
 
 | 체크박스 | 기본값 | 대응 CLI 인자 | 설명 |
 |----------|--------|---------------|------|
@@ -208,7 +208,7 @@ python image_enhancer.py
 | text2img만 | — | `--text2img` | 입력 이미지 무시 |
 | RF++ 이후 SD img2img | — | `--sd-after-rf` | |
 | SD만 — RF 생략 | — | `--sd-only` | |
-| 모공·톤 후처리 | ✓ | `--pore-soften` | v3.4에서 GUI에 표시 (기존 숨김 해제) |
+| 모공·톤 후처리 | ✓ | `--pore-soften` | v1.4에서 GUI에 표시 (기존 숨김 해제) |
 | 파이프라인 끝 점수 팝업 | ✓ | `--no-restore-score-popup` | 해제 시 팝업 끄기 |
 | 복원 후 17항목 점수 자동 튜닝 | ✓ | `--no-analyzer-score-tune` | 해제 시 튜닝 끄기 |
 | 주름 완화 적용 | — | `--wrinkle-mix` | 모공 후처리 탭 연동 |
@@ -235,10 +235,10 @@ python image_enhancer.py --cli -i images/origin.png --out-dir ideal_pipeline_out
 |------|--------|------|
 | `-i, --input` | `images/origin.png` | 입력 이미지 경로 |
 | `--out-dir` | `ideal_pipeline_out` | 산출 폴더 |
-| `--restorer` | `codeformer` (v3.4) | 복원 백엔드 (`restoreformer` \| `codeformer`) |
+| `--restorer` | `codeformer` (v1.4) | 복원 백엔드 (`restoreformer` \| `codeformer`) |
 | `--cf-additional` | `True` (config.json) | RF++ 복원 후 CodeFormer 추가 복원 (끄려면 `--no-cf-additional`) |
-| `--cf-fidelity` | `1.0` (v3.4) | CodeFormer fidelity (0=최대보정, 1=원본충실) |
-| `--cf-upscale` | `1` (v3.4) | CodeFormer 업스케일 배수 (1=없음, 2=2배, 4=4배) |
+| `--cf-fidelity` | `1.0` (v1.4) | CodeFormer fidelity (0=최대보정, 1=원본충실) |
+| `--cf-upscale` | `1` (v1.4) | CodeFormer 업스케일 배수 (1=없음, 2=2배, 4=4배) |
 | `--sd-strength` | `0.12` | img2img strength (0~1) |
 | `--pore-soften` | off | 모공 완화 후처리 활성화 |
 | `--no-restore` | — | 복원 생략 |
@@ -248,7 +248,7 @@ python image_enhancer.py --cli -i images/origin.png --out-dir ideal_pipeline_out
 | `--no-restore-score-popup` | — | 점수 팝업 끄기 |
 | `--no-analyzer-score-tune` | — | 자동 튜닝 끄기 |
 
-> **참고:** CodeFormer 관련 파라미터(`--cf-fidelity`, `--cf-upscale`, `--cf-additional`)의 기본값은 v3.4에서 직접 설정됩니다. `--cf-additional`만 `config/config.json`에서 로드됩니다.
+> **참고:** CodeFormer 관련 파라미터(`--cf-fidelity`, `--cf-upscale`, `--cf-additional`)의 기본값은 v1.4에서 직접 설정됩니다. `--cf-additional`만 `config/config.json`에서 로드됩니다.
 
 **필요 패키지:** `requirements.txt` + `scikit-image>=0.21.0`
 
@@ -372,7 +372,7 @@ RestoreFormerPlusPlus/
 | `codeformer_upscale` | `--cf-upscale` | `2` | 업스케일 배수 |
 | `codeformer_bg_upsampler` | — | `"auto"` → 자동 결정 | RealESRGAN 배경 업스케일 여부 |
 
-**`codeformer_bg_upsampler` 자동 결정 (v3.1):**  
+**`codeformer_bg_upsampler` 자동 결정 (v1.1):**  
 `SdFirstSettings.__post_init__` 시 아래 경로를 탐색합니다. 파일이 있으면 `"realesrgan"`, 없으면 `"none"`으로 자동 설정되어 가중치 미설치 환경의 크래시를 방지합니다.
 
 ```
@@ -492,7 +492,7 @@ RestoreFormerPlusPlus/
     inference.py    ← 필수
 ```
 
-### 5.2 CodeFormer (기본, v3.4)
+### 5.2 CodeFormer (기본, v1.4)
 
 ```bash
 python image_enhancer.py --cli -i images/origin.png --restorer codeformer
@@ -501,11 +501,11 @@ python image_enhancer.py --cli -i images/origin.png --restorer codeformer
 | 필드 | CLI 인자 | 기본값 | 설명 |
 |------|----------|--------|------|
 | `codeformer_repo` | `--codeformer-root` | `./CodeFormer` (자동 탐색) | 레포 루트 |
-| `codeformer_fidelity` | `--cf-fidelity` | `1.0` (v3.4) | 0=최대 보정, 1=원본 충실 |
-| `codeformer_upscale` | `--cf-upscale` | `1` (v3.4) | 업스케일 배수 (1=없음, 2=2배, 4=4배) |
+| `codeformer_fidelity` | `--cf-fidelity` | `1.0` (v1.4) | 0=최대 보정, 1=원본 충실 |
+| `codeformer_upscale` | `--cf-upscale` | `1` (v1.4) | 업스케일 배수 (1=없음, 2=2배, 4=4배) |
 | `codeformer_bg_upsampler` | — | `"auto"` → 자동 결정 | RealESRGAN 배경 업스케일 여부 |
 
-**`codeformer_bg_upsampler` 자동 결정 (v3.1):**  
+**`codeformer_bg_upsampler` 자동 결정 (v1.1):**  
 `SdFirstSettings.__post_init__` 시 아래 경로를 탐색합니다. 파일이 있으면 `"realesrgan"`, 없으면 `"none"`으로 자동 설정되어 가중치 미설치 환경의 크래시를 방지합니다.
 
 ```
@@ -541,11 +541,11 @@ CodeFormer/
 | `sd_guidance_img2img` | `5.5` | CFG guidance scale |
 | `sd_num_inference_steps_img2img` | `40` | 추론 스텝 수 |
 | `sd_max_side` | `768` | img2img 입력 긴 변 상한 (px) |
-| `restorer` | `Restorer.CODEFORMER` (v3.4) | 복원 백엔드 Enum |
+| `restorer` | `Restorer.CODEFORMER` (v1.4) | 복원 백엔드 Enum |
 | `restoreformer_repo` | `None` → 자동 탐색 | RestoreFormerPlusPlus 레포 경로 |
 | `codeformer_repo` | `None` → 자동 탐색 | CodeFormer 레포 경로 |
-| `codeformer_fidelity` | `1.0` (v3.4) | CodeFormer fidelity_weight |
-| `codeformer_upscale` | `1` (v3.4) | CodeFormer 업스케일 배수 |
+| `codeformer_fidelity` | `1.0` (v1.4) | CodeFormer fidelity_weight |
+| `codeformer_upscale` | `1` (v1.4) | CodeFormer 업스케일 배수 |
 | `codeformer_bg_upsampler` | `"auto"` → 자동 결정 | RealESRGAN 배경 업스케일 여부 |
 
 **CUDA 자동 폴백:** `sd_device="cuda"`여도 `torch.cuda.is_available()==False`이면 CPU·float32로 자동 폴백합니다. `cfg` 객체는 변경되지 않으므로 GPU 인식 후 재실행 시 다시 CUDA를 사용합니다.
@@ -558,21 +558,21 @@ CodeFormer/
 
 `pipeline_core.PoreSoftenParams` dataclass의 전체 필드입니다. 실제 처리는 `skin_pore_soften.py`의 `soften_skin_full()`에서 수행됩니다.
 
-**내부 처리 파이프라인 순서 (v3.3 기준):**
+**내부 처리 파이프라인 순서 (v1.3 기준):**
 
 | 단계 | 처리 내용 | 비고 |
 |------|-----------|------|
 | [1] 피부 마스크 | YCrCb + HSV 교차 검증, 모폴로지, 페더링 | 항상 실행 |
 | [2] 주름 마스크 | L 분산 + Sobel 교차 검출 | `wrinkle_mix > 0` 시 |
 | [3] 트러블 마스크 | a채널 홍조 + 명암 대비 교차 검출 | `trouble_mix > 0` 시 |
-| **[5] 모공 억제** | L 고주파 감마 억제 | 항상 실행, **v3.3에서 [4] 앞으로 이동** |
-| **[4] 톤 균일화** | L·ab 저주파 블렌딩 | `tone_*_mix > 0` 시, **v3.3에서 [5] 뒤로 이동** |
+| **[5] 모공 억제** | L 고주파 감마 억제 | 항상 실행, **v1.3에서 [4] 앞으로 이동** |
+| **[4] 톤 균일화** | L·ab 저주파 블렌딩 | `tone_*_mix > 0` 시, **v1.3에서 [5] 뒤로 이동** |
 | [6] 주름 완화 | 멀티스케일 가우시안 블렌딩 | `wrinkle_mix > 0` 시 |
 | [7] 트러블 완화 | 연결 성분별 환형 샘플 inpainting | `trouble_mix > 0` 시 |
 | [8] Bilateral | L 채널 직접 처리 | `bilateral_mix > 0` 시 |
 | [9] 최종 합성 | 처리 결과 × 피부마스크 + 원본 × (1-마스크) | 항상 실행 |
 
-> **v3.3 처리 순서 변경:** 단계 번호(4/5)는 로그에 원래 번호로 표시되지만, 실행 순서는 `[5]모공 先 → [4]톤 後`로 변경되었습니다. 모공(고주파 L 감쇠) 완료 후 톤(저주파 조정)을 적용해야 두 효과가 서로를 상쇄하지 않습니다.
+> **v1.3 처리 순서 변경:** 단계 번호(4/5)는 로그에 원래 번호로 표시되지만, 실행 순서는 `[5]모공 先 → [4]톤 後`로 변경되었습니다. 모공(고주파 L 감쇠) 완료 후 톤(저주파 조정)을 적용해야 두 효과가 서로를 상쇄하지 않습니다.
 
 ### 7.1 기본 사용
 
@@ -580,7 +580,7 @@ CodeFormer/
 python image_enhancer.py --cli -i images/origin.png --pore-soften
 ```
 
-**v3.4 동작 변경:**
+**v1.4 동작 변경:**
 - `--pore-soften` 미지정 시 pore_soft 출력 파일이 생성되지 않음
 - 이전 실행의 pore_soft 파일이 있어도 참조하지 않음 (현재 실행 결과만 사용)
 - 체크박스 OFF 시 pore_soft 파일 확인하지 않음 (GUI 미리보기)
@@ -606,7 +606,7 @@ python image_enhancer.py --cli -i images/origin.png --pore-soften
 | `tone_ab_mix` | — | `0.0` | ab채널 색조 보정 혼합 비율 |
 | `tone_ab_sigma` | — | `12.0` | ab채널 색조 보정 sigma |
 
-> **참고:** 위 파라미터들은 튜닝 함수(`--analyzer-score-tune`)에 의해 자동 조정될 수 있습니다. 사용자가 명시적으로 설정한 값은 존중됩니다 (v3.4).
+> **참고:** 위 파라미터들은 튜닝 함수(`--analyzer-score-tune`)에 의해 자동 조정될 수 있습니다. 사용자가 명시적으로 설정한 값은 존중됩니다 (v1.4).
 
 **주름:**
 
@@ -631,7 +631,7 @@ python image_enhancer.py --cli -i images/origin.png --pore-soften
 | `trouble_max_radius` | `--trouble-max-radius` | `16` | 최대 트러블 반경 제한 (px, **최솟값 1**) |
 | `trouble_feather` | `--trouble-feather` | `3.0` | 트러블 마스크 feather |
 
-> **주의 (v3.3):** `trouble_sample_radius=0`으로 설정하면 환형 샘플 두께가 0이 되어 트러블 완화가 전체 무력화됩니다. `_validate_params`에서 자동으로 1로 클램프되고 경고가 출력됩니다.
+> **주의 (v1.3):** `trouble_sample_radius=0`으로 설정하면 환형 샘플 두께가 0이 되어 트러블 완화가 전체 무력화됩니다. `_validate_params`에서 자동으로 1로 클램프되고 경고가 출력됩니다.
 
 **피부 마스크 임계값 (고급):**
 
@@ -649,7 +649,7 @@ python image_enhancer.py --cli -i images/origin.png --pore-soften
 | `morph_open_ksize` | 5 | 마스크 모폴로지 오픈 커널 크기 |
 | `morph_close_ksize` | 15 | 마스크 모폴로지 클로즈 커널 크기 |
 
-> **참고 (v3.3):** `pipeline_core`의 `_run_pore_soften_stage`는 `asdict(params)`로 `params_from_pipeline`을 호출합니다. v3.3에서 `params_from_pipeline`이 `dataclasses.fields()` 기반으로 교체되어 위 피부 마스크 임계값 필드들도 `skin_pore_soften.PoreSoftenParams`에 존재하므로 자동으로 전달됩니다.
+> **참고 (v1.3):** `pipeline_core`의 `_run_pore_soften_stage`는 `asdict(params)`로 `params_from_pipeline`을 호출합니다. v1.3에서 `params_from_pipeline`이 `dataclasses.fields()` 기반으로 교체되어 위 피부 마스크 임계값 필드들도 `skin_pore_soften.PoreSoftenParams`에 존재하므로 자동으로 전달됩니다.
 
 **디버그:**
 
@@ -699,7 +699,7 @@ overall_score_a = result["overall_score"]    # 레이어A 종합
 skin_stat       = result["skin_stat"]        # 피부 통계 (ref_stat 비교용)
 ```
 
-**이상 이미지 기준 상대 측정 (`ref_stat`, v3.1):**
+**이상 이미지 기준 상대 측정 (`ref_stat`, v1.1):**
 ```python
 ideal_result = analyzer.analyze_all("ideal.jpg")
 orig_result  = analyzer.analyze_all(
@@ -721,7 +721,7 @@ orig_result  = analyzer.analyze_all(
 - 탄력: `jawline_blur_score`
 - 수분: `skin_type_score`
 
-> `*dullness_score`: v3.0 직교 분해에서 제거된 항목. v3.1에서 `raw_measurements` 보존 경로를 통해 원신호 직접 복원. 보고서 출력 시 `*직접` 또는 `*v3근사` 표기로 구분됩니다.
+> `*dullness_score`: v1.0 직교 분해에서 제거된 항목. v1.1에서 `raw_measurements` 보존 경로를 통해 원신호 직접 복원. 보고서 출력 시 `*직접` 또는 `*v3근사` 표기로 구분됩니다.
 
 **접근:**
 ```python
@@ -771,13 +771,13 @@ python image_enhancer.py --cli -i images/origin.png                           # 
 python image_enhancer.py --cli -i images/origin.png --no-analyzer-score-tune  # 끄기
 ```
 
-GUI: 입출력·모드 탭 → **「복원 후 17항목 점수 자동 튜닝」** 체크박스로 제어 (v3.2 추가)
+GUI: 입출력·모드 탭 → **「복원 후 17항목 점수 자동 튜닝」** 체크박스로 제어 (v1.2 추가)
 
 **튜닝 내용:**
 - 모공·톤·주름·트러블 후처리 강도 조정
 - 색소 부담이 큰 입력은 홍조·모공늘어짐 보호용 완화 튜닝
-- **분석 실패 안전 처리 (v3.1):** `skin_scoring` import 오류·예외 발생 시 `None` 반환 → 강한 튜닝 적용 방지, 경고 출력 후 건너뜀
-- **사용자 선택 존중 (v3.4):**
+- **분석 실패 안전 처리 (v1.1):** `skin_scoring` import 오류·예외 발생 시 `None` 반환 → 강한 튜닝 적용 방지, 경고 출력 후 건너뜀
+- **사용자 선택 존중 (v1.4):**
   - 튜닝 함수에서 `pore.enabled = True` 강제 설정 제거 (사용자가 명시적으로 끈 경우 유지)
   - 튜닝 함수에서 `codeformer_fidelity` 강제 낮춤 제거 (사용자가 명시적으로 설정한 값 존중)
 
@@ -797,7 +797,7 @@ python image_enhancer.py --cli -i images/origin.png --no-restore-score-popup   #
 
 GUI: 입출력·모드 탭 → **「파이프라인 끝 점수 팝업」** 체크박스로 제어
 
-**v3.1 변경:** 팝업 테이블이 6열(이상1/이상2 중복)에서 4열(항목/원본/복원/차이)로 단순화됩니다. 종합 점수도 레이어B(`overall_score_report`) 기준으로 통일됩니다.
+**v1.1 변경:** 팝업 테이블이 6열(이상1/이상2 중복)에서 4열(항목/원본/복원/차이)로 단순화됩니다. 종합 점수도 레이어B(`overall_score_report`) 기준으로 통일됩니다.
 
 ---
 
@@ -864,7 +864,7 @@ git clone https://github.com/wzhouxiff/RestoreFormerPlusPlus.git
 
 ### 12.5 CodeFormer 크래시 (`realesrgan` 관련)
 
-v3.1에서는 RealESRGAN 가중치 파일 존재 여부를 자동 탐색하여 크래시를 방지합니다. 구버전 사용 중이라면 v3.1로 업데이트하거나, 코드에서 직접 `"none"`으로 강제 설정할 수 있습니다:
+v1.1에서는 RealESRGAN 가중치 파일 존재 여부를 자동 탐색하여 크래시를 방지합니다. 구버전 사용 중이라면 v1.1로 업데이트하거나, 코드에서 직접 `"none"`으로 강제 설정할 수 있습니다:
 
 ```python
 from pipeline_core import SdFirstSettings, Restorer
@@ -881,7 +881,7 @@ CodeFormer/weights/realesrgan/RealESRGAN_x2plus.pth
 
 ### 12.6 CodeFormer 한글 경로 오류
 
-v3.1에서 입력 이미지를 ASCII 파일명(`cf_input.png`)으로 임시 스테이징하여 처리하므로 한글 경로도 정상 동작합니다. 이전 버전에서 오류가 발생했다면 v3.1로 업데이트하세요.
+v1.1에서 입력 이미지를 ASCII 파일명(`cf_input.png`)으로 임시 스테이징하여 처리하므로 한글 경로도 정상 동작합니다. 이전 버전에서 오류가 발생했다면 v1.1로 업데이트하세요.
 
 ### 12.7 `skin_scoring` import 실패
 
@@ -891,7 +891,7 @@ pip install scikit-image>=0.21.0
 
 ### 12.8 `ref_stat` 비교가 작동하지 않는 경우
 
-v3.1 미만 `skin_scoring`를 사용 중입니다. 지원 여부를 확인하세요:
+v1.1 미만 `skin_scoring`를 사용 중입니다. 지원 여부를 확인하세요:
 
 ```python
 import inspect, skin_scoring
@@ -901,31 +901,31 @@ print("ref_stat 지원:", "ref_stat" in params)
 
 ### 12.9 복원 점수 팝업에 이상1·이상2 열이 표시되는 경우
 
-v3.0 이전 `analyzer_compare_gui.py`를 사용 중입니다. v3.1에서는 원본/복원/차이 4열로 단순화됩니다.
+v1.0 이전 `analyzer_compare_gui.py`를 사용 중입니다. v1.1에서는 원본/복원/차이 4열로 단순화됩니다.
 
 ### 12.10 GUI 로그창에서 출력 순서가 뒤섞이는 경우
 
-v3.1 이전 `skin_analysis_gui.py`에서는 메인 파이프라인 프로세스의 stdout과 stderr를 별도 슬롯으로 처리해 버퍼 타이밍 차이로 로그 순서가 뒤섞였습니다. v3.2에서 `MergedChannels`로 통합되어 해결됩니다.
+v1.1 이전 `skin_analysis_gui.py`에서는 메인 파이프라인 프로세스의 stdout과 stderr를 별도 슬롯으로 처리해 버퍼 타이밍 차이로 로그 순서가 뒤섞였습니다. v1.2에서 `MergedChannels`로 통합되어 해결됩니다.
 
 ### 12.11 GUI 종료 후 비교 다이얼로그 프로세스가 잔존하는 경우
 
-v3.1 이전 `skin_analysis_gui.py`에서는 창 닫기 시 `--compare` 서브프로세스를 kill하지 않아 고아 프로세스가 남는 문제가 있었습니다. v3.2에서 `closeEvent`에서 `_compare_process.kill()`을 호출하도록 수정되어 해결됩니다.
+v1.1 이전 `skin_analysis_gui.py`에서는 창 닫기 시 `--compare` 서브프로세스를 kill하지 않아 고아 프로세스가 남는 문제가 있었습니다. v1.2에서 `closeEvent`에서 `_compare_process.kill()`을 호출하도록 수정되어 해결됩니다.
 
 ### 12.12 GUI에서 자동 튜닝을 끄고 싶은 경우
 
-v3.1 이전에는 CLI만 가능했습니다. v3.2에서 입출력·모드 탭의 **「복원 후 17항목 점수 자동 튜닝」** 체크박스를 해제하면 됩니다.
+v1.1 이전에는 CLI만 가능했습니다. v1.2에서 입출력·모드 탭의 **「복원 후 17항목 점수 자동 튜닝」** 체크박스를 해제하면 됩니다.
 
 ### 12.13 모공 완화 실행 시 `TypeError: unexpected keyword argument` 오류
 
-v3.2 이전 `skin_pore_soften.py`의 `params_from_pipeline`은 파라미터를 수동 열거해서 `hf_gamma`, `bilateral_d`, `bilateral_sigma_*`, 피부 마스크 임계값(`cr_min` 등) 등이 전달되면 TypeError가 발생했습니다. v3.3에서 `dataclasses.fields()` 기반으로 교체되어 해결됩니다.
+v1.2 이전 `skin_pore_soften.py`의 `params_from_pipeline`은 파라미터를 수동 열거해서 `hf_gamma`, `bilateral_d`, `bilateral_sigma_*`, 피부 마스크 임계값(`cr_min` 등) 등이 전달되면 TypeError가 발생했습니다. v1.3에서 `dataclasses.fields()` 기반으로 교체되어 해결됩니다.
 
 ### 12.14 트러블 완화가 적용되지 않는 경우
 
-`trouble_mix > 0`인데도 아무 효과가 없다면 `trouble_sample_radius=0`으로 설정된 경우일 수 있습니다. v3.3에서는 자동으로 1로 클램프되고 경고가 출력됩니다. 로그에서 `trouble_sample_radius` 관련 경고 메시지를 확인하세요.
+`trouble_mix > 0`인데도 아무 효과가 없다면 `trouble_sample_radius=0`으로 설정된 경우일 수 있습니다. v1.3에서는 자동으로 1로 클램프되고 경고가 출력됩니다. 로그에서 `trouble_sample_radius` 관련 경고 메시지를 확인하세요.
 
 ### 12.15 톤 균일화와 모공 억제를 동시에 사용할 때 효과가 약한 경우
 
-v3.2 이전에는 `[4]톤 균일화 → [5]모공 억제` 순서로 처리되어 톤 조정이 모공 억제에 의해 부분 상쇄됐습니다. v3.3에서 순서가 `[5]모공 억제 → [4]톤 균일화`로 변경되어 두 효과가 독립적으로 적용됩니다.
+v1.2 이전에는 `[4]톤 균일화 → [5]모공 억제` 순서로 처리되어 톤 조정이 모공 억제에 의해 부분 상쇄됐습니다. v1.3에서 순서가 `[5]모공 억제 → [4]톤 균일화`로 변경되어 두 효과가 독립적으로 적용됩니다.
 
 ---
 
@@ -946,5 +946,5 @@ python image_enhancer.py --compare orig.png ideal.png  # 측정항목 비교 다
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
-| 1.0.0 | 2026-05-31 | 초기 버전 (v3.5에서 마이그레이션) | Cascade |
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
 | 0.5.0 | 2026-05-13 | 이미지 인핸서 가이드 초기 작성 | Cascade |

@@ -94,7 +94,7 @@ flowchart TD
     H --> I
 ```
 
-### 4.2 기본값 (v3.4)
+### 4.2 기본값 (v1.4)
 
 - **복원 백엔드**: CodeFormer (기본)
 - **fidelity**: 1.0 (원본 충실)
@@ -227,7 +227,7 @@ flowchart TD
     F --> G
 ```
 
-### 8.2 후처리 순서 (v3.3)
+### 8.2 후처리 순서 (v1.3)
 
 ```mermaid
 flowchart TD
@@ -255,9 +255,9 @@ flowchart TD
     P --> Q[후처리 완료]
 ```
 
-> **v3.3 변경:** 모공 억제 → 톤 균일화 순서로 변경 (고주파 감쇠 후 저주파 조정)
+> **v1.3 변경:** 모공 억제 → 톤 균일화 순서로 변경 (고주파 감쇠 후 저주파 조정)
 
-### 8.3 파라미터 튜닝 (v3.4)
+### 8.3 파라미터 튜닝 (v1.4)
 
 ```mermaid
 flowchart TD
@@ -280,7 +280,7 @@ flowchart TD
 - `pore.bilateral_mix`: 0.0 (뿌옇음 방지)
 - `pore.sigma_low`: 최소 2.0
 
-**v3.4 사용자 선택 존중:**
+**v1.4 사용자 선택 존중:**
 - `pore.enabled`: 사용자 설정 존중 (강제 True 제거)
 - `codeformer_fidelity`: 사용자 설정 존중 (강제 낮춤 제거)
 
@@ -350,7 +350,7 @@ flowchart TD
 | `sd_only` | 1 | `00_sd_generated_{stem}.png` |
 | `pore_soften` | 1 | `02_pore_soft_{stem}.png` |
 
-**v3.4 중요:** `res.pore_softened`가 None이면 파일 시스템의 pore_soft 파일도 참조하지 않음 (이전 실행 파일 참조 방지)
+**v1.4 중요:** `res.pore_softened`가 None이면 파일 시스템의 pore_soft 파일도 참조하지 않음 (이전 실행 파일 참조 방지)
 
 ---
 
@@ -370,7 +370,7 @@ flowchart TD
     F --> G
 ```
 
-### 11.2 점수 팝업 내용 (v3.1)
+### 11.2 점수 팝업 내용 (v1.1)
 
 - 4열 테이블: 항목 / 원본 / 결과 / 차이
 - 레이어B 기준 종합 점수 (`overall_score_report`)
@@ -651,7 +651,7 @@ flowchart TD
 }
 ```
 
-> **참고:** `--base-url`을 지정하면 `input_image_url`과 `restored_image_url`이 추가됩니다. base64 인코딩은 기본적으로 비활성화되어 있으며, `--include-base64`를 사용하면 활성화됩니다. 서버 환경에서는 URL 기반을 권장합니다. v3.4부터 `reference_stat`은 `null`로 고정됩니다 (독립적 측정). v3.4부터 내부 복원 효과 점수(noise_score, color_balance_score, contrast_score, brightness_balance_score)가 추가되어 종합 점수 계산에 포함되지만, 고객에게는 표시되지 않습니다.
+> **참고:** `--base-url`을 지정하면 `input_image_url`과 `restored_image_url`이 추가됩니다. base64 인코딩은 기본적으로 비활성화되어 있으며, `--include-base64`를 사용하면 활성화됩니다. 서버 환경에서는 URL 기반을 권장합니다. v1.4부터 `reference_stat`은 `null`로 고정됩니다 (독립적 측정). v1.4부터 내부 복원 효과 점수(noise_score, color_balance_score, contrast_score, brightness_balance_score)가 추가되어 종합 점수 계산에 포함되지만, 고객에게는 표시되지 않습니다.
 
 ### 13.5 사용 예시
 
@@ -733,15 +733,15 @@ python skin_analysis_cli.py -i images/origin.png -o analysis_output --no-score-s
 | `target_score_increase_min` | 14.0 | 복원 점수가 원본보다 높을 때 최소 증가 점수 |
 | `target_score_increase_max` | 16.0 | 복원 점수가 원본보다 높을 때 최대 증가 점수 |
 | `max_score_limit` | 90.0 | 최대 점수 제한 |
-| `min_score_increase_when_lower` | 0.0 | 복원 점수가 원본보다 낮을 때 최소 증가 점수 (v3.4 기본값 0.0) |
+| `min_score_increase_when_lower` | 0.0 | 복원 점수가 원본보다 낮을 때 최소 증가 점수 (v1.4 기본값 0.0) |
 
 **동작:**
 - 복원 점수 < 원본 점수: 원본 점수 + `min_score_increase_when_lower`로 조정
 - 복원 점수 > 원본 점수: 원본 점수 + `target_score_increase_min`~`max` 사이 랜덤값으로 조정
 
-### 13.8 점수 측정 방식 변경 (v3.4)
+### 13.8 점수 측정 방식 변경 (v1.4)
 
-**v3.4 변경:** ref_stat 사용 제거 (CLI + GUI)
+**v1.4 변경:** ref_stat 사용 제거 (CLI + GUI)
 
 - **기존:** 복원 이미지의 통계(`ref_stat`)를 기준으로 원본을 분석
   - 문제: 복원 이미지가 깨끗해지면 기준값도 깨끗해져 원본의 절대적 문제량이 제대로 측정되지 않음
@@ -753,7 +753,7 @@ python skin_analysis_cli.py -i images/origin.png -o analysis_output --no-score-s
   - 효과: 복원 효과가 점수에 정확하게 반영됨
   - 영향: CLI + GUI 점수 팝업 모두 적용
 
-**v3.4 변경:** actual_ranges 범위 확장
+**v1.4 변경:** actual_ranges 범위 확장
 
 - **기존:** 항목별 실질 범위가 좁게 설정 (예: melasma_score [55.0, 95.0])
   - 문제: 범위 밖의 값은 무조건 10점 또는 90점으로 고정되어 점수 차이가 축소됨
@@ -763,7 +763,7 @@ python skin_analysis_cli.py -i images/origin.png -o analysis_output --no-score-s
   - 장점: 점수 차이가 더 넓은 범위에서 매핑되어 변별력 향상
   - 효과: 복원 전후 점수 차이가 더 정확하게 반영됨
 
-**v3.4 변경:** 복원 효과 점수 추가
+**v1.4 변경:** 복원 효과 점수 추가
 
 - **기존:** 점수 측정이 피부 문제 절대량(색소, 여드름, 주름 등)에 집중
   - 문제: 복원 알고리즘이 개선하는 부분(선명도, 노이즈, 색상)이 점수에 반영되지 않음
@@ -779,13 +779,13 @@ python skin_analysis_cli.py -i images/origin.png -o analysis_output --no-score-s
   - 가중치: 총 0.30 (콘트라스트, 밝기 균형에 높은 가중치 부여)
   - **참고:** 이 4개 항목은 내부적으로만 사용되며 종합 점수 계산에 포함되지만, 고객에게는 표시되지 않음
 
-### 13.10 image_enhancer_v3.py와의 차이점
+### 13.10 image_enhancer_v1.py와의 차이점
 
-| 특징 | image_enhancer_v3.py | skin_analysis_cli.py |
+| 특징 | image_enhancer_v1.py | skin_analysis_cli.py |
 |------|---------------------|---------------------|
 | 목적 | 이미지 보정 파이프라인 | 피부 분석 파이프라인 |
 | 출력 | 이미지 파일 + 점수 팝업 | JSON 형식 분석 결과 |
-| 복원 기준 | 원본 | 독립적 측정 (v3.4) |
+| 복원 기준 | 원본 | 독립적 측정 (v1.4) |
 | 서버 환경 | 가능하지만 GUI 의존성 있음 | 완전한 CLI (서버 친화적) |
 | 점수 안전장치 | 지원 | 지원 (기본 켬) |
 | 이미지 처리 | 파일 경로만 | URL 기반 (서버 환경용) + base64 선택적 |
@@ -826,7 +826,7 @@ python skin_analysis_cli.py --help
 
 ## 15. 요약
 
-### 15.1 v3.4 주요 변경사항
+### 15.1 v1.4 주요 변경사항
 
 1. **복원 백엔드 기본값 CodeFormer로 변경**
 2. **CodeFormer fidelity 기본값 1.0으로 변경** (원본 충실)
@@ -870,6 +870,6 @@ ideal_pipeline_out/
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
-| 1.0.0 | 2026-05-31 | 초기 버전 (v3.4에서 마이그레이션) | Cascade |
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
 | 0.4.0 | 2026-05-24 | 파이프라인 알고리즘 문서 갱신 | Cascade |
 | 0.3.0 | 2026-04-30 | 파이프라인 알고리즘 문서 초기 작성 | Cascade |
