@@ -17,16 +17,23 @@ SkinLens 테스트 작성 및 실행 방법입니다.
 
 ```
 tests/
-├── unit/              # 단위 테스트
-│   ├── test_analyzer.py
-│   ├── test_restorer.py
-│   └── test_llm.py
-├── integration/       # 통합 테스트
-│   ├── test_pipeline.py
-│   └── test_db.py
-├── e2e/              # E2E 테스트
-│   └── test_server.py
-└── fixtures/          # 테스트 데이터
+├── test_analyzers.py              # 분석기 단위 테스트
+├── test_app_features_api.py       # 앱 기능 API 테스트 (피부 일기, 목표, 업적, 구독, 챌린지)
+├── test_auth_api.py               # 인증 API 테스트
+├── test_admin_api.py              # 관리자 API 테스트
+├── test_customer_api.py           # 고객 API 테스트
+├── test_db_api.py                 # 데이터베이스 API 테스트
+├── test_enhancements_api.py       # 향상 기능 API 테스트
+├── test_health_api.py             # 헬스 체크 API 테스트
+├── test_integration_api.py        # 통합 API 테스트
+├── test_logs_api.py               # 로그 API 테스트
+├── test_orders_api.py             # 주문 API 테스트
+├── test_repository_llm_api.py     # LLM 저장소 API 테스트
+├── test_stats_api.py              # 통계 API 테스트
+├── test_server.py                 # 서버 통합 테스트 (jobs 라우터 포함)
+├── test_upload.py                 # 업로드 테스트
+├── test_*.py                      # 기타 단위 테스트
+└── fixtures/                      # 테스트 데이터
     ├── images/
     └── json/
 ```
@@ -235,17 +242,20 @@ pytest --cov=src --cov-report=html
 ### 5.2 특정 테스트
 
 ```bash
-# 단위 테스트만
-pytest tests/unit/
+# 앱 기능 API 테스트
+pytest tests/test_app_features_api.py
 
-# 통합 테스트만
-pytest tests/integration/
+# 서버 통합 테스트
+pytest tests/test_server.py
 
-# 특정 파일
-pytest tests/unit/test_analyzer.py
+# 특정 API 테스트
+pytest tests/test_auth_api.py
+pytest tests/test_admin_api.py
+pytest tests/test_customer_api.py
 
-# 특정 함수
-pytest tests/unit/test_analyzer.py::test_analyze_all
+# 특정 테스트 함수
+pytest tests/test_server.py::TestE2EIntegration::test_confirm_skin_type
+pytest tests/test_server.py::TestE2EIntegration::test_reclassify_skin_type
 ```
 
 ### 5.3 병렬 실행
