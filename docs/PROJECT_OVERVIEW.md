@@ -1,5 +1,8 @@
 # SkinLens v1.0 - 프로젝트 개요
 
+> **버전:** v3.7
+> **수정일:** 2026-05-31
+
 ## 문서 목적
 
 이 문서는 SkinLens v1.0 프로젝트의 전체적인 개요를 제공합니다. 프로젝트의 비전, 아키텍처, 기술 스택, 사용법, 배포 방법 등을 포괄적으로 설명합니다.
@@ -24,6 +27,7 @@ SkinLens v1.0은 AI 기반 피부 분석 및 복원 파이프라인 프로젝트
 - **실시간 분석**: 빠른 처리 속도로 실시간 피부 분석 제공
 - **확장성**: 모듈화된 아키텍처로 쉬운 기능 확장 가능
 - **운영 효율성**: 실행 이력 추적, 로그 DB, 자동 백업 등 운영 자동화
+- **외부 시스템 연동**: 웹훅, 콜백 URL, OAuth, WebSocket을 통한 유연한 연동
 
 ---
 
@@ -281,6 +285,30 @@ result = restorer.restore("input.jpg", "output.jpg")
 **역할**:
 - admin: 모든 권한
 - customer: 자신의 데이터만 접근
+
+---
+
+### 3.8 외부 시스템 연동
+
+**개요**: 웹훅, 콜백 URL, OAuth, WebSocket을 통한 외부 시스템 연동을 제공합니다.
+
+**특징**:
+- 웹훅 관리 (등록, 조회, 수정, 삭제)
+- 콜백 URL 지원 (분석 완료 시 알림)
+- OAuth/SSO 연동 (Google, 등)
+- 데이터 동기화 (고객, 제품)
+- WebSocket 실시간 진행률 전송
+- CORS 설정 (외부 도메인 접근 허용)
+
+**지원 연동 방식**:
+- 웹훅: 이벤트 기반 알림
+- 콜백 URL: 비동기 작업 완료 알림
+- 데이터 동기화: 고객/제품 데이터 동기화
+- OAuth/SSO: 통합 인증
+- WebSocket: 실시간 진행률 전송
+- REST API: 표준 HTTP 기반 통신
+
+**자세한 가이드**: [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md)
 
 ---
 
@@ -1244,6 +1272,21 @@ chmod +x deploy.sh
 - 데이터베이스 스키마 확장 (user_preferences 테이블)
 - 언어 설정 API 엔드포인트 구현 (/v1/customer/my/preferences)
 - 테스트 완료 (11개 테스트 케이스 통과)
+
+### v3.7 주요 변경 사항 상세
+
+**외부 시스템 연동 기능 구현**
+- 데이터베이스 스키마 확장 (webhooks, external_sync_logs, oauth_providers, oauth_tokens 테이블)
+- 웹훅 관리 API 구현 (/v1/webhooks - CRUD)
+- 콜백 URL 지원 (분석 완료 시 알림)
+- 데이터 동기화 API 구현 (/v1/integration/customers/sync, /v1/integration/products/sync)
+- OAuth/SSO 연동 API 구현 (/v1/oauth/providers, /v1/oauth/authorize, /v1/oauth/token)
+- WebSocket 실시간 진행률 전송 (/v1/ws/analyze/{job_id})
+- CORS 설정 (외부 도메인 접근 허용)
+- 외부 시스템 연동 가이드 작성 (EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md)
+- 아키텍처 가이드 보완 (전체 시스템 아키텍처 섹션 추가)
+- API 레퍼런스 보완 (API 아키텍처 개요 추가)
+- 연동 API 테스트 완료 (webhook, sync, OAuth)
 
 ### v3.6 주요 변경 사항 상세
 

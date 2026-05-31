@@ -17,6 +17,8 @@
 docs/
 ├── README.md                           # 이 파일 (문서 목록)
 ├── PROJECT_OVERVIEW.md                 # 프로젝트 전체 개요
+├── EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md # 외부 시스템 연동 가이드
+├── INTEGRATION_TEST_GUIDE.md          # 연동 테스트 가이드
 ├── api/                                # API 문서 (1개)
 ├── db/                                 # 데이터베이스 문서 (2개)
 ├── design/                             # 디자인 문서 (23개)
@@ -36,6 +38,8 @@ docs/
 | 파일 | 설명 | 대상 |
 |------|------|------|
 | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | 프로젝트 전체 개요, 아키텍처, 기능 설명 | 모든 사용자 |
+| [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md) | 외부 시스템 연동 가이드 (웹훅, 콜백, OAuth, WebSocket) | 개발자, DevOps |
+| [INTEGRATION_TEST_GUIDE.md](INTEGRATION_TEST_GUIDE.md) | 연동 테스트 가이드 | 개발자, QA |
 
 ### 🔌 API 문서 (api/)
 
@@ -147,12 +151,14 @@ docs/
 2. [DEVELOPMENT_GUIDE.md](guides/DEVELOPMENT_GUIDE.md) - 개발 환경 설정
 3. [ARCHITECTURE_GUIDE.md](guides/ARCHITECTURE_GUIDE.md) - 아키텍처 이해
 4. [API_REFERENCE.md](api/API_REFERENCE.md) - API 사용 방법
+5. [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md) - 외부 시스템 연동
 
 #### 🔧 DevOps 엔지니어
 1. [DEPLOYMENT_GUIDE.md](ops/DEPLOYMENT_GUIDE.md) - 배포 방법
 2. [LINUX_DOCKER_DEPLOYMENT.md](ops/LINUX_DOCKER_DEPLOYMENT.md) - Docker 상세 배포
 3. [SECURITY_GUIDE.md](ops/SECURITY_GUIDE.md) - 보안 설정
 4. [TROUBLESHOOTING_GUIDE.md](ops/TROUBLESHOOTING_GUIDE.md) - 문제 해결
+5. [EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md](EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md) - 외부 시스템 연동
 
 #### 🎨 기능 설계자
 1. [DESIGN_REFERENCE_GUIDED_SCORING.md](design/DESIGN_REFERENCE_GUIDED_SCORING.md) - 점수 시스템
@@ -271,5 +277,5 @@ docs/
 
 ---
 
-**마지막 업데이트**: 2026-05-30
+**마지막 업데이트**: 2026-05-31
 **현재 개발 환경**: Python 3.12
