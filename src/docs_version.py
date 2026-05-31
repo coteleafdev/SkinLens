@@ -197,6 +197,20 @@ DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
         "status": "active",
         "path": "docs/guides/WEIGHT_SYSTEM_DOCUMENTATION.md"
     },
+    "IMPROVEMENT_PLAN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/project/IMPROVEMENT_PLAN.md"
+    },
+    "CODE_REVIEW_HISTORY": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/project/CODE_REVIEW_HISTORY.md"
+    },
 }
 
 
