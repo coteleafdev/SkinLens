@@ -1137,9 +1137,10 @@ class TestE2EIntegration:
         # 로그인
         os.environ["ADMIN_PASSWORD"] = "admin123"
         login_response = client.post("/v1/auth/login", data={
-            "customer_id": "admin",
+            "username": "admin",
             "password": "admin123"
         })
+        assert login_response.status_code == 200
         token = login_response.json()["access_token"]
         
         # 피부 타입 확인 요청
@@ -1175,9 +1176,10 @@ class TestE2EIntegration:
         # 로그인
         os.environ["ADMIN_PASSWORD"] = "admin123"
         login_response = client.post("/v1/auth/login", data={
-            "customer_id": "admin",
+            "username": "admin",
             "password": "admin123"
         })
+        assert login_response.status_code == 200
         token = login_response.json()["access_token"]
         
         # 피부 타입 재감지 요청

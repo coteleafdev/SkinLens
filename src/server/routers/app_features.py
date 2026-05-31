@@ -13,12 +13,22 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from src.server.deps import log, get_db
+from src.server.deps import log
 from src.db.skin_analysis_db import SkinAnalysisDB
+from src.utils.config import load_config
 
 log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/v1/app", tags=["app-features"])
+
+
+# ── 의존성 ───────────────────────────────────────────────────────────────────
+
+def get_db():
+    """SkinAnalysisDB 인스턴스 반환"""
+    config = load_config()
+    db_path = config.get("database", {}).get("sqlite_path", "results/skin_analysis.db")
+    return SkinAnalysisDB(db_path=db_path)
 
 
 # ── Pydantic 모델 ─────────────────────────────────────────────────────────────
