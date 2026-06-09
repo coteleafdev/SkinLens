@@ -384,11 +384,36 @@ Authorization: Bearer {jwt_token}
       "redness_score": 45.0
     },
     "prescription": {
-      "M08": 1.3,
-      "M14": 1.5,
-      "M12": 0.8,
-      "M13": 0.8,
-      "M11": 2.3
+      "base": {
+        "percentage": 95.6
+      },
+      "assessment": {
+        "M08": {
+          "percentage": 1.3,
+          "name": "미백케어믹스",
+          "category": "색소"
+        },
+        "M14": {
+          "percentage": 1.5,
+          "name": "홍조케어믹스",
+          "category": "홍조, 홍반"
+        },
+        "M12": {
+          "percentage": 0.8,
+          "name": "모공케어믹스",
+          "category": "모공"
+        },
+        "M13": {
+          "percentage": 0.8,
+          "name": "피부결케어믹스",
+          "category": "텍스처"
+        },
+        "M11": {
+          "percentage": 2.3,
+          "name": "트러블케어믹스",
+          "category": "트러블·흔적"
+        }
+      }
     },
     "llm_report": {
       "recommendations": "...",
@@ -714,11 +739,36 @@ X-Request-ID: {uuid}
       "redness_score": 45.0
     },
     "prescription": {
-      "M08": 1.3,
-      "M14": 1.5,
-      "M12": 0.8,
-      "M13": 0.8,
-      "M11": 2.3
+      "base": {
+        "percentage": 95.6
+      },
+      "assessment": {
+        "M08": {
+          "percentage": 1.3,
+          "name": "미백케어믹스",
+          "category": "색소"
+        },
+        "M14": {
+          "percentage": 1.5,
+          "name": "홍조케어믹스",
+          "category": "홍조, 홍반"
+        },
+        "M12": {
+          "percentage": 0.8,
+          "name": "모공케어믹스",
+          "category": "모공"
+        },
+        "M13": {
+          "percentage": 0.8,
+          "name": "피부결케어믹스",
+          "category": "텍스처"
+        },
+        "M11": {
+          "percentage": 2.3,
+          "name": "트러블케어믹스",
+          "category": "트러블·흔적"
+        }
+      }
     }
   },
   "artifacts": {
