@@ -796,12 +796,16 @@ def run_enhancement_pipeline(
     stem = safe_output_stem(input_image)
     res.output_stem = stem
 
+    # 이미지별 폴더 생성 (고객 아이디 또는 원본 이미지 파일명)
+    image_folder = out_dir / stem
+    image_folder.mkdir(parents=True, exist_ok=True)
+
     input_resolution: Optional[tuple[int, int]] = None
     if input_image is not None:
         _src_in = Path(input_image).resolve()
         if not _src_in.is_file():
             raise FileNotFoundError(f"입력 이미지를 찾을 수 없습니다: {_src_in}")
-        input_image = _stage_pipeline_input_rgb(_src_in, out_dir, stem)
+        input_image = _stage_pipeline_input_rgb(_src_in, image_folder, stem)
         from PIL import Image
 
         input_resolution = Image.open(input_image).size
@@ -809,8 +813,8 @@ def run_enhancement_pipeline(
     restore_ok = cfg.restore_ok   # 선택된 백엔드 레포가 유효한지
     backend_name = cfg.restorer.value  # 로그용 이름 ("restoreformer" | "codeformer")
 
-    p_rf_first = out_dir / f"00_restored_{stem}.png"
-    p_restored = out_dir / f"01_restored_{stem}.png"
+    p_rf_first = image_folder / f"00_restored_{stem}.png"
+    p_restored = image_folder / f"01_restored_{stem}.png"
 
     mode = _choose_mode(
         input_image=input_image,
@@ -819,7 +823,7 @@ def run_enhancement_pipeline(
     )
 
     _in_disp = str(Path(input_image).resolve()) if input_image is not None else "(없음)"
-    log.info("파이프라인 - stem=%r 모드=%s 입력=%s 산출=%s", stem, mode.name, _in_disp, out_dir.resolve())
+    log.info("파이프라인 - stem=%r 모드=%s 입력=%s 산출=%s", stem, mode.name, _in_disp, image_folder.resolve())
 
     # ── ANALYZE_ONLY (복원 없이 원본 직접 분석) ───────────────────────────────
     if mode is _PipelineMode.ANALYZE_ONLY:
@@ -828,7 +832,7 @@ def run_enhancement_pipeline(
                 "분석하려면 입력 이미지가 필요합니다. "
                 "-i 경로를 주거나 images/origin.png 가 있어야 합니다."
             )
-        staged = out_dir / f"00_input_{stem}.png"
+        staged = image_folder / f"00_input_{stem}.png"
         if not staged.is_file():
             raise FileNotFoundError(f"정규화된 입력이 없습니다: {staged}")
         # 원본 이미지를 "복원된" 결과로 처리
@@ -843,7 +847,7 @@ def run_enhancement_pipeline(
                 "복원하려면 입력 이미지가 필요합니다. "
                 "-i 경로를 주거나 images/origin.png 가 있어야 합니다."
             )
-        staged = out_dir / f"00_input_{stem}.png"
+        staged = image_folder / f"00_input_{stem}.png"
         if not staged.is_file():
             raise FileNotFoundError(f"정규화된 입력이 없습니다: {staged}")
         if do_restore and restore_ok:
