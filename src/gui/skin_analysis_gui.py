@@ -1053,20 +1053,6 @@ class SkinAnalysisWindow(QMainWindow):
         self._append_log(f"=== 종료 코드: {code} ({status}) ===")
         self._process = None
         
-        # 파이프라인 완료 후 산출 폴더를 하위 폴더로 자동 업데이트
-        if code == 0:  # 성공 시에만 실행
-            orig = Path(self.edit_input.text().strip()) if not self.chk_text2img.isChecked() else None
-            if orig and orig.is_file():
-                out_dir = Path(self.edit_out.text().strip())
-                # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
-                customer_id = self.edit_customer_id.text().strip()
-                folder_name = customer_id if customer_id else orig.stem
-                # 이미지별 폴더 구조로 경로 업데이트
-                image_folder = out_dir / folder_name
-                if image_folder.is_dir():
-                    # 산출 폴더를 하위 폴더로 업데이트
-                    self.edit_out.setText(str(image_folder))
-        
         self._refresh_previews()
 
         # 파이프라인 완료 후 측정항목 비교 자동 실행
