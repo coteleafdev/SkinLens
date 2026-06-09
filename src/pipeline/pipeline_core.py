@@ -861,6 +861,56 @@ def run_enhancement_pipeline(
 
     res.wall_total_sec = time.perf_counter() - t0_all
     _log_stage_timing("파이프라인 전체", res.wall_total_sec)
+    
+    # Auto-upload to local DB and Supabase after pipeline completion
+    try:
+        from src.storage.local_db import LocalImageStorage
+        from src.storage.supabase_storage import SupabaseImageStorage
+        from src.config.config_manager import ConfigManager
+        
+        # Initialize local storage
+        local_storage = LocalImageStorage()
+        
+        # Store original image in local DB
+        if input_image is not None:
+            original_path = image_folder / f"00_input_{stem}.png"
+            if original_path.exists():
+                local_storage.store_image(stem, "original", original_path)
+                log.info(f"Original image stored in local DB: {stem}")
+        
+        # Store restored image in local DB
+        if res.restored and res.restored.exists():
+            local_storage.store_image(stem, "restored", res.restored)
+            log.info(f"Restored image stored in local DB: {stem}")
+        
+        # Try to upload to Supabase if enabled and credentials are available
+        try:
+            config = ConfigManager()
+            image_storage_config = config.get("image_storage", {}).get("supabase", {})
+            
+            if image_storage_config.get("enabled", False):
+                supabase_storage = SupabaseImageStorage()
+                
+                # Upload original image to Supabase
+                if input_image is not None:
+                    original_path = image_folder / f"00_input_{stem}.png"
+                    if original_path.exists():
+                        supabase_storage.upload_image(stem, "original", original_path)
+                        log.info(f"Original image uploaded to Supabase: {stem}")
+                
+                # Upload restored image to Supabase
+                if res.restored and res.restored.exists():
+                    supabase_storage.upload_image(stem, "restored", res.restored)
+                    log.info(f"Restored image uploaded to Supabase: {stem}")
+            else:
+                log.info("Supabase image storage disabled, skipping upload")
+                
+        except Exception as e:
+            log.warning(f"Failed to upload to Supabase: {e}")
+            
+    except Exception as e:
+        log.warning(f"Failed to store images in local DB: {e}")
+    
     return res
 
 

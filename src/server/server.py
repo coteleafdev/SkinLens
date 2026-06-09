@@ -67,7 +67,7 @@ except ImportError:
     WATCHDOG_AVAILABLE = False
 
 # ── 라우터 임포트 ──────────────────────────────────────────────────────────
-from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload, integration, enhancements, app_features
+from src.server.routers import jobs, logs, stats, auth, customer, admin, websocket, health, orders, upload, integration, enhancements, app_features, images
 
 # config.json에서 로그 레벨 로드 및 중앙 집중식 로깅 설정
 setup_logging(mode="server")
@@ -354,6 +354,7 @@ app.include_router(upload.router)
 app.include_router(integration.router)
 app.include_router(enhancements.router)
 app.include_router(app_features.router)
+app.include_router(images.router)
 
 
 # ── 직접 실행 ─────────────────────────────────────────────────────────────

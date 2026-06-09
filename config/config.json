@@ -115,6 +115,19 @@
       "_note": "Supabase 클라우드 DB/Storage 동기화 설정. enabled=true이면 로컬 SQLite 저장 후 Supabase에도 자동 동기화. url/key는 환경 변수(SUPABASE_URL, SUPABASE_KEY) 또는 config.secrets.json에서 로드."
     }
   },
+  "image_storage": {
+    "local_db": {
+      "path": "data/images.db",
+      "_note": "로컬 이미지 DB 경로. 환경 변수 IMAGE_DB로 오버라이드 가능."
+    },
+    "supabase": {
+      "enabled": false,
+      "url": null,
+      "key": null,
+      "bucket": "skin-analysis-images",
+      "_note": "이미지 Supabase 스토리지 설정. enabled=true이면 파이프라인 완료 후 자동 업로드. url/key는 환경 변수(SUPABASE_URL, SUPABASE_KEY) 또는 config.secrets.json에서 로드."
+    }
+  },
   "jwt": {
     "secret_key_env": "JWT_SECRET_KEY",
     "algorithm": "HS256",

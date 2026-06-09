@@ -196,6 +196,29 @@ class ConfigManager:
         """전체 config.json을 반환합니다."""
         return self._load_config()
     
+    def get(self, key: str, default: Any = None) -> Any:
+        """config.json에서 중첩 키로 값을 가져옵니다.
+        
+        Args:
+            key: 점(.)으로 구분된 중첩 키 (예: "image_storage.local_db.path")
+            default: 키가 없을 때 반환할 기본값
+        
+        Returns:
+            키에 해당하는 값 또는 기본값
+        """
+        cfg = self._load_config()
+        if not cfg:
+            return default
+        
+        keys = key.split(".")
+        value = cfg
+        for k in keys:
+            if isinstance(value, dict) and k in value:
+                value = value[k]
+            else:
+                return default
+        return value
+    
     def get_measurement_weights(self) -> Dict[str, float]:
         """측정항목 가중치를 반환합니다."""
         cfg = self._load_config()

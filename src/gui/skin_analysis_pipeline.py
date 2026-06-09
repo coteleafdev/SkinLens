@@ -568,15 +568,27 @@ def _cli_body(args) -> int:
                         # 전체 처리 시간 계산
                         total_elapsed = time.time() - total_start_time
                         
+                        # Get server URL from config for API URLs
+                        server_url = "http://localhost:8000"  # Default, should be from config
+                        try:
+                            from src.config.config_manager import ConfigManager
+                            config = ConfigManager()
+                            server_config = config.get("server", {})
+                            server_url = server_config.get("url", "http://localhost:8000")
+                        except Exception as e:
+                            log.warning(f"Failed to get server URL from config: {e}")
+                        
+                        customer_id = getattr(args, 'customer_id', None) or Path(init_resolved).stem
+                        
                         result_json = {
                             "input_image": str(Path(init_resolved).resolve()),
                             "restored_image": str(final_p.resolve()),
                             "output_dir": str(args.out_dir),
-                            "original_image_url": f"file://{str(Path(init_resolved).resolve())}",
-                            "restored_image_url": f"file://{str(final_p.resolve())}",
+                            "original_image_url": f"{server_url}/v1/images/{customer_id}/original",
+                            "restored_image_url": f"{server_url}/v1/images/{customer_id}/restored",
                             "metadata": metadata,
                             "customer_info": {
-                                "customer_id": getattr(args, 'customer_id', None),
+                                "customer_id": customer_id,
                                 "gender": getattr(args, 'gender', None),
                                 "age": getattr(args, 'age', None),
                                 "race": getattr(args, 'race', None),
