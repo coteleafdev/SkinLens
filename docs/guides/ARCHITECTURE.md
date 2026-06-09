@@ -6,9 +6,9 @@
 > - [PROTOCOL.md](PROTOCOL.md) - 통신 프로토콜
 > - [../api/API_REFERENCE.md](../api/API_REFERENCE.md) - API 레퍼런스
 
-> **문서 버전:** 1.3.0  
+> **문서 버전:** 1.4.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-01  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 ---
@@ -65,12 +65,18 @@ src/
 │   ├── server.py          # 서버 메인
 │   ├── deps.py            # 의존성 관리
 │   ├── routers/           # API 라우터
+│   │   ├── images.py      # 이미지 API 라우터
+│   │   └── ...
 │   ├── middleware/        # 미들웨어
 │   ├── backup.py          # 백업
 │   └── monitoring.py      # 서버 모니터링
 ├── skin/                   # 피부 분석 코어
 │   ├── skin_analyzer_v3.py # SkinAnalyzerV3
 │   └── feature_extractor.py # 특징 추출
+├── storage/                # 이미지 저장 모듈
+│   ├── local_db.py        # 로컬 이미지 DB (SQLite)
+│   ├── supabase_storage.py # Supabase 클라우드 스토리지
+│   └── __init__.py
 ├── telegram/               # 텔레그램 모듈
 │   └── telegram_bot.py    # 텔레그램 봇
 └── utils/                  # 공통 유틸리티
@@ -139,6 +145,11 @@ src/
 #### 피부 분석 코어 (`src/skin/`)
 - **skin_analyzer_v3.py**: SkinAnalyzerV3 메인, 18개 측정항목 구현
 - **feature_extractor.py**: 이미지 특징 추출
+
+#### 이미지 저장 모듈 (`src/storage/`)
+- **local_db.py**: 로컬 이미지 DB (SQLite), 메타데이터 관리
+- **supabase_storage.py**: Supabase 클라우드 스토리지, 자동 업로드
+- **__init__.py**: 모듈 초기화
 
 #### 텔레그램 모듈 (`src/telegram/`)
 - **telegram_bot.py**: 텔레그램 봇, 분석 결과 알림
@@ -821,6 +832,7 @@ pytest tests/test_server.py
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
+| 1.4.0 | 2026-06-10 | 이미지 저장 모듈 추가 (src/storage/: local_db.py, supabase_storage.py), 디렉토리 구조 업데이트, 모듈별 기능 요약 업데이트 | Cascade |
 | 1.3.0 | 2026-06-01 | API 레퍼런스를 최상위 문서로 참조 추가 | Cascade |
 | 1.2.0 | 2026-06-01 | 테스트 구조 섹션 추가 (섹션 10), 섹션 번호 재정렬 | Cascade |
 | 1.1.0 | 2026-06-01 | 전체 소스 구조 및 모듈별 기능 요약 추가, 섹션 번호 재정렬 | Cascade |

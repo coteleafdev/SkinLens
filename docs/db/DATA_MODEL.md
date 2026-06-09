@@ -1,8 +1,8 @@
 # 데이터 모델 (Data Model)
 
-> **문서 버전:** 1.1.0  
+> **문서 버전:** 1.2.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-01  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 ---
@@ -39,6 +39,25 @@ SkinLens 데이터베이스 스키마와 JSON 구조 설명입니다.
 **인덱스:**
 - `idx_customer_id`: customer_id
 - `idx_created_at`: created_at
+
+---
+
+**테이블: images**
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER | Primary Key, Auto Increment |
+| customer_id | TEXT | 고객 ID |
+| image_type | TEXT | 이미지 타입 ('original' or 'restored') |
+| file_path | TEXT | 파일 경로 |
+| file_hash | TEXT | 파일 SHA-256 해시 |
+| file_size | INTEGER | 파일 크기 (bytes) |
+| created_at | TIMESTAMP | 생성 시간 |
+
+**인덱스:**
+- `idx_customer_id`: customer_id
+- `idx_image_type`: image_type
+- `idx_customer_image_type`: (customer_id, image_type) UNIQUE
 
 ---
 
@@ -444,6 +463,10 @@ Analysis (분석)
   ├── 1:1 → RestoredImage (복원 이미지)
   └── 1:N → Measurement (측정 결과)
 
+Image (이미지)
+  ├── customer_id → Customer (고객)
+  └── image_type ('original' or 'restored')
+
 Order (주문)
   ├── 1:N → OrderItem (주문 항목)
   └── N:1 → Product (제품)
@@ -503,5 +526,6 @@ def migrate_v1_to_v2():
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
+| 1.2.0 | 2026-06-10 | 이미지 테이블 추가 (images: customer_id, image_type, file_path, file_hash, file_size, created_at), ERD 업데이트 (Image 엔티티 추가) | Cascade |
 | 1.1.0 | 2026-06-01 | PCR 검사 테이블 추가 (pcr_test_requests, pcr_test_results, pcr_consultations), products 테이블 업데이트 (is_ready_made, description 컬럼 추가), ERD 업데이트 | Cascade |
 | 1.0.0 | 2026-05-31 | 초기 버전 | Cascade |
