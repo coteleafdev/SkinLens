@@ -388,27 +388,27 @@ Authorization: Bearer {jwt_token}
         "percentage": 95.6
       },
       "assessment": {
-        "M08": {
+        "M07": {
           "percentage": 1.3,
           "name": "미백케어믹스",
           "category": "색소"
         },
-        "M14": {
+        "M13": {
           "percentage": 1.5,
           "name": "홍조케어믹스",
           "category": "홍조, 홍반"
         },
-        "M12": {
+        "M11": {
           "percentage": 0.8,
           "name": "모공케어믹스",
           "category": "모공"
         },
-        "M13": {
+        "M12": {
           "percentage": 0.8,
           "name": "피부결케어믹스",
           "category": "텍스처"
         },
-        "M11": {
+        "M10": {
           "percentage": 2.3,
           "name": "트러블케어믹스",
           "category": "트러블·흔적"
@@ -743,27 +743,27 @@ X-Request-ID: {uuid}
         "percentage": 95.6
       },
       "assessment": {
-        "M08": {
+        "M07": {
           "percentage": 1.3,
           "name": "미백케어믹스",
           "category": "색소"
         },
-        "M14": {
+        "M13": {
           "percentage": 1.5,
           "name": "홍조케어믹스",
           "category": "홍조, 홍반"
         },
-        "M12": {
+        "M11": {
           "percentage": 0.8,
           "name": "모공케어믹스",
           "category": "모공"
         },
-        "M13": {
+        "M12": {
           "percentage": 0.8,
           "name": "피부결케어믹스",
           "category": "텍스처"
         },
-        "M11": {
+        "M10": {
           "percentage": 2.3,
           "name": "트러블케어믹스",
           "category": "트러블·흔적"

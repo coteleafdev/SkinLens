@@ -405,8 +405,8 @@ def get_age_group(age: int) -> int:
 PCR_PRESCRIPTION_RULES_DEFAULT: Dict[str, List[Tuple[float, float, Optional[str], float]]] = {
     "total": [
         (float('-inf'), 0, None, 0.0),
-        (0, -10, "M11", 1.5),
-        (-10, -20, "M11", 2.0),
+        (0, -10, "M10", 1.5),
+        (-10, -20, "M10", 2.0),
         (-20, -30, "PM04", 2.5),
         (-30, float('-inf'), "PM04", 3.0),
     ],
@@ -740,44 +740,44 @@ def _calculate_concern_mix(concerns: List[str]) -> Dict[str, float]:
     # 관심사별 믹스 매핑 (upload-spec.md 기반)
     concern_mapping = {
         # 색소 관련
-        "pigmentation": {"M08": 2.0},  # 미백케어믹스
-        "melasma": {"M08": 2.0},  # 기미
-        "freckle": {"M08": 2.0},  # 주근깨
+        "pigmentation": {"M07": 2.0},  # 미백케어믹스
+        "melasma": {"M07": 2.0},  # 기미
+        "freckle": {"M07": 2.0},  # 주근깨
 
         # 홍조 관련
-        "redness": {"M14": 2.0},  # 홍조케어믹스
-        "red_marks": {"M14": 2.0},  # 붉은 자국
+        "redness": {"M13": 2.0},  # 홍조케어믹스
+        "red_marks": {"M13": 2.0},  # 붉은 자국
 
         # 트러블 관련
-        "acne": {"M11": 2.0},  # 트러블케어믹스
-        "pimple": {"M11": 2.0},  # 여드름
+        "acne": {"M10": 2.0},  # 트러블케어믹스
+        "pimple": {"M10": 2.0},  # 여드름
 
         # 모공 관련
-        "pore": {"M12": 2.0},  # 모공케어믹스
-        "pore_sebum": {"M12": 2.0},  # 모공/피지
-        "pore_care": {"M12": 2.0},  # 모공 케어
+        "pore": {"M11": 2.0},  # 모공케어믹스
+        "pore_sebum": {"M11": 2.0},  # 모공/피지
+        "pore_care": {"M11": 2.0},  # 모공 케어
 
         # 주름 관련
-        "wrinkle": {"M10": 2.0},  # 주름케어믹스
-        "eye_wrinkle": {"M10": 2.0},  # 눈가 주름
-        "nasolabial": {"M10": 2.0},  # 팔자 주름
+        "wrinkle": {"M09": 2.0},  # 주름케어믹스
+        "eye_wrinkle": {"M09": 2.0},  # 눈가 주름
+        "nasolabial": {"M09": 2.0},  # 팔자 주름
 
         # 텍스처 관련
-        "texture": {"M13": 2.0},  # 피부결케어믹스
-        "roughness": {"M13": 2.0},  # 거칠기
+        "texture": {"M12": 2.0},  # 피부결케어믹스
+        "roughness": {"M12": 2.0},  # 거칠기
 
         # 톤 관련
-        "tone": {"M08": 2.0},  # 미백케어믹스
-        "dullness": {"M08": 2.0},  # 칙칙함
-        "uneven_tone": {"M08": 2.0},  # 톤 불균일
+        "tone": {"M07": 2.0},  # 미백케어믹스
+        "dullness": {"M07": 2.0},  # 칙칙함
+        "uneven_tone": {"M07": 2.0},  # 톤 불균일
 
         # 탄력 관련
-        "elasticity": {"M09": 2.0},  # 탄력케어믹스
-        "sagging": {"M09": 2.0},  # 처짐
-        "jawline": {"M09": 2.0},  # 턱선
+        "elasticity": {"M08": 2.0},  # 탄력케어믹스
+        "sagging": {"M08": 2.0},  # 처짐
+        "jawline": {"M08": 2.0},  # 턱선
 
         # 노화 관련
-        "aging": {"M10": 1.5, "M09": 1.5},  # 주름케어믹스 + 탄력케어믹스
+        "aging": {"M09": 1.5, "M08": 1.5},  # 주름케어믹스 + 탄력케어믹스
     }
 
     # 관심사별 믹스 합산

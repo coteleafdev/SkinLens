@@ -2030,23 +2030,23 @@
       "_note": "Analyzer 레지스트리. [REFACTOR 2026-05-24] Analyzer 추가/변경/삭제 시 이 섹션만 수정하면 됨. enabled=false로 비활성화 가능."
     },
     "measurement_to_mix_code_mapping": {
-      "dullness_score": "M08",
-      "eye_wrinkle_score": "M10",
-      "nasolabial_wrinkle_score": "M10",
-      "fine_deep_wrinkle_score": "M10",
+      "dullness_score": "M07",
+      "eye_wrinkle_score": "M09",
+      "nasolabial_wrinkle_score": "M09",
+      "fine_deep_wrinkle_score": "M09",
       "skin_type_score": "M03",
-      "jawline_blur_score": "M09",
-      "cheek_sagging_score": "M09",
-      "melasma_score": "M08",
-      "freckle_score": "M08",
-      "post_acne_pigment_score": "M08",
-      "redness_score": "M14",
-      "post_inflammatory_erythema_score": "M14",
-      "pore_size_score": "M12",
-      "pore_sagging_score": "M12",
-      "roughness_score": "M13",
-      "acne_score": "M11",
-      "_note": "18개 측정항목 → 믹스 코드(M01-M14) 직접 매핑. [REFACTOR 2026-06-09] 믹스코드 재구성: M01-M14 (14종 믹스). M03-M06은 피부 타입 기반 (지성/건성/복합성/민감성)."
+      "jawline_blur_score": "M08",
+      "cheek_sagging_score": "M08",
+      "melasma_score": "M07",
+      "freckle_score": "M07",
+      "post_acne_pigment_score": "M07",
+      "redness_score": "M13",
+      "post_inflammatory_erythema_score": "M13",
+      "pore_size_score": "M11",
+      "pore_sagging_score": "M11",
+      "roughness_score": "M12",
+      "acne_score": "M10",
+      "_note": "18개 측정항목 → 믹스 코드(M01-M13) 직접 매핑. [REFACTOR 2026-06-09] 믹스코드 재구성: M01-M13 (13종 믹스). M03-M06은 피부 타입 기반 (지성/건성/복합성/민감성)."
     },
     "mix_codes": {
       "M01": {
@@ -2116,17 +2116,6 @@
         "status": "active"
       },
       "M07": {
-        "name": "보습케어믹스",
-        "category": "보습",
-        "description": "보습 케어",
-        "ingredients": [
-          "히알루론산",
-          "세라마이드",
-          "글리세린"
-        ],
-        "status": "active"
-      },
-      "M08": {
         "name": "미백케어믹스",
         "category": "색소",
         "description": "미백 케어 (톤·밝기, 색소)",
@@ -2138,7 +2127,7 @@
         ],
         "status": "active"
       },
-      "M09": {
+      "M08": {
         "name": "탄력케어믹스",
         "category": "탄력",
         "description": "탄력 케어 (탄력&처짐)",
@@ -2149,7 +2138,7 @@
         ],
         "status": "active"
       },
-      "M10": {
+      "M09": {
         "name": "주름케어믹스",
         "category": "주름",
         "description": "주름 케어",
@@ -2160,7 +2149,7 @@
         ],
         "status": "active"
       },
-      "M11": {
+      "M10": {
         "name": "트러블케어믹스",
         "category": "트러블·흔적",
         "description": "트러블 케어 (여드름 & 흔적)",
@@ -2171,7 +2160,7 @@
         ],
         "status": "active"
       },
-      "M12": {
+      "M11": {
         "name": "모공케어믹스",
         "category": "모공",
         "description": "모공 케어",
@@ -2182,7 +2171,7 @@
         ],
         "status": "active"
       },
-      "M13": {
+      "M12": {
         "name": "피부결케어믹스",
         "category": "텍스처",
         "description": "피부결 케어",
@@ -2193,7 +2182,7 @@
         ],
         "status": "active"
       },
-      "M14": {
+      "M13": {
         "name": "홍조케어믹스",
         "category": "홍조, 홍반",
         "description": "홍조 케어 (홍조·혈관)",

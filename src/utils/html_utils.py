@@ -77,7 +77,7 @@ def generate_html_report(
         orig_llm_overall_score: 원본 이미지 AI 측정 피부건강지수
         ref_llm_overall_score: 기준 이미지 AI 측정 피부건강지수
         prescription: 처방전 정보 딕셔너리
-        active_mixes: 활성 믹스 정보 딕셔너리 (M01-M14)
+        active_mixes: 활성 믹스 정보 딕셔너리 (M01-M13)
         pcr_mixes: PCR 믹스 정보 딕셔너리 (PM01-PM07)
     
     Returns:
@@ -391,7 +391,7 @@ def generate_html_report(
             {prescription_section}
         </div>
         
-        <h2 class="section-title">활성 믹스 (M01-M14)</h2>
+        <h2 class="section-title">활성 믹스 (M01-M13)</h2>
         <table>
             <thead>
                 <tr>

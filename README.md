@@ -19,7 +19,8 @@ AI 기반 피부 분석 및 복원 파이프라인 프로젝트입니다. Restor
   - server.py JWT_SECRET_KEY 체크 제거: 공유 secrets 모듈로 위임
 [REFACTOR 2026-06-07] 엔트리포인트 구조 개선
 [UPDATE 2026-06-09] 처방전 시스템 업데이트
-  - 활성 믹스 10종 → 14종으로 확장 (M01-M14)
+  - 활성 믹스 10종 → 13종으로 확장 (M01-M13)
+  - 보습케어믹스(M07) 제거 (피부 타입 믹스와 기능 중복)
   - 카테고리명을 LLM_PROMPT_TEMPLATE.md의 9개 카테고리로 매핑
   - config.json, prescription_calculator.py, html_utils.py, compare_dialog.py 업데이트
   - 문서 갱신: PRESCRIPTION_GUIDE.md, LLM_PROMPT_TEMPLATE.md, PROTOCOL.md

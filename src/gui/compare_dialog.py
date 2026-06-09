@@ -847,7 +847,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 
                 if active_mixes_config:
                     append_with_font_local([])  # 빈 행
-                    append_with_font_local(["활성 믹스 (M01-M14)"], bold_font)
+                    append_with_font_local(["활성 믹스 (M01-M13)"], bold_font)
                     append_with_font_local(["코드", "이름", "카테고리", "설명", "주요 성분", "배합비"], bold_font)
                     
                     for mix_code in sorted(active_mixes_config.keys()):
@@ -1035,7 +1035,7 @@ class SkinMeasurementCompareDialog(QDialog):
                 log.info(f"measurement_settings keys: {list(measurement_settings.keys())}")
                 log.info(f"mixes_config keys: {list(mixes_config.keys())}")
                 
-                # 활성 믹스 (M01-M14)
+                # 활성 믹스 (M01-M13)
                 active_mixes = {k: v for k, v in mixes_config.items() if k.startswith("M") and k != "_note"}
                 
                 # PCR 믹스 (PM01-PM07)
