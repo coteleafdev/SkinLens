@@ -6,9 +6,9 @@
 > - [ARCHITECTURE.md](../guides/ARCHITECTURE.md) - 아키텍처 가이드
 > - [PROTOCOL.md](../guides/PROTOCOL.md) - 통신 프로토콜
 
-> **문서 버전:** 1.2.0  
+> **문서 버전:** 1.3.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-01  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 ---
@@ -38,7 +38,8 @@ graph TB
         A3[고객 API<br/>/v1/customers/*]
         A4[관리자 API<br/>/v1/admin/*]
         A5[연동 API<br/>/v1/webhooks/*<br/>/v1/integration/*<br/>/v1/oauth/*]
-        A6[WebSocket<br/>/v1/ws/*]
+        A6[이미지 API<br/>/v1/images/*]
+        A7[WebSocket<br/>/v1/ws/*]
     end
     
     subgraph "클라이언트"
@@ -51,11 +52,13 @@ graph TB
     B1 --> A2
     B1 --> A3
     B1 --> A6
+    B1 --> A7
     
     B2 --> A1
     B2 --> A2
     B2 --> A3
     B2 --> A6
+    B2 --> A7
     
     B3 --> A4
     B3 --> A5
@@ -67,6 +70,7 @@ graph TB
 |---------|------|---------------|------|------|
 | 인증 API | `/v1/auth/*` | 모든 클라이언트 | 불필요 (login), 필수 (그 외) | 로그인, 토큰 갱신, 로그아웃, 비밀번호 변경/복구 |
 | 분석 API | `/v1/analysis/*` | 웹, 모바일 | 필수 | 피부 분석 요청/조회 |
+| 이미지 API | `/v1/images/*` | 웹, 모바일 | 필수 | 원본/복원 이미지 다운로드, 메타데이터 조회 |
 | 고객 API | `/v1/customer/my/*` | 웹, 모바일 | 필수 | 프로필, 장치, 설문, 분석 데이터 관리 |
 | 관리자 API | `/v1/admin/*` | 웹서버, 관리자 | 필수 (admin) | 시스템 관리 |
 | 연동 API | `/v1/webhooks/*`<br/>`/v1/integration/*`<br/>`/v1/oauth/*` | 웹서버 | 필수 (admin) | 외부 시스템 연동 |
@@ -408,6 +412,108 @@ Job을 취소합니다.
 **Response (200 OK):**
 - Content-Type: `image/jpeg` 또는 `image/png`
 - Binary image data
+
+---
+
+### 2.6 이미지 API (Image API)
+
+#### 2.6.1 원본 이미지 가져오기
+
+**GET** `/v1/images/{customer_id}/original`
+
+고객의 원본 이미지를 가져옵니다.
+
+**Path Parameters:**
+- `customer_id` (string, required): 고객 ID
+
+**Response (200 OK):**
+- Content-Type: `image/png`
+- Binary image data
+
+**Response (404 Not Found):**
+```json
+{
+  "detail": "Original image not found"
+}
+```
+
+---
+
+#### 2.6.2 복원 이미지 가져오기
+
+**GET** `/v1/images/{customer_id}/restored`
+
+고객의 복원 이미지를 가져옵니다.
+
+**Path Parameters:**
+- `customer_id` (string, required): 고객 ID
+
+**Response (200 OK):**
+- Content-Type: `image/png`
+- Binary image data
+
+**Response (404 Not Found):**
+```json
+{
+  "detail": "Restored image not found"
+}
+```
+
+---
+
+#### 2.6.3 이미지 메타데이터 가져오기
+
+**GET** `/v1/images/{customer_id}/metadata`
+
+고객의 이미지 메타데이터를 가져옵니다. Supabase URL, 로컬 URL, Base64 인코딩된 이미지를 포함합니다.
+
+**Path Parameters:**
+- `customer_id` (string, required): 고객 ID
+
+**Query Parameters:**
+- `include_base64` (boolean, optional): Base64 인코딩된 이미지 포함 여부 (기본: false)
+
+**Response (200 OK):**
+```json
+{
+  "customer_id": "customer123",
+  "original": {
+    "metadata": {
+      "id": 1,
+      "customer_id": "customer123",
+      "image_type": "original",
+      "file_path": "results/customer123/00_input_customer123.png",
+      "file_hash": "abc123...",
+      "file_size": 1024000,
+      "created_at": "2026-06-10T01:00:00Z"
+    },
+    "url": "https://supabase-url.com/storage/v1/object/public/skin-analysis-images/customer123/customer123_original.png",
+    "local_url": "/v1/images/customer123/original",
+    "base64": null
+  },
+  "restored": {
+    "metadata": {
+      "id": 2,
+      "customer_id": "customer123",
+      "image_type": "restored",
+      "file_path": "results/customer123/01_restored_customer123.png",
+      "file_hash": "def456...",
+      "file_size": 1536000,
+      "created_at": "2026-06-10T01:00:05Z"
+    },
+    "url": "https://supabase-url.com/storage/v1/object/public/skin-analysis-images/customer123/customer123_restored.png",
+    "local_url": "/v1/images/customer123/restored",
+    "base64": null
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "detail": "Image metadata not found"
+}
+```
 
 ---
 
@@ -3580,6 +3686,7 @@ PCR 검사 결과 기반 전문가 상담을 예약합니다.
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
+| 1.3.0 | 2026-06-10 | 이미지 API 추가 (원본/복원 이미지 다운로드, 메타데이터 조회, Base64 인코딩 옵션), API 아키텍처 다이어그램 업데이트 | Cascade |
 | 1.2.0 | 2026-06-01 | PCR 검사 API 추가 (요청, 결과 조회, 이력 조회, 상담 예약), 기성품 목록 조회 API 추가 | Cascade |
 | 1.1.0 | 2026-06-01 | 인증 API 추가 (토큰 갱신, 로그아웃, 비밀번호 변경/복구), 고객 API 추가 (프로필, 장치, 설문, 다운로드) | Cascade |
 | 1.0.0 | 2026-05-31 | 초기 버전 (v1.1에서 마이그레이션) | Cascade |
