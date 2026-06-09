@@ -465,6 +465,27 @@ def generate_html_report(
         products_section += "</div>\n"
     
     # 항목별 LLM 소견 섹션 생성 (AI 측정 점수 18항목 순서로 정렬)
+    # key를 display_name으로 매핑
+    key_to_display_name = {
+        "melasma_score": "기미·잡티",
+        "freckle_score": "주근깨",
+        "redness_score": "홍조",
+        "post_inflammatory_erythema_score": "염증후 홍반",
+        "acne_score": "여드름",
+        "post_acne_pigment_score": "여드름 흔적",
+        "pore_size_score": "모공 크기",
+        "pore_sagging_score": "모공 처짐",
+        "eye_wrinkle_score": "눈가 주름",
+        "nasolabial_wrinkle_score": "팔자 주름",
+        "fine_deep_wrinkle_score": "미세/깊은 주름",
+        "roughness_score": "거칠기",
+        "skin_tone_score": "피부 톤",
+        "dullness_score": "칙칙함",
+        "uneven_tone_score": "톤 불균형",
+        "jawline_blur_score": "턱선 블러",
+        "cheek_sagging_score": "볼 처짐",
+        "skin_type_score": "피부 타입",
+    }
     metric_order = [
         "melasma_score",
         "freckle_score",
@@ -487,12 +508,13 @@ def generate_html_report(
     ]
     metric_opinions_section = ""
     if metric_opinions:
-        for metric_name in metric_order:
-            if metric_name in metric_opinions and metric_opinions[metric_name]:
-                opinion = metric_opinions[metric_name]
+        for metric_key in metric_order:
+            display_name = key_to_display_name.get(metric_key, metric_key)
+            if display_name in metric_opinions and metric_opinions[display_name]:
+                opinion = metric_opinions[display_name]
                 metric_opinions_section += f"""
                 <div class="metric-item">
-                    <div class="metric-name">{metric_name}</div>
+                    <div class="metric-name">{display_name}</div>
                     <div class="metric-opinion">{opinion}</div>
                 </div>
                 """
