@@ -415,33 +415,50 @@ class SkinMeasurementCompareDialog(QDialog):
         measurement_count = get_measurement_count()
         report_text += f"\n\n【원본 이미지 {measurement_count}개 항목별 LLM 소견】\n"
         
-        # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
+        # AI 측정 점수 18항목 순서로 정렬
+        metric_order = [
+            "melasma_score",
+            "freckle_score",
+            "redness_score",
+            "post_inflammatory_erythema_score",
+            "acne_score",
+            "post_acne_pigment_score",
+            "pore_size_score",
+            "pore_sagging_score",
+            "eye_wrinkle_score",
+            "nasolabial_wrinkle_score",
+            "fine_deep_wrinkle_score",
+            "roughness_score",
+            "skin_tone_score",
+            "dullness_score",
+            "uneven_tone_score",
+            "jawline_blur_score",
+            "cheek_sagging_score",
+            "skin_type_score",
+        ]
         orig_opinions_dict = {metric.key: metric for metric in orig_report.metric_opinions}
         
-        for cat_name, keys in get_measurement_categories():
-            for key in keys:
-                if key in orig_opinions_dict:
-                    metric = orig_opinions_dict[key]
-                    report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
-                    report_text += f"  {metric.opinion}\n"
-                    if metric.reason:
-                        report_text += f"  [근거: {metric.reason}]\n"
+        for key in metric_order:
+            if key in orig_opinions_dict:
+                metric = orig_opinions_dict[key]
+                report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
+                report_text += f"  {metric.opinion}\n"
+                if metric.reason:
+                    report_text += f"  [근거: {metric.reason}]\n"
 
-        # 기준 이미지 항목별 소견 추가 (테이블 순서와 동일하게)
+        # 기준 이미지 항목별 소견 추가 (AI 측정 점수 18항목 순서로 정렬)
         # dual 모드와 reference_guided 모드 모두 복원 이미지 소견은 표시하지 않고 근거만 표시
         report_text += f"\n\n【기준 이미지 {measurement_count}개 항목별 산출근거】\n"
         
-        # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
         ref_opinions_dict = {metric.key: metric for metric in ref_report.metric_opinions}
         
-        for cat_name, keys in get_measurement_categories():
-            for key in keys:
-                if key in ref_opinions_dict:
-                    metric = ref_opinions_dict[key]
-                    report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
-                    # 소견은 표시하지 않고 산출근거만 표시
-                    if metric.reason:
-                        report_text += f"  [근거: {metric.reason}]\n"
+        for key in metric_order:
+            if key in ref_opinions_dict:
+                metric = ref_opinions_dict[key]
+                report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
+                # 소견은 표시하지 않고 산출근거만 표시
+                if metric.reason:
+                    report_text += f"  [근거: {metric.reason}]\n"
 
         self.llm_report_text.setText(report_text)
         # 스크롤을 상단으로 이동
@@ -788,24 +805,43 @@ class SkinMeasurementCompareDialog(QDialog):
                 append_with_font_local([])  # 빈 행
 
                 append_with_font_local(["원본 이미지 18개 항목별 AI 소견"], bold_font)
-                # 테이블 순서와 동일하게 정렬하기 위해 딕셔너리 생성
+                # AI 측정 점수 18항목 순서로 정렬
+                metric_order = [
+                    "melasma_score",
+                    "freckle_score",
+                    "redness_score",
+                    "post_inflammatory_erythema_score",
+                    "acne_score",
+                    "post_acne_pigment_score",
+                    "pore_size_score",
+                    "pore_sagging_score",
+                    "eye_wrinkle_score",
+                    "nasolabial_wrinkle_score",
+                    "fine_deep_wrinkle_score",
+                    "roughness_score",
+                    "skin_tone_score",
+                    "dullness_score",
+                    "uneven_tone_score",
+                    "jawline_blur_score",
+                    "cheek_sagging_score",
+                    "skin_type_score",
+                ]
                 orig_opinions_dict = {metric.key: metric for metric in self._last_llm_report_orig.metric_opinions}
-                for cat_name, keys in get_measurement_categories():
-                    for key in keys:
-                        if key in orig_opinions_dict:
-                            metric = orig_opinions_dict[key]
-                            append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
-                            # metric.opinion이 dict인 경우 문자열 추출
-                            opinion_text = metric.opinion
-                            if isinstance(opinion_text, dict):
-                                opinion_text = opinion_text.get('opinion', str(opinion_text))
-                            elif not isinstance(opinion_text, str):
-                                opinion_text = str(opinion_text)
-                            append_with_font_local([self._sanitize_cell_text(opinion_text)], small_font)
-                            # 근거 필드 추가
-                            if metric.reason:
-                                append_with_font_local([f"[근거: {metric.reason}"], small_font)
-                            append_with_font_local([])  # 빈 행
+                for key in metric_order:
+                    if key in orig_opinions_dict:
+                        metric = orig_opinions_dict[key]
+                        append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
+                        # metric.opinion이 dict인 경우 문자열 추출
+                        opinion_text = metric.opinion
+                        if isinstance(opinion_text, dict):
+                            opinion_text = opinion_text.get('opinion', str(opinion_text))
+                        elif not isinstance(opinion_text, str):
+                            opinion_text = str(opinion_text)
+                        append_with_font_local([self._sanitize_cell_text(opinion_text)], small_font)
+                        # 근거 필드 추가
+                        if metric.reason:
+                            append_with_font_local([f"[근거: {metric.reason}"], small_font)
+                        append_with_font_local([])  # 빈 행
 
             # 기준 이미지 산출근거는 고객용 보고서에서 제외
             # dual 모드와 reference_guided 모드 모두 기준 이미지 종합 소견 제외

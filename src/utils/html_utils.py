@@ -464,11 +464,32 @@ def generate_html_report(
             """
         products_section += "</div>\n"
     
-    # 항목별 LLM 소견 섹션 생성
+    # 항목별 LLM 소견 섹션 생성 (AI 측정 점수 18항목 순서로 정렬)
+    metric_order = [
+        "melasma_score",
+        "freckle_score",
+        "redness_score",
+        "post_inflammatory_erythema_score",
+        "acne_score",
+        "post_acne_pigment_score",
+        "pore_size_score",
+        "pore_sagging_score",
+        "eye_wrinkle_score",
+        "nasolabial_wrinkle_score",
+        "fine_deep_wrinkle_score",
+        "roughness_score",
+        "skin_tone_score",
+        "dullness_score",
+        "uneven_tone_score",
+        "jawline_blur_score",
+        "cheek_sagging_score",
+        "skin_type_score",
+    ]
     metric_opinions_section = ""
     if metric_opinions:
-        for metric_name, opinion in metric_opinions.items():
-            if opinion:
+        for metric_name in metric_order:
+            if metric_name in metric_opinions and metric_opinions[metric_name]:
+                opinion = metric_opinions[metric_name]
                 metric_opinions_section += f"""
                 <div class="metric-item">
                     <div class="metric-name">{metric_name}</div>
