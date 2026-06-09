@@ -727,12 +727,14 @@ class SkinAnalysisWindow(QMainWindow):
                 self.edit_input.text().strip(),
                 self.chk_text2img.isChecked(),
             )
+            # 이미지별 폴더 경로
+            image_folder = out / folder_name
             # [FIX ⑤] pipeline_core.final_pipeline_artifact_path 와 동일 우선순위
             mid = first_existing_file(
-                out / f"01_restored_{folder_name}.png",        # 복원 결과
-                out / f"00_restored_{folder_name}.png",        # 복원 결과
-                out / "00_restored.png",
-                out / "01_restored.png",
+                image_folder / f"01_restored_{folder_name}.png",  # 복원 결과 (이미지별 폴더)
+                image_folder / f"00_restored_{folder_name}.png",  # 복원 결과 (이미지별 폴더)
+                out / "00_restored.png",  # 레거시 경로
+                out / "01_restored.png",  # 레거시 경로
             )
         return orig, mid
 
@@ -823,12 +825,14 @@ class SkinAnalysisWindow(QMainWindow):
             self.edit_input.text().strip(),
             self.chk_text2img.isChecked(),
         )
+        # 이미지별 폴더 경로
+        image_folder = out / folder_name
         # [FIX ⑤] pipeline_core.final_pipeline_artifact_path 와 동일 우선순위
         prf = first_existing_file(
-            out / f"01_restored_{folder_name}.png",        # 복원 결과
-            out / f"00_restored_{folder_name}.png",        # 복원 결과
-            out / "00_restored.png",
-            out / "01_restored.png",
+            image_folder / f"01_restored_{folder_name}.png",  # 복원 결과 (이미지별 폴더)
+            image_folder / f"00_restored_{folder_name}.png",  # 복원 결과 (이미지별 폴더)
+            out / "00_restored.png",  # 레거시 경로
+            out / "01_restored.png",  # 레거시 경로
         )
         out_parts: list[str] = []
         if prf is not None:
