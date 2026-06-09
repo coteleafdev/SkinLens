@@ -37,9 +37,9 @@
 
 ```
 results/
-├── {customer_id}/
-│   ├── 00_input_{customer_id}.png      # 원본 이미지
-│   └── 01_restored_{customer_id}.png   # 복원 이미지
+├── {stem}/
+│   ├── 00_input_{stem}.png      # 원본 이미지
+│   └── 01_restored_{stem}.png   # 복원 이미지
 ├── skin_analysis.db               # 통합 DB (서버 + 로컬)
 ├── data/
 │   └── images.db                    # 이미지 메타데이터 DB
@@ -69,6 +69,7 @@ results/
 
 **특징:**
 - 이미지별로 폴더 분리로 파일 관리 용이
+- `{stem}`은 고객 ID가 있으면 고객 ID를 사용하고, 없으면 원본 이미지 파일명을 사용
 - 하나의 `skin_analysis.db`로 서버와 로컬 데이터 통합
 - 서버 API 작업은 별도 `api_jobs/` 폴더로 관리
 - 로그, 이미지, 엑셀 파일 등을 `results/` 하위로 통합
