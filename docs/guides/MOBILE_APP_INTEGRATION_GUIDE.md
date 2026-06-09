@@ -1,8 +1,8 @@
 # 모바일 앱 연동 가이드 (Mobile App Integration Guide)
 
-> **문서 버전:** 2.1.0  
+> **문서 버전:** 2.2.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-01  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성  
 > **대상 독자**: 모바일 앱 개발자 (iOS, Android)
 
@@ -21,6 +21,8 @@
 - 실시간 진행률 추적 (WebSocket)
 - 푸시 알림 수신
 - 오프라인 모드 지원
+- 이미지 저장 및 전송 (로컬 DB + Supabase)
+- 하이브리드 Base64 인코딩 (URL + Base64)
 
 ---
 
@@ -41,6 +43,8 @@ graph TB
         C2[웹서버 DB]
         C3[WebSocket 프록시]
         C4[푸시 알림 서버]
+        C5[이미지 API]
+        C6[로컬 이미지 DB]
     end
     
     subgraph "SkinLens 엔진 서버"
@@ -48,6 +52,10 @@ graph TB
         B2[분석 엔진]
         B3[SQLite DB]
         B4[WebSocket]
+    end
+    
+    subgraph "클라우드 스토리지"
+        D1[Supabase Storage]
     end
     
     A1 -->|HTTP REST API| C1
@@ -62,6 +70,11 @@ graph TB
     B1 --> B2
     B1 --> B3
     C1 --> C2
+    C1 --> C5
+    C5 --> C6
+    C1 -->|자동 업로드| D1
+    A1 -->|이미지 다운로드| C5
+    A2 -->|이미지 다운로드| C5
 ```
 
 ### 1.2 통신 흐름
@@ -70,7 +83,9 @@ graph TB
 2. **웹서버 → 엔진 서버**: 분석 요청 위임
 3. **엔진 서버**: 이미지 분석 수행
 4. **엔진 서버 → 웹서버**: 분석 결과 전송
-5. **웹서버 → 모바일 앱**: 결과 전달 또는 푸시 알림
+5. **웹서버**: 이미지 저장 (로컬 DB + Supabase)
+6. **웹서버 → 모바일 앱**: 결과 전달 (URL + Base64) 또는 푸시 알림
+7. **모바일 앱 → 웹서버**: 이미지 다운로드 (URL 또는 Base64)
 
 ### 1.3 통신 프로토콜
 
@@ -78,6 +93,7 @@ graph TB
 |----------|----------|------|------|
 | REST API (모바일-웹서버) | HTTP/HTTPS | 80/443 | 분석 요청/조회 |
 | REST API (웹서버-엔진) | HTTP/HTTPS | 8000 | 분석 위임 |
+| REST API (이미지) | HTTP/HTTPS | 80/443 | 이미지 다운로드 |
 | WebSocket (모바일-웹서버) | WS/WSS | 80/443 | 실시간 진행률 |
 | WebSocket (웹서버-엔진) | WS/WSS | 8000 | 진행률 프록시 |
 | 푸시 알림 | FCM/APNS | - | 분석 완료 알림 |
@@ -850,6 +866,470 @@ class AnalysisManager(private val context: Context) {
 |------|------|------|
 | API 레퍼런스 | `docs/api/API_REFERENCE.md` | 분석 API 상세 스펙 |
 | 트러블슈팅 가이드 | `docs/guides/TROUBLESHOOTING_GUIDE.md` | 파일 업로드 문제 해결 |
+
+### 3.2.10 이미지 저장 및 전송
+
+#### 3.2.10.1 이미지 저장 구조
+
+SkinLens는 이미지를 로컬 파일 시스템에 저장하고 메타데이터는 SQLite DB에 관리합니다.
+
+**파일 구조:**
+```
+results/
+├── {customer_id}/
+│   ├── 00_input_{customer_id}.png (원본 이미지)
+│   └── 01_restored_{customer_id}.png (복원 이미지)
+data/
+└── images.db (이미지 메타데이터)
+```
+
+**DB 스키마:**
+```sql
+CREATE TABLE images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id TEXT NOT NULL,
+    image_type TEXT NOT NULL,  -- 'original' or 'restored'
+    file_path TEXT NOT NULL,
+    file_hash TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(customer_id, image_type)
+)
+```
+
+#### 3.2.10.2 이미지 API 엔드포인트
+
+**원본 이미지 가져오기:**
+```
+GET /v1/images/{customer_id}/original
+```
+
+**복원 이미지 가져오기:**
+```
+GET /v1/images/{customer_id}/restored
+```
+
+**이미지 메타데이터 가져오기:**
+```
+GET /v1/images/{customer_id}/metadata?include_base64=false
+```
+
+**응답 예시:**
+```json
+{
+  "customer_id": "customer123",
+  "original": {
+    "metadata": {
+      "id": 1,
+      "customer_id": "customer123",
+      "image_type": "original",
+      "file_path": "results/customer123/00_input_customer123.png",
+      "file_hash": "abc123...",
+      "file_size": 1024000,
+      "created_at": "2026-06-10T01:00:00Z"
+    },
+    "url": "https://supabase-url.com/storage/v1/object/public/skin-analysis-images/customer123/customer123_original.png",
+    "local_url": "/v1/images/customer123/original",
+    "base64": null
+  },
+  "restored": {
+    "metadata": {
+      "id": 2,
+      "customer_id": "customer123",
+      "image_type": "restored",
+      "file_path": "results/customer123/01_restored_customer123.png",
+      "file_hash": "def456...",
+      "file_size": 1536000,
+      "created_at": "2026-06-10T01:00:05Z"
+    },
+    "url": "https://supabase-url.com/storage/v1/object/public/skin-analysis-images/customer123/customer123_restored.png",
+    "local_url": "/v1/images/customer123/restored",
+    "base64": null
+  }
+}
+```
+
+#### 3.2.10.3 하이브리드 Base64 인코딩
+
+**설정 (config.json):**
+```json
+{
+  "image_storage": {
+    "base64": {
+      "enabled": false,
+      "max_size_bytes": 1048576
+    }
+  }
+}
+```
+
+**사용 방법:**
+1. **설정 기반**: `enabled: true`로 설정하면 모든 JSON 응답에 Base64 포함
+2. **API 파라미터**: `?include_base64=true`로 요청 시 Base64 포함
+
+**Base64 포함 응답:**
+```json
+{
+  "customer_id": "customer123",
+  "original": {
+    "metadata": { ... },
+    "url": "https://supabase-url.com/...",
+    "local_url": "/v1/images/customer123/original",
+    "base64": "iVBORw0KGgoAAAANSUhEUgAA..."
+  },
+  "restored": {
+    "metadata": { ... },
+    "url": "https://supabase-url.com/...",
+    "local_url": "/v1/images/customer123/restored",
+    "base64": "iVBORw0KGgoAAAANSUhEUgAA..."
+  }
+}
+```
+
+**파일 크기 제한:**
+- 기본 최대 크기: 1MB (1048576 bytes)
+- 초과 시 Base64는 `null`로 반환
+- 크기 제한은 `config.json`에서 조정 가능
+
+#### 3.2.10.4 JSON 응답 형식
+
+분석 결과 JSON에 이미지 정보 포함:
+
+```json
+{
+  "input_image": "C:/Project/SkinLens v1/assets/test_images/customer123.jpg",
+  "restored_image": "C:/Project/SkinLens v1/results/customer123/01_restored_customer123.png",
+  "output_dir": "C:/Project/SkinLens v1/results",
+  "original_image_url": "http://localhost:8000/v1/images/customer123/original",
+  "restored_image_url": "http://localhost:8000/v1/images/customer123/restored",
+  "original_image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",
+  "restored_image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",
+  "metadata": { ... },
+  "customer_info": {
+    "customer_id": "customer123",
+    "gender": "female",
+    "age": 30,
+    "race": "asian",
+    "region": "seoul"
+  },
+  "execution_time": {
+    "total_sec": 15.5,
+    "llm_sec": 3.2
+  },
+  "analysis_result": {
+    "overall_score": 75,
+    "perceived_age": 28,
+    "measurements": { ... }
+  }
+}
+```
+
+#### 3.2.10.5 Supabase 통합
+
+**설정 (config.json):**
+```json
+{
+  "image_storage": {
+    "supabase": {
+      "enabled": false,
+      "url": null,
+      "key": null,
+      "bucket": "skin-analysis-images"
+    }
+  }
+}
+```
+
+**환경 변수:**
+- `SUPABASE_URL`: Supabase 프로젝트 URL
+- `SUPABASE_KEY`: Supabase API 키
+
+**자동 업로드:**
+- 파이프라인 완료 후 자동으로 Supabase에 업로드
+- `enabled: true`로 설정 시 활성화
+- 원본 및 복원 이미지 모두 업로드
+
+**Supabase URL 형식:**
+```
+https://{project_id}.supabase.co/storage/v1/object/public/{bucket}/{customer_id}/{filename}
+```
+
+#### 3.2.10.6 Flutter 구현 예시 (Dart)
+
+**이미지 다운로드:**
+```dart
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+
+class ImageManager {
+  final String baseURL = "http://localhost:8000";  // 웹서버 URL
+  
+  Future<Uint8List> downloadOriginalImage(String customerId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/v1/images/$customerId/original'),
+      );
+      
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception('Failed to download original image: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error downloading original image: $e');
+    }
+  }
+  
+  Future<Uint8List> downloadRestoredImage(String customerId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/v1/images/$customerId/restored'),
+      );
+      
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception('Failed to download restored image: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error downloading restored image: $e');
+    }
+  }
+  
+  Future<Image> downloadOriginalImageAsWidget(String customerId) async {
+    final bytes = await downloadOriginalImage(customerId);
+    return Image.memory(bytes);
+  }
+  
+  Future<Image> downloadRestoredImageAsWidget(String customerId) async {
+    final bytes = await downloadRestoredImage(customerId);
+    return Image.memory(bytes);
+  }
+}
+```
+
+**Base64 이미지 디코딩:**
+```dart
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+
+Uint8List decodeBase64Image(String base64String) {
+  try {
+    return base64Decode(base64String);
+  } catch (e) {
+    throw Exception('Error decoding Base64 image: $e');
+  }
+}
+
+Image decodeBase64ImageAsWidget(String base64String) {
+  try {
+    final bytes = decodeBase64Image(base64String);
+    return Image.memory(bytes);
+  } catch (e) {
+    return Image.asset('assets/placeholder.png');  // 플레이스홀더 이미지
+  }
+}
+```
+
+**이미지 메타데이터 가져오기:**
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class ImageMetadata {
+  final String customerId;
+  final OriginalImageMetadata original;
+  final RestoredImageMetadata restored;
+  
+  ImageMetadata({
+    required this.customerId,
+    required this.original,
+    required this.restored,
+  });
+  
+  factory ImageMetadata.fromJson(Map<String, dynamic> json) {
+    return ImageMetadata(
+      customerId: json['customer_id'],
+      original: OriginalImageMetadata.fromJson(json['original']),
+      restored: RestoredImageMetadata.fromJson(json['restored']),
+    );
+  }
+}
+
+class OriginalImageMetadata {
+  final Map<String, dynamic>? metadata;
+  final String? url;
+  final String? localUrl;
+  final String? base64;
+  
+  OriginalImageMetadata({
+    this.metadata,
+    this.url,
+    this.localUrl,
+    this.base64,
+  });
+  
+  factory OriginalImageMetadata.fromJson(Map<String, dynamic> json) {
+    return OriginalImageMetadata(
+      metadata: json['metadata'],
+      url: json['url'],
+      localUrl: json['local_url'],
+      base64: json['base64'],
+    );
+  }
+}
+
+class RestoredImageMetadata {
+  final Map<String, dynamic>? metadata;
+  final String? url;
+  final String? localUrl;
+  final String? base64;
+  
+  RestoredImageMetadata({
+    this.metadata,
+    this.url,
+    this.localUrl,
+    this.base64,
+  });
+  
+  factory RestoredImageMetadata.fromJson(Map<String, dynamic> json) {
+    return RestoredImageMetadata(
+      metadata: json['metadata'],
+      url: json['url'],
+      localUrl: json['local_url'],
+      base64: json['base64'],
+    );
+  }
+}
+
+class ImageMetadataManager {
+  final String baseURL = "http://localhost:8000";  // 웹서버 URL
+  
+  Future<ImageMetadata> getImageMetadata(String customerId, {bool includeBase64 = false}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/v1/images/$customerId/metadata?include_base64=$includeBase64'),
+      );
+      
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return ImageMetadata.fromJson(json);
+      } else {
+        throw Exception('Failed to get image metadata: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error getting image metadata: $e');
+    }
+  }
+}
+```
+
+**Flutter UI 예시:**
+```dart
+import 'package:flutter/material.dart';
+
+class ImageDisplayScreen extends StatefulWidget {
+  final String customerId;
+  
+  const ImageDisplayScreen({Key? key, required this.customerId}) : super(key: key);
+  
+  @override
+  _ImageDisplayScreenState createState() => _ImageDisplayScreenState();
+}
+
+class _ImageDisplayScreenState extends State<ImageDisplayScreen> {
+  final ImageManager _imageManager = ImageManager();
+  final ImageMetadataManager _metadataManager = ImageMetadataManager();
+  
+  Uint8List? _originalImageBytes;
+  Uint8List? _restoredImageBytes;
+  bool _isLoading = true;
+  String? _errorMessage;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadImages();
+  }
+  
+  Future<void> _loadImages() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      // 이미지 다운로드
+      final originalBytes = await _imageManager.downloadOriginalImage(widget.customerId);
+      final restoredBytes = await _imageManager.downloadRestoredImage(widget.customerId);
+      
+      setState(() {
+        _originalImageBytes = originalBytes;
+        _restoredImageBytes = restoredBytes;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = '이미지 로드 실패: $e';
+        _isLoading = false;
+      });
+    }
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('이미지 표시'),
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!))
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (_originalImageBytes != null)
+                        Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('원본 이미지', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 8),
+                              Image.memory(_originalImageBytes!),
+                            ],
+                          ),
+                        ),
+                      if (_restoredImageBytes != null)
+                        Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('복원 이미지', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 8),
+                              Image.memory(_restoredImageBytes!),
+                            ],
+                          ),
+                        ),
+                      Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: _loadImages,
+                          child: Text('새로고침'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+    );
+  }
+}
+```
 
 ### 3.3 3단계: 실시간 진행률 추적 (WebSocket)
 
@@ -1954,6 +2434,28 @@ class SkinLensClient(private val context: Context) {
 
 ---
 
+## 변경 이력 (Changelog)
+
+### v2.2.0 (2026-06-10)
+- **이미지 저장 및 전송 기능 추가**
+  - 로컬 DB 메타데이터 저장 구현
+  - Supabase 클라우드 스토리지 통합
+  - 하이브리드 Base64 인코딩 (URL + Base64)
+  - 이미지 API 엔드포인트 추가 (`/v1/images/{customer_id}/original`, `/v1/images/{customer_id}/restored`)
+  - 이미지 메타데이터 API 추가 (`/v1/images/{customer_id}/metadata`)
+  - Flutter 이미지 다운로드 및 Base64 디코딩 예시 추가
+  - Flutter UI 예시 추가
+  - JSON 응답 형식 업데이트 (이미지 URL 및 Base64 포함)
+  - 시스템 아키텍처 다이어그램 업데이트 (이미지 API 및 클라우드 스토리지 추가)
+  - 통신 흐름 업데이트 (이미지 저장 및 다운로드 단계 추가)
+
+### v2.1.0 (2026-06-01)
+- 초기 버전
+- 인증, 분석 요청, WebSocket 진행률 추적, 푸시 알림, 제품 추천 기능
+
+---
+
 **문서 생성일**: 2026-06-01  
+**마지막 업데이트**: 2026-06-10  
 **작성자**: Cascade AI Assistant  
 **프로젝트**: SkinLens v1
