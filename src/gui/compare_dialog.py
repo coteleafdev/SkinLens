@@ -416,6 +416,7 @@ class SkinMeasurementCompareDialog(QDialog):
         report_text += f"\n\n【원본 이미지 {measurement_count}개 항목별 LLM 소견】\n"
         
         # AI 측정 점수 18항목 순서로 정렬
+        # 기존 표시되던 항목명 사용
         metric_order = [
             "melasma_score",
             "freckle_score",
@@ -436,12 +437,34 @@ class SkinMeasurementCompareDialog(QDialog):
             "cheek_sagging_score",
             "skin_type_score",
         ]
+        # 기존 표시되던 항목명으로 매핑
+        key_to_display_name = {
+            "melasma_score": "기미",
+            "freckle_score": "주근깨",
+            "redness_score": "홍조",
+            "post_inflammatory_erythema_score": "염증 후 홍반",
+            "acne_score": "여드름",
+            "post_acne_pigment_score": "트러블 후 색소",
+            "pore_size_score": "모공 크기",
+            "pore_sagging_score": "모공 처짐",
+            "eye_wrinkle_score": "눈가 주름",
+            "nasolabial_wrinkle_score": "팔자 주름",
+            "fine_deep_wrinkle_score": "미세/깊은 주름",
+            "roughness_score": "피부결",
+            "skin_tone_score": "피부 톤",
+            "dullness_score": "칙칙함",
+            "uneven_tone_score": "불균일 톤",
+            "jawline_blur_score": "턱선 흐림",
+            "cheek_sagging_score": "볼 처짐",
+            "skin_type_score": "피부 타입",
+        }
         orig_opinions_dict = {metric.key: metric for metric in orig_report.metric_opinions}
         
         for key in metric_order:
             if key in orig_opinions_dict:
                 metric = orig_opinions_dict[key]
-                report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
+                display_name = key_to_display_name.get(key, metric.display_name)
+                report_text += f"\n● {display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
                 report_text += f"  {metric.opinion}\n"
                 if metric.reason:
                     report_text += f"  [근거: {metric.reason}]\n"
@@ -455,7 +478,8 @@ class SkinMeasurementCompareDialog(QDialog):
         for key in metric_order:
             if key in ref_opinions_dict:
                 metric = ref_opinions_dict[key]
-                report_text += f"\n● {metric.display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
+                display_name = key_to_display_name.get(key, metric.display_name)
+                report_text += f"\n● {display_name} ({int(round(metric.score))}점 / {metric.grade})\n"
                 # 소견은 표시하지 않고 산출근거만 표시
                 if metric.reason:
                     report_text += f"  [근거: {metric.reason}]\n"
@@ -806,6 +830,7 @@ class SkinMeasurementCompareDialog(QDialog):
 
                 append_with_font_local(["원본 이미지 18개 항목별 AI 소견"], bold_font)
                 # AI 측정 점수 18항목 순서로 정렬
+                # 기존 표시되던 항목명 사용
                 metric_order = [
                     "melasma_score",
                     "freckle_score",
@@ -826,11 +851,33 @@ class SkinMeasurementCompareDialog(QDialog):
                     "cheek_sagging_score",
                     "skin_type_score",
                 ]
+                # 기존 표시되던 항목명으로 매핑
+                key_to_display_name = {
+                    "melasma_score": "기미",
+                    "freckle_score": "주근깨",
+                    "redness_score": "홍조",
+                    "post_inflammatory_erythema_score": "염증 후 홍반",
+                    "acne_score": "여드름",
+                    "post_acne_pigment_score": "트러블 후 색소",
+                    "pore_size_score": "모공 크기",
+                    "pore_sagging_score": "모공 처짐",
+                    "eye_wrinkle_score": "눈가 주름",
+                    "nasolabial_wrinkle_score": "팔자 주름",
+                    "fine_deep_wrinkle_score": "미세/깊은 주름",
+                    "roughness_score": "피부결",
+                    "skin_tone_score": "피부 톤",
+                    "dullness_score": "칙칙함",
+                    "uneven_tone_score": "불균일 톤",
+                    "jawline_blur_score": "턱선 흐림",
+                    "cheek_sagging_score": "볼 처짐",
+                    "skin_type_score": "피부 타입",
+                }
                 orig_opinions_dict = {metric.key: metric for metric in self._last_llm_report_orig.metric_opinions}
                 for key in metric_order:
                     if key in orig_opinions_dict:
                         metric = orig_opinions_dict[key]
-                        append_with_font_local([f"{metric.display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
+                        display_name = key_to_display_name.get(key, metric.display_name)
+                        append_with_font_local([f"{display_name} ({int(round(metric.score))}점 / {metric.grade})"], small_font)
                         # metric.opinion이 dict인 경우 문자열 추출
                         opinion_text = metric.opinion
                         if isinstance(opinion_text, dict):
@@ -844,26 +891,6 @@ class SkinMeasurementCompareDialog(QDialog):
                         append_with_font_local([])  # 빈 행
                     else:
                         # 소견이 없는 항목도 표시
-                        key_to_display_name = {
-                            "melasma_score": "기미·잡티",
-                            "freckle_score": "주근깨",
-                            "redness_score": "홍조",
-                            "post_inflammatory_erythema_score": "염증후 홍반",
-                            "acne_score": "여드름",
-                            "post_acne_pigment_score": "여드름 흔적",
-                            "pore_size_score": "모공 크기",
-                            "pore_sagging_score": "모공 처짐",
-                            "eye_wrinkle_score": "눈가 주름",
-                            "nasolabial_wrinkle_score": "팔자 주름",
-                            "fine_deep_wrinkle_score": "미세/깊은 주름",
-                            "roughness_score": "거칠기",
-                            "skin_tone_score": "피부 톤",
-                            "dullness_score": "칙칙함",
-                            "uneven_tone_score": "톤 불균형",
-                            "jawline_blur_score": "턱선 블러",
-                            "cheek_sagging_score": "볼 처짐",
-                            "skin_type_score": "피부 타입",
-                        }
                         display_name = key_to_display_name.get(key, key)
                         append_with_font_local([f"{display_name} (-점 / -)"], small_font)
                         append_with_font_local(["-"], small_font)
