@@ -222,12 +222,8 @@ def _pil_for_img2img(path: Path, *, max_side: int = 768) -> Any:
 
 def resolve_init_image(
     explicit: Optional[Path],
-    *,
-    force_text2img: bool,
 ) -> Optional[Path]:
-    """text2img 강제가 아니면 -i 경로 또는 기본 images/origin.png 로 img2img."""
-    if force_text2img:
-        return None
+    """-i 경로 또는 기본 images/origin.png 로 img2img."""
     if explicit is not None:
         p = Path(explicit).resolve()
         if not p.is_file():
@@ -249,13 +245,13 @@ _STEM_MULTI_US = re.compile(r"_+")
 
 
 def safe_output_stem(input_image: Optional[Path]) -> str:
-    """산출 PNG 파일명에 붙일 안전한 식별자. text2img 이면 ``text2img``.
+    """산출 PNG 파일명에 붙일 안전한 식별자.
 
     OS 불가 문자(백슬래시·콜론·와일드카드 등)만 ``_`` 로 치환한다.
     한글·알파벳·숫자·공백 이외의 일반 유니코드는 유지된다.
     """
     if input_image is None:
-        return "text2img"
+        return "image"
     raw = Path(input_image).resolve().stem
     s = _STEM_UNSAFE.sub("_", raw)
     s = _STEM_MULTI_US.sub("_", s).strip("._-")

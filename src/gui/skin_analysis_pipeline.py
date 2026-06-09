@@ -293,10 +293,6 @@ def _cli_body(args) -> int:
     cf_bg_upsampler_default = _get_restoration_defaults()[3]
     
     # 상호 배타 검증
-    if args.restore_only and args.text2img:
-        from argparse import ArgumentParser
-        p = ArgumentParser()
-        p.error("--restore-only 와 --text2img 은 함께 쓸 수 없습니다.")
     if args.restore_only and args.sd_after_rf:
         from argparse import ArgumentParser
         p = ArgumentParser()
@@ -318,7 +314,7 @@ def _cli_body(args) -> int:
     cfg.codeformer_additional = args.cf_additional
     cfg.codeformer_bg_upsampler = cf_bg_upsampler_default
 
-    init_resolved = resolve_init_image(args.input, force_text2img=args.text2img)
+    init_resolved = resolve_init_image(args.input)
 
     _apply_restore_analyzer_score_tuning(
         cfg,
@@ -881,10 +877,6 @@ def _cli() -> int:
     p.add_argument(
         "--restore-only", action="store_true",
         help="복원 전용 — 입력 원본을 복사한 뒤 복원 엔진만 실행",
-    )
-    p.add_argument(
-        "--text2img", action="store_true",
-        help="초기 이미지 없이 text2img 만",
     )
     p.add_argument(
         "--sd-after-rf", action="store_true",

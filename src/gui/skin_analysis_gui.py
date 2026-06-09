@@ -82,10 +82,6 @@ def _force_terminate_process(code: int = 0) -> None:
 # ---------------------------------------------------------------------------
 # 헬퍼
 # ---------------------------------------------------------------------------
-def _safe_output_stem_gui(input_path_str: str, text2img: bool) -> str:
-    if text2img:
-        return safe_output_stem(None)
-    return safe_output_stem(Path(input_path_str)) if input_path_str else safe_output_stem(None)
 
 
 def _image_path_pixel_size(path: Path) -> Optional[tuple[int, int]]:
@@ -541,8 +537,6 @@ class SkinAnalysisWindow(QMainWindow):
         self.chk_restore.setChecked(True)
         self.chk_restore_only = QCheckBox("복원 전용 — 원본 복사 후 RF만 (--restore-only)")
         self.chk_restore_only.setVisible(False)  # 숨김
-        self.chk_text2img = QCheckBox("text2img만 (입력 이미지 무시, --text2img)")
-        self.chk_text2img.setVisible(False)  # 숨김
 
         measurement_count = get_measurement_count()
         self.chk_restore_score_popup = QCheckBox(
@@ -712,21 +706,17 @@ class SkinAnalysisWindow(QMainWindow):
     def _resolve_preview_paths(self) -> tuple[Optional[Path], Optional[Path]]:
         """원본, 복원 순 경로(파일이 없으면 None)."""
         orig: Optional[Path] = None
-        if not self.chk_text2img.isChecked():
-            p = self.edit_input.text().strip()
-            if p:
-                cand = Path(p)
-                if cand.is_file():
-                    orig = cand
+        p = self.edit_input.text().strip()
+        if p:
+            cand = Path(p)
+            if cand.is_file():
+                orig = cand
         mid: Optional[Path] = None
         out = Path(self.edit_out.text().strip() or ".")
         if out.is_dir():
             # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
             customer_id = self.edit_customer_id.text().strip()
-            folder_name = customer_id if customer_id else _safe_output_stem_gui(
-                self.edit_input.text().strip(),
-                self.chk_text2img.isChecked(),
-            )
+            folder_name = customer_id if customer_id else safe_output_stem(Path(p)) if p else safe_output_stem(None)
             # 이미지별 폴더 경로
             image_folder = out / folder_name
             # [FIX ⑤] pipeline_core.final_pipeline_artifact_path 와 동일 우선순위
@@ -746,19 +736,12 @@ class SkinAnalysisWindow(QMainWindow):
     # ── 시그널 연결 ─────────────────────────────────────────────────────────
     def _connect_signals(self) -> None:
         self.chk_restore_only.toggled.connect(self._sync_mode_enables)
-        self.chk_text2img.toggled.connect(self._sync_mode_enables)
         self.edit_input.textChanged.connect(lambda _: self._refresh_original_preview_only())
         self.edit_out.textChanged.connect(lambda _: self._refresh_previews())
-        self.chk_text2img.toggled.connect(lambda _: self._refresh_original_preview_only())
 
     def _sync_mode_enables(self) -> None:
         ro = self.chk_restore_only.isChecked()
-        t2i = self.chk_text2img.isChecked()
-        self.chk_restore_only.setEnabled(not t2i)
-        self.chk_text2img.setEnabled(not ro)
-        if ro or t2i:
-            self.chk_restore_only.setChecked(False)
-            self.chk_text2img.setChecked(False)
+        self.chk_restore_only.setEnabled(True)
 
     # ── 파일 다이얼로그 ─────────────────────────────────────────────────────
     def _pick_input_file(self) -> None:
@@ -793,11 +776,6 @@ class SkinAnalysisWindow(QMainWindow):
     # ── 미리보기 ────────────────────────────────────────────────────────────
     def _refresh_original_preview_only(self) -> None:
         self.lbl_orig_cap.setText("원본")
-        if self.chk_text2img.isChecked():
-            self.lbl_orig_px.setText("—")
-            self.lbl_io_input_px.setText("— (text2img)")
-            self._set_preview_image(self.lbl_orig, None, "text2img 모드 (입력 원본 없음)")
-            return
         p = self.edit_input.text().strip()
         if not p:
             self.lbl_orig_px.setText("—")
@@ -821,10 +799,8 @@ class SkinAnalysisWindow(QMainWindow):
 
         # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
         customer_id = self.edit_customer_id.text().strip()
-        folder_name = customer_id if customer_id else _safe_output_stem_gui(
-            self.edit_input.text().strip(),
-            self.chk_text2img.isChecked(),
-        )
+        p = self.edit_input.text().strip()
+        folder_name = customer_id if customer_id else safe_output_stem(Path(p)) if p else safe_output_stem(None)
         # 이미지별 폴더 경로
         image_folder = out / folder_name
         # [FIX ⑤] pipeline_core.final_pipeline_artifact_path 와 동일 우선순위
@@ -853,17 +829,13 @@ class SkinAnalysisWindow(QMainWindow):
 
     # ── 검증 ────────────────────────────────────────────────────────────────
     def _validate(self) -> bool:
-        if self.chk_restore_only.isChecked() and self.chk_text2img.isChecked():
-            QMessageBox.warning(self, "설정 오류", "--restore-only 와 --text2img 은 함께 쓸 수 없습니다.")
+        p = self.edit_input.text().strip()
+        if not p:
+            QMessageBox.warning(self, "입력 오류", "입력 이미지를 선택하세요.")
             return False
-        if not self.chk_text2img.isChecked():
-            p = self.edit_input.text().strip()
-            if not p:
-                QMessageBox.warning(self, "입력 오류", "입력 이미지를 선택하거나 text2img 모드를 켜세요.")
-                return False
-            if not Path(p).is_file():
-                QMessageBox.warning(self, "입력 오류", f"파일이 없습니다:\n{p}")
-                return False
+        if not Path(p).is_file():
+            QMessageBox.warning(self, "입력 오류", f"파일이 없습니다:\n{p}")
+            return False
         return True
 
     # ── args 빌드 ───────────────────────────────────────────────────────────
@@ -881,10 +853,7 @@ class SkinAnalysisWindow(QMainWindow):
         else:
             self._append_log("[GUI 파이프라인] 동기 모드로 실행")
 
-        if self.chk_text2img.isChecked():
-            args.append("--text2img")
-        else:
-            args.extend(["-i", self.edit_input.text().strip()])
+        args.extend(["-i", self.edit_input.text().strip()])
 
         # 설문 JSON 파일 추가
         input_json_path = self.edit_input_json.text().strip()
@@ -1062,7 +1031,7 @@ class SkinAnalysisWindow(QMainWindow):
         # 파이프라인 완료 후 측정항목 비교 자동 실행
         if code == 0:  # 성공 시에만 실행
             try:
-                orig = Path(self.edit_input.text().strip()) if not self.chk_text2img.isChecked() else None
+                orig = Path(self.edit_input.text().strip())
                 if orig and orig.is_file():
                     # 산출 폴더에서 기준 이미지 찾기
                     out_dir = Path(self.edit_out.text().strip())
