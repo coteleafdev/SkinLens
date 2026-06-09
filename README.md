@@ -3,7 +3,7 @@
 AI 기반 피부 분석 및 복원 파이프라인 프로젝트입니다. RestoreFormer++, CodeFormer를 활용한 이미지 복원과 SkinAnalyzerV3를 통한 피부 상태 분석을 제공합니다.
 
 > **문서 버전:** 1.5.0  
-> **마지막 업데이트:** 2026-06-07
+> **마지막 업데이트:** 2026-06-09
 
 [REFACTOR 2026-05-16] Stable Diffusion 기능 제거 (사용하지 않음)
 [REFACTOR 2026-05-24] 프로젝트명 변경: CÔTELEAF Skin Analysis v3 → SkinLens v1.0
@@ -18,12 +18,11 @@ AI 기반 피부 분석 및 복원 파이프라인 프로젝트입니다. Restor
   - CLI 비동기 모드 수정: functools.partial로 keyword-only 인자 처리
   - server.py JWT_SECRET_KEY 체크 제거: 공유 secrets 모듈로 위임
 [REFACTOR 2026-06-07] 엔트리포인트 구조 개선
-  - CLI 엔트리포인트: src/cli/entry.py (명명 규칙 통일)
-  - GUI 엔트리포인트: src/gui/entry.py (명명 규칙 통일)
-  - 파이프라인 실행기: src/pipeline/pipeline_runner.py (공통 파이프라인 로직 중앙화)
-  - GUI 래퍼: src/gui/gui_wrapper.py (GUI 특화 로직 분리)
-  - main.py 간소화: 새로운 엔트리포인트 사용
-  - 단위 테스트 추가: tests/test_pipeline_runner.py
+[UPDATE 2026-06-09] 처방전 시스템 업데이트
+  - 활성 믹스 10종 → 14종으로 확장 (M01-M14)
+  - 카테고리명을 LLM_PROMPT_TEMPLATE.md의 9개 카테고리로 매핑
+  - config.json, prescription_calculator.py, html_utils.py, compare_dialog.py 업데이트
+  - 문서 갱신: PRESCRIPTION_GUIDE.md, LLM_PROMPT_TEMPLATE.md, PROTOCOL.md
 
 ## 📋 목차
 
