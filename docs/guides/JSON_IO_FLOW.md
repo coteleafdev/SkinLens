@@ -1,8 +1,8 @@
 # 데이터 처리 흐름 (JSON I/O Flow)
 
-> **문서 버전:** 1.0.0  
+> **문서 버전:** 1.1.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-05-31  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 스마트폰에서 서버로 전송된 입력 데이터가 내부적으로 처리되어 출력 JSON을 생성하고 DB에 저장되는 전체 프로세스에 대한 상세 문서입니다.
@@ -25,8 +25,11 @@
 7. **AI 소견 생성:** Gemini 소견 생성 (설문 정보 포함)
 8. **입력 JSON → LLM → 출력 JSON:** 설문 정보가 LLM 프롬프트에 포함되어 개인화된 소견 생성
 9. **출력 JSON 생성:** 분석 결과 JSON 생성
-10. **DB 저장:** 로컬 SQLite DB와 Supabase DB에 저장
-11. **응답 반환:** 클라이언트에 결과 반환
+10. **이미지 저장:** 로컬 파일 시스템에 원본/복원 이미지 저장
+11. **이미지 DB 저장:** 로컬 이미지 DB에 메타데이터 저장
+12. **Supabase 업로드:** Supabase 클라우드 스토리지에 이미지 자동 업로드
+13. **DB 저장:** 로컬 SQLite DB와 Supabase DB에 저장
+14. **응답 반환:** 클라이언트에 결과 반환 (이미지 URL + Base64 포함)
 
 ## 폴더 구조
 
@@ -34,11 +37,12 @@
 
 ```
 results/
-├── 이미지명/
-│   ├── 00_input_이미지명.json      # 분석 결과 JSON
-│   ├── 00_input_이미지명.png      # 스테이징된 입력 이미지
-│   └── 01_restored_이미지명.png   # 복원된 이미지
+├── {customer_id}/
+│   ├── 00_input_{customer_id}.png      # 원본 이미지
+│   └── 01_restored_{customer_id}.png   # 복원 이미지
 ├── skin_analysis.db               # 통합 DB (서버 + 로컬)
+├── data/
+│   └── images.db                    # 이미지 메타데이터 DB
 ├── execution_history.db          # 실행 기록 DB
 ├── api_jobs/                      # 서버 API 작업 폴더
 │   └── {job_id}/
@@ -527,7 +531,109 @@ resize_wh = tuple(config.get("restoration", {}).get("input_resize", [1024, 1365]
 }
 ```
 
-### 8. 입력 JSON → LLM → 출력 JSON 흐름
+### 10. 이미지 저장 및 JSON 응답
+
+**이미지 저장:** 파이프라인 완료 후 자동으로 이미지 메타데이터 저장 및 클라우드 업로드
+
+**처리 과정:**
+1. **로컬 이미지 DB 저장** (`src/storage/local_db.py`)
+   - 원본 이미지 메타데이터 저장 (`customer_id`, `image_type`: "original", `file_path`, `file_hash`, `file_size`)
+   - 복원 이미지 메타데이터 저장 (`customer_id`, `image_type`: "restored", `file_path`, `file_hash`, `file_size`)
+   - SQLite DB: `data/images.db` (설정에서 경로 변경 가능)
+
+2. **Supabase 클라우드 스토리지 업로드** (`src/storage/supabase_storage.py`)
+   - 설정: `config.json` → `image_storage.supabase.enabled`
+   - 버킷: `skin-analysis-images` (설정에서 변경 가능)
+   - 원본 이미지 업로드: `{customer_id}/{customer_id}_original.png`
+   - 복원 이미지 업로드: `{customer_id}/{customer_id}_restored.png`
+   - 공개 URL 자동 생성
+
+**JSON 응답 생성:** 하이브리드 이미지 전송 방식
+
+**JSON 구조:**
+```json
+{
+  "input_image": "C:\\Project\\SkinLens v1\\results\\customer123\\00_input_customer123.png",
+  "restored_image": "C:\\Project\\SkinLens v1\\results\\customer123\\01_restored_customer123.png",
+  "output_dir": "C:\\Project\\SkinLens v1\\results\\customer123",
+  "original_image_url": "http://localhost:8000/v1/images/customer123/original",
+  "restored_image_url": "http://localhost:8000/v1/images/customer123/restored",
+  "original_image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",  // null 또는 Base64 string
+  "restored_image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",  // null 또는 Base64 string
+  "metadata": {...},
+  "customer_info": {
+    "customer_id": "customer123",
+    "gender": "female",
+    "age": 35,
+    "race": "korean",
+    "region": "korea"
+  },
+  "execution_time": {
+    "total_sec": 45.2,
+    "llm_sec": 3.5
+  },
+  "analysis_result": {...}
+}
+```
+
+**하이브리드 이미지 전송 방식:**
+
+1. **API URL (항상 제공)**
+   - `original_image_url`: 원본 이미지 API 엔드포인트
+   - `restored_image_url`: 복원 이미지 API 엔드포인트
+   - 스마트폰 앱에서 HTTP GET 요청으로 이미지 다운로드
+   - API 엔드포인트: `GET /v1/images/{customer_id}/original`, `GET /v1/images/{customer_id}/restored`
+
+2. **Base64 인코딩 (조건부 제공)**
+   - `original_image_base64`: 원본 이미지 Base64 문자열
+   - `restored_image_base64`: 복원 이미지 Base64 문자열
+   - 설정: `config.json` → `image_storage.base64.enabled`
+   - 최대 크기: `image_storage.base64.max_size_bytes` (기본 1MB)
+   - 파일 크기 초과 시 `null` 반환
+
+**설정 구조 (`config.json`):**
+```json
+{
+  "image_storage": {
+    "local_db": {
+      "path": "data/images.db"
+    },
+    "supabase": {
+      "enabled": true,
+      "url": "https://xxx.supabase.co",
+      "key": "your-supabase-key",
+      "bucket": "skin-analysis-images"
+    },
+    "base64": {
+      "enabled": true,
+      "max_size_bytes": 1048576
+    }
+  },
+  "server": {
+    "url": "http://localhost:8000"
+  }
+}
+```
+
+**스마트폰 앱 사용 방법:**
+
+1. **URL 방식 (권장)**
+   - JSON 응답에서 `original_image_url`, `restored_image_url` 추출
+   - HTTP GET 요청으로 이미지 다운로드
+   - 캐싱 가능, 대용량 이미지에 적합
+
+2. **Base64 방식 (옵션)**
+   - JSON 응답에서 `original_image_base64`, `restored_image_base64` 추출
+   - Base64 디코딩하여 이미지로 변환
+   - 네트워크 요청 없이 즉시 표시 가능
+   - 작은 이미지에 적합, 대용량 이미지는 `null` 반환
+
+**이미지 API 엔드포인트:**
+- `GET /v1/images/{customer_id}/original`: 원본 이미지 다운로드
+- `GET /v1/images/{customer_id}/restored`: 복원 이미지 다운로드
+- `GET /v1/images/{customer_id}/metadata?include_base64=true`: 이미지 메타데이터 및 Base64 조회
+
+### 11. 입력 JSON → LLM → 출력 JSON 흐름
 
 **데이터 흐름 개요:**
 ```
@@ -658,7 +764,7 @@ analysis_result["llm_stats"] = orig_report.llm_stats
 }
 ```
 
-### 9. 출력 JSON 구조
+### 12. 출력 JSON 구조
 
 ```json
 {
@@ -805,7 +911,7 @@ analysis_result["llm_stats"] = orig_report.llm_stats
 - **내부 계산**: float로 유지 (정밀도 보장)
 - **변환 위치**: `src/cli/skin_analysis_cli.py`의 `_convert_scores_to_int()` 함수와 `src/llm/llm_utils.py`의 `report_to_dict()` 함수에서 정수로 변환
 
-### 10. DB 저장
+### 13. DB 저장
 
 **로컬 SQLite DB (skin_analysis_db.py):**
 ```python
@@ -831,7 +937,7 @@ syncer.sync(
 )
 ```
 
-### 11. DB 스키마
+### 14. DB 스키마
 
 ### 로컬 SQLite DB
 
@@ -897,7 +1003,7 @@ CREATE TABLE IF NOT EXISTS skin_analyses (
 ALTER TABLE skin_analyses ADD COLUMN IF NOT EXISTS input_json JSONB;
 ```
 
-### 12. API 엔드포인트
+### 15. API 엔드포인트
 
 ### POST /v1/analysis/jobs
 
@@ -1135,4 +1241,5 @@ WHERE customer_id = 'C001';
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
-| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
+| 1.1.0 | 2026-06-10 | 이미지 저장 및 JSON 응답 섹션 추가 (섹션 10), 하이브리드 이미지 전송 방식 문서화, 섹션 번호 재정렬 (10→11, 11→12, 12→13, 13→14, 14→15) | Cascade |
+| 1.0.0 | 2026-05-31 | 초기 버전 | Cascade |
