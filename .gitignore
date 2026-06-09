@@ -3,6 +3,8 @@ config/config.secrets.json
 *.secrets.json
 .env
 .env.*
+temp_cred.txt
+gcm-diagnose.log
 
 # 모델 가중치 (용량)
 # external/ 디렉토리는 Git LFS로 관리됨
@@ -17,6 +19,8 @@ __pycache__/
 *.pyc
 *.db
 gui_debug.log
+skin_analysis_report_*.html
+skin_analysis_report_*.xlsx
 
 # results 폴더 내 제외 파일
 results/*.db
