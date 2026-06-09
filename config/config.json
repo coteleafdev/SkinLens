@@ -126,6 +126,11 @@
       "key": null,
       "bucket": "skin-analysis-images",
       "_note": "이미지 Supabase 스토리지 설정. enabled=true이면 파이프라인 완료 후 자동 업로드. url/key는 환경 변수(SUPABASE_URL, SUPABASE_KEY) 또는 config.secrets.json에서 로드."
+    },
+    "base64": {
+      "enabled": false,
+      "max_size_bytes": 1048576,
+      "_note": "이미지 Base64 인코딩 설정. enabled=true이면 JSON 응답에 Base64 포함. max_size_bytes: Base64 인코딩할 최대 이미지 크기 (기본 1MB)."
     }
   },
   "jwt": {

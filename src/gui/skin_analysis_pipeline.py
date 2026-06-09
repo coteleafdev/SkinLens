@@ -580,12 +580,41 @@ def _cli_body(args) -> int:
                         
                         customer_id = getattr(args, 'customer_id', None) or Path(init_resolved).stem
                         
+                        # Check if Base64 encoding is enabled
+                        include_base64 = False
+                        original_base64 = None
+                        restored_base64 = None
+                        try:
+                            from src.config.config_manager import ConfigManager
+                            config = ConfigManager()
+                            base64_config = config.get("image_storage", {}).get("base64", {})
+                            if base64_config.get("enabled", False):
+                                include_base64 = True
+                                max_size = base64_config.get("max_size_bytes", 1048576)
+                                
+                                # Try to get Base64 encoded images
+                                try:
+                                    from src.storage.local_db import LocalImageStorage
+                                    local_storage = LocalImageStorage()
+                                    original_base64 = local_storage.get_image_base64(
+                                        customer_id, "original", max_size
+                                    )
+                                    restored_base64 = local_storage.get_image_base64(
+                                        customer_id, "restored", max_size
+                                    )
+                                except Exception as e:
+                                    log.warning(f"Failed to get Base64 images: {e}")
+                        except Exception as e:
+                            log.warning(f"Failed to check Base64 config: {e}")
+                        
                         result_json = {
                             "input_image": str(Path(init_resolved).resolve()),
                             "restored_image": str(final_p.resolve()),
                             "output_dir": str(args.out_dir),
                             "original_image_url": f"{server_url}/v1/images/{customer_id}/original",
                             "restored_image_url": f"{server_url}/v1/images/{customer_id}/restored",
+                            "original_image_base64": original_base64,
+                            "restored_image_base64": restored_base64,
                             "metadata": metadata,
                             "customer_info": {
                                 "customer_id": customer_id,

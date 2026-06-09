@@ -4,6 +4,7 @@ Local SQLite DB storage for images.
 import sqlite3
 import logging
 import os
+import base64
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
@@ -147,6 +148,40 @@ class LocalImageStorage:
             if file_path.exists():
                 with open(file_path, 'rb') as f:
                     return f.read()
+        return None
+    
+    def get_image_base64(
+        self,
+        customer_id: str,
+        image_type: str,
+        max_size_bytes: Optional[int] = None
+    ) -> Optional[str]:
+        """
+        Get image base64 encoded data from local file system.
+        
+        Args:
+            customer_id: Customer ID
+            image_type: 'original' or 'restored'
+            max_size_bytes: Maximum file size to encode (None = no limit)
+        
+        Returns:
+            Base64 encoded string or None
+        """
+        metadata = self.get_image(customer_id, image_type)
+        if metadata:
+            file_path = Path(metadata['file_path'])
+            if file_path.exists():
+                # Check file size if max_size_bytes is specified
+                if max_size_bytes is not None:
+                    file_size = file_path.stat().st_size
+                    if file_size > max_size_bytes:
+                        log.warning(
+                            f"Image too large for Base64 encoding: {file_size} > {max_size_bytes}"
+                        )
+                        return None
+                
+                with open(file_path, 'rb') as f:
+                    return base64.b64encode(f.read()).decode('utf-8')
         return None
     
     def delete_image(
