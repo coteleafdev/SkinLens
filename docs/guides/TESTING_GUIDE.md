@@ -1,0 +1,1186 @@
+# 테스트 가이드 (Testing Guide)
+
+> **문서 버전:** 1.3.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-06-01  
+> **상태:** 활성
+
+---
+
+## 개요
+
+SkinLens 테스트 작성 및 실행 방법입니다.
+
+## 현재 테스트 상태 (2026-06-01)
+
+- **통과**: 978개 (98.6%)
+- **스킵**: 14개 (1.4%)
+- **실패**: 0개
+- **총계**: 992개
+- **실행 시간**: 73.60초
+
+### 최근 개선 사항
+- **88개 스킵 해결**: 단위 테스트 None 처리, 버전 관리, Customer API 재귀 오류, 실패한 9개 테스트
+- **통과율 향상**: 86.0% → 98.6%
+
+---
+
+## 1. 테스트 구조
+
+```
+tests/
+├── README.md                      # 테스트 개요 및 가이드
+├── README_SERVER_TESTS.md         # 서버 테스트 가이드
+├── conftest.py                    # pytest 설정 및 공통 fixture
+├── fixtures/                      # 테스트 fixture
+│   ├── db_fixtures.py            # DB 관련 fixture
+│   └── server_fixtures.py        # 서버 관련 fixture
+├── integration/                   # 통합 테스트
+│   ├── test_api_integration.py   # API 통합 테스트
+│   ├── test_db_integration.py    # DB 통합 테스트
+│   ├── test_llm_integration.py   # LLM 통합 테스트
+│   └── test_pipeline_integration.py # 파이프라인 통합 테스트
+├── test_admin_api.py              # 관리자 API 테스트
+├── test_alert_system.py           # 알림 시스템 테스트
+├── test_analyzer_integration.py   # 분석기 통합 테스트
+├── test_analyzer_registry.py      # 분석기 레지스트리 테스트
+├── test_analyzers.py              # 분석기 단위 테스트
+├── test_app_features_api.py       # 앱 기능 API 테스트
+├── test_auth_api.py               # 인증 API 테스트 (JWT, refresh, logout, password)
+├── test_auto_recovery.py          # 자동 복구 테스트
+├── test_backup.py                 # 백업 테스트
+├── test_cli.py                   # CLI 테스트
+├── test_config.py                 # 설정 테스트
+├── test_config_manager.py         # 설정 관리자 테스트
+├── test_customer_api.py           # 고객 API 테스트 (profile, devices, surveys)
+├── test_db_api.py                 # DB API 테스트
+├── test_db_cli.py                 # DB CLI 테스트
+├── test_db_features.py            # DB 기능 테스트
+├── test_enhancements_api.py       # 향상 기능 API 테스트
+├── test_error_handling.py         # 에러 처리 테스트
+├── test_full_integration.py       # 전체 통합 테스트
+├── test_health_api.py             # 헬스 체크 API 테스트
+├── test_i18n.py                   # 국제화 테스트
+├── test_integration.py            # 통합 테스트
+├── test_integration_api.py        # 통합 API 테스트
+├── test_ip_filter.py              # IP 필터 테스트
+├── test_job_queue.py              # 작업 큐 테스트
+├── test_llm_config.py             # LLM 설정 테스트
+├── test_llm_providers.py          # LLM 제공자 테스트
+├── test_logs_api.py               # 로그 API 테스트
+├── test_metrics_collector.py      # 메트릭 수집 테스트
+├── test_monitoring.py             # 모니터링 테스트
+├── test_multi_view_analysis.py    # 멀티 뷰 분석 테스트
+├── test_orders_api.py             # 주문 API 테스트
+├── test_pipeline_core.py           # 파이프라인 코어 테스트
+├── test_pipeline_image_utils.py   # 파이프라인 이미지 유틸리티 테스트
+├── test_prescription_calculator.py # 처방 계산기 테스트
+├── test_product_repository.py     # 제품 리포지토리 테스트
+├── test_prompt_manager.py         # 프롬프트 관리자 테스트
+├── test_rate_limiting.py          # 속도 제한 테스트
+├── test_recovery_engine.py        # 복구 엔진 테스트
+├── test_repositories.py           # 리포지토리 테스트
+├── test_repository_analysis_stats.py    # 분석 통계 리포지토리 테스트
+├── test_repository_customer_data.py     # 고객 데이터 리포지토리 테스트
+├── test_repository_error_audit.py       # 에러 감사 리포지토리 테스트
+├── test_repository_execution_stats.py   # 실행 통계 리포지토리 테스트
+├── test_repository_image_metadata.py    # 이미지 메타데이터 리포지토리 테스트
+├── test_repository_llm_api.py           # LLM API 리포지토리 테스트
+├── test_repository_log.py               # 로그 리포지토리 테스트
+├── test_repository_system_health.py     # 시스템 헬스 리포지토리 테스트
+├── test_request_logging.py        # 요청 로깅 테스트
+├── test_restoration_base.py       # 복원 베이스 테스트
+├── test_restoration_llm_registry.py # 복원 LLM 레지스트리 테스트
+├── test_restoration_registry.py  # 복원 레지스트리 테스트
+├── test_result_parser.py          # 결과 파서 테스트
+├── test_roi_manager.py            # ROI 관리자 테스트
+├── test_scoring_breakpoints.py   # 점수 기준점 테스트
+├── test_scoring_multi_view.py    # 멀티 뷰 점수 테스트
+├── test_scoring_report.py         # 점수 보고서 테스트
+├── test_scoring_score_utils.py   # 점수 유틸리티 테스트
+├── test_security.py               # 보안 테스트
+├── test_server.py                 # 서버 테스트
+├── test_skin_type_detector.py    # 피부 타입 감지 테스트
+├── test_stats_api.py              # 통계 API 테스트
+├── test_supabase_sync.py          # Supabase 동기화 테스트
+├── test_unit.py                   # 단위 테스트
+├── test_upload.py                 # 업로드 테스트
+├── test_utils.py                  # 유틸리티 테스트
+├── test_versioning.py             # 버전 관리 테스트
+├── test_websocket_management.py   # WebSocket 관리 테스트
+└── mobile/                        # 모바일 앱 통합 테스트
+    ├── __init__.py               # 모바일 테스트 패키지
+    ├── mobile_client_simulator.py # 모바일 앱 클라이언트 시뮬레이터
+    └── test_mobile_integration.py # 모바일 앱 통합 테스트
+```
+
+### 1.1 테스트 카테고리
+
+#### API 테스트
+- **test_auth_api.py**: 인증 API (로그인, 토큰 갱신, 로그아웃, 비밀번호 변경/복구)
+- **test_admin_api.py**: 관리자 API
+- **test_customer_api.py**: 고객 API (프로필, 장치, 설문)
+- **test_app_features_api.py**: 앱 기능 API
+- **test_enhancements_api.py**: 향상 기능 API
+- **test_orders_api.py**: 주문 API
+- **test_health_api.py**: 헬스 체크 API
+- **test_logs_api.py**: 로그 API
+- **test_stats_api.py**: 통계 API
+- **test_db_api.py**: DB API
+- **test_integration_api.py**: 통합 API
+
+#### 분석 및 점수 테스트
+- **test_analyzers.py**: 분석기 단위 테스트
+- **test_analyzer_registry.py**: 분석기 레지스트리
+- **test_analyzer_integration.py**: 분석기 통합
+- **test_scoring_breakpoints.py**: 점수 기준점
+- **test_scoring_multi_view.py**: 멀티 뷰 점수
+- **test_scoring_report.py**: 점수 보고서
+- **test_scoring_score_utils.py**: 점수 유틸리티
+- **test_skin_type_detector.py**: 피부 타입 감지
+- **test_multi_view_analysis.py**: 멀티 뷰 분석
+
+#### 파이프라인 및 복원 테스트
+- **test_pipeline_core.py**: 파이프라인 코어
+- **test_pipeline_image_utils.py**: 파이프라인 이미지 유틸리티
+- **test_restoration_base.py**: 복원 베이스
+- **test_restoration_registry.py**: 복원 레지스트리
+- **test_restoration_llm_registry.py**: 복원 LLM 레지스트리
+- **test_recovery_engine.py**: 복구 엔진
+- **test_auto_recovery.py**: 자동 복구
+
+#### LLM 테스트
+- **test_llm_providers.py**: LLM 제공자
+- **test_llm_config.py**: LLM 설정
+- **test_prompt_manager.py**: 프롬프트 관리자
+- **test_result_parser.py**: 결과 파서
+
+#### 데이터베이스 테스트
+- **test_db_cli.py**: DB CLI
+- **test_db_features.py**: DB 기능
+- **test_supabase_sync.py**: Supabase 동기화
+- **test_repositories.py**: 리포지토리 기본
+- **test_repository_*.py**: 각 리포지토리별 테스트
+
+#### 시스템 및 유틸리티 테스트
+- **test_config.py**: 설정
+- **test_config_manager.py**: 설정 관리자
+- **test_utils.py**: 유틸리티
+- **test_backup.py**: 백업
+- **test_job_queue.py**: 작업 큐
+- **test_metrics_collector.py**: 메트릭 수집
+- **test_monitoring.py**: 모니터링
+- **test_alert_system.py**: 알림 시스템
+- **test_security.py**: 보안
+- **test_rate_limiting.py**: 속도 제한
+- **test_ip_filter.py**: IP 필터
+- **test_i18n.py**: 국제화
+- **test_versioning.py**: 버전 관리
+- **test_error_handling.py**: 에러 처리
+- **test_request_logging.py**: 요청 로깅
+- **test_websocket_management.py**: WebSocket 관리
+
+#### 통합 테스트
+- **test_integration.py**: 통합 테스트
+- **test_full_integration.py**: 전체 통합 테스트
+- **integration/**: 통합 테스트 하위 디렉토리
+
+#### 기타 테스트
+- **test_cli.py**: CLI 테스트
+- **test_server.py**: 서버 테스트
+- **test_upload.py**: 업로드 테스트
+- **test_unit.py**: 단위 테스트
+- **test_roi_manager.py**: ROI 관리자
+- **test_prescription_calculator.py**: 처방 계산기
+- **test_product_repository.py**: 제품 리포지토리
+
+### 1.2 테스트 실행
+
+```bash
+# 전체 테스트 실행
+pytest tests/
+
+# 특정 테스트 파일 실행
+pytest tests/test_auth_api.py
+
+# 특정 테스트 클래스 실행
+pytest tests/test_auth_api.py::TestAuth
+
+# 특정 테스트 메서드 실행
+pytest tests/test_auth_api.py::TestAuth::test_login_success
+
+# 커버리지 확인
+pytest tests/ --cov=src --cov-report=html
+
+# 통합 테스트만 실행
+pytest tests/integration/
+
+# 서버 테스트 실행
+pytest tests/test_server.py
+```
+
+---
+
+## 2. 단위 테스트
+
+### 2.1 분석기 테스트
+
+```python
+# tests/unit/test_analyzer.py
+import pytest
+from src.scoring.skin_scoring import SkinAnalyzer
+
+def test_analyzer_initialization():
+    analyzer = SkinAnalyzer()
+    assert analyzer is not None
+
+def test_analyze_all():
+    analyzer = SkinAnalyzer()
+    result = analyzer.analyze_all("tests/fixtures/images/test.jpg", debug=True)
+    assert "overall_score" in result
+    assert "measurements" in result
+    assert 0 <= result["overall_score"] <= 100
+
+def test_measurements_range():
+    analyzer = SkinAnalyzer()
+    result = analyzer.analyze_all("tests/fixtures/images/test.jpg", debug=True)
+    
+    for key, value in result["measurements"].items():
+        assert 0 <= value <= 100, f"{key} score out of range: {value}"
+```
+
+### 2.2 복원기 테스트
+
+```python
+# tests/unit/test_restorer.py
+import pytest
+from pathlib import Path
+from src.restoration.pipeline import run_enhancement_pipeline
+
+def test_enhancement_pipeline():
+    cfg = {
+        "restorer": "codeformer",
+        "codeformer_fidelity": 0.7
+    }
+    
+    result = run_enhancement_pipeline(
+        cfg=cfg,
+        out_dir=Path("tests/fixtures/output"),
+        input_image=Path("tests/fixtures/images/test.jpg"),
+        do_restore=True
+    )
+    
+    assert result.restored is not None
+    assert result.restored.exists()
+```
+
+### 2.3 LLM 테스트
+
+```python
+# tests/unit/test_llm.py
+import pytest
+from unittest.mock import patch, MagicMock
+from src.llm.providers import GeminiProvider
+
+@patch('google.generativeai.configure')
+def test_gemini_provider_init(mock_configure):
+    provider = GeminiProvider(
+        api_key="test_key",
+        model_name="gemini-2.5-flash"
+    )
+    assert provider.api_key == "test_key"
+    assert provider.model_name == "gemini-2.5-flash"
+
+@patch('google.generativeai.GenerativeModel')
+def test_generate_content(mock_model):
+    mock_response = MagicMock()
+    mock_response.text = "Test response"
+    mock_model.return_value.generate.return_value = mock_response
+    
+    provider = GeminiProvider(api_key="test_key", model_name="gemini-2.5-flash")
+    result = provider.generate_content("Test prompt")
+    
+    assert result == "Test response"
+```
+
+### 2.4 알림 시스템 테스트
+
+```python
+# tests/test_alert_system.py
+import pytest
+from src.notification.alert_system import AlertConfig, AlertSystem
+
+def test_alert_config_defaults():
+    config = AlertConfig()
+    assert config.slack_webhook_url is None
+    assert config.pagerduty_integration_key is None
+    assert config.email_enabled is False
+
+def test_alert_system_initialization():
+    config = AlertConfig(
+        slack_webhook_url="https://hooks.slack.com/test",
+        email_enabled=True
+    )
+    system = AlertSystem(config=config)
+    assert system.config.slack_webhook_url == "https://hooks.slack.com/test"
+```
+
+### 2.5 처방 계산기 테스트
+
+```python
+# tests/test_prescription_calculator.py
+import pytest
+from src.prescription.prescription_calculator import (
+    calculate_skin_assessment_percentage,
+    calculate_skin_assessment_recipe
+)
+
+def test_calculate_percentage_good():
+    percentage = calculate_skin_assessment_percentage(80)
+    assert percentage == 0.0
+
+def test_calculate_percentage_critical():
+    percentage = calculate_skin_assessment_percentage(30)
+    assert percentage == 3.0
+
+def test_calculate_recipe_none_input():
+    recipe = calculate_skin_assessment_recipe(None)
+    assert recipe == {}
+```
+
+### 2.6 이미지 유틸리티 테스트
+
+```python
+# tests/test_pipeline_image_utils.py
+import pytest
+from pathlib import Path
+from src.pipeline.image_utils import _ensure_match_resolution
+
+def test_ensure_match_resolution_same_size(tmp_path):
+    img = Image.new('RGB', (1000, 1000), color='white')
+    input_path = tmp_path / "test.png"
+    img.save(input_path)
+    
+    result_path = _ensure_match_resolution(input_path, (1000, 1000))
+    assert result_path == input_path.resolve()
+```
+
+### 2.7 파이프라인 코어 테스트
+
+```python
+# tests/test_pipeline_core.py
+import pytest
+from src.pipeline.pipeline_core import (
+    format_duration,
+    Restorer,
+    PipelineSettings
+)
+
+def test_format_duration_seconds():
+    assert format_duration(5.5) == "5.50s"
+
+def test_format_duration_minutes():
+    assert format_duration(90) == "1m 30s"
+
+def test_restorer_values():
+    assert Restorer.RESTOREFORMER == "restoreformer"
+    assert Restorer.CODEFORMER == "codeformer"
+```
+
+### 2.8 제품 리포지토리 테스트
+
+```python
+# tests/test_product_repository.py
+import pytest
+from src.db.product_repository import ProductRepository
+
+def test_add_product(repository):
+    product_id = repository.add_product(
+        product_id="TEST001",
+        product_name="Test Product",
+        category="트러블 케어",
+        key_ingredients=["니아시나마이드"],
+        efficacy="Test efficacy"
+    )
+    assert product_id > 0
+
+def test_get_product(repository):
+    repository.add_product(
+        product_id="TEST001",
+        product_name="Test Product",
+        category="트러블 케어",
+        key_ingredients=["니아시나마이드"],
+        efficacy="Test efficacy"
+    )
+    
+    product = repository.get_product("TEST001")
+    assert product is not None
+    assert product["product_name"] == "Test Product"
+```
+
+### 2.9 결과 파서 테스트
+
+```python
+# tests/test_result_parser.py
+import pytest
+from src.db.result_parser import extract_overall_scores
+
+def test_extract_overall_scores_normal():
+    json_result = {
+        "analysis_result": {
+            "overall_score": 75.5,
+            "overall_score_report": 80.0
+        }
+    }
+    
+    orig, rest = extract_overall_scores(json_result)
+    assert orig == 75.5
+    assert rest == 80.0
+```
+
+### 2.10 Supabase 동기화 테스트
+
+```python
+# tests/test_supabase_sync.py
+import pytest
+from src.db.supabase_sync import SupabaseConfig
+
+def test_default_config():
+    config = SupabaseConfig()
+    assert config.url == ""
+    assert config.key == ""
+    assert config.bucket == "skin-images"
+    assert config.table == "skin_analyses"
+    assert config.enabled is True
+
+@patch.dict('os.environ', {
+    'SUPABASE_URL': 'https://test.supabase.co',
+    'SUPABASE_KEY': 'test-key'
+})
+def test_from_env():
+    config = SupabaseConfig.from_env()
+    assert config.url == "https://test.supabase.co"
+    assert config.key == "test-key"
+```
+
+### 2.11 복원 베이스 클래스 테스트
+
+```python
+# tests/test_restoration_base.py
+import pytest
+from pathlib import Path
+from src.restoration.base import BaseRestorer
+
+class MockRestorer(BaseRestorer):
+    def restore(self, input_path, output_path, **kwargs):
+        return {"output_path": str(output_path)}
+    
+    def get_name(self):
+        return "MockRestorer"
+    
+    def get_version(self):
+        return "1.0.0"
+
+def test_init_with_config():
+    config = {"repo": "/path/to/repo", "device": "cuda"}
+    restorer = MockRestorer(config=config)
+    assert restorer.config == config
+
+def test_load_model():
+    restorer = MockRestorer()
+    assert restorer._model_loaded is False
+    restorer.load_model()
+    assert restorer._model_loaded is True
+```
+
+### 2.12 복원 레지스트리 테스트
+
+```python
+# tests/test_restoration_registry.py
+import pytest
+from src.restoration.base import BaseRestorer
+from src.restoration.registry import RestorerRegistry
+
+def test_register():
+    @RestorerRegistry.register("test1")
+    class TestRestorer(BaseRestorer):
+        def restore(self, input_path, output_path, **kwargs):
+            return {"output_path": str(output_path)}
+        
+        def get_name(self):
+            return "TestRestorer"
+        
+        def get_version(self):
+            return "1.0.0"
+    
+    assert "test1" in RestorerRegistry._restorers
+
+def test_create():
+    @RestorerRegistry.register("test1")
+    class TestRestorer(BaseRestorer):
+        def restore(self, input_path, output_path, **kwargs):
+            return {"output_path": str(output_path)}
+        
+        def get_name(self):
+            return "TestRestorer"
+        
+        def get_version(self):
+            return "1.0.0"
+    
+    restorer = RestorerRegistry.create("test1")
+    assert isinstance(restorer, TestRestorer)
+```
+
+### 2.13 공통 유틸리티 테스트
+
+```python
+# tests/test_utils.py
+import pytest
+import logging
+from src.utils.utils import setup_logging, get_logging_level
+
+def test_setup_logging():
+    setup_logging(level="DEBUG", force=True)
+    root_logger = logging.getLogger()
+    assert root_logger.level == logging.DEBUG
+
+def test_get_logging_level():
+    setup_logging(level="INFO", force=True)
+    level = get_logging_level()
+    assert level == "INFO"
+```
+
+### 2.14 LLM 설정 테스트
+
+```python
+# tests/test_llm_config.py
+import pytest
+from unittest.mock import patch
+from src.llm.llm_config import get_default_model, get_default_provider
+
+@patch('src.llm.llm_config._load_config')
+def test_get_default_model(mock_load_config):
+    mock_load_config.return_value = {
+        "llm": {
+            "default_model": "models/gemini-2.5-flash"
+        }
+    }
+    
+    model = get_default_model()
+    assert model == "models/gemini-2.5-flash"
+
+@patch('src.llm.llm_config._load_config')
+def test_get_default_provider(mock_load_config):
+    mock_load_config.return_value = {
+        "llm": {
+            "provider": "openai"
+        }
+    }
+    
+    provider = get_default_provider()
+    assert provider == "openai"
+```
+
+---
+
+## 3. 통합 테스트
+
+### 3.1 파이프라인 테스트
+
+```python
+# tests/integration/test_pipeline.py
+import pytest
+from pathlib import Path
+from src.cli.skin_analysis_cli import run_analysis_pipeline
+
+def test_full_pipeline():
+    result = run_analysis_pipeline(
+        input_image=Path("tests/fixtures/images/test.jpg"),
+        output_dir=Path("tests/fixtures/output"),
+        do_restore=True,
+        debug=True,
+        include_base64=False,
+        llm_report=False  # 테스트에서는 LLM 비활성화
+    )
+    
+    assert result is not None
+    assert "input_image" in result
+    assert "restored_image" in result
+    assert "analysis_result" in result
+    assert "customer_info" in result
+```
+
+### 3.2 DB 테스트
+
+```python
+# tests/integration/test_db.py
+import pytest
+from src.db.skin_analysis_db import SkinAnalysisDB
+import tempfile
+import os
+
+def test_save_and_retrieve():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        db_path = os.path.join(tmpdir, "test.db")
+        db = SkinAnalysisDB(db_path=db_path)
+        
+        # 저장
+        analysis_id = db.save_analysis(
+            original_path="/path/to/input.jpg",
+            restored_path="/path/to/output.jpg",
+            json_result={"overall_score": 75},
+            customer_id="CUST001"
+        )
+        
+        # 조회
+        analyses = db.get_analyses_by_customer("CUST001")
+        assert len(analyses) == 1
+        assert analyses[0]["overall_score"] == 75
+```
+
+---
+
+## 4. E2E 테스트
+
+### 4.1 서버 E2E 테스트
+
+```python
+# tests/e2e/test_server.py
+import pytest
+from fastapi.testclient import TestClient
+from src.server.main import app
+
+client = TestClient(app)
+
+def test_create_job():
+    response = client.post(
+        "/v1/analysis/jobs",
+        files={"image": open("tests/fixtures/images/test.jpg", "rb")},
+        data={
+            "customer_id": "CUST001",
+            "gender": "female",
+            "age": 30
+        }
+    )
+    
+    assert response.status_code == 201
+    assert "job_id" in response.json()
+
+def test_get_job_status():
+    # 먼저 Job 생성
+    create_response = client.post(
+        "/v1/analysis/jobs",
+        files={"image": open("tests/fixtures/images/test.jpg", "rb")}
+    )
+    job_id = create_response.json()["job_id"]
+    
+    # 상태 조회
+    response = client.get(f"/v1/analysis/jobs/{job_id}")
+    
+    assert response.status_code == 200
+    assert "status" in response.json()
+```
+
+### 4.2 전체 시스템 통합 테스트
+
+```python
+# tests/test_full_integration.py
+"""
+전체 시스템 통합 테스트: 앱-엔진서버-웹서버-DB 연동
+
+테스트 시나리오:
+1. 앱 클라이언트가 웹 서버에 이미지 업로드
+2. 웹 서버가 엔진 서버에 분석 요청
+3. 엔진 서버가 이미지 분석 수행
+4. 분석 결과를 DB에 저장
+5. 앱 클라이언트가 결과 조회
+"""
+
+def test_full_flow_image_upload_to_result_retrieval(
+    authenticated_client, admin_auth_headers, temp_dir, test_image
+):
+    """전체 플로우 테스트: 이미지 업로드 → 엔진 서버 분석 → DB 저장 → 결과 조회"""
+    
+    # 1. 앱 클라이언트: 이미지 업로드
+    with open(test_image, "rb") as f:
+        upload_response = authenticated_client.post(
+            "/v1/analysis/jobs",
+            files={"image": ("test.jpg", f, "image/jpeg")},
+            data={
+                "customer_id": "CUST001",
+                "gender": "female",
+                "age": 30,
+                "do_restore": "false"
+            },
+            headers=admin_auth_headers
+        )
+    
+    assert upload_response.status_code == 202
+    job_id = upload_response.json()["job_id"]
+    
+    # 2. 엔진 서버: 백그라운드 분석 수행 (폴링 방식)
+    import time
+    max_wait_time = 30
+    poll_interval = 1
+    elapsed_time = 0
+    
+    while elapsed_time < max_wait_time:
+        result_response = authenticated_client.get(
+            f"/v1/analysis/jobs/{job_id}",
+            headers=admin_auth_headers
+        )
+        
+        if result_response.status_code == 200:
+            result_data = result_response.json()
+            if result_data["status"] in ["completed", "failed"]:
+                break
+        
+        time.sleep(poll_interval)
+        elapsed_time += poll_interval
+    
+    # 3. 웹 서버: 결과 조회
+    result_response = authenticated_client.get(
+        f"/v1/analysis/jobs/{job_id}",
+        headers=admin_auth_headers
+    )
+    
+    assert result_response.status_code == 200
+    result_data = result_response.json()
+    assert result_data["status"] in ["completed", "failed"]
+    assert result_data["customer_id"] == "CUST001"
+
+def test_engine_server_analysis_direct(temp_dir, test_image):
+    """엔진 서버 직접 호출 테스트"""
+    from src.scoring.skin_scoring import SkinAnalyzer
+    
+    analyzer = SkinAnalyzer()
+    result = analyzer.analyze_all(str(test_image), debug=False)
+    
+    assert result is not None
+    assert "overall_score" in result
+    assert "measurements" in result
+    assert 0 <= result["overall_score"] <= 100
+```
+
+#### 추가 통합 테스트
+
+전체 시스템 통합 테스트에는 다음과 같은 추가 테스트가 포함됩니다:
+
+**에러 핸들링 테스트**
+- `test_error_handling_invalid_image`: 잘못된 이미지 업로드 테스트
+- `test_error_handling_missing_required_fields`: 필수 필드 누락 테스트
+- `test_error_handling_nonexistent_job`: 존재하지 않는 Job 조회 테스트
+
+**DB 데이터 검증**
+- `test_db_data_verification`: 분석 결과가 DB에 저장되는지 확인
+
+**동시성 테스트**
+- `test_concurrent_requests`: 여러 요청 동시 처리 테스트
+
+**기능 테스트**
+- `test_websocket_progress_updates`: WebSocket 진행률 업데이트 테스트
+- `test_image_restoration`: 이미지 복원 기능 테스트
+- `test_llm_report_generation`: LLM 보고서 생성 테스트
+
+**데이터 정리**
+- `test_data_cleanup`: 테스트 데이터 정리 확인
+
+---
+
+## 5. 테스트 실행
+
+### 5.1 전체 테스트
+
+```bash
+# 전체 테스트 실행
+pytest
+
+# 상세 출력
+pytest -v
+
+# 커버리지
+pytest --cov=src --cov-report=html
+```
+
+### 5.2 특정 테스트
+
+```bash
+# 앱 기능 API 테스트
+pytest tests/test_app_features_api.py
+
+# 전체 시스템 통합 테스트
+pytest tests/test_full_integration.py
+
+# 서버 통합 테스트
+pytest tests/test_server.py
+
+# 특정 API 테스트
+pytest tests/test_auth_api.py
+pytest tests/test_admin_api.py
+pytest tests/test_customer_api.py
+
+# 단위 테스트 (새로 추가된 모듈)
+pytest tests/test_alert_system.py
+pytest tests/test_prescription_calculator.py
+pytest tests/test_pipeline_image_utils.py
+pytest tests/test_pipeline_core.py
+pytest tests/test_product_repository.py
+pytest tests/test_result_parser.py
+pytest tests/test_supabase_sync.py
+pytest tests/test_restoration_base.py
+pytest tests/test_restoration_registry.py
+pytest tests/test_utils.py
+pytest tests/test_llm_config.py
+
+# 특정 테스트 함수
+pytest tests/test_server.py::TestE2EIntegration::test_confirm_skin_type
+pytest tests/test_server.py::TestE2EIntegration::test_reclassify_skin_type
+```
+
+### 5.3 병렬 실행
+
+```bash
+# 병렬 실행 (pytest-xdist 필요)
+pip install pytest-xdist
+pytest -n auto
+```
+
+---
+
+## 6. 테스트 커버리지
+
+### 6.1 커버리지 목표
+
+| 모듈 | 목표 커버리지 |
+|------|-------------|
+| src/scoring/ | 80% |
+| src/restoration/ | 70% |
+| src/llm/ | 60% |
+| src/server/ | 75% |
+| src/db/ | 80% |
+
+### 6.2 커버리지 확인
+
+```bash
+# HTML 리포트
+pytest --cov=src --cov-report=html
+open htmlcov/index.html
+
+# 터미널 리포트
+pytest --cov=src --cov-report=term-missing
+```
+
+---
+
+## 7. Mock 사용
+
+### 7.1 LLM Mock
+
+```python
+# tests/conftest.py
+import pytest
+from unittest.mock import patch
+
+@pytest.fixture
+def mock_llm_response():
+    with patch('src.llm.providers.GeminiProvider.generate_content') as mock:
+        mock.return_value = "Mocked LLM response"
+        yield mock
+```
+
+### 7.2 API Mock
+
+```python
+# tests/conftest.py
+import pytest
+from fastapi.testclient import TestClient
+from src.server.main import app
+
+@pytest.fixture
+def client():
+    return TestClient(app)
+```
+
+---
+
+## 8. 테스트 데이터
+
+### 8.1 이미지 픽스처
+
+```
+tests/fixtures/images/
+├── test_pigmentation.jpg
+├── test_redness.jpg
+├── test_pores.jpg
+└── test_normal.jpg
+```
+
+### 8.2 JSON 픽스처
+
+```
+tests/fixtures/json/
+├── input_survey.json
+├── expected_result.json
+└── error_response.json
+```
+
+---
+
+## 9. CI/CD 통합
+
+### 9.1 GitHub Actions
+
+```yaml
+# .github/workflows/test.yml
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-core.txt
+          pip install pytest pytest-cov
+      - name: Run tests
+        run: pytest --cov=src --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v2
+```
+
+---
+
+## 10. 테스트 작성 가이드라인
+
+### 10.1 명명 규칙
+
+- 파일명: `test_<module>.py`
+- 함수명: `test_<function>_<scenario>`
+- 클래스명: `Test<Class>`
+
+### 10.2 AAA 패턴
+
+```python
+def test_example():
+    # Arrange (준비)
+    input_data = {"value": 10}
+    
+    # Act (실행)
+    result = process(input_data)
+    
+    # Assert (검증)
+    assert result == 20
+```
+
+### 10.3 테스트 격리
+
+- 각 테스트는 독립적이어야 함
+- 테스트 간 의존성 없음
+- `setUp()`, `tearDown()` 사용
+
+---
+
+## 11. 모바일 앱 통합 테스트
+
+### 11.1 개요
+
+모바일 앱 통합 테스트는 실제 모바일 앱 없이 가상의 모바일 앱 클라이언트 시뮬레이터를 사용하여 서버와의 통합을 테스트합니다. 이를 통해 실제 모바일 앱 개발 전에 서버 API의 기능적 검증이 가능합니다.
+
+### 11.2 가상 통합 테스트 환경
+
+**구성 요소**:
+- **가상 서버**: FastAPI TestClient를 사용하여 실제 서버 없이 API 호출
+- **모바일 앱 시뮬레이터**: 모바일 앱의 동작을 시뮬레이션하는 Python 클래스
+- **테스트 데이터**: 가상의 설문 데이터, 이미지 파일, 사용자 정보
+
+**특징**:
+- 실제 서버 실행 불필요
+- 실제 모바일 앱 설치 불필요
+- 다양한 사용자 시나리오 시뮬레이션 가능
+- 속도 제한 우회 로직 포함
+- 자동 테스트 데이터 정리
+
+### 11.3 모바일 앱 클라이언트 시뮬레이터
+
+**파일 위치**: `tests/mobile/mobile_client_simulator.py`
+
+**주요 기능**:
+- `login()`: 로그인 및 JWT 토큰 관리
+- `create_survey_data()`: 설문 데이터 생성
+- `upload_analysis_job()`: 분석 작업 생성 (이미지 업로드)
+- `wait_for_job_completion()`: 작업 완료 대기
+- `get_my_analyses()`: 내 분석 결과 목록 조회
+- `get_my_trends()`: 내 피부 추이 조회
+- `complete_analysis_workflow()`: 전체 분석 워크플로우 수행
+
+**사용 예시**:
+```python
+from tests.mobile.mobile_client_simulator import MobileAppSimulator
+from fastapi.testclient import TestClient
+
+# 시뮬레이터 초기화
+client = TestClient(app)
+mobile_app = MobileAppSimulator(client)
+
+# 로그인
+mobile_app.login("admin", "a")
+
+# 설문 데이터 생성
+survey_data = mobile_app.create_survey_data(
+    gender="female",
+    age_group="30s",
+    skin_types=["combination", "sensitive"],
+    skin_concerns=["acne", "red_marks"]
+)
+
+# 분석 작업 생성
+job_id = mobile_app.upload_analysis_job("image.jpg", survey_data)
+
+# 결과 대기
+result = mobile_app.wait_for_job_completion(job_id)
+```
+
+### 11.4 테스트 실행 방법
+
+**모바일 앱 통합 테스트 실행**:
+```bash
+# 모든 모바일 테스트 실행
+pytest tests/mobile/ -v
+
+# 특정 테스트 실행
+pytest tests/mobile/test_mobile_integration.py::TestMobileIntegration::test_mobile_login -v
+
+# 상세 출력
+pytest tests/mobile/ -v --tb=short
+```
+
+### 11.5 테스트 시나리오
+
+#### 11.5.1 기본 로그인 테스트
+```python
+def test_mobile_login(mobile_app):
+    """모바일 앱 로그인 테스트"""
+    success = mobile_app.login("admin", "a")
+    assert success
+    assert mobile_app.access_token is not None
+```
+
+#### 11.5.2 설문 데이터 생성 테스트
+```python
+def test_survey_data_creation(mobile_app):
+    """설문 데이터 생성 테스트"""
+    survey_data = mobile_app.create_survey_data(
+        gender="female",
+        age_group="30s",
+        skin_types=["oily", "sensitive"],
+        skin_concerns=["acne", "pores"]
+    )
+    assert survey_data["gender"] == "female"
+    assert "acne" in survey_data["skin_concerns"]
+```
+
+#### 11.5.3 전체 워크플로우 시뮬레이션
+```python
+def test_mobile_app_full_workflow_simulation(logged_in_mobile_app):
+    """모바일 앱 전체 워크플로우 시뮬레이션"""
+    # 1. 로그인 확인
+    assert logged_in_mobile_app.access_token is not None
+    
+    # 2. 설문 데이터 생성
+    survey_data = logged_in_mobile_app.create_survey_data()
+    
+    # 3. 내 분석 결과 조회
+    analyses = logged_in_mobile_app.get_my_analyses()
+    
+    # 4. 내 추이 조회
+    trends = logged_in_mobile_app.get_my_trends()
+```
+
+#### 11.5.4 다양한 사용자 시나리오
+```python
+def test_mobile_app_different_user_scenarios(mobile_app):
+    """다양한 사용자 시나리오 테스트"""
+    # 관리자 로그인
+    mobile_app.login("admin", "a")
+    assert mobile_app.role == "admin"
+    
+    # 분석가 로그인
+    mobile_app.login("analyst", "a")
+    assert mobile_app.role == "analyst"
+    
+    # 고객 로그인
+    mobile_app.login("customer", "c")
+    assert mobile_app.role == "customer"
+```
+
+### 11.6 테스트 절차
+
+#### 11.6.1 테스트 준비
+1. **테스트 환경 설정**: conftest.py에서 공통 fixture 설정
+2. **테스트 데이터 준비**: 테스트 이미지 파일, 설문 데이터 준비
+3. **시뮬레이터 초기화**: TestClient와 MobileAppSimulator 초기화
+
+#### 11.6.2 테스트 실행
+1. **로그인**: 사용자 인증 및 토큰 발급
+2. **데이터 생성**: 설문 데이터, 이미지 파일 준비
+3. **API 호출**: 서버 API 호출 및 응답 검증
+4. **결과 검증**: 응답 데이터 검증 및 기대값 비교
+
+#### 11.6.3 테스트 정리
+1. **데이터 정리**: 테스트 데이터 자동 정리
+2. **연결 종료**: DB 연결 및 리소스 정리
+3. **결과 보고**: 테스트 결과 요약 및 보고
+
+### 11.7 테스트 파일 구조
+
+```
+tests/mobile/
+├── __init__.py                    # 모바일 테스트 패키지
+├── mobile_client_simulator.py     # 모바일 앱 클라이언트 시뮬레이터
+└── test_mobile_integration.py     # 모바일 앱 통합 테스트
+```
+
+### 11.8 테스트 커버리지
+
+**현재 테스트 커버리지**:
+- 로그인/인증: ✅
+- 설문 데이터 생성: ✅
+- 이미지 업로드: ✅ (이미지 파일 필요 시)
+- 작업 완료 대기: ✅
+- 결과 조회: ✅
+- 다양한 사용자 시나리오: ✅
+- 설문 데이터 조합: ✅
+
+**향후 확장 가능성**:
+- WebSocket 진행률 모니터링
+- 푸시 알림 시뮬레이션
+- 오프라인 모드 테스트
+- 네트워크 오류 시뮬레이션
+- 배터리 절약 모드 테스트
+
+---
+
+## 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.2.0 | 2026-06-01 | 모바일 앱 통합 테스트 섹션 추가 (섹션 11) | Cascade |
+| 1.1.0 | 2026-06-01 | 테스트 구조 갱신 (80개 테스트 파일, 8개 카테고리, 테스트 실행 명령어 추가) | Cascade |
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
+| 0.8.0 | 2026-05-31 | 복원, 유틸리티, LLM 설정 테스트 추가 | Cascade |
+| 0.7.0 | 2026-05-30 | 7개 모듈 단위 테스트 추가 | Cascade |
+
+---
+
+## 참고 문서
+
+- `DEVELOPMENT_GUIDE.md` - 개발 가이드
+- `ARCHITECTURE.md` - 아키텍처
+- `CI_CD_GUIDE.md` - CI/CD 가이드

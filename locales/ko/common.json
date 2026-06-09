@@ -1,0 +1,20 @@
+{
+  "app_name": "SkinLens",
+  "welcome": "환영합니다",
+  "skin_analysis": "피부 분석",
+  "prescription": "처방",
+  "product_recommendation": "제품 추천",
+  "settings": "설정",
+  "language": "언어",
+  "health": "건강",
+  "status": "상태",
+  "healthy": "정상",
+  "unhealthy": "비정상",
+  "warning": "경고",
+  "critical": "위험",
+  "incident_detected": "장애 감지됨",
+  "incident_resolved": "장애 해결됨",
+  "recovery_started": "복구 시작됨",
+  "recovery_completed": "복구 완료됨",
+  "recovery_failed": "복구 실패"
+}

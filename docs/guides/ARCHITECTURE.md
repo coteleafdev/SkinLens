@@ -1,0 +1,828 @@
+# 아키텍처 (Architecture)
+
+> **⚠️ 최상위 문서 (Top-Level Document)**: 이 문서는 SkinLens 프로젝트의 핵심 아키텍처를 설명하는 최상위 문서입니다. 모든 개발자가 먼저 읽어야 합니다.
+> 
+> **관련 최상위 문서**: 
+> - [PROTOCOL.md](PROTOCOL.md) - 통신 프로토콜
+> - [../api/API_REFERENCE.md](../api/API_REFERENCE.md) - API 레퍼런스
+
+> **문서 버전:** 1.3.0  
+> **대상 프로젝트 버전:** 1.0.0  
+> **마지막 업데이트:** 2026-06-01  
+> **상태:** 활성
+
+---
+
+## 개요
+
+이 문서는 SkinLens v1.0의 전체 시스템 아키텍처, 내부 구조, 외부 시스템 연동을 설명합니다.
+
+---
+
+## 1. 전체 소스 구조
+
+### 1.1 디렉토리 구조
+
+```
+src/
+├── cli/                    # CLI 모듈 (명령줄 인터페이스)
+│   ├── execution_history.py # 실행 이력 DB 관리
+│   ├── skin_analysis_cli.py # CLI 메인
+│   └── repositories/        # 데이터 리포지토리
+├── config/                 # 설정 모듈
+│   └── config.json         # 메인 설정 파일
+├── db/                     # 데이터베이스 모듈
+│   ├── skin_analysis_db.py # SQLite DB 관리
+│   └── supabase_sync.py    # Supabase 동기화
+├── gui/                    # GUI 모듈 (PySide6)
+│   ├── main_window.py      # 메인 윈도
+│   ├── analyzer_gui.py     # 분석 GUI
+│   └── compare_dialog.py   # 비교 다이얼로그
+├── llm/                    # LLM 모듈 (Gemini AI)
+│   ├── llm_client.py       # LLM 클라이언트
+│   ├── llm_utils.py        # LLM 유틸리티
+│   └── prompt_manager.py   # 프롬프트 관리
+├── monitoring/             # 모니터링 모듈
+│   ├── metrics_collector.py # 메트릭 수집
+│   └── alert_system.py     # 알림 시스템
+├── notification/           # 알림 모듈
+│   └── push_notifier.py    # 푸시 알림
+├── pipeline/               # 파이프라인 모듈
+│   ├── pipeline_core.py    # 파이프라인 코어
+│   └── job_queue.py        # 작업 큐
+├── prescription/           # 처방 모듈
+│   └── prescription_calculator.py # 처방 계산
+├── recovery/               # 복구 모듈
+│   └── auto_recovery.py    # 자동 복구
+├── restoration/            # 복원 모듈
+│   ├── codeformer.py       # CodeFormer 모델
+│   ├── restoreformer.py    # RestoreFormer++ 모델
+│   └── model_loader.py     # 모델 로더
+├── scoring/                # 점수 모듈
+│   ├── skin_analyzer.py    # 피부 분석기
+│   └── score_calculator.py # 점수 계산기
+├── server/                 # FastAPI 서버
+│   ├── server.py          # 서버 메인
+│   ├── deps.py            # 의존성 관리
+│   ├── routers/           # API 라우터
+│   ├── middleware/        # 미들웨어
+│   ├── backup.py          # 백업
+│   └── monitoring.py      # 서버 모니터링
+├── skin/                   # 피부 분석 코어
+│   ├── skin_analyzer_v3.py # SkinAnalyzerV3
+│   └── feature_extractor.py # 특징 추출
+├── telegram/               # 텔레그램 모듈
+│   └── telegram_bot.py    # 텔레그램 봇
+└── utils/                  # 공통 유틸리티
+    ├── config.py          # 설정 로드
+    └── image_utils.py     # 이미지 유틸리티
+```
+
+### 1.2 모듈별 기능 요약
+
+#### CLI 모듈 (`src/cli/`)
+- **execution_history.py**: SQLite 기반 실행 이력 DB 관리, 리소스 모니터링, 로그 DB 저장
+- **skin_analysis_cli.py**: CLI 메인, 명령줄 인터페이스, 배치 처리
+- **repositories/**: 데이터 리포지토리 패턴 구현
+
+#### 설정 모듈 (`src/config/`)
+- **config.json**: 메인 설정 파일 (서버, DB, JWT, 모델 등)
+
+#### 데이터베이스 모듈 (`src/db/`)
+- **skin_analysis_db.py**: SQLite DB 관리, 마이그레이션, 사용자/장치/설문/토큰 테이블
+- **supabase_sync.py**: Supabase 클라우드 DB 동기화
+
+#### GUI 모듈 (`src/gui/`)
+- **main_window.py**: PySide6 메인 윈도, 이미지 업로드, 결과 표시
+- **analyzer_gui.py**: 분석 GUI, 진행률 표시
+- **compare_dialog.py**: 분석 결과 비교 다이얼로그
+
+#### LLM 모듈 (`src/llm/`)
+- **llm_client.py**: Google Gemini API 클라이언트
+- **llm_utils.py**: LLM 응답 파싱, JSON 변환
+- **prompt_manager.py**: 프롬프트 템플릿 관리
+
+#### 모니터링 모듈 (`src/monitoring/`)
+- **metrics_collector.py**: 시스템 메트릭 수집 (CPU, 메모리, 디스크)
+- **alert_system.py**: 임계값 기반 알림 시스템
+
+#### 알림 모듈 (`src/notification/`)
+- **push_notifier.py**: FCM/APNS 푸시 알림 전송
+
+#### 파이프라인 모듈 (`src/pipeline/`)
+- **pipeline_core.py**: 파이프라인 코어, 복원→분석→LLM 순서 처리
+- **job_queue.py**: 비동기 작업 큐, 동시 실행 제어
+
+#### 처방 모듈 (`src/prescription/`)
+- **prescription_calculator.py**: PCR 규칙 기반 화장품 처방 계산
+
+#### 복구 모듈 (`src/recovery/`)
+- **auto_recovery.py**: 자동 복구 시스템, 재시도 로직
+
+#### 복원 모듈 (`src/restoration/`)
+- **codeformer.py**: CodeFormer 모델 래퍼
+- **restoreformer.py**: RestoreFormer++ 모델 래퍼
+- **model_loader.py**: 모델 로드, 캐싱
+
+#### 점수 모듈 (`src/scoring/`)
+- **skin_analyzer.py**: SkinAnalyzerV3, 18개 측정항목 분석
+- **score_calculator.py**: 점수 계산, 가중치 적용
+
+#### 서버 모듈 (`src/server/`)
+- **server.py**: FastAPI 서버 메인, CORS, 미들웨어 설정
+- **deps.py**: 의존성 주입, JWT, 속도 제한, 보안
+- **routers/**: API 라우터 (auth, customer, jobs, 등)
+- **middleware/**: IP 필터, i18n, 감사 로그
+- **backup.py**: 자동 백업, 복구
+- **monitoring.py**: 서버 모니터링, 헬스 체크
+
+#### 피부 분석 코어 (`src/skin/`)
+- **skin_analyzer_v3.py**: SkinAnalyzerV3 메인, 18개 측정항목 구현
+- **feature_extractor.py**: 이미지 특징 추출
+
+#### 텔레그램 모듈 (`src/telegram/`)
+- **telegram_bot.py**: 텔레그램 봇, 분석 결과 알림
+
+#### 유틸리티 모듈 (`src/utils/`)
+- **config.py**: 설정 로드, 환경변수 처리
+- **image_utils.py**: 이미지 처리 유틸리티
+
+---
+
+## 2. 전체 시스템 아키텍처
+
+### 2.1 시스템 아키텍처 개요
+
+```mermaid
+graph TB
+    subgraph "클라이언트 계층"
+        A1[웹 브라우저]
+        A2[모바일 앱]
+        A3[기존 웹서버]
+    end
+    
+    subgraph "SkinLens v1 서버"
+        B1[API Layer<br/>FastAPI]
+        B2[Business Logic Layer<br/>Pipeline, Scoring]
+        B3[Data Layer<br/>SQLite, File System]
+    end
+    
+    subgraph "외부 서비스"
+        C1[FCM/APNS]
+        C2[OAuth 제공자]
+        C3[LLM API]
+    end
+    
+    A1 -->|HTTPS/WS| B1
+    A2 -->|HTTPS/WS| B1
+    A3 -->|웹훅/콜백| B1
+    A2 -->|로그인| A3
+    A3 -->|토큰 발급| A2
+    
+    B1 --> B2
+    B2 --> B3
+    B2 --> C3
+    
+    B1 -->|푸시| C1
+    C1 -->|푸시| A2
+    B1 -->|OAuth| C2
+    A3 -->|OAuth| C2
+```
+
+### 2.2 외부 시스템 연동 아키텍처
+
+```mermaid
+graph LR
+    A[기존 웹서버] <-->|웹훅/콜백| B[SkinLens v1]
+    A <-->|OAuth| C[OAuth 제공자]
+    B <-->|LLM API| D[LLM 서비스]
+    B -->|푸시| E[FCM/APNS]
+    E -->|푸시| F[모바일 앱]
+    F -->|로그인| A
+    A -->|토큰| F
+    F -->|REST API| B
+    F -->|WebSocket| B
+```
+
+### 2.3 데이터 흐름
+
+```mermaid
+sequenceDiagram
+    participant App as 스마트폰 앱
+    participant Web as 기존 웹서버
+    participant Engine as SkinLens 엔진서버
+    participant DB as 데이터베이스
+    participant LLM as LLM API
+    participant Push as 푸시 서비스
+    
+    Note over App,Web: 1. 로그인
+    App->>Web: POST /auth/login (ID, PW)
+    Web-->>App: JWT 토큰
+    
+    Note over App,Web: 2. 설문 조사
+    App->>Web: POST /survey (설문 데이터)
+    Web->>DB: 설문 저장
+    Web-->>App: 설문 저장 완료
+    
+    Note over App,Web: 3. 이미지 전송
+    App->>Web: POST /analysis/upload (이미지, JWT)
+    Web->>Engine: POST /v1/analysis/jobs (이미지, JWT)
+    Engine->>DB: 작업 생성
+    Engine-->>Web: job_id
+    Web-->>App: job_id
+    
+    Note over Engine: 4. 분석 처리
+    Engine->>Engine: 이미지 복원
+    Engine->>Engine: 피부 분석
+    Engine->>LLM: 보고서 생성 요청
+    LLM-->>Engine: 보고서 응답
+    Engine->>DB: 결과 저장
+    
+    Note over Engine,Web: 5. 웹훅 알림
+    Engine->>Web: POST webhook (job.completed)
+    Web->>DB: 결과 업데이트
+    
+    Note over Web,Push: 6. 푸시 알림
+    Web->>Push: 푸시 전송 요청
+    Push->>App: 분석 완료 알림
+    
+    Note over App,Web: 7. 결과 조회
+    App->>Web: GET /analysis/result/{job_id}
+    Web-->>App: 분석 결과
+```
+
+---
+
+## 3. 전략 패턴 (Strategy Pattern)
+
+### 3.1 분석기 전략 패턴
+
+피부 분석 알고리즘을 쉽게 교체할 수 있는 전략 패턴 기반 아키텍처입니다.
+
+**아키텍처:**
+```
+BaseAnalyzer (추상 인터페이스)
+    ├── PigmentationAnalyzerV1 (현재 알고리즘)
+    ├── PigmentationAnalyzerV2 (새로운 알고리즘 예시)
+    ├── RednessAnalyzerV1
+    ├── PoreAnalyzerV1
+    ├── WrinkleAnalyzerV1
+    ├── ToneElasticityAnalyzerV1 (톤·탄력·다크서클·피지)
+    └── AcneAnalyzerV1 (트러블 - 독립)
+
+AnalyzerRegistry (팩토리)
+    └── 분석기 등록/조회
+
+_SkinAnalyzerV3Core (오케스트레이터)
+    └── 분석기 주입 (의존성 주입)
+
+SkinAnalyzerV3 (공개 API)
+    └── _SkinAnalyzerV3Core 위임 + 직교 신호 분해
+```
+
+**사용 방법:**
+
+**기본 사용 (하위 호환):**
+```python
+from src.scoring.skin_scoring import _SkinAnalyzerV3Core
+
+analyzer = _SkinAnalyzerV3Core()  # 기본 분석기 자동 로드
+result = analyzer.analyze_all("image.jpg")
+```
+
+**분석기 직접 주입:**
+```python
+from src.skin.analyzers import AnalyzerRegistry, register_all_analyzers
+from src.scoring.skin_scoring import _SkinAnalyzerV3Core
+
+register_all_analyzers()
+
+custom_analyzers = {
+    "pigmentation": AnalyzerRegistry.get("pigmentation_v2"),  # v2 사용
+    "redness": AnalyzerRegistry.get("redness_v1"),
+    # ...
+}
+
+analyzer = _SkinAnalyzerV3Core(analyzers=custom_analyzers)
+result = analyzer.analyze_all("image.jpg")
+```
+
+### 3.2 복원 백엔드 전략 패턴
+
+피부 복원 백엔드를 쉽게 교체할 수 있는 전략 패턴 기반 아키텍처입니다.
+
+**아키텍처:**
+```
+BaseRestorer (추상 인터페이스)
+    ├── CodeFormerRestorer
+    ├── RestoreFormerRestorer
+    └── [추후 확장]
+
+RestorerRegistry (팩토리)
+    └── 복원 백엔드 등록/조회/인스턴스 생성
+```
+
+**BaseRestorer 메서드:**
+- 필수: `restore()`, `get_name()`, `get_version()`
+- 선택: `load_model()`, `unload_model()`, `preprocess()`, `postprocess()`, `cleanup()`, `get_supported_devices()`
+
+**사용 방법:**
+```python
+from src.restoration import RestorerRegistry
+
+# 복원 백엔드 등록 (자동)
+# @RestorerRegistry.register("codeformer_v1", aliases=["codeformer", "cf"])
+
+# 클래스 조회
+restorer_class = RestorerRegistry.get("codeformer_v1")
+
+# 인스턴스 생성 (팩토리 메서드)
+restorer = RestorerRegistry.create("codeformer_v1", config={"repo": "path/to/CodeFormer"})
+
+# 설정 기반 생성
+restorer = RestorerRegistry.create_from_config({"restorer": "codeformer", "restorer_config": {...}})
+
+# 복원 실행
+result = restorer.restore("input.jpg", "output.jpg")
+```
+
+**새로운 엔진 추가:**
+자세한 가이드는 `RESTORATION_ENGINE_GUIDE.md`를 참조하세요.
+
+### 3.3 LLM 전략 패턴
+
+LLM을 쉽게 교체할 수 있는 전략 패턴 기반 아키텍처입니다.
+
+**아키텍처:**
+```
+BaseLLM (추상 인터페이스)
+    ├── GeminiLLM
+    └── [추후 확장: OpenAI, Claude 등]
+
+LLMRegistry (팩토리)
+    └── LLM 등록/조회
+```
+
+**사용 방법:**
+```python
+from src.llm import LLMRegistry, register_all_llms
+
+# LLM 등록
+register_all_llms()
+
+# Gemini 사용
+llm_class = LLMRegistry.get("gemini_v1")
+llm = llm_class(api_key="your-api-key")
+response = llm.generate(prompt)
+```
+
+### 3.4 LLM 응답 짤림 처리 (부분 완료 로직)
+
+LLM 응답이 토큰 제한으로 인해 짤리는 경우, 전체 프롬프트를 다시 보내는 대신 누락된 필드만 요청하여 효율적으로 재시도합니다.
+
+**작동 원리**:
+1. **응답 짤림 감지**: `_is_response_truncated()` 함수로 응답이 완전한지 확인
+2. **부분 JSON 파싱**: 마크다운 코드 블록 제거 후 부분 JSON 파싱 시도
+3. **누락 필드 식별**: `_identify_missing_fields()`로 기대 필드와 실제 필드 비교
+4. **부분 완료 요청**: 누락된 필드가 10개 미만일 경우 `_build_field_completion_prompt()`로 부분 요청 생성
+5. **응답 병합**: `_merge_json_responses()`로 원본 응답과 완료 응답 병합
+
+**적용 모드**:
+- **Reference Guided 모드**: `reference_baseline`, `score_reasons`, `orig_metric_scores`, `orig_metric_opinions`, `orig_overall_score`, `orig_perceived_age`, `orig_overall_opinion`, `recommendation`, `ref_metric_scores`, `ref_metric_reasons`
+- **Dual 모드**: `original_metric_opinions`, `restored_metric_opinions`, `original_overall_opinion`, `restored_overall_opinion`, `original_overall_score`, `restored_overall_score`, `original_perceived_age`, `restored_perceived_age`, `recommendation`
+
+**재시도 전략**:
+- 누락 필드 < 10개: 부분 완료 시도 (이미지 없이 텍스트만 요청)
+- 누락 필드 ≥ 10개: 토큰 1.5배 증가 후 전체 재시도
+- 최대 재시도: 기본 재시도 + 토큰 증가 재시도 2회
+
+**타임아웃 설정**:
+- 기본 타임아웃: 600초 (config.json `llm.timeout_sec`, `timeouts.llm_timeout_sec`, `llms.gemini_v1.timeout_sec`)
+
+### 3.5 메타데이터 캐시 초기화
+
+config.json 변경 사항이 즉시 반영되도록 진입점별로 캐시를 초기화합니다.
+
+**캐시 초기화 대상**:
+- `_clear_breakpoints_cache()`: 점수 기준점 캐시
+- `clear_metadata_cache()`: LLM 메타데이터 캐시 (점수 스케일 등)
+
+**적용 진입점**:
+- **GUI 모드**: `src/gui/skin_analysis_pipeline.py` main() 함수
+- **서버 모드**: `src/server/server.py` lifespan startup
+- **CLI 모드**: 필요 없음 (일회성 실행)
+
+**초기화 시점**:
+- GUI: 애플리케이션 시작 시
+- 서버: FastAPI lifespan startup (서버 시작 시)
+
+---
+
+## 4. 데이터베이스 아키텍처
+
+### 4.1 개요
+
+AI Skin v3는 **로컬 SQLite DB**와 **클라우드 DB**의 2계층 데이터베이스 아키텍처를 사용하여 각기 다른 목적과 역할을 수행합니다. 이 하이브리드 아키텍처는 성능, 보안, 확장성, 그리고 규정 준수를 최적화하기 위해 설계되었습니다.
+
+### 4.2 로컬 SQLite DB
+
+**목적:**
+- **실행 이력 추적**: 각 분석 작업의 실행 로그와 리소스 사용량 기록
+- **시스템 모니터링**: 서버 헬스 체크, API 성능, 에러 추적
+- **운영 통계**: 일별 분석 수, 성공/실패율, 모델 성능 메트릭
+- **감사 로그**: 데이터 접근 기록, 보안 이벤트 추적
+- **캐싱**: 빠른 조회를 위한 로컬 데이터 저장
+
+**역할:**
+- **운영 및 모니터링**: 서버 운영자가 시스템 상태를 실시간으로 모니터링
+- **문제 해결**: 에러 추적, 성능 병목 식별, 디버깅 지원
+- **보안 감사**: 누가 언제 무엇을 접근했는지 기록
+- **통계 분석**: 서비스 사용 패턴, 트래픽 추이 분석
+- **GDPR 준수**: 고객 데이터 삭제/내보내기 지원
+
+**저장 데이터:**
+| 테이블 | 설명 | 보관 기간 |
+|--------|------|-----------|
+| executions | 분석 작업 실행 이력 | 90일 (기본) |
+| logs | 애플리케이션 로그 | 30일 (롤링) |
+| analysis_stats | 일별 분석 통계 | 365일 |
+| model_performance | 모델 성능 메트릭 | 90일 |
+| score_trends | 고객별 점수 추이 | 무제한 |
+| gemini_api_stats | Gemini API 사용 통계 | 365일 |
+| image_metadata | 이미지 메타데이터 | 90일 |
+| error_analysis | 에러 분석 및 추적 | 180일 |
+| system_health | 시스템 헬스 체크 | 30일 |
+| audit_log | 감사 로그 | 365일 |
+
+**특징:**
+- **빠른 조회**: 로컬 파일 기반으로 초고속 읽기
+- **무서버**: 별도 DB 서버 없이 파일로 저장
+- **간단한 백업**: 파일 복사만으로 백업 가능
+- **저비용**: 추가 인프라 비용 없음
+- **오프라인 작동**: 네트워크 연결 없이도 작동
+
+**사용자:**
+- **서버 관리자**: 시스템 모니터링, 문제 해결
+- **DevOps 엔지니어**: 운영 통계, 성능 최적화
+- **보안 담당자**: 감사 로그, 보안 이벤트 분석
+- **고객 (제한적)**: 자신의 통계 데이터 조회
+
+### 4.3 클라우드 DB
+
+**목적:**
+- **고객 데이터 저장**: 고객 분석 결과, 처방전, 이미지
+- **장기 보관**: 법적 요구사항 준수를 위한 장기 보관
+- **데이터 분석**: 머신러닝, 비즈니스 인텔리전스
+- **동기화**: 여러 클라이언트 간 데이터 동기화
+
+**역할:**
+- **고객 서비스**: 고객 데이터 조회, 내보내기
+- **데이터 분석**: 트렌드 분석, 모델 개선
+- **규정 준수**: GDPR, 개인정보보호법 준수
+- **백업/복구**: 재해 복구, 데이터 보호
+
+**저장 데이터:**
+| 테이블 | 설명 | 보관 기간 |
+|--------|------|-----------|
+| customers | 고객 정보 | 계정 존재 기간 |
+| analyses | 분석 결과 | 3년 (기본) |
+| prescriptions | 처방전 | 3년 (기본) |
+| images | 이미지 | 3년 (기본) |
+| pcr_results | PCR 결과 | 3년 (기본) |
+
+**특징:**
+- **확장성**: 수평 확장 가능
+- **고가용성**: 복제, 장애 조치
+- **보안**: 암호화, 접근 제어
+- **글로벌 액세스**: 어디서든 접근 가능
+
+**사용자:**
+- **고객**: 자신의 데이터 조회, 내보내기
+- **데이터 분석가**: 트렌드 분석, 모델 개선
+- **비즈니스 팀**: 비즈니스 인텔리전스
+- **규정 담당자**: 규정 준수 확인
+
+### 4.4 데이터 흐름
+
+```
+고객 요청
+    ↓
+로컬 SQLite DB (캐싱, 로깅)
+    ↓
+클라우드 DB (장기 보관, 동기화)
+    ↓
+고객 응답
+```
+
+---
+
+## 5. 레이어 아키텍처
+
+### 5.1 전체 아키텍처
+
+```
+┌─────────────────────────────────────────┐
+│         Presentation Layer             │
+│  (GUI: PySide6, CLI, API)             │
+└─────────────────┬───────────────────────┘
+                  ↓
+┌─────────────────────────────────────────┐
+│         Business Logic Layer           │
+│  (Pipeline, Scoring, Prescription)    │
+└─────────────────┬───────────────────────┘
+                  ↓
+┌─────────────────────────────────────────┐
+│            Data Layer                  │
+│  (Local SQLite, Cloud DB, File System) │
+└─────────────────────────────────────────┘
+```
+
+### 5.2 모듈 의존성 규칙
+
+**하위 → 상위 의존 허용:**
+- `skin/core/` → 표준 라이브러리만
+- `skin/compose/` → `skin/core/`, `scoring/`
+- `scoring/` → `skin/core/`
+- `pipeline/` → 독립 (표준 라이브러리만)
+- `utils/` → `skin/`, `scoring/` (lazy import)
+
+**상위 → 하위 의존 금지:**
+- `server/` → `gui/` (금지)
+- `cli/` → `gui/` (금지)
+
+---
+
+## 6. 직교 신호 분해 수정 이력 (2026-05-24)
+
+### 6.1 수정 개요
+
+**직교 항목 수**: 10개 (변경 없음)
+
+**구조적 개선**:
+- PIE(post_inflammatory_erythema_score) 신호 제거로 a* 채널 이중 계상 해결
+- 가중치 조정으로 roughness ↔ fine_deep 중복 영향 완화
+
+### 6.2 상세 수정 내용
+
+**방향 A: PIE 완전 제거**
+- `diffuse_redness`: `redness × 0.70 + PIE × 0.30` → `redness` 단독 사용
+- `focal_lesion`: `acne × 0.60 + post_acne_pigment × 0.40` → `acne × 0.65 + post_acne_pigment × 0.35`
+- 효과: diffuse_redness ↔ focal_lesion 간의 직교성 개선
+
+**방향 C: 가중치 보정**
+- `roughness_score`: 0.080 → 0.050 (fine_deep와의 중복 보정)
+- `wrinkle_score`: 0.130 → 0.160 (roughness 감소분 보상)
+
+### 6.3 수정 파일
+- `src/skin/compose/score_composition.py`
+- `src/scoring/skin_scoring.py`
+- `config/config.json`
+
+### 6.4 참고 문서
+- 직교성 검토 내용은 config.json의 `_structure_guide` 및 `orthogonal_categories` 섹션 참조
+
+---
+
+## 7. 이미지 처리 방식 (Image Processing by Mode)
+
+이미지 처리 방식과 JSON 구조 상세는 `docs/db/DATA_MODEL.md`를 참조하세요.
+
+**모드별 특징:**
+- **GUI 모드**: 로컬 파일 시스템 처리, `file://` URL
+- **CLI 모드**: 로컬 파일 시스템 처리, `base_url` 기반 URL
+- **서버 모드**: 완전히 URL 기반 처리, JWT 인증
+
+**DB 저장:**
+- 로컬 SQLite: 절대 경로 + JSON
+- 클�라우드 Supabase: 동기화
+
+---
+
+## 8. 보안
+
+보안 관련 상세 가이드는 `docs/ops/SECURITY_GUIDE.md`를 참조하세요.
+
+**주요 보안 항목:**
+- API 키 관리 (환경변수, secrets.json, Kubernetes Secret)
+- 고객 정보 보호 (암호화, 접근 제어, 로그 마스킹)
+- 이미지 보안 (액세스 제어, 만료 정책, URL 서명)
+- 데이터베이스 보안 (SQLite 권한, Supabase RLS, 백업 암호화)
+- 네트워크 보안 (HTTPS, Rate Limiting, Security Headers)
+- 로그 및 감사 (마스킹, 추적, 보관 정책)
+
+---
+
+## 10. 테스트 구조
+
+### 10.1 테스트 디렉토리 구조
+
+```
+tests/
+├── README.md                      # 테스트 개요 및 가이드
+├── README_SERVER_TESTS.md         # 서버 테스트 가이드
+├── conftest.py                    # pytest 설정 및 공통 fixture
+├── fixtures/                      # 테스트 fixture
+│   ├── db_fixtures.py            # DB 관련 fixture
+│   └── server_fixtures.py        # 서버 관련 fixture
+├── integration/                   # 통합 테스트
+│   ├── test_api_integration.py   # API 통합 테스트
+│   ├── test_db_integration.py    # DB 통합 테스트
+│   ├── test_llm_integration.py   # LLM 통합 테스트
+│   └── test_pipeline_integration.py # 파이프라인 통합 테스트
+├── test_admin_api.py              # 관리자 API 테스트
+├── test_alert_system.py           # 알림 시스템 테스트
+├── test_analyzer_integration.py   # 분석기 통합 테스트
+├── test_analyzer_registry.py      # 분석기 레지스트리 테스트
+├── test_analyzers.py              # 분석기 단위 테스트
+├── test_app_features_api.py       # 앱 기능 API 테스트
+├── test_auth_api.py               # 인증 API 테스트 (JWT, refresh, logout, password)
+├── test_auto_recovery.py          # 자동 복구 테스트
+├── test_backup.py                 # 백업 테스트
+├── test_cli.py                   # CLI 테스트
+├── test_config.py                 # 설정 테스트
+├── test_config_manager.py         # 설정 관리자 테스트
+├── test_customer_api.py           # 고객 API 테스트 (profile, devices, surveys)
+├── test_db_api.py                 # DB API 테스트
+├── test_db_cli.py                 # DB CLI 테스트
+├── test_db_features.py            # DB 기능 테스트
+├── test_enhancements_api.py       # 향상 기능 API 테스트
+├── test_error_handling.py         # 에러 처리 테스트
+├── test_full_integration.py       # 전체 통합 테스트
+├── test_health_api.py             # 헬스 체크 API 테스트
+├── test_i18n.py                   # 국제화 테스트
+├── test_integration.py            # 통합 테스트
+├── test_integration_api.py        # 통합 API 테스트
+├── test_ip_filter.py              # IP 필터 테스트
+├── test_job_queue.py              # 작업 큐 테스트
+├── test_llm_config.py             # LLM 설정 테스트
+├── test_llm_providers.py          # LLM 제공자 테스트
+├── test_logs_api.py               # 로그 API 테스트
+├── test_metrics_collector.py      # 메트릭 수집 테스트
+├── test_monitoring.py             # 모니터링 테스트
+├── test_multi_view_analysis.py    # 멀티 뷰 분석 테스트
+├── test_orders_api.py             # 주문 API 테스트
+├── test_pipeline_core.py           # 파이프라인 코어 테스트
+├── test_pipeline_image_utils.py   # 파이프라인 이미지 유틸리티 테스트
+├── test_prescription_calculator.py # 처방 계산기 테스트
+├── test_product_repository.py     # 제품 리포지토리 테스트
+├── test_prompt_manager.py         # 프롬프트 관리자 테스트
+├── test_rate_limiting.py          # 속도 제한 테스트
+├── test_recovery_engine.py        # 복구 엔진 테스트
+├── test_repositories.py           # 리포지토리 테스트
+├── test_repository_analysis_stats.py    # 분석 통계 리포지토리 테스트
+├── test_repository_customer_data.py     # 고객 데이터 리포지토리 테스트
+├── test_repository_error_audit.py       # 에러 감사 리포지토리 테스트
+├── test_repository_execution_stats.py   # 실행 통계 리포지토리 테스트
+├── test_repository_image_metadata.py    # 이미지 메타데이터 리포지토리 테스트
+├── test_repository_llm_api.py           # LLM API 리포지토리 테스트
+├── test_repository_log.py               # 로그 리포지토리 테스트
+├── test_repository_system_health.py     # 시스템 헬스 리포지토리 테스트
+├── test_request_logging.py        # 요청 로깅 테스트
+├── test_restoration_base.py       # 복원 베이스 테스트
+├── test_restoration_llm_registry.py # 복원 LLM 레지스트리 테스트
+├── test_restoration_registry.py  # 복원 레지스트리 테스트
+├── test_result_parser.py          # 결과 파서 테스트
+├── test_roi_manager.py            # ROI 관리자 테스트
+├── test_scoring_breakpoints.py   # 점수 기준점 테스트
+├── test_scoring_multi_view.py    # 멀티 뷰 점수 테스트
+├── test_scoring_report.py         # 점수 보고서 테스트
+├── test_scoring_score_utils.py   # 점수 유틸리티 테스트
+├── test_security.py               # 보안 테스트
+├── test_server.py                 # 서버 테스트
+├── test_skin_type_detector.py    # 피부 타입 감지 테스트
+├── test_stats_api.py              # 통계 API 테스트
+├── test_supabase_sync.py          # Supabase 동기화 테스트
+├── test_unit.py                   # 단위 테스트
+├── test_upload.py                 # 업로드 테스트
+├── test_utils.py                  # 유틸리티 테스트
+├── test_versioning.py             # 버전 관리 테스트
+└── test_websocket_management.py   # WebSocket 관리 테스트
+```
+
+### 10.2 테스트 카테고리
+
+#### API 테스트
+- **test_auth_api.py**: 인증 API (로그인, 토큰 갱신, 로그아웃, 비밀번호 변경/복구)
+- **test_admin_api.py**: 관리자 API
+- **test_customer_api.py**: 고객 API (프로필, 장치, 설문)
+- **test_app_features_api.py**: 앱 기능 API
+- **test_enhancements_api.py**: 향상 기능 API
+- **test_orders_api.py**: 주문 API
+- **test_health_api.py**: 헬스 체크 API
+- **test_logs_api.py**: 로그 API
+- **test_stats_api.py**: 통계 API
+- **test_db_api.py**: DB API
+- **test_integration_api.py**: 통합 API
+
+#### 분석 및 점수 테스트
+- **test_analyzers.py**: 분석기 단위 테스트
+- **test_analyzer_registry.py**: 분석기 레지스트리
+- **test_analyzer_integration.py**: 분석기 통합
+- **test_scoring_breakpoints.py**: 점수 기준점
+- **test_scoring_multi_view.py**: 멀티 뷰 점수
+- **test_scoring_report.py**: 점수 보고서
+- **test_scoring_score_utils.py**: 점수 유틸리티
+- **test_skin_type_detector.py**: 피부 타입 감지
+- **test_multi_view_analysis.py**: 멀티 뷰 분석
+
+#### 파이프라인 및 복원 테스트
+- **test_pipeline_core.py**: 파이프라인 코어
+- **test_pipeline_image_utils.py**: 파이프라인 이미지 유틸리티
+- **test_restoration_base.py**: 복원 베이스
+- **test_restoration_registry.py**: 복원 레지스트리
+- **test_restoration_llm_registry.py**: 복원 LLM 레지스트리
+- **test_recovery_engine.py**: 복구 엔진
+- **test_auto_recovery.py**: 자동 복구
+
+#### LLM 테스트
+- **test_llm_providers.py**: LLM 제공자
+- **test_llm_config.py**: LLM 설정
+- **test_prompt_manager.py**: 프롬프트 관리자
+- **test_result_parser.py**: 결과 파서
+
+#### 데이터베이스 테스트
+- **test_db_cli.py**: DB CLI
+- **test_db_features.py**: DB 기능
+- **test_supabase_sync.py**: Supabase 동기화
+- **test_repositories.py**: 리포지토리 기본
+- **test_repository_*.py**: 각 리포지토리별 테스트
+
+#### 시스템 및 유틸리티 테스트
+- **test_config.py**: 설정
+- **test_config_manager.py**: 설정 관리자
+- **test_utils.py**: 유틸리티
+- **test_backup.py**: 백업
+- **test_job_queue.py**: 작업 큐
+- **test_metrics_collector.py**: 메트릭 수집
+- **test_monitoring.py**: 모니터링
+- **test_alert_system.py**: 알림 시스템
+- **test_security.py**: 보안
+- **test_rate_limiting.py**: 속도 제한
+- **test_ip_filter.py**: IP 필터
+- **test_i18n.py**: 국제화
+- **test_versioning.py**: 버전 관리
+- **test_error_handling.py**: 에러 처리
+- **test_request_logging.py**: 요청 로깅
+- **test_websocket_management.py**: WebSocket 관리
+
+#### 통합 테스트
+- **test_integration.py**: 통합 테스트
+- **test_full_integration.py**: 전체 통합 테스트
+- **integration/**: 통합 테스트 하위 디렉토리
+
+#### 기타 테스트
+- **test_cli.py**: CLI 테스트
+- **test_server.py**: 서버 테스트
+- **test_upload.py**: 업로드 테스트
+- **test_unit.py**: 단위 테스트
+- **test_roi_manager.py**: ROI 관리자
+- **test_prescription_calculator.py**: 처방 계산기
+- **test_product_repository.py**: 제품 리포지토리
+
+### 10.3 테스트 실행
+
+```bash
+# 전체 테스트 실행
+pytest tests/
+
+# 특정 테스트 파일 실행
+pytest tests/test_auth_api.py
+
+# 특정 테스트 클래스 실행
+pytest tests/test_auth_api.py::TestAuth
+
+# 특정 테스트 메서드 실행
+pytest tests/test_auth_api.py::TestAuth::test_login_success
+
+# 커버리지 확인
+pytest tests/ --cov=src --cov-report=html
+
+# 통합 테스트만 실행
+pytest tests/integration/
+
+# 서버 테스트 실행
+pytest tests/test_server.py
+```
+
+---
+
+## 11. 참고 문서
+
+- `docs/EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md` - 외부 시스템 연동 가이드
+- `docs/api/API_REFERENCE.md` - API 참조 문서
+- `DEVELOPMENT_GUIDE.md` - 개발 가이드
+- `SKIN_SCORING_GUIDE.md` - 스코어링 가이드
+- `PRESCRIPTION_GUIDE.md` - 처방 가이드
+- `RESTORATION_ENGINE_GUIDE.md` - 복원 엔진 추가 가이드
+
+---
+
+## 12. 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 1.3.0 | 2026-06-01 | API 레퍼런스를 최상위 문서로 참조 추가 | Cascade |
+| 1.2.0 | 2026-06-01 | 테스트 구조 섹션 추가 (섹션 10), 섹션 번호 재정렬 | Cascade |
+| 1.1.0 | 2026-06-01 | 전체 소스 구조 및 모듈별 기능 요약 추가, 섹션 번호 재정렬 | Cascade |
+| 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
+| 0.7.0 | 2026-05-24 | 아키텍처 문서 초기 작성 | Cascade |

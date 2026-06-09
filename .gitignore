@@ -1,0 +1,44 @@
+# 민감 정보
+config/config.secrets.json
+*.secrets.json
+.env
+.env.*
+
+# 모델 가중치 (용량)
+# external/ 디렉토리는 Git LFS로 관리됨
+external/RestoreFormerPlusPlus/weights/
+external/CodeFormer/weights/
+results/weights/
+*.ckpt
+*.pth
+
+# 런타임 생성
+__pycache__/
+*.pyc
+*.db
+gui_debug.log
+
+# results 폴더 내 제외 파일
+results/*.db
+results/*.json
+results/*.png
+results/*.jpg
+results/api_jobs/
+results/exports/*.xlsx
+results/exports/*.csv
+results/logs/*.log
+runtime/results/api_jobs/
+backup/
+
+# 테스트용 이미지 (로컬 테스트용)
+assets/test_images/*.jpg
+assets/test_images/*.png
+
+# Python 패키지
+*.egg-info/
+dist/
+build/
+.venv/
+
+# 아카이브 폴더 (리팩토링/레거시 코드)
+archive/

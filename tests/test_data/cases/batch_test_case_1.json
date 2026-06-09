@@ -1,0 +1,17 @@
+{
+  "case_id": "batch_test_001",
+  "description": "Basic batch workflow test case",
+  "images": [
+    {
+      "path": "test_data/images/synthetic_face_1.jpg",
+      "expected_analysis": {
+        "overall_score_range": [50, 90],
+        "has_face": true
+      }
+    }
+  ],
+  "config": {
+    "clahe_preprocessed": false,
+    "debug": false
+  }
+}

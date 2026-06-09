@@ -1,0 +1,461 @@
+"""
+문서 버전 관리 (Documentation Version Management)
+
+이 모듈은 프로젝트 문서의 버전 정보를 중앙에서 관리합니다.
+각 문서의 버전, 대상 프로젝트 버전, 마지막 업데이트 날짜 등을 추적합니다.
+
+[DOC_VERSION_STANDARD]
+- 문서 버전: X.Y.Z (문서 자체의 수정 횟수)
+- 대상 프로젝트 버전: X.Y.Z (문서가 설명하는 프로젝트 버전)
+- 마지막 업데이트: YYYY-MM-DD
+- 상태: active, deprecated, archived
+"""
+from __future__ import annotations
+from typing import Dict, Optional
+
+
+DOCS_VERSIONS: Dict[str, Dict[str, str]] = {
+    "TESTING_GUIDE": {
+        "version": "1.2.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-06-01",
+        "status": "active",
+        "path": "docs/guides/TESTING_GUIDE.md"
+    },
+    "ARCHITECTURE": {
+        "version": "1.3.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-06-01",
+        "status": "active",
+        "path": "docs/guides/ARCHITECTURE.md"
+    },
+    "PROTOCOL": {
+        "version": "2.1.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-06-01",
+        "status": "active",
+        "path": "docs/guides/PROTOCOL.md"
+    },
+    "API_REFERENCE": {
+        "version": "1.1.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-06-01",
+        "status": "active",
+        "path": "docs/api/API_REFERENCE.md"
+    },
+    "DEVELOPMENT_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/DEVELOPMENT_GUIDE.md"
+    },
+    "PERFORMANCE_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/PERFORMANCE_GUIDE.md"
+    },
+    "API_REFERENCE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/api/API_REFERENCE.md"
+    },
+    "PROJECT_OVERVIEW": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/PROJECT_OVERVIEW.md"
+    },
+    "CI_CD_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/CI_CD_GUIDE.md"
+    },
+    "DEPLOYMENT_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/DEPLOYMENT_GUIDE.md"
+    },
+    "TROUBLESHOOTING_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/TROUBLESHOOTING_GUIDE.md"
+    },
+    "MONITORING_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/MONITORING_GUIDE.md"
+    },
+    "SECURITY_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/SECURITY_GUIDE.md"
+    },
+    "DATA_MODEL": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/db/DATA_MODEL.md"
+    },
+    "USER_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/user/USER_GUIDE.md"
+    },
+    "SKIN_ANALYSIS_PIPELINE_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/user/SKIN_ANALYSIS_PIPELINE_GUIDE.md"
+    },
+    "EXTERNAL_SYSTEM_INTEGRATION_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/EXTERNAL_SYSTEM_INTEGRATION_GUIDE.md"
+    },
+    "INTEGRATION_TEST_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/INTEGRATION_TEST_GUIDE.md"
+    },
+    "INCIDENT_RESPONSE_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/INCIDENT_RESPONSE_GUIDE.md"
+    },
+    "LINUX_DOCKER_DEPLOYMENT": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/LINUX_DOCKER_DEPLOYMENT.md"
+    },
+    "SERVER_TEST_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/ops/SERVER_TEST_GUIDE.md"
+    },
+    "CODEFORMER_PIPELINE_ALGORITHM": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/CODEFORMER_PIPELINE_ALGORITHM.md"
+    },
+    "JSON_IO_FLOW": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/JSON_IO_FLOW.md"
+    },
+    "LLM_PROMPT_TEMPLATE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/LLM_PROMPT_TEMPLATE.md"
+    },
+    "PRESCRIPTION_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/PRESCRIPTION_GUIDE.md"
+    },
+    "RESTORATION_ENGINE_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/RESTORATION_ENGINE_GUIDE.md"
+    },
+    "SKIN_SCORING_GUIDE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/SKIN_SCORING_GUIDE.md"
+    },
+    "WEIGHT_SYSTEM_DOCUMENTATION": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/guides/WEIGHT_SYSTEM_DOCUMENTATION.md"
+    },
+    "IMPROVEMENT_PLAN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/project/IMPROVEMENT_PLAN.md"
+    },
+    "AB_TESTING_FRAMEWORK_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/AB_TESTING_FRAMEWORK_DESIGN.md"
+    },
+    "ANALYSIS_RESULT_SHARING_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/ANALYSIS_RESULT_SHARING_DESIGN.md"
+    },
+    "AUTO_RECOVERY_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/AUTO_RECOVERY_DESIGN.md"
+    },
+    "AUTO_SCALING_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/AUTO_SCALING_DESIGN.md"
+    },
+    "DESIGN_REFERENCE_GUIDED_SCORING": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/DESIGN_REFERENCE_GUIDED_SCORING.md"
+    },
+    "DIAGNOSIS_FEEDBACK_LOOP_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/DIAGNOSIS_FEEDBACK_LOOP_DESIGN.md"
+    },
+    "FACE_AUTHENTICATION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/FACE_AUTHENTICATION_DESIGN.md"
+    },
+    "GDPR_COMPLIANCE_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/GDPR_COMPLIANCE_DESIGN.md"
+    },
+    "IMAGE_ENCRYPTION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/IMAGE_ENCRYPTION_DESIGN.md"
+    },
+    "IN_PROCESS_MODEL_ARCHITECTURE": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/IN_PROCESS_MODEL_ARCHITECTURE.md"
+    },
+    "MULTI_IMAGE_ANALYSIS_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/MULTI_IMAGE_ANALYSIS_DESIGN.md"
+    },
+    "MULTI_LANGUAGE_SUPPORT_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/MULTI_LANGUAGE_SUPPORT_DESIGN.md"
+    },
+    "PERFECTCORP_VS_COTELEAF_COMPARISON": {
+        "version": "1.1.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-06-01",
+        "status": "active",
+        "path": "docs/design/PERFECTCORP_VS_COTELEAF_COMPARISON.md"
+    },
+    "PRESCRIPTION_HISTORY_TRACKING_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PRESCRIPTION_HISTORY_TRACKING_DESIGN.md"
+    },
+    "PRICE_FILTER_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PRICE_FILTER_DESIGN.md"
+    },
+    "PRODUCT_REVIEW_AND_OFFLINE_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PRODUCT_REVIEW_AND_OFFLINE_DESIGN.md"
+    },
+    "PUSH_NOTIFICATION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/PUSH_NOTIFICATION_DESIGN.md"
+    },
+    "REALTIME_RESTORATION_PREVIEW_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/REALTIME_RESTORATION_PREVIEW_DESIGN.md"
+    },
+    "REGIONAL_RESTORATION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/REGIONAL_RESTORATION_DESIGN.md"
+    },
+    "SCORE_CORRECTION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/SCORE_CORRECTION_DESIGN.md"
+    },
+    "SKIN_TYPE_AUTO_DETECTION_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/SKIN_TYPE_AUTO_DETECTION_DESIGN.md"
+    },
+    "TIME_SERIES_ANALYSIS_DESIGN": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/TIME_SERIES_ANALYSIS_DESIGN.md"
+    },
+    "WEBSOCKET_PROGRESS": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/design/WEBSOCKET_PROGRESS.md"
+    },
+    "APP_FEATURE_RECOMMENDATIONS": {
+        "version": "1.0.0",
+        "target_project_version": "1.0.0",
+        "last_updated": "2026-05-31",
+        "status": "active",
+        "path": "docs/APP_FEATURE_RECOMMENDATIONS.md"
+    },
+}
+
+
+def get_doc_version(doc_name: str) -> Optional[Dict[str, str]]:
+    """문서 버전 정보를 가져옵니다.
+    
+    Args:
+        doc_name: 문서 이름 (예: "TESTING_GUIDE")
+    
+    Returns:
+        문서 버전 정보 딕셔너리 또는 None
+    """
+    return DOCS_VERSIONS.get(doc_name)
+
+
+def update_doc_version(
+    doc_name: str,
+    version: Optional[str] = None,
+    last_updated: Optional[str] = None,
+    status: Optional[str] = None
+) -> bool:
+    """문서 버전 정보를 업데이트합니다.
+    
+    Args:
+        doc_name: 문서 이름
+        version: 새 버전 (선택)
+        last_updated: 마지막 업데이트 날짜 (선택)
+        status: 상태 (선택)
+    
+    Returns:
+        업데이트 성공 여부
+    """
+    if doc_name not in DOCS_VERSIONS:
+        return False
+    
+    if version:
+        DOCS_VERSIONS[doc_name]["version"] = version
+    if last_updated:
+        DOCS_VERSIONS[doc_name]["last_updated"] = last_updated
+    if status:
+        DOCS_VERSIONS[doc_name]["status"] = status
+    
+    return True
+
+
+def list_all_docs() -> Dict[str, Dict[str, str]]:
+    """모든 문서 버전 정보를 반환합니다."""
+    return DOCS_VERSIONS.copy()
+
+
+def get_active_docs() -> Dict[str, Dict[str, str]]:
+    """활성 상태인 문서만 반환합니다."""
+    return {
+        name: info
+        for name, info in DOCS_VERSIONS.items()
+        if info.get("status") == "active"
+    }
+
+
+def get_docs_by_target_version(target_version: str) -> Dict[str, Dict[str, str]]:
+    """특정 프로젝트 버전을 대상으로 하는 문서를 반환합니다.
+    
+    Args:
+        target_version: 대상 프로젝트 버전 (예: "1.0.0")
+    
+    Returns:
+        해당 버전을 대상으로 하는 문서 딕셔너리
+    """
+    return {
+        name: info
+        for name, info in DOCS_VERSIONS.items()
+        if info.get("target_project_version") == target_version
+    }

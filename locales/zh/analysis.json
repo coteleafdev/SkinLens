@@ -1,0 +1,20 @@
+{
+  "analysis_result": "分析结果",
+  "overall_score": "总体评分",
+  "skin_type": "皮肤类型",
+  "recommendations": "建议",
+  "oily": "油性",
+  "dry": "干性",
+  "combination": "混合性",
+  "sensitive": "敏感性",
+  "unknown": "未知",
+  "hydration": "水分",
+  "oiliness": "油脂",
+  "pore_size": "毛孔大小",
+  "redness": "泛红",
+  "inflammation": "炎症",
+  "wrinkles": "皱纹",
+  "elasticity": "弹性",
+  "texture": "肤质",
+  "tone": "肤色"
+}

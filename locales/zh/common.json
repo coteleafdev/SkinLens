@@ -1,0 +1,20 @@
+{
+  "app_name": "SkinLens",
+  "welcome": "欢迎",
+  "skin_analysis": "皮肤分析",
+  "prescription": "处方",
+  "product_recommendation": "产品推荐",
+  "settings": "设置",
+  "language": "语言",
+  "health": "健康",
+  "status": "状态",
+  "healthy": "健康",
+  "unhealthy": "不健康",
+  "warning": "警告",
+  "critical": "危险",
+  "incident_detected": "检测到故障",
+  "incident_resolved": "故障已解决",
+  "recovery_started": "恢复开始",
+  "recovery_completed": "恢复完成",
+  "recovery_failed": "恢复失败"
+}

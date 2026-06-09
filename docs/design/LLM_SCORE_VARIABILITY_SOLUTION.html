@@ -1,0 +1,3390 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM_SCORE_VARIABILITY_SOLUTION</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {
+          typography: {
+            DEFAULT: {
+              css: {
+                maxWidth: '100%',
+              }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        // Only highlight code blocks NOT already processed by Pygments codehilite
+        document.querySelectorAll('pre code').forEach(function (el) {
+          if (!el.closest('.highlight')) {
+            hljs.highlightElement(el);
+          }
+        });
+      } catch (e) {}
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        if (window.mermaid) {
+          // Initial render happens after theme is applied (see theme script)
+        }
+      } catch (e) {}
+    });
+  </script>
+
+  <style>
+    /* --- Tailwind Fallback (CDN blocked) ---
+       This project normally uses Tailwind CDN. If the CDN is blocked,
+       these minimal utility class fallbacks keep the doc readable.
+    */
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .max-w-screen-2xl { max-width: 1536px; }
+    .max-w-screen-xl { max-width: 1280px; }
+
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+
+    @media (min-width: 640px) {
+      .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+    @media (min-width: 1024px) {
+      .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+    }
+
+    .min-h-screen { min-height: 100vh; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-3 { gap: 0.75rem; }
+
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    @media (min-width: 1024px) {
+      .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .lg\:col-span-3 { grid-column: span 3 / span 3; }
+      .lg\:col-span-9 { grid-column: span 9 / span 9; }
+      .lg\:block { display: block; }
+    }
+
+    .hidden { display: none; }
+
+    .sticky { position: sticky; }
+    .top-0 { top: 0; }
+    .top-24 { top: 6rem; }
+    .z-40 { z-index: 40; }
+
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .font-medium { font-weight: 500; }
+
+    .inline-flex { display: inline-flex; }
+    .leading-tight { line-height: 1.25; }
+    .overflow-auto { overflow: auto; }
+
+    .fixed { position: fixed; }
+    .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+    .right-0 { right: 0; }
+    .w-80 { width: 20rem; }
+    .h-screen { height: 100vh; }
+    .p-4 { padding: 1rem; }
+    .p-3 { padding: 0.75rem; }
+    .pt-3 { padding-top: 0.75rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .w-full { width: 100%; }
+    .border-b { border-bottom-width: 1px; }
+    .border { border-width: 1px; }
+    .shadow-xl { box-shadow: 0 20px 60px rgba(2,6,23,0.35); }
+    .transition { transition: all 0.2s ease; }
+
+    .sm\:hidden { display: block; }
+    @media (min-width: 640px) { .sm\:hidden { display: none; } }
+
+    /* Mobile TOC drawer */
+    .drawer-backdrop {
+      background: rgba(2, 6, 23, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    html[data-theme="light"] .drawer-backdrop { background: rgba(15, 23, 42, 0.25); }
+
+    .drawer-panel {
+      height: 100vh;
+      max-width: 22rem;
+      width: 85vw;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .drawer-hidden { display: none; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      padding: 0.6rem 0.9rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.72);
+      color: var(--fg);
+      font-size: 0.85rem;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 60;
+    }
+    html[data-theme="light"] #toast {
+      background: rgba(255, 255, 255, 0.92);
+      color: rgba(15, 23, 42, 0.92);
+    }
+
+    /* Floating Theme button (failsafe when topbar buttons are hidden/clipped) */
+    .theme-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 9999;
+      border: 1px solid rgba(226, 232, 240, 0.18);
+      background: rgba(2, 6, 23, 0.75);
+      color: var(--fg);
+      padding: 0.65rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    .theme-fab:hover { background: rgba(2, 6, 23, 0.88); }
+    html[data-theme="light"] .theme-fab {
+      background: rgba(255, 255, 255, 0.92);
+      color: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(15, 23, 42, 0.14);
+    }
+
+    /* Collapsible code blocks */
+    .codewrap.collapsed {
+      max-height: 18rem;
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
+    }
+    .expand-btn {
+      position: absolute;
+      left: 0.6rem;
+      top: 0.6rem;
+      padding: 0.35rem 0.55rem;
+      border-radius: 0.7rem;
+      font-size: 0.75rem;
+      line-height: 1rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: rgba(226, 232, 240, 0.06);
+      color: var(--fg);
+      cursor: pointer;
+      user-select: none;
+    }
+    .expand-btn:hover { background: rgba(226, 232, 240, 0.10); }
+    html[data-theme="light"] .expand-btn { background: rgba(255, 255, 255, 0.70); }
+
+    .admonition {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 0.9rem;
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+    }
+    .admonition > .admonition-title {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+    }
+    .admonition.note { border-left: 4px solid rgba(59,130,246,0.65); }
+    .admonition.tip { border-left: 4px solid rgba(34,197,94,0.65); }
+    .admonition.warning { border-left: 4px solid rgba(250,204,21,0.65); }
+    .admonition.danger { border-left: 4px solid rgba(244,63,94,0.65); }
+
+    :root {
+      color-scheme: dark;
+      --fg: rgba(226, 232, 240, 0.88);
+      --muted: rgba(226, 232, 240, 0.68);
+      --panel: rgba(15, 23, 42, 0.55);
+      --border: rgba(148, 163, 184, 0.16);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+      --a1: rgba(59,130,246,1);   /* blue */
+      --a2: rgba(168,85,247,1);   /* violet */
+      --a3: rgba(34,197,94,1);    /* green */
+      --a4: rgba(20,184,166,1);   /* teal */
+      --a5: rgba(244,63,94,1);    /* rose */
+      --a6: rgba(250,204,21,1);   /* amber */
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --fg: rgba(15, 23, 42, 0.92);
+      --muted: rgba(15, 23, 42, 0.72);
+      --panel: rgba(248, 250, 252, 0.96);
+      --border: rgba(15, 23, 42, 0.14);
+      --shadow: 0 10px 25px rgba(2, 6, 23, 0.08);
+
+      --a1: rgba(37, 99, 235, 1);
+      --a2: rgba(124, 58, 237, 1);
+      --a3: rgba(22, 163, 74, 1);
+      --a4: rgba(13, 148, 136, 1);
+      --a5: rgba(225, 29, 72, 1);
+      --a6: rgba(202, 138, 4, 1);
+    }
+
+    .doc-bg {
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(59,130,246,0.18), transparent 60%),
+                  radial-gradient(900px 600px at 80% 10%, rgba(168,85,247,0.14), transparent 55%),
+                  radial-gradient(1000px 700px at 40% 110%, rgba(34,197,94,0.10), transparent 60%),
+                  linear-gradient(180deg, #030712 0%, #020617 55%, #030712 100%);
+    }
+
+    .glass {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: var(--fg);
+      position: relative;
+      contain: none;
+    }
+
+    html[data-theme="light"] .glass {
+      background: rgba(241, 245, 249, 0.92);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    body {
+      color: var(--fg);
+      background: #020617;
+    }
+
+    html[data-theme="light"] body {
+      background: #e2e8f0; /* slate-200 */
+    }
+
+    html[data-theme="light"] .doc-bg {
+      background: radial-gradient(1200px 700px at 25% -10%, rgba(37,99,235,0.12), transparent 60%),
+                  radial-gradient(900px 600px at 80% 0%, rgba(124,58,237,0.10), transparent 55%),
+                  linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 60%, #f1f5f9 100%);
+    }
+
+    .doc-subtitle { color: rgba(226, 232, 240, 0.70); }
+    html[data-theme="light"] .doc-subtitle { color: var(--muted); }
+
+    .brand-badge {
+      background: rgba(226, 232, 240, 0.08);
+      border: 1px solid rgba(226, 232, 240, 0.10);
+      color: var(--fg);
+    }
+    html[data-theme="light"] .brand-badge {
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      color: var(--fg);
+    }
+
+    .theme-btn {
+      border: 1px solid rgba(226, 232, 240, 0.18);
+      background: rgba(226, 232, 240, 0.10);
+      color: var(--fg);
+    }
+    .theme-btn:hover { background: rgba(226, 232, 240, 0.16); }
+    html[data-theme="light"] .theme-btn {
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      background: rgba(255, 255, 255, 0.70);
+      color: var(--fg);
+    }
+    html[data-theme="light"] .theme-btn:hover { background: rgba(255, 255, 255, 0.90); }
+
+    #searchOverlay {
+      position: fixed;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: min(860px, calc(100vw - 24px));
+      display: none;
+    }
+    #searchOverlay[data-open="1"] { display: block; }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 1rem;
+    }
+    .search-input {
+      flex: 1;
+      border-radius: 0.9rem;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--fg);
+      padding: 0.6rem 0.75rem;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    html[data-theme="light"] .search-input {
+      background: rgba(255, 255, 255, 0.80);
+    }
+    .search-meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      white-space: nowrap;
+      padding: 0 0.25rem;
+    }
+    mark.search-mark {
+      background: rgba(250, 204, 21, 0.30);
+      border: 1px solid rgba(250, 204, 21, 0.32);
+      color: inherit;
+      padding: 0.02rem 0.12rem;
+      border-radius: 0.25rem;
+    }
+    html[data-theme="light"] mark.search-mark {
+      background: rgba(234, 179, 8, 0.22);
+      border-color: rgba(234, 179, 8, 0.28);
+    }
+    mark.search-mark.search-active {
+      background: rgba(59, 130, 246, 0.28);
+      border-color: rgba(59, 130, 246, 0.34);
+    }
+    html[data-theme="light"] mark.search-mark.search-active {
+      background: rgba(37, 99, 235, 0.18);
+      border-color: rgba(37, 99, 235, 0.22);
+    }
+
+    /* Pygments codehilite token colors — dark (Monokai-inspired) */
+    .highlight .hll { background-color: #49483e; }
+    .highlight .c, .highlight .ch, .highlight .cm, .highlight .cp,
+    .highlight .cpf, .highlight .c1, .highlight .cs { color: #959077; }
+    .highlight .k, .highlight .kc, .highlight .kd, .highlight .kp,
+    .highlight .kr, .highlight .kt { color: #66d9ef; }
+    .highlight .kn { color: #ff4689; }
+    .highlight .o, .highlight .ow { color: #ff4689; }
+    .highlight .n, .highlight .nb, .highlight .ni, .highlight .nl,
+    .highlight .nn, .highlight .nv, .highlight .bp,
+    .highlight .vc, .highlight .vg, .highlight .vi, .highlight .vm,
+    .highlight .py, .highlight .fm { color: #f8f8f2; }
+    .highlight .na, .highlight .nc, .highlight .nd, .highlight .ne,
+    .highlight .nf, .highlight .nx { color: #a6e22e; }
+    .highlight .nt { color: #ff4689; }
+    .highlight .no { color: #66d9ef; }
+    .highlight .s, .highlight .sa, .highlight .sb, .highlight .sc,
+    .highlight .dl, .highlight .sd, .highlight .s2, .highlight .sh,
+    .highlight .si, .highlight .sx, .highlight .sr, .highlight .s1,
+    .highlight .ss { color: #e6db74; }
+    .highlight .se { color: #ae81ff; }
+    .highlight .m, .highlight .mb, .highlight .mf, .highlight .mh,
+    .highlight .mi, .highlight .mo, .highlight .il { color: #ae81ff; }
+    .highlight .l, .highlight .ld { color: #ae81ff; }
+    .highlight .p, .highlight .pm { color: #f8f8f2; }
+    .highlight .w { color: #f8f8f2; }
+    .highlight .err { color: #ed007e; }
+    .highlight .g, .highlight .ge, .highlight .gr, .highlight .gh,
+    .highlight .gs, .highlight .gt, .highlight .gu,
+    .highlight .gi, .highlight .gd, .highlight .go, .highlight .gp,
+    .highlight .ges, .highlight .esc, .highlight .x { color: #f8f8f2; }
+    .highlight .ge { font-style: italic; }
+    .highlight .gs { font-weight: bold; }
+    .highlight .gd { color: #ff4689; }
+    .highlight .gi { color: #a6e22e; }
+    .highlight .gp { color: #ff4689; font-weight: bold; }
+
+    /* Pygments codehilite token colors — light (GitHub-inspired) */
+    html[data-theme="light"] .highlight .hll { background-color: #ffffcc; }
+    html[data-theme="light"] .highlight .c, html[data-theme="light"] .highlight .ch,
+    html[data-theme="light"] .highlight .cm, html[data-theme="light"] .highlight .cp,
+    html[data-theme="light"] .highlight .cpf, html[data-theme="light"] .highlight .c1,
+    html[data-theme="light"] .highlight .cs { color: #6a737d; font-style: italic; }
+    html[data-theme="light"] .highlight .k, html[data-theme="light"] .highlight .kc,
+    html[data-theme="light"] .highlight .kd, html[data-theme="light"] .highlight .kp,
+    html[data-theme="light"] .highlight .kr, html[data-theme="light"] .highlight .kt,
+    html[data-theme="light"] .highlight .kn { color: #d73a49; }
+    html[data-theme="light"] .highlight .o,
+    html[data-theme="light"] .highlight .ow { color: #d73a49; }
+    html[data-theme="light"] .highlight .n, html[data-theme="light"] .highlight .nb,
+    html[data-theme="light"] .highlight .ni, html[data-theme="light"] .highlight .nl,
+    html[data-theme="light"] .highlight .nn, html[data-theme="light"] .highlight .nv,
+    html[data-theme="light"] .highlight .bp, html[data-theme="light"] .highlight .vc,
+    html[data-theme="light"] .highlight .vg, html[data-theme="light"] .highlight .vi,
+    html[data-theme="light"] .highlight .vm, html[data-theme="light"] .highlight .py { color: #24292e; }
+    html[data-theme="light"] .highlight .na { color: #005cc5; }
+    html[data-theme="light"] .highlight .nc, html[data-theme="light"] .highlight .nd,
+    html[data-theme="light"] .highlight .ne, html[data-theme="light"] .highlight .nf,
+    html[data-theme="light"] .highlight .nx, html[data-theme="light"] .highlight .fm { color: #6f42c1; }
+    html[data-theme="light"] .highlight .nt { color: #22863a; }
+    html[data-theme="light"] .highlight .no { color: #005cc5; }
+    html[data-theme="light"] .highlight .s, html[data-theme="light"] .highlight .sa,
+    html[data-theme="light"] .highlight .sb, html[data-theme="light"] .highlight .sc,
+    html[data-theme="light"] .highlight .dl, html[data-theme="light"] .highlight .sd,
+    html[data-theme="light"] .highlight .s2, html[data-theme="light"] .highlight .sh,
+    html[data-theme="light"] .highlight .si, html[data-theme="light"] .highlight .sx,
+    html[data-theme="light"] .highlight .sr, html[data-theme="light"] .highlight .s1,
+    html[data-theme="light"] .highlight .ss, html[data-theme="light"] .highlight .se { color: #032f62; }
+    html[data-theme="light"] .highlight .m, html[data-theme="light"] .highlight .mb,
+    html[data-theme="light"] .highlight .mf, html[data-theme="light"] .highlight .mh,
+    html[data-theme="light"] .highlight .mi, html[data-theme="light"] .highlight .mo,
+    html[data-theme="light"] .highlight .il { color: #005cc5; }
+    html[data-theme="light"] .highlight .l,
+    html[data-theme="light"] .highlight .ld { color: #005cc5; }
+    html[data-theme="light"] .highlight .p,
+    html[data-theme="light"] .highlight .pm { color: #24292e; }
+    html[data-theme="light"] .highlight .w { color: #24292e; }
+    html[data-theme="light"] .highlight .err { color: #cb2431; }
+    html[data-theme="light"] .highlight .g, html[data-theme="light"] .highlight .ge,
+    html[data-theme="light"] .highlight .gr, html[data-theme="light"] .highlight .gh,
+    html[data-theme="light"] .highlight .gs, html[data-theme="light"] .highlight .gt,
+    html[data-theme="light"] .highlight .gu, html[data-theme="light"] .highlight .esc,
+    html[data-theme="light"] .highlight .x { color: #24292e; }
+    html[data-theme="light"] .highlight .gd { color: #cb2431; }
+    html[data-theme="light"] .highlight .gi { color: #22863a; }
+    html[data-theme="light"] .highlight .gp { color: #005cc5; font-weight: bold; }
+    html[data-theme="light"] .highlight .go { color: #6a737d; }
+
+    /* nicer scrollbars (webkit only) */
+    #toc::-webkit-scrollbar, article pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    #toc::-webkit-scrollbar-thumb, article pre::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.24);
+      border-radius: 9999px;
+      border: 2px solid rgba(2,6,23,0.65);
+    }
+    #toc::-webkit-scrollbar-thumb:hover, article pre::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.34); }
+
+    #toc ul { list-style: none; padding-left: 0; margin: 0.25rem 0 0; }
+    #toc li { margin: 0.125rem 0; }
+    #toc a {
+      display: block;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.6rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    #toc a:hover { background: rgba(20, 184, 166, 0.12); color: var(--fg); }
+    #toc a.toc-active {
+      background: rgba(20, 184, 166, 0.14);
+      border: 1px solid rgba(20, 184, 166, 0.28);
+      font-weight: 600;
+    }
+    #toc .toc > ul { margin-top: 0.25rem; }
+
+    .toc-section {
+      margin-top: 0.25rem;
+    }
+    .toc-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .toc-toggle {
+      width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .toc-toggle:hover {
+      background: rgba(226, 232, 240, 0.08);
+      border-color: var(--border);
+      color: var(--fg);
+    }
+    .toc-children {
+      margin-left: 0.75rem;
+      border-left: 1px solid rgba(148, 163, 184, 0.14);
+      padding-left: 0.5rem;
+      margin-top: 0.15rem;
+    }
+    .toc-collapsed .toc-children { display: none; }
+
+    .toc-mark {
+      background: rgba(250, 204, 21, 0.22);
+      border: 1px solid rgba(250, 204, 21, 0.22);
+      color: inherit;
+      padding: 0.02rem 0.18rem;
+      border-radius: 0.25rem;
+    }
+    html[data-theme="light"] .toc-mark {
+      background: rgba(234, 179, 8, 0.24);
+      border-color: rgba(234, 179, 8, 0.30);
+    }
+
+    .toc-title { color: var(--fg); }
+    .toc-subtitle { color: var(--muted); }
+    html[data-theme="light"] .toc-title { color: rgba(15, 23, 42, 0.92); }
+    html[data-theme="light"] .toc-subtitle { color: rgba(15, 23, 42, 0.72); }
+
+    article { color: var(--fg); line-height: 1.75; font-size: 1.0625rem; max-width: clamp(72ch, 82vw, 96ch); margin-left: auto; margin-right: auto; }
+    article p { color: var(--fg); margin: 1rem 0; }
+    article li { color: var(--fg); margin: 0.25rem 0; }
+    article ul, article ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+    article ul { list-style-type: disc; }
+    article ol { list-style-type: decimal; }
+    article hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 2rem 0;
+    }
+    article a { color: var(--a1); text-decoration: underline; text-underline-offset: 3px; }
+    article a:hover { color: var(--a4); }
+    article strong { color: rgba(248, 250, 252, 0.98); font-weight: 700; }
+    html[data-theme="light"] article strong { color: rgba(15, 23, 42, 0.98); }
+    article em { color: var(--muted); font-style: italic; }
+    article .headerlink {
+      opacity: 0;
+      transition: opacity 0.15s;
+      text-decoration: none;
+      margin-left: 0.3rem;
+      color: var(--muted);
+    }
+    article h1:hover .headerlink,
+    article h2:hover .headerlink,
+    article h3:hover .headerlink,
+    article h4:hover .headerlink { opacity: 0.6; }
+    article .headerlink:hover { opacity: 1; }
+
+    article h1 {
+      font-size: 2rem;
+      line-height: 2.5rem;
+      margin: 0 0 1rem;
+      background: linear-gradient(90deg, var(--a4), var(--a1), var(--a2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.02em;
+    }
+    article h2 {
+      font-size: 1.5rem;
+      line-height: 2rem;
+      margin: 2.25rem 0 0.75rem;
+      color: var(--fg);
+      position: relative;
+      padding-top: 0.2rem;
+    }
+    article h2:before {
+      content: '';
+      display: block;
+      height: 2px;
+      width: 2.5rem;
+      margin-bottom: 0.7rem;
+      background: linear-gradient(90deg, rgba(168,85,247,0.95), rgba(59,130,246,0.75), rgba(20,184,166,0.75));
+      border-radius: 9999px;
+    }
+    article h3 { font-size: 1.25rem; line-height: 1.75rem; margin: 1.75rem 0 0.5rem; color: var(--a4); }
+    article h4 { font-size: 1.125rem; line-height: 1.75rem; margin: 1.25rem 0 0.5rem; color: var(--muted); font-weight: 600; }
+
+    article code {
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95em;
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: var(--fg);
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.45rem;
+    }
+    html[data-theme="light"] article code {
+      background: rgba(148, 163, 184, 0.14);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: rgba(15, 23, 42, 0.92);
+    }
+    article pre {
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      border-radius: 0.9rem;
+      padding: 1rem;
+      overflow: auto;
+      white-space: pre;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      letter-spacing: 0;
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+      font-kerning: none;
+      line-height: 1.52;
+    }
+    html[data-theme="light"] article pre {
+      background: #f6f8fa;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      color: #24292e;
+    }
+    html[data-theme="light"] article pre code {
+      color: #24292e;
+    }
+    html[data-theme="light"] .highlight,
+    html[data-theme="light"] .highlight pre,
+    html[data-theme="light"] .highlight pre code {
+      color: #24292e !important;
+      background: #f6f8fa !important;
+    }
+    html[data-theme="light"] .highlight {
+      border-radius: 0.9rem;
+    }
+    article pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      white-space: pre;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      letter-spacing: 0;
+      font-family: inherit;
+      font-kerning: none;
+    }
+
+    /* python-markdown codehilite wrapper */
+    .highlight pre {
+      white-space: pre;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      letter-spacing: 0;
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+      font-kerning: none;
+      line-height: 1.52;
+    }
+
+    .highlight pre *, article pre * {
+      font-family: inherit;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      letter-spacing: 0;
+    }
+
+    /* highlight.js may add .hljs and nested spans; force mono to prevent glyph fallback */
+    .hljs, .hljs * {
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace !important;
+      font-variant-ligatures: none !important;
+      font-feature-settings: "liga" 0, "calt" 0 !important;
+      letter-spacing: 0 !important;
+      font-kerning: none !important;
+    }
+
+    /* --- highlight.js CSS fallback theme (when CDN CSS is blocked) --- */
+    .hljs {
+      display: block;
+      overflow-x: auto;
+      padding: 0;
+      color: rgba(226, 232, 240, 0.92);
+      background: transparent;
+    }
+    html[data-theme="light"] .hljs {
+      color: #24292e;
+    }
+    html[data-theme="light"] .hljs-comment,
+    html[data-theme="light"] .hljs-quote {
+      color: #6a737d;
+    }
+    html[data-theme="light"] .hljs-keyword,
+    html[data-theme="light"] .hljs-selector-tag,
+    html[data-theme="light"] .hljs-subst {
+      color: #d73a49;
+    }
+    html[data-theme="light"] .hljs-string,
+    html[data-theme="light"] .hljs-doctag,
+    html[data-theme="light"] .hljs-regexp {
+      color: #032f62;
+    }
+    html[data-theme="light"] .hljs-title,
+    html[data-theme="light"] .hljs-section,
+    html[data-theme="light"] .hljs-selector-id,
+    html[data-theme="light"] .hljs-selector-class {
+      color: #6f42c1;
+    }
+    html[data-theme="light"] .hljs-number,
+    html[data-theme="light"] .hljs-literal,
+    html[data-theme="light"] .hljs-symbol,
+    html[data-theme="light"] .hljs-bullet {
+      color: #005cc5;
+    }
+    html[data-theme="light"] .hljs-attr,
+    html[data-theme="light"] .hljs-attribute,
+    html[data-theme="light"] .hljs-variable,
+    html[data-theme="light"] .hljs-template-variable,
+    html[data-theme="light"] .hljs-type {
+      color: #005cc5;
+    }
+    html[data-theme="light"] .hljs-built_in,
+    html[data-theme="light"] .hljs-builtin-name {
+      color: #e36209;
+    }
+    html[data-theme="light"] .hljs-meta,
+    html[data-theme="light"] .hljs-meta-keyword,
+    html[data-theme="light"] .hljs-meta-string {
+      color: #6a737d;
+    }
+    .hljs-comment,
+    .hljs-quote {
+      color: rgba(148, 163, 184, 0.80);
+      font-style: italic;
+    }
+    .hljs-keyword,
+    .hljs-selector-tag,
+    .hljs-subst {
+      color: rgba(168, 85, 247, 0.95);
+      font-weight: 600;
+    }
+    .hljs-string,
+    .hljs-doctag,
+    .hljs-regexp {
+      color: rgba(34, 197, 94, 0.95);
+    }
+    .hljs-title,
+    .hljs-section,
+    .hljs-selector-id,
+    .hljs-selector-class {
+      color: rgba(59, 130, 246, 0.95);
+      font-weight: 600;
+    }
+    .hljs-number,
+    .hljs-literal,
+    .hljs-symbol,
+    .hljs-bullet {
+      color: rgba(250, 204, 21, 0.95);
+    }
+    .hljs-attr,
+    .hljs-attribute,
+    .hljs-variable,
+    .hljs-template-variable,
+    .hljs-type {
+      color: rgba(94, 234, 212, 0.95);
+    }
+    .hljs-built_in,
+    .hljs-builtin-name {
+      color: rgba(244, 63, 94, 0.95);
+    }
+    .hljs-meta,
+    .hljs-meta-keyword,
+    .hljs-meta-string {
+      color: rgba(203, 213, 225, 0.95);
+    }
+    .hljs-emphasis { font-style: italic; }
+    .hljs-strong { font-weight: 700; }
+    .hljs-addition { background: rgba(34, 197, 94, 0.12); }
+    .hljs-deletion { background: rgba(244, 63, 94, 0.12); }
+    /* --- end highlight.js fallback theme --- */
+
+    article pre, article pre code, .highlight pre, .highlight pre code {
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace !important;
+      font-variant-ligatures: none !important;
+      font-feature-settings: "liga" 0, "calt" 0 !important;
+      letter-spacing: 0 !important;
+      font-kerning: none !important;
+    }
+
+    /* ASCII/box-drawing diagrams: try harder to keep CJK glyphs monospaced on Windows/Chrome */
+    .ascii-diagram,
+    .ascii-diagram code {
+      font-family: "D2Coding", "NanumGothicCoding", "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", "GulimChe", "DotumChe", "MS Gothic", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace !important;
+      font-variant-ligatures: none !important;
+      font-feature-settings: "liga" 0, "calt" 0 !important;
+      letter-spacing: 0 !important;
+      font-kerning: none !important;
+      white-space: pre !important;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      text-rendering: optimizeSpeed;
+    }
+
+    /* Mermaid blocks (offline lite: shown as plain text) */
+    .mermaid {
+      white-space: pre;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      letter-spacing: 0;
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+      font-kerning: none;
+      line-height: 1.35;
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      border-radius: 0.9rem;
+      padding: 1rem;
+      overflow: auto;
+      margin: 1rem 0;
+      color: rgba(226, 232, 240, 0.92);
+    }
+    html[data-theme="light"] .mermaid {
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      color: rgba(15, 23, 42, 0.92);
+    }
+
+    .mermaid svg {
+      display: block;
+      margin: 0.25rem auto;
+    }
+
+    /* Ensure labels remain visible regardless of mermaid theme defaults */
+    .mermaid svg text,
+    .mermaid svg .label text,
+    .mermaid svg .edgeLabel,
+    .mermaid svg .edgeLabel text {
+      fill: currentColor !important;
+      color: currentColor !important;
+    }
+
+    .mermaid-fallback {
+      white-space: pre;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+      letter-spacing: 0;
+      font-family: "Cascadia Mono", "Cascadia Mono PL", Consolas, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+      line-height: 1.35;
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid rgba(244, 63, 94, 0.22);
+      border-radius: 0.9rem;
+      padding: 1rem;
+      overflow: auto;
+      margin: 1rem 0;
+    }
+
+    .mermaid-error {
+      border: 1px solid rgba(244, 63, 94, 0.22);
+      background: rgba(244, 63, 94, 0.04);
+      border-radius: 0.9rem;
+      padding: 0.85rem;
+      margin: 1rem 0;
+    }
+    .mermaid-error-title {
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: rgba(254, 226, 226, 0.92);
+      margin-bottom: 0.5rem;
+    }
+    html[data-theme="light"] .mermaid-error-title {
+      color: rgba(190, 18, 60, 0.92);
+    }
+    .mermaid-error details {
+      margin-top: 0.6rem;
+    }
+    .mermaid-error summary {
+      cursor: pointer;
+      user-select: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .mermaid-error pre.mermaid-error-msg {
+      margin-top: 0.5rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: rgba(2, 6, 23, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 0.75rem;
+      padding: 0.6rem 0.7rem;
+      color: rgba(226, 232, 240, 0.92);
+      overflow: auto;
+    }
+    html[data-theme="light"] .mermaid-error pre.mermaid-error-msg {
+      background: rgba(15, 23, 42, 0.06);
+      color: rgba(15, 23, 42, 0.88);
+    }
+
+    /* Copy button for code blocks */
+    .codewrap { position: relative; }
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      padding: 0.35rem 0.55rem;
+      border-radius: 0.7rem;
+      font-size: 0.75rem;
+      line-height: 1rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: rgba(226, 232, 240, 0.06);
+      color: var(--fg);
+      cursor: pointer;
+      user-select: none;
+    }
+    .copy-btn:hover { background: rgba(226, 232, 240, 0.10); }
+    html[data-theme="light"] .copy-btn {
+      background: rgba(255, 255, 255, 0.70);
+    }
+
+    .lang-label {
+      position: absolute;
+      top: 0.6rem;
+      right: 4.2rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
+      line-height: 1rem;
+      font-weight: 600;
+      color: rgba(148, 163, 184, 0.7);
+      user-select: none;
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    html[data-theme="light"] .lang-label {
+      color: rgba(100, 116, 139, 0.8);
+    }
+
+    article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    article th, article td {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      padding: 0.65rem 0.85rem;
+      vertical-align: top;
+    }
+    article th { background: rgba(59, 130, 246, 0.10); font-weight: 600; color: rgba(224, 231, 255, 0.98); }
+    article tbody tr:nth-child(even) { background: rgba(148, 163, 184, 0.04); }
+    article tbody tr:hover { background: rgba(148, 163, 184, 0.08); }
+    html[data-theme="light"] article th {
+      background: rgba(37, 99, 235, 0.08);
+      color: rgba(15, 23, 42, 0.92);
+    }
+    html[data-theme="light"] article td {
+      border-color: rgba(15, 23, 42, 0.10);
+    }
+    html[data-theme="light"] article th {
+      border-color: rgba(15, 23, 42, 0.12);
+    }
+    html[data-theme="light"] article tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.03); }
+    html[data-theme="light"] article tbody tr:hover { background: rgba(15, 23, 42, 0.05); }
+    article blockquote {
+      border-left: 3px solid rgba(99, 102, 241, 0.55);
+      padding: 0.6rem 0.9rem;
+      margin: 1rem 0;
+      background: rgba(99, 102, 241, 0.06);
+      border-radius: 0 0.6rem 0.6rem 0;
+      color: var(--muted);
+    }
+    html[data-theme="light"] article blockquote {
+      border-left-color: rgba(99, 102, 241, 0.55);
+      background: rgba(99, 102, 241, 0.06);
+      color: var(--muted);
+    }
+
+    /* Back to Top button */
+    .back-to-top {
+      position: fixed;
+      right: 18px;
+      bottom: 64px;
+      z-index: 9998;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(226, 232, 240, 0.18);
+      background: rgba(2, 6, 23, 0.75);
+      color: var(--fg);
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      transition: opacity 0.2s;
+    }
+    .back-to-top:hover { background: rgba(2, 6, 23, 0.88); }
+    html[data-theme="light"] .back-to-top {
+      background: rgba(255, 255, 255, 0.92);
+      color: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(15, 23, 42, 0.14);
+    }
+
+    /* Lightbox */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .lightbox-overlay img {
+      max-width: 92vw;
+      max-height: 92vh;
+      border-radius: 0.75rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    html[data-theme="light"] .lightbox-overlay {
+      background: rgba(255, 255, 255, 0.90);
+    }
+    article img {
+      cursor: zoom-in;
+    }
+
+    /* TOC progress */
+    .toc-progress {
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 0.2rem 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      overflow: visible;
+    }
+
+    /* Print styles */
+    @media print {
+      header.topbar, .theme-fab, #toast, #tocDrawer,
+      aside, .copy-btn, .expand-btn, .lang-label,
+      .back-to-top, .lightbox-overlay, #searchOverlay { display: none !important; }
+      article { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      article pre, .highlight pre {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        border: 1px solid #ccc !important;
+        background: #f6f8fa !important;
+        color: #24292e !important;
+      }
+      .codewrap.collapsed {
+        max-height: none !important;
+        overflow: visible !important;
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
+      }
+      article table { display: table !important; }
+      a[href]::after { content: none !important; }
+      .mermaid svg { max-width: 100% !important; }
+    }
+  </style>
+</head>
+
+<body class="doc-bg min-h-screen">
+  <header class="topbar sticky top-0 z-50">
+    <div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="brand-badge h-9 w-9 rounded-xl grid place-items-center font-bold">MD</div>
+        <div class="leading-tight">
+          <div class="doc-subtitle text-xs">Documentation</div>
+          <div class="text-sm font-semibold">LLM_SCORE_VARIABILITY_SOLUTION</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="btnToc" class="theme-btn sm:hidden inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium">TOC</button>
+        <button id="btnSearch" class="theme-btn inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium">Search</button>
+        <button id="btnAutoFold" class="theme-btn inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium">AutoFold</button>
+        <button id="btnFold" class="theme-btn inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium">Fold</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="searchOverlay" aria-hidden="true">
+    <div class="glass search-bar">
+      <input id="searchInput" class="search-input" type="search" placeholder="Search in document... (Esc to close)" autocomplete="off" />
+      <span id="searchCount" class="search-meta">0 / 0</span>
+      <button id="btnSearchPrev" class="theme-btn rounded-xl px-3 py-2 text-xs font-medium" type="button">Prev</button>
+      <button id="btnSearchNext" class="theme-btn rounded-xl px-3 py-2 text-xs font-medium" type="button">Next</button>
+      <button id="btnSearchClose" class="theme-btn rounded-xl px-3 py-2 text-xs font-medium" type="button">Close</button>
+    </div>
+  </div>
+
+  <!-- Mobile TOC Drawer -->
+  <div id="tocDrawer" class="drawer-hidden fixed inset-0 z-40">
+    <div id="tocBackdrop" class="drawer-backdrop fixed inset-0"></div>
+    <div class="fixed right-0 top-0 drawer-panel">
+      <div class="p-4 border-b" style="border-color: var(--border);">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="toc-title text-sm font-semibold">목차</div>
+            <div class="toc-subtitle text-xs mt-0.5">Heading 기반 자동 생성</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnAutoFoldMobile" class="theme-btn rounded-xl px-3 py-2 text-xs font-medium">AutoFold</button>
+            <button id="btnTocClose" class="theme-btn rounded-xl px-3 py-2 text-xs font-medium">Close</button>
+          </div>
+        </div>
+        <div class="mt-3">
+          <input id="tocSearchMobile" type="search" placeholder="Search..." class="w-full rounded-xl border border-slate-200/10 bg-white/5 px-3 py-2 text-sm" />
+        </div>
+      </div>
+      <nav id="tocMobile" class="h-[calc(100vh-6rem)] overflow-auto p-3 text-sm">
+        <div class="toc">
+<ul>
+<li><a href="#0-tldr">0. 요약 (TL;DR)</a></li>
+<li><a href="#1">1. 문제 재정의</a><ul>
+<li><a href="#11">1.1 변동성의 본질</a></li>
+<li><a href="#12-3">1.2 변동성의 3가지 원인과 직접 대응</a></li>
+<li><a href="#13">1.3 변동성이 가장 아픈 지점</a></li>
+</ul>
+</li>
+<li><a href="#2-5">2. 권장 아키텍처 (5계층)</a><ul>
+<li><a href="#1-cv-llm">① 측정기는 CV, LLM은 보조</a></li>
+<li><a href="#2-llm">② LLM이 점수를 내야 할 때 — 출력 공간 제약</a></li>
+<li><a href="#3-pairwise">③ 시계열 추적 — 단일 pairwise 호출 (추적 한정 최대 레버)</a></li>
+<li><a href="#4-mdc">④ 노이즈 바닥 정량화 — MDC (실제 통증의 직접 해법)</a></li>
+<li><a href="#5">⑤ 캘리브레이션 / 노이즈 모델링 (지속 운영)</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 비교 방식 디자인</a><ul>
+<li><a href="#31">3.1 비교 방식 분류</a></li>
+<li><a href="#32">3.2 복원 모델의 부드러움 효과</a></li>
+<li><a href="#33-multi-comparison-approach">3.3 다중 비교 방안 (Multi-Comparison Approach)</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 우선순위 (가성비)</a></li>
+<li><a href="#5_1">5. 기술 구현 방안</a><ul>
+<li><a href="#51-mdc-4">5.1 MDC 측정 스크립트 (계층 ④)</a></li>
+<li><a href="#52-pairwise-3">5.2 pairwise 비교 프롬프트 빌더 (계층 ③)</a></li>
+<li><a href="#53-2">5.3 샘플링·집계 (계층 ②)</a></li>
+<li><a href="#54-db-45">5.4 DB 스키마 — 신뢰성 메타데이터 (계층 ④/⑤)</a></li>
+<li><a href="#56">5.6 다중 비교 구현 (비교 방식 디자인)</a></li>
+<li><a href="#57">5.7 판정 로직 (결정 규칙)</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 향후 작업 항목</a><ul>
+<li><a href="#phase-1">Phase 1 — 추적 신뢰성 (우선)</a></li>
+<li><a href="#phase-2-pairwise">Phase 2 — pairwise 비교</a></li>
+<li><a href="#phase-3">Phase 3 — 다중 비교 구현</a></li>
+<li><a href="#phase-4">Phase 4 — 출력 제약·집계</a></li>
+<li><a href="#phase-5-cv-anchor">Phase 5 — CV anchor</a></li>
+<li><a href="#phase-6">Phase 6 — 캘리브레이션 운영</a></li>
+</ul>
+</li>
+<li><a href="#7">7. 참고 문서</a></li>
+<li><a href="#_1">변경 이력</a></li>
+</ul>
+</div>
+
+      </nav>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <aside class="hidden lg:block lg:col-span-3">
+        <div class="sticky top-24">
+          <div class="glass rounded-2xl">
+            <div class="px-4 py-3 border-b border-slate-200/10">
+              <div class="toc-title text-sm font-semibold">목차</div>
+              <div class="toc-subtitle text-xs mt-0.5">Heading 기반 자동 생성</div>
+            </div>
+            <div class="px-3 pt-3">
+              <input id="tocSearch" type="search" placeholder="Search..." class="w-full rounded-xl border border-slate-200/10 bg-white/5 px-3 py-2 text-sm" />
+            </div>
+            <nav id="toc" class="h-[calc(100vh-10rem)] overflow-auto p-3 text-sm">
+              <div class="toc">
+<ul>
+<li><a href="#0-tldr">0. 요약 (TL;DR)</a></li>
+<li><a href="#1">1. 문제 재정의</a><ul>
+<li><a href="#11">1.1 변동성의 본질</a></li>
+<li><a href="#12-3">1.2 변동성의 3가지 원인과 직접 대응</a></li>
+<li><a href="#13">1.3 변동성이 가장 아픈 지점</a></li>
+</ul>
+</li>
+<li><a href="#2-5">2. 권장 아키텍처 (5계층)</a><ul>
+<li><a href="#1-cv-llm">① 측정기는 CV, LLM은 보조</a></li>
+<li><a href="#2-llm">② LLM이 점수를 내야 할 때 — 출력 공간 제약</a></li>
+<li><a href="#3-pairwise">③ 시계열 추적 — 단일 pairwise 호출 (추적 한정 최대 레버)</a></li>
+<li><a href="#4-mdc">④ 노이즈 바닥 정량화 — MDC (실제 통증의 직접 해법)</a></li>
+<li><a href="#5">⑤ 캘리브레이션 / 노이즈 모델링 (지속 운영)</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 비교 방식 디자인</a><ul>
+<li><a href="#31">3.1 비교 방식 분류</a></li>
+<li><a href="#32">3.2 복원 모델의 부드러움 효과</a></li>
+<li><a href="#33-multi-comparison-approach">3.3 다중 비교 방안 (Multi-Comparison Approach)</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 우선순위 (가성비)</a></li>
+<li><a href="#5_1">5. 기술 구현 방안</a><ul>
+<li><a href="#51-mdc-4">5.1 MDC 측정 스크립트 (계층 ④)</a></li>
+<li><a href="#52-pairwise-3">5.2 pairwise 비교 프롬프트 빌더 (계층 ③)</a></li>
+<li><a href="#53-2">5.3 샘플링·집계 (계층 ②)</a></li>
+<li><a href="#54-db-45">5.4 DB 스키마 — 신뢰성 메타데이터 (계층 ④/⑤)</a></li>
+<li><a href="#56">5.6 다중 비교 구현 (비교 방식 디자인)</a></li>
+<li><a href="#57">5.7 판정 로직 (결정 규칙)</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 향후 작업 항목</a><ul>
+<li><a href="#phase-1">Phase 1 — 추적 신뢰성 (우선)</a></li>
+<li><a href="#phase-2-pairwise">Phase 2 — pairwise 비교</a></li>
+<li><a href="#phase-3">Phase 3 — 다중 비교 구현</a></li>
+<li><a href="#phase-4">Phase 4 — 출력 제약·집계</a></li>
+<li><a href="#phase-5-cv-anchor">Phase 5 — CV anchor</a></li>
+<li><a href="#phase-6">Phase 6 — 캘리브레이션 운영</a></li>
+</ul>
+</li>
+<li><a href="#7">7. 참고 문서</a></li>
+<li><a href="#_1">변경 이력</a></li>
+</ul>
+</div>
+
+            </nav>
+          </div>
+        </div>
+      </aside>
+
+      <main class="lg:col-span-9">
+        <article class="glass rounded-2xl px-6 sm:px-8 py-8">
+          <h1 id="llm">LLM 측정 점수 변동성 해결 방안<a class="headerlink" href="#llm" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>문서 버전:</strong> 1.2.0
+<strong>대상 프로젝트:</strong> SkinLens v1
+<strong>작성일:</strong> 2026-06-09
+<strong>상태:</strong> 제안 단계
+<strong>변경:</strong> MULTI_COMPARISON_DESIGN.md 병합 - 비교 방식 디자인 포함, 상세 설명 추가</p>
+</blockquote>
+<hr />
+<h2 id="0-tldr">0. 요약 (TL;DR)<a class="headerlink" href="#0-tldr" title="Permanent link">&para;</a></h2>
+<p>LLM 점수가 호출마다 0~9점 변동하는 문제는 <strong>"줄여야 할 잡음"이 아니라 "LLM을 측정기로 잘못 쓰고 있다"는 신호</strong>다. 따라서 최선의 해법은 변동성을 평활화하는 것이 아니라 <strong>측정기의 역할을 결정론적 CV 파이프라인으로 옮기고, LLM은 보조·정성 역할로 제약</strong>하는 것이다.</p>
+<p><strong>권장 결정 규칙:</strong></p>
+<blockquote>
+<p>정량 점수 = CV(결정론) backbone + LLM은 rubric·reference anchor로 제약한 보조 성분.
+시계열 추적은 <strong>단일 pairwise 호출</strong>(temperature≈0, N회 median)로 수행.
+세션 간 변화가 <strong>MDC(최소 검출 가능 변화)</strong> 를 넘고, CV·LLM이 방향까지 일치할 때만 "개선/악화"로 판정.</p>
+</blockquote>
+<p><strong>우선순위(가성비 순):</strong> ③ pairwise + ④ MDC → ① CV anchor → ② 출력 제약 → ⑤ 캘리브레이션.</p>
+<hr />
+<h2 id="1">1. 문제 재정의<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<h3 id="11">1.1 변동성의 본질<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>관찰</th>
+<th>잘못된 해석</th>
+<th>올바른 해석</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>같은 이미지가 호출마다 0~9점 다름</td>
+<td>"LLM 점수를 더 안정화하면 된다"</td>
+<td>"LLM은 재현 가능한 절대 스칼라(absolute scalar)를 내는 도구가 아니다"</td>
+</tr>
+</tbody>
+</table>
+<p>LLM을 <strong>측정기(instrument)</strong> 로 쓰는 한 변동성은 본질적으로 남는다. 측정기에 요구되는 핵심 속성은 <strong>재현성(test-retest reliability)</strong> 인데, 확률적 생성 모델은 이 속성을 보장하지 못한다.</p>
+<h3 id="12-3">1.2 변동성의 3가지 원인과 직접 대응<a class="headerlink" href="#12-3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>원인</th>
+<th>대응 계층</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM 모델의 확률적 특성</td>
+<td>② temperature≈0 + N회 median</td>
+</tr>
+<tr>
+<td>이미지 인식의 미세한 차이</td>
+<td>② 고정 reference anchor / 동일 전처리</td>
+</tr>
+<tr>
+<td>프롬프트 해석의 변동</td>
+<td>② rubric anchoring + 이산 band + structured output</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13">1.3 변동성이 가장 아픈 지점<a class="headerlink" href="#13" title="Permanent link">&para;</a></h3>
+<p>분산은 <strong>두 절대 점수의 차이를 계산할 때 누적</strong>된다.</p>
+<div class="highlight"><pre><span></span><code>Var(S2 − S1) = Var(S1) + Var(S2) ≈ 2σ2   →  차이의 표준편차 = σ√2
+</code></pre></div>
+
+<p>즉 "1차 채점 → 2차 채점 → 차이"라는 시계열 추적 방식이 변동성을 <strong>두 배로 증폭</strong>시킨다. 제품 효과 추적이 어려운 근본 원인이 여기에 있다(③에서 해결).</p>
+<p><strong>수학적 배경:</strong>
+- 두 독립 랜덤 변수 X, Y의 차이 D = X - Y의 분산: Var(D) = Var(X) + Var(Y)
+- X와 Y가 동일한 분포에서 나온 경우: Var(D) = 2σ²
+- 표준편차: SD(D) = √(2σ²) = σ√2 ≈ 1.414σ
+- 95% 신뢰구간: ±1.96 × σ√2 ≈ ±2.77σ</p>
+<p><strong>실제 예시:</strong>
+- LLM 점수 표준편차 σ = 3점인 경우
+- 두 세션 차이의 표준편차 = 3 × 1.414 = 4.24점
+- 95% 신뢰구간 = ±2.77 × 3 = ±8.31점
+- 즉, 실제 변화가 없어도 -8점 ~ +8점 범위에서 차이가 나타날 수 있음</p>
+<hr />
+<h2 id="2-5">2. 권장 아키텍처 (5계층)<a class="headerlink" href="#2-5" title="Permanent link">&para;</a></h2>
+<h3 id="1-cv-llm">① 측정기는 CV, LLM은 보조<a class="headerlink" href="#1-cv-llm" title="Permanent link">&para;</a></h3>
+<ul>
+<li>결정론적 CV 파이프라인(HSV saturation, LAB a<em>/b</em> 필터 등)은 동일 이미지 → 항상 동일 점수. <strong>재현 가능한 숫자가 필요하면 이것이 측정기다.</strong></li>
+<li>정량 점수의 backbone = CV. LLM은 CV가 못 잡는 것(전체적 인상, 인지나이, 맥락 해석, 사람이 읽을 서술)에만 사용.</li>
+<li><strong>주의:</strong> LLM 점수가 합성 점수에 가중 반영되는 구조라면, LLM 분산은 그 가중치에 비례해 최종 점수로 전파된다. 변동성 큰 성분의 비중을 낮추는 것 자체가 레버다.</li>
+</ul>
+<p><strong>CV 파이프라인 예시:</strong>
+- <strong>색소 침착도</strong>: HSV 채도 채널에서 특정 범위 픽셀 비율 계산
+- <strong>색조 균일성</strong>: LAB 색공간에서 a<em>, b</em> 채널의 표준편차 계산
+- <strong>주름 깊이</strong>: 엣지 검출 + 그라디언트 강도 분석
+- <strong>피부 결 텍스처</strong>: Gabor 필터 또는 Local Binary Pattern (LBP) 특징 추출</p>
+<p><strong>장점:</strong>
+- 재현성: 동일 이미지 → 항상 동일 결과
+- 속도: GPU 가속 가능, LLM 호출보다 빠름
+- 비용: API 호출 비용 없음
+- 디버깅: 결정론적이라 문제 원인 파악 용이</p>
+<p><strong>단점:</strong>
+- 복잡한 패턴 인식 어려움 (전체적 인상, 맥락)
+- 높은 수준의 추론 부족 (인지나이, 종합적 판단)
+- 초기 개발 비용: 알고리즘 설계 및 튜닝 필요</p>
+<h3 id="2-llm">② LLM이 점수를 내야 할 때 — 출력 공간 제약<a class="headerlink" href="#2-llm" title="Permanent link">&para;</a></h3>
+<p>LLM 채점을 완전히 없앨 수 없는 경우, 출력 공간을 좁혀 분산을 억제한다.</p>
+<ul>
+<li><strong>샘플링:</strong> <code>temperature ≈ 0</code>, 가능하면 seed 고정.</li>
+<li><strong>집계:</strong> N회 호출 후 <strong>median</strong>(평균 아님 — 이상치에 강건). 분산은 σ/√N로 감소. 단, <em>체계적 bias는 평균으로 제거되지 않음</em>에 유의.</li>
+<li><strong>reference anchor:</strong> 알려진 점수의 고정 기준 이미지를 함께 입력하고 그에 <em>상대적으로</em> 채점(기존 reference-guided scoring 강화).</li>
+<li><strong>rubric anchoring:</strong> 각 점수 band를 구체 기준으로 고정.</li>
+<li>예: <code>40~50 = 3개 존 이상에서 기미 가시, 경계 흐림</code> 등.</li>
+<li><strong>이산화:</strong> 연속 0~100 대신 ordinal band(예: 1~5 Likert)로 받고 필요 시 세분화. 연속 척도는 허위 정밀도와 분산만 키운다.</li>
+<li><strong>structured output 강제</strong> + (선택) <strong>CV prior로 bound:</strong> "CV가 X로 측정했다, ±Δ 내에서 근거가 있을 때만 조정하라"로 드리프트 한계 설정.</li>
+</ul>
+<p><strong>상세 설명:</strong></p>
+<p><strong>Temperature 설정:</strong>
+- <code>temperature = 0</code>: 가장 결정론적 출력, 재현성 최대
+- <code>temperature = 0.1-0.3</code>: 약간의 창의성 허용, 변동성 적게 증가
+- <code>temperature &gt; 0.5</code>: 창의성 증가, 변동성 크게 증가 (권장하지 않음)</p>
+<p><strong>Median vs Mean:</strong>
+- Median: 이상치에 강건, 비대칭 분포에서 안정적
+- Mean: 이상치에 민감, 정규분포 가정 시 최적
+- LLM 출력은 종종 비대칭 분포를 따르므로 median 권장</p>
+<p><strong>N회 호출 효과:</strong>
+- N=1: σ (기준)
+- N=3: σ/√3 ≈ 0.58σ (42% 감소)
+- N=5: σ/√5 ≈ 0.45σ (55% 감소)
+- N=10: σ/√10 ≈ 0.32σ (68% 감소)
+- 비용 고려: N=5가 가성비 좋음</p>
+<p><strong>Rubric Anchoring 예시:</strong></p>
+<div class="highlight"><pre><span></span><code>점수 band 정의:
+- 0-20점: 심각 - 전체 얼굴의 50% 이상에서 문제 심각
+- 21-40점: 중등 - 20-50% 범위에서 문제 가시
+- 41-60점: 경미 - 5-20% 범위에서 문제 가시
+- 61-80점: 양호 - 5% 미만에서만 문제 가시
+- 81-100점: 우수 - 문제 거의 없음
+</code></pre></div>
+
+<p><strong>이산화 장점:</strong>
+- LLM이 연속 척도에서 허위 정밀도를 만들어내는 것 방지
+- 0~100점 대신 1~5점 척도 사용 시 분산 감소
+- 필요 시 1~10점, 1~20점으로 세분화 가능</p>
+<h3 id="3-pairwise">③ 시계열 추적 — 단일 pairwise 호출 (추적 한정 최대 레버)<a class="headerlink" href="#3-pairwise" title="Permanent link">&para;</a></h3>
+<p>절대 점수 차이(분산 누적 2σ²)를 버리고, <strong>두 이미지를 한 호출에 함께 넣어 상대 판단</strong>시킨다.</p>
+<ul>
+<li>stochastic draw가 한 번뿐 → 분산 누적 회피.</li>
+<li>상대 판단이 절대 캘리브레이션보다 통계적으로 훨씬 안정적(LLM-as-judge / Bradley–Terry에서 확립).</li>
+</ul>
+<div class="highlight"><pre><span></span><code>[기존]  S1 = LLM(img1),  S2 = LLM(img2),  Δ = S2 − S1     # Var(Δ) ≈ 2σ2
+[권장]  Δ = LLM(img1, img2)                                 # 단일 draw, 상대 판단
+</code></pre></div>
+
+<blockquote>
+<p><strong>중요:</strong> 비교에 사용하는 두 이미지는 <strong>변환을 대칭으로</strong> 맞출 것(<code>복원1 vs 복원2</code> 또는 <code>원본1 vs 원본2</code>). 비대칭(복원1 vs 원본2)은 복원 부드러움 편향이 체계적으로 섞임 — 아래 "비교 방식 디자인" 섹� 참조.</p>
+</blockquote>
+<h3 id="4-mdc">④ 노이즈 바닥 정량화 — MDC (실제 통증의 직접 해법)<a class="headerlink" href="#4-mdc" title="Permanent link">&para;</a></h3>
+<p>"이 변화가 진짜냐"의 정답은 통계다.</p>
+<ol>
+<li><strong>같은 이미지</strong>를 전체 스코어링 파이프라인에 N회(예: 20) 통과시켜 메트릭별 표준편차 σ 측정 → 측정 노이즈 바닥.</li>
+<li>두 세션 차이를 보므로 차이의 SD = σ√2.
+   <code>MDC95 ≈ 1.96 × σ√2 ≈ 2.77 × σ</code></li>
+<li><strong>세션 간 변화 &gt; MDC</strong> 일 때만 "개선/악화"로 보고. 이하는 "변화 없음(노이즈 범위)".</li>
+</ol>
+<blockquote>
+<p>효과: "3점 올랐는데 진짜인가요?" → "σ가 2.5라 MDC가 약 7점, 따라서 노이즈"라고 정직하게 답변 가능. 고객 피드백 일관성 문제가 여기서 해소됨.</p>
+</blockquote>
+<p><strong>MDC (Minimal Detectable Change) 상세 설명:</strong></p>
+<p><strong>통계적 배경:</strong>
+- MDC는 측정 도구가 실제 변화를 감지할 수 있는 최소 크기
+- 95% 신뢰수준에서 계산: MDC₉₅ = 1.96 × SEM × √2
+- SEM (Standard Error of Measurement) = SD × √(1 - reliability)
+- reliability가 높을수록(재현성이 좋을수록) MDC 감소</p>
+<p><strong>계산 예시:</strong></p>
+<div class="highlight"><pre><span></span><code>기미 점수 측정 결과 (N=20):
+- 평균: 48.5점
+- 표준편차 (SD): 3.2점
+- 신뢰도 (ICC): 0.85
+
+SEM = 3.2 × √(1 - 0.85) = 3.2 × 0.387 = 1.24점
+MDC95 = 1.96 × 1.24 × √2 = 3.44점
+
+해석:
+- 기미 점수가 3.44점 이상 변해야 &quot;실제 변화&quot;로 간주
+- 3점 변화는 노이즈 범위로 간주
+</code></pre></div>
+
+<p><strong>실제 적용 시나리오:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="mf">1</span><span class="n">차</span><span class="w"> </span><span class="n">측정</span><span class="p">:</span><span class="w"> </span><span class="n">기미</span><span class="w"> </span><span class="mf">45</span><span class="n">점</span>
+<span class="mf">2</span><span class="n">차</span><span class="w"> </span><span class="n">측정</span><span class="p">:</span><span class="w"> </span><span class="n">기미</span><span class="w"> </span><span class="mf">50</span><span class="n">점</span>
+<span class="n">변화량</span><span class="p">:</span><span class="w"> </span><span class="o">+</span><span class="mf">5</span><span class="n">점</span>
+
+<span class="n">MDC95</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.44</span><span class="n">점</span>
+<span class="n">판정</span><span class="p">:</span><span class="w"> </span><span class="mf">5</span><span class="n">점</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">3.44</span><span class="n">점</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="s">&quot;개선&quot;</span><span class="n">으로</span><span class="w"> </span><span class="n">판정</span>
+
+<span class="mf">1</span><span class="n">차</span><span class="w"> </span><span class="n">측정</span><span class="p">:</span><span class="w"> </span><span class="n">기미</span><span class="w"> </span><span class="mf">45</span><span class="n">점</span>
+<span class="mf">2</span><span class="n">차</span><span class="w"> </span><span class="n">측정</span><span class="p">:</span><span class="w"> </span><span class="n">기미</span><span class="w"> </span><span class="mf">47</span><span class="n">점</span>
+<span class="n">변화량</span><span class="p">:</span><span class="w"> </span><span class="o">+</span><span class="mf">2</span><span class="n">점</span>
+
+<span class="n">MDC95</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">3.44</span><span class="n">점</span>
+<span class="n">판정</span><span class="p">:</span><span class="w"> </span><span class="mf">2</span><span class="n">점</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">3.44</span><span class="n">점</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="s">&quot;변화 없음(노이즈 범위)&quot;</span><span class="n">으로</span><span class="w"> </span><span class="n">판정</span>
+</code></pre></div>
+
+<p><strong>메트릭별 MDC 예시:</strong>
+| 메트릭 | SD | ICC | SEM | MDC₉₅ | 해석 |
+|--------|----|----|----|----|----|
+| 기미 점수 | 3.2 | 0.85 | 1.24 | 3.44 | 3.44점 이상 변화 필요 |
+| 주근깨 점수 | 2.8 | 0.82 | 1.19 | 3.31 | 3.31점 이상 변화 필요 |
+| 주름 점수 | 4.1 | 0.78 | 1.92 | 5.38 | 5.38점 이상 변화 필요 |
+| 인지나이 | 2.5 | 0.88 | 0.87 | 2.42 | 2.42세 이상 변화 필요 |</p>
+<h3 id="5">⑤ 캘리브레이션 / 노이즈 모델링 (지속 운영)<a class="headerlink" href="#5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>(선택) ICC(급내 상관)까지 측정하면 SEM = SD√(1−ICC), MDC₉₅ = 2.77 × SEM 로 정교화.</li>
+<li>메트릭별 σ·MDC를 DB에 저장하고 모델/프롬프트 버전이 바뀔 때마다 재측정.</li>
+</ul>
+<p><strong>ICC (Intraclass Correlation Coefficient) 상세 설명:</strong></p>
+<p><strong>ICC의 의미:</strong>
+- ICC는 측정 도구의 신뢰도(reliability)를 나타내는 지표
+- 0~1 범위, 1에 가까울수록 신뢰도 높음
+- 일반적으로 ICC &gt; 0.75: 우수, 0.5-0.75: 중등, &lt; 0.5: 불량</p>
+<p><strong>ICC 계산 방법:</strong></p>
+<div class="highlight"><pre><span></span><code>ICC(3,1) - 일방 분산 분석, 단일 측정자, 절대 일치
+ICC(3,k) - 일방 분산 분석, 단일 측정자, 평균 측정값
+
+Python scipy.stats.intraclass_corr 사용 가능
+</code></pre></div>
+
+<p><strong>신뢰도 등급별 해석:</strong>
+| ICC 범위 | 신뢰도 등급 | 해석 | MDC 영향 |
+|----------|-----------|------|----------|
+| 0.9-1.0 | 우수 | 매우 신뢰할 수 있음 | MDC 매우 낮음 |
+| 0.75-0.9 | 양호 | 신뢰할 수 있음 | MDC 낮음 |
+| 0.5-0.75 | 중등 | 어느 정도 신뢰 가능 | MDC 중간 |
+| &lt; 0.5 | 불량 | 신뢰하기 어려움 | MDC 높음 |</p>
+<p><strong>지속 운영 절차:</strong>
+1. <strong>초기 캘리브레이션</strong>: 각 메트릭별 N=20회 측정으로 σ, ICC, MDC 산출
+2. <strong>주기적 재측정</strong>: 월 1회 또는 모델/프롬프트 업데이트 시 재측정
+3. <strong>버전 관리</strong>: 각 측정 결과에 모델/프롬프트 버전 태그 부착
+4. <strong>추세 분석</strong>: 시간에 따른 σ, ICC 변화 추적
+5. <strong>경고 시스템</strong>: MDC가 임계값(예: 10점) 이상으로 증가 시 알림</p>
+<p><strong>데이터베이스 저장 예시:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">score_reliability</span><span class="w"> </span><span class="p">(</span><span class="n">metric</span><span class="p">,</span><span class="w"> </span><span class="n">sigma</span><span class="p">,</span><span class="w"> </span><span class="n">mdc95</span><span class="p">,</span><span class="w"> </span><span class="n">n_runs</span><span class="p">,</span><span class="w"> </span><span class="n">model_version</span><span class="p">,</span><span class="w"> </span><span class="n">prompt_version</span><span class="p">,</span><span class="w"> </span><span class="n">measured_at</span><span class="p">)</span>
+<span class="k">VALUES</span><span class="w"> </span>
+<span class="p">(</span><span class="s1">&#39;pigmentation_score&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">.</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">.</span><span class="mi">44</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;gpt-4-v1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;v1.2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;2026-06-09&#39;</span><span class="p">),</span>
+<span class="p">(</span><span class="s1">&#39;freckle_score&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">.</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">.</span><span class="mi">31</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;gpt-4-v1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;v1.2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;2026-06-09&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+<hr />
+<h2 id="3">3. 비교 방식 디자인<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1 비교 방식 분류<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p><strong>대칭 비교 (권장):</strong>
+- <strong>복원1 vs 복원2</strong>: 환경 변수 제거 후 순수 변화 파악
+- <strong>원본1 vs 원본2</strong>: 복원 과정을 거치지 않은 원천 비교</p>
+<p><strong>비대칭 비교 (주의 필요):</strong>
+- <strong>복원1 vs 원본2</strong>: 환경 변수 제거된 기준으로 실제 피부 변화 파악
+- <strong>복원2 vs 원본1</strong>: 비대칭 편향 존재</p>
+<h3 id="32">3.2 복원 모델의 부드러움 효과<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p>복원 이미지는 원본 이미지의 문제점(조명, 노이즈, 압축 아티팩트)을 개선하지만, 다음과 같은 문제가 있습니다:</p>
+<ol>
+<li><strong>GAN 복원 모델의 부드러움 효과</strong></li>
+<li>GAN 복원 모델은 피부 결을 부드럽게 만드는 경향</li>
+<li>미세한 주름, 색소가 복원 과정에서 부드럽게 처리됨</li>
+<li>
+<p>실제 피부 개선보다 복원 효과가 더 크게 나타날 수 있음</p>
+</li>
+<li>
+<p><strong>복원1 vs 복원2 비교의 문제</strong></p>
+</li>
+<li>복원1과 복원2 모두 복원 모델의 부드러움 효과 적용</li>
+<li>두 이미지 간 차이가 실제 피부 변화보다 작을 수 있음</li>
+<li>
+<p>미세한 개선 감지 어려움</p>
+</li>
+<li>
+<p><strong>원본 정보 손실</strong></p>
+</li>
+<li>복원 과정에서 원본의 미세한 피부 정보 손실</li>
+<li>실제 피부 개선이 복원 효과에 묻힐 수 있음</li>
+</ol>
+<h3 id="33-multi-comparison-approach">3.3 다중 비교 방안 (Multi-Comparison Approach)<a class="headerlink" href="#33-multi-comparison-approach" title="Permanent link">&para;</a></h3>
+<p><strong>추천 방식:</strong>
+- <strong>주요 비교</strong>: 복원1 vs 원본2 (실제 피부 변화)
+- <strong>보조 비교</strong>: 복원1 vs 복원2 (환경 변수 제거 후 변화)
+- <strong>원천 비교</strong>: 원본1 vs 원본2 (실제 원본 간 변화)
+- <strong>종합 판정</strong>: 세 가지 비교 결과를 종합하여 개선도 산출</p>
+<p><strong>각 비교 방식의 역할:</strong></p>
+<ol>
+<li><strong>복원1 vs 원본2 (주요 비교)</strong></li>
+<li>목적: 환경 변수 제거된 기준으로 실제 피부 변화 파악</li>
+<li>장점: 복원 모델의 부드러움 효과가 원본2에 적용되지 않음</li>
+<li>
+<p>단점: 원본2의 환경 변수가 점수에 영향</p>
+</li>
+<li>
+<p><strong>복원1 vs 복원2 (보조 비교)</strong></p>
+</li>
+<li>목적: 환경 변수 제거 후의 순수한 피부 변화 파악</li>
+<li>장점: 환경 변수가 제거되어 일관된 비교</li>
+<li>
+<p>단점: 복원 모델의 부드러움 효과가 중복 적용됨</p>
+</li>
+<li>
+<p><strong>원본1 vs 원본2 (원천 비교)</strong></p>
+</li>
+<li>목적: 실제 원본 이미지 간의 변화 파악</li>
+<li>장점: 복원 과정을 거치지 않은 순수한 원본 비교</li>
+<li>단점: 환경 변수(조명, 노이즈)가 다르면 비교 어려움, LLM 점수 변동성 존재</li>
+</ol>
+<p><strong>종합 판정 로직:</strong></p>
+<div class="highlight"><pre><span></span><code>개선도 = (복원1 vs 원본2 점수 차이 × 0.5) 
+       + (복원1 vs 복원2 점수 차이 × 0.3)
+       + (원본1 vs 원본2 점수 차이 × 0.2)
+
+환경 변수 보정:
+- 원본1 vs 원본2 비교 시 조명/노이즈 차이가 크면 가중치 감소
+- 복원1 vs 복원2 비교 시 복원 품질이 낮으면 가중치 감소
+- 복원1 vs 원본2 비교 시 환경 변수가 적절하면 가중치 증가
+</code></pre></div>
+
+<p><strong>수학적 설명:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">[기본 정의]</span>
+<span class="na">원본 이미지</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태 + 환경 변수 (조명, 노이즈, 압축)</span>
+<span class="na">복원 이미지</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태 (환경 변수 제거) + 복원 부드러움 효과</span>
+
+<span class="k">[세 가지 비교 방식]</span>
+<span class="na">1. 복원1 vs 원본2 (주요 비교)</span>
+<span class="w">   </span><span class="na">복원1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태1 + 복원 부드러움 (기준)</span>
+<span class="w">   </span><span class="na">원본2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태2 + 환경 변수 (실제)</span>
+<span class="w">   </span><span class="na">비교</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">원본2 - 복원1 = (피부 상태2 - 피부 상태1) + (환경 변수 - 복원 부드러움)</span>
+<span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s">실제 피부 변화 + 환경 영향</span>
+
+<span class="na">2. 복원1 vs 복원2 (보조 비교)</span>
+<span class="w">   </span><span class="na">복원1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태1 + 복원 부드러움</span>
+<span class="w">   </span><span class="na">복원2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태2 + 복원 부드러움</span>
+<span class="w">   </span><span class="na">비교</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">복원2 - 복원1 = (피부 상태2 - 피부 상태1)</span>
+<span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s">순수한 피부 변화 (하지만 복원 부드러움 효과가 중복됨)</span>
+
+<span class="na">3. 원본1 vs 원본2 (원천 비교)</span>
+<span class="w">   </span><span class="na">원본1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태1 + 환경 변수1</span>
+<span class="w">   </span><span class="na">원본2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">피부 상태2 + 환경 변수2</span>
+<span class="w">   </span><span class="na">비교</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">원본2 - 원본1 = (피부 상태2 - 피부 상태1) + (환경 변수2 - 환경 변수1)</span>
+<span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s">실제 피부 변화 + 환경 변수 차이</span>
+</code></pre></div>
+
+<p><strong>실제 예시:</strong></p>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>원본1</th>
+<th>원본2</th>
+<th>복원1</th>
+<th>복원2</th>
+<th>복원1 vs 원본2</th>
+<th>복원1 vs 복원2</th>
+<th>원본1 vs 원본2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>조명</td>
+<td>어두움</td>
+<td>밝음</td>
+<td>표준</td>
+<td>표준</td>
+<td>고려 필요</td>
+<td>일관</td>
+<td>차이 큼</td>
+</tr>
+<tr>
+<td>노이즈</td>
+<td>높음</td>
+<td>낮음</td>
+<td>제거됨</td>
+<td>제거됨</td>
+<td>고려 필요</td>
+<td>일관</td>
+<td>차이 있음</td>
+</tr>
+<tr>
+<td>기미 점수</td>
+<td>45±5</td>
+<td>55±5</td>
+<td>45±2</td>
+<td>55±2</td>
+<td>55 vs 45 = +10</td>
+<td>55 vs 45 = +10</td>
+<td>55 vs 45 = +10</td>
+</tr>
+<tr>
+<td>주근깨 점수</td>
+<td>20±5</td>
+<td>30±5</td>
+<td>20±2</td>
+<td>30±2</td>
+<td>30 vs 20 = +10</td>
+<td>30 vs 20 = +10</td>
+<td>30 vs 20 = +10</td>
+</tr>
+<tr>
+<td>복원 부드러움</td>
+<td>없음</td>
+<td>없음</td>
+<td>있음</td>
+<td>있음</td>
+<td>원본2에 없음</td>
+<td>둘 다 있음</td>
+<td>없음</td>
+</tr>
+<tr>
+<td>환경 변수</td>
+<td>있음</td>
+<td>있음</td>
+<td>제거됨</td>
+<td>제거됨</td>
+<td>원본2에 있음</td>
+<td>제거됨</td>
+<td>다름</td>
+</tr>
+</tbody>
+</table>
+<p><strong>결론:</strong>
+- <strong>복원1 vs 원본2</strong> 비교가 실제 피부 개선 파악에 가장 적합 (주요)
+- <strong>복원1 vs 복원2</strong> 비교는 환경 변수 제거 후 순수 변화 파악 (보조)
+- <strong>원본1 vs 원본2</strong> 비교는 복원 과정을 거치지 않은 원천 비교 (참고)
+- 세 가지 방식을 결합하여 종합 판정</p>
+<hr />
+<h2 id="4">4. 우선순위 (가성비)<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>순위</th>
+<th>계층</th>
+<th>효과</th>
+<th>구현 비용</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>③ pairwise + ④ MDC</td>
+<td>추적 신뢰성 즉효</td>
+<td><strong>낮음</strong></td>
+<td>가장 먼저</td>
+</tr>
+<tr>
+<td>2</td>
+<td>① CV anchor</td>
+<td>변동성 대부분 제거</td>
+<td>중</td>
+<td>진짜 best</td>
+</tr>
+<tr>
+<td>3</td>
+<td>② 출력 제약</td>
+<td>잔여 분산 억제</td>
+<td>중</td>
+<td>LLM 채점 유지 시</td>
+</tr>
+<tr>
+<td>4</td>
+<td>⑤ 캘리브레이션</td>
+<td>정직한 보고/장기 운영</td>
+<td>낮음~중</td>
+<td>지속</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>딱 하나만 먼저 한다면 <strong>③ + ④</strong>. 추적 신뢰성에 즉효이고 구현 비용이 가장 낮다.</p>
+</blockquote>
+<hr />
+<h2 id="5_1">5. 기술 구현 방안<a class="headerlink" href="#5_1" title="Permanent link">&para;</a></h2>
+<h3 id="51-mdc-4">5.1 MDC 측정 스크립트 (계층 ④)<a class="headerlink" href="#51-mdc-4" title="Permanent link">&para;</a></h3>
+<p><strong>신규 파일:</strong> <code>tools/measure_score_reliability.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">statistics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">measure_mdc</span><span class="p">(</span><span class="n">image_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;같은 이미지를 N회 스코어링해 메트릭별 σ·MDC 산출.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image_path: 측정할 이미지 경로</span>
+<span class="sd">        n_runs: 반복 측정 횟수 (기본값: 20)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: 메트릭별 통계 정보 {metric: {mean, sigma, mdc95}}</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: n_runs &lt; 3인 경우</span>
+<span class="sd">        RuntimeError: 스코어링 파이프라인 실패 시</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_runs</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_runs must be at least 3 for reliable statistics&quot;</span><span class="p">)</span>
+
+    <span class="n">runs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">failed_runs</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">report</span> <span class="o">=</span> <span class="n">score_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>          <span class="c1"># 기존 스코어링 파이프라인</span>
+            <span class="n">runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">metric_scores</span><span class="p">)</span>         <span class="c1"># {metric: score}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">failed_runs</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Run </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">runs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too many failed runs: </span><span class="si">{</span><span class="n">failed_runs</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_runs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">runs</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">r</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metric </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> has insufficient data: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">pstdev</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">statistics</span><span class="o">.</span><span class="n">fmean</span><span class="p">(</span><span class="n">vals</span><span class="p">),</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">sigma</span><span class="p">,</span>
+            <span class="s2">&quot;mdc95&quot;</span><span class="p">:</span> <span class="mf">2.77</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">,</span>                 <span class="c1"># 1.96 * σ * √2</span>
+            <span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">),</span>
+            <span class="s2">&quot;failed_runs&quot;</span><span class="p">:</span> <span class="n">failed_runs</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+
+<p><strong>구현 고려사항:</strong>
+- <strong>병렬 처리</strong>: N회 측정을 병렬로 실행하여 시간 단축 (concurrent.futures 사용)
+- <strong>캐싱</strong>: 동일 이미지에 대한 이전 측정 결과 캐싱
+- <strong>진행 표시</strong>: 장기 실행 시 진행률 표시 (tqdm 사용)
+- <strong>결과 저장</strong>: 측정 결과를 JSON 파일로 자동 저장
+- <strong>모니터링</strong>: API 호출 비용 추적</p>
+<h3 id="52-pairwise-3">5.2 pairwise 비교 프롬프트 빌더 (계층 ③)<a class="headerlink" href="#52-pairwise-3" title="Permanent link">&para;</a></h3>
+<p><strong>파일:</strong> <code>src/llm/llm_prompt_builder.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_build_pairwise_comparison_prompt</span><span class="p">(</span>
+    <span class="n">metric_rubric</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>          <span class="c1"># 메트릭별 점수 band 정의(rubric anchor)</span>
+    <span class="n">reference_anchor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1"># 알려진 점수의 기준 이미지 설명</span>
+    <span class="n">provide_scores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;두 이미지를 함께 보고 &#39;상대 변화량&#39;을 판단하는 프롬프트.</span>
+<span class="sd">    절대 점수를 두 번 매기지 않고 단일 호출로 Δ를 산출한다.&quot;&quot;&quot;</span>
+</code></pre></div>
+
+<p><strong>프롬프트 템플릿(<code>LLM_PROMPT_TEMPLATE.md</code>) 골자:</strong></p>
+<div class="highlight"><pre><span></span><code>&lt;!-- PAIRWISE_COMPARISON_PROMPT_START --&gt;
+첨부 이미지:
+<span class="k">-</span><span class="w"> </span>이미지 A: 1차 (기준)
+<span class="k">-</span><span class="w"> </span>이미지 B: 2차 (비교 대상)
+<span class="k">*</span><span class="w"> </span>두 이미지는 동일한 변환(복원/원본)이 적용되어 있다.
+
+분석: 각 측정항목에 대해 A 대비 B의 상대 변화만 판단하라.
+<span class="k">-</span><span class="w"> </span>절대 점수를 새로 매기지 말 것.
+<span class="k">-</span><span class="w"> </span>출력은 항목별 {direction: improved|worsened|stable, delta: -N..+N, 근거}.
+<span class="k">-</span><span class="w"> </span>delta는 정수 band(예: -3..+3)로만 제시.
+&lt;!-- PAIRWISE_COMPARISON_PROMPT_END --&gt;
+</code></pre></div>
+
+<h3 id="53-2">5.3 샘플링·집계 (계층 ②)<a class="headerlink" href="#53-2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stable_llm_score</span><span class="p">(</span><span class="n">call_fn</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;temperature≈0로 N회 호출 후 median(이상치 강건).&quot;&quot;&quot;</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">call_fn</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">statistics</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="54-db-45">5.4 DB 스키마 — 신뢰성 메타데이터 (계층 ④/⑤)<a class="headerlink" href="#54-db-45" title="Permanent link">&para;</a></h3>
+<p><strong>파일:</strong> <code>src/db/skin_analysis_db.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">score_reliability</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTOINCREMENT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">metric</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sigma</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">mdc95</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">n_runs</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">model_version</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">      </span><span class="c1">-- 모델/프롬프트 버전별 재측정</span>
+<span class="w">    </span><span class="n">prompt_version</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">measured_at</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_reliability_metric</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">score_reliability</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span><span class="w"> </span><span class="n">model_version</span><span class="p">);</span>
+</code></pre></div>
+
+<h3 id="56">5.6 다중 비교 구현 (비교 방식 디자인)<a class="headerlink" href="#56" title="Permanent link">&para;</a></h3>
+<p><strong>파일:</strong> <code>src/llm/llm_generation.py</code></p>
+<p><strong>함수명:</strong> <code>generate_restoration_guided_original_comparison_report</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_restoration_guided_original_comparison_report</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">restoration1_image_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">original2_image_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">restoration1_measurements_report</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">restoration1_overall_score</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">restoration1_perceived_age</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">original2_measurements_report</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">original2_overall_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">original2_perceived_age</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">provide_scores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">product_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prescription_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">survey_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SkinLLMReport&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;복원 기준 원본 비교 보고서 생성.</span>
+
+<span class="sd">    복원1 이미지를 기준으로 원본2 이미지를 평가하여</span>
+<span class="sd">    제품 효과 개선 여부를 판단합니다.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+
+<p><strong>파일:</strong> <code>src/llm/llm_prompt_builder.py</code></p>
+<p><strong>함수명:</strong> <code>_build_restoration_guided_original_comparison_prompt</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_build_restoration_guided_original_comparison_prompt</span><span class="p">(</span>
+    <span class="n">restoration1_measurements_report</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">restoration1_overall_score</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">restoration1_perceived_age</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">original2_measurements_report</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">original2_overall_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">original2_perceived_age</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">provide_scores</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">product_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prescription_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">survey_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;복원 기준 원본 비교 프롬프트 구성.&quot;&quot;&quot;</span>
+</code></pre></div>
+
+<p><strong>프롬프트 템플릿(<code>LLM_PROMPT_TEMPLATE.md</code>):</strong></p>
+<div class="highlight"><pre><span></span><code>&lt;!-- RESTORATION_GUIDED_ORIGINAL_COMPARISON_PROMPT_START --&gt;
+<span class="gu">## CÔTELEAF 복원 기준 원본 비교 분석</span>
+
+첨부 이미지:
+<span class="k">-</span><span class="w"> </span><span class="gs">**이미지 1**</span>: 1차 복원 이미지 (기준 - 환경 변수 제거됨)
+<span class="k">-</span><span class="w"> </span><span class="gs">**이미지 2**</span>: 2차 원본 이미지 (비교 대상 - 실제 피부 상태)
+
+<span class="gu">## 분석 목적</span>
+제품 사용 전후의 피부 개선 여부를 판단하기 위해
+복원 기준 이미지와 실제 원본 이미지를 비교합니다.
+
+<span class="gu">## 분석 절차</span>
+<span class="k">1.</span> 이미지1(복원 기준)과 이미지2(실제 원본)를 비교
+<span class="k">2.</span> 각 측정항목별 개선/악화 판정
+<span class="k">3.</span> 점수 차이 계산
+<span class="k">4.</span> 종합 개선도 평가
+<span class="k">5.</span> 환경 변수(조명, 노이즈)를 고려하여 실제 피부 변화 판단
+&lt;!-- RESTORATION_GUIDED_ORIGINAL_COMPARISON_PROMPT_END --&gt;
+</code></pre></div>
+
+<p><strong>파일:</strong> <code>src/llm/llm_parsing.py</code></p>
+<p><strong>함수명:</strong> <code>_parse_restoration_guided_original_comparison_response</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_parse_restoration_guided_original_comparison_response</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">response_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">restoration1_measurements_report</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">restoration1_overall_score</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">restoration1_perceived_age</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">matched_products</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SkinLLMReport&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;복원 기준 원본 비교 응답 파싱.&quot;&quot;&quot;</span>
+</code></pre></div>
+
+<p><strong>파일:</strong> <code>src/db/skin_analysis_db.py</code></p>
+<p><strong>새로운 테이블:</strong> <code>restoration_guided_original_comparisons</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">restoration_guided_original_comparisons</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTOINCREMENT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">customer_id</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">restoration1_image_path</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">original2_image_path</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">restoration1_overall_score</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">original2_overall_score</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">score_difference</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">improvement_status</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span><span class="w">  </span><span class="c1">-- &#39;improved&#39;, &#39;worsened&#39;, &#39;stable&#39;</span>
+<span class="w">    </span><span class="n">comparison_date</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">comparison_result_json</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">);</span>
+</code></pre></div>
+
+<p><strong>파일:</strong> <code>src/gui/compare_dialog.py</code></p>
+<p><strong>새로운 기능:</strong>
+- "복원 기준 원본 비교" 버튼
+- 복원1 이미지 선택
+- 원본2 이미지 선택
+- 비교 결과 표시</p>
+<p><strong>표시 항목:</strong>
+- 총점 차이
+- 인지나이 차이
+- 항목별 개선/악화 목록
+- 개선도 시각화 (그래프)
+- 환경 변수 고려 판정</p>
+<p><strong>API 엔드포인트:</strong> <code>POST /v1/analysis/restoration-guided-original-comparison</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;customer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer123&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;restoration1_image_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/restoration1.png&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;original2_image_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/original2.png&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;restoration1_measurements&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;original2_measurements&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="57">5.7 판정 로직 (결정 규칙)<a class="headerlink" href="#57" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">judge_change</span><span class="p">(</span><span class="n">delta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mdc95</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">cv_dir</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">llm_dir</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MDC를 넘고 CV·LLM 방향이 일치할 때만 개선/악화 판정.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        delta: 세션 간 점수 차이 (2차 - 1차)</span>
+<span class="sd">        mdc95: 최소 검출 가능 변화 (95% 신뢰수준)</span>
+<span class="sd">        cv_dir: CV 기반 방향 (+1: 개선, -1: 악화, 0: 변화 없음)</span>
+<span class="sd">        llm_dir: LLM 기반 방향 (+1: 개선, -1: 악화, 0: 변화 없음)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: 판정 결과 (&#39;improved&#39;, &#39;worsened&#39;, &#39;stable&#39;, &#39;uncertain&#39;)</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; judge_change(5.0, 3.44, 1, 1)</span>
+<span class="sd">        &#39;improved&#39;</span>
+<span class="sd">        &gt;&gt;&gt; judge_change(2.0, 3.44, 1, 1)</span>
+<span class="sd">        &#39;stable&#39;</span>
+<span class="sd">        &gt;&gt;&gt; judge_change(5.0, 3.44, 1, -1)</span>
+<span class="sd">        &#39;uncertain&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">mdc95</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;stable&quot;</span>                       <span class="c1"># 노이즈 범위</span>
+    <span class="k">if</span> <span class="n">cv_dir</span> <span class="o">!=</span> <span class="n">llm_dir</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;uncertain&quot;</span>                    <span class="c1"># 방향 불일치 → 보류</span>
+    <span class="k">return</span> <span class="s2">&quot;improved&quot;</span> <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;worsened&quot;</span>
+</code></pre></div>
+
+<p><strong>판정 로직 상세 설명:</strong></p>
+<p><strong>4가지 판정 결과:</strong>
+1. <strong>improved</strong>: 실제 개선 확인
+   - 조건: |delta| &gt; MDC이고 CV·LLM 방향 모두 양수
+   - 의미: 통계적으로 유의미한 개선, 두 측정 방법 일치</p>
+<ol>
+<li><strong>worsened</strong>: 실제 악화 확인</li>
+<li>조건: |delta| &gt; MDC이고 CV·LLM 방향 모두 음수</li>
+<li>
+<p>의미: 통계적으로 유의미한 악화, 두 측정 방법 일치</p>
+</li>
+<li>
+<p><strong>stable</strong>: 변화 없음 (노이즈 범위)</p>
+</li>
+<li>조건: |delta| ≤ MDC</li>
+<li>
+<p>의미: 변화가 측정 노이즈 범위 내, 실제 변화 불확실</p>
+</li>
+<li>
+<p><strong>uncertain</strong>: 방향 불일치</p>
+</li>
+<li>조건: |delta| &gt; MDC이지만 CV·LLM 방향 불일치</li>
+<li>의미: 변화는 유의미하나 방향이 모호, 추가 분석 필요</li>
+</ol>
+<p><strong>실제 적용 예시:</strong></p>
+<div class="highlight"><pre><span></span><code>예시 1: 명확한 개선
+- delta = +5.0점
+- MDC = 3.44점
+- CV 방향 = +1 (개선)
+- LLM 방향 = +1 (개선)
+- 판정: improved (5.0 &gt; 3.44, 방향 일치)
+
+예시 2: 노이즈 범위
+- delta = +2.0점
+- MDC = 3.44점
+- CV 방향 = +1 (개선)
+- LLM 방향 = +1 (개선)
+- 판정: stable (2.0 &lt; 3.44, 노이즈 범위)
+
+예시 3: 방향 불일치
+- delta = +5.0점
+- MDC = 3.44점
+- CV 방향 = +1 (개선)
+- LLM 방향 = -1 (악화)
+- 판정: uncertain (방향 불일치, 추가 분석 필요)
+</code></pre></div>
+
+<p><strong>고급 판정 로직 (선택적):</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">judge_change_advanced</span><span class="p">(</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+    <span class="n">mdc95</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+    <span class="n">cv_dir</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+    <span class="n">llm_dir</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">cv_confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">llm_confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;가중치 기반 고급 판정 로직.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cv_confidence: CV 측정 신뢰도 (0-1)</span>
+<span class="sd">        llm_confidence: LLM 측정 신뢰도 (0-1)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: (판정 결과, 신뢰도 점수)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">mdc95</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;stable&quot;</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="c1"># 가중치 계산</span>
+    <span class="n">total_weight</span> <span class="o">=</span> <span class="n">cv_confidence</span> <span class="o">+</span> <span class="n">llm_confidence</span>
+    <span class="n">cv_weight</span> <span class="o">=</span> <span class="n">cv_confidence</span> <span class="o">/</span> <span class="n">total_weight</span>
+    <span class="n">llm_weight</span> <span class="o">=</span> <span class="n">llm_confidence</span> <span class="o">/</span> <span class="n">total_weight</span>
+
+    <span class="c1"># 가중 방향 계산</span>
+    <span class="n">weighted_dir</span> <span class="o">=</span> <span class="n">cv_dir</span> <span class="o">*</span> <span class="n">cv_weight</span> <span class="o">+</span> <span class="n">llm_dir</span> <span class="o">*</span> <span class="n">llm_weight</span>
+
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">weighted_dir</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.3</span><span class="p">:</span>  <span class="c1"># 방향 모호</span>
+        <span class="k">return</span> <span class="s2">&quot;uncertain&quot;</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">weighted_dir</span><span class="p">)</span>
+
+    <span class="n">confidence_score</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">weighted_dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;improved&quot;</span> <span class="k">if</span> <span class="n">weighted_dir</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;worsened&quot;</span><span class="p">),</span> <span class="n">confidence_score</span>
+</code></pre></div>
+
+<hr />
+<h2 id="6">6. 향후 작업 항목<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1">Phase 1 — 추적 신뢰성 (우선)<a class="headerlink" href="#phase-1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <code>tools/measure_score_reliability.py</code> 구현 → 메트릭별 σ·MDC 산출</li>
+<li>[ ] <code>score_reliability</code> 테이블 생성 및 저장 로직</li>
+<li>[ ] <code>judge_change</code> 결정 규칙 구현 (MDC 임계 + 방향 일치)</li>
+</ul>
+<h3 id="phase-2-pairwise">Phase 2 — pairwise 비교<a class="headerlink" href="#phase-2-pairwise" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <code>_build_pairwise_comparison_prompt</code> 구현</li>
+<li>[ ] <code>PAIRWISE_COMPARISON_PROMPT</code> 템플릿 추가</li>
+<li>[ ] 대칭 변환 강제(복원-복원 또는 원본-원본) 검증</li>
+</ul>
+<h3 id="phase-3">Phase 3 — 다중 비교 구현<a class="headerlink" href="#phase-3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <code>generate_restoration_guided_original_comparison_report</code> 함수 구현</li>
+<li>[ ] <code>_build_restoration_guided_original_comparison_prompt</code> 함수 구현</li>
+<li>[ ] <code>_parse_restoration_guided_original_comparison_response</code> 함수 구현</li>
+<li>[ ] <code>RESTORATION_GUIDED_ORIGINAL_COMPARISON_PROMPT</code> 템플릿 추가</li>
+<li>[ ] <code>restoration_guided_original_comparisons</code> 테이블 생성</li>
+<li>[ ] 비교 결과 저장 로직 구현</li>
+<li>[ ] GUI 비교 기능 추가</li>
+<li>[ ] 비교 결과 시각화</li>
+<li>[ ] 개선도 그래프 구현</li>
+<li>[ ] 환경 변수 고려 판정 표시</li>
+<li>[ ] <code>/v1/analysis/restoration-guided-original-comparison</code> 엔드포인트 구현</li>
+</ul>
+<h3 id="phase-4">Phase 4 — 출력 제약·집계<a class="headerlink" href="#phase-4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <code>stable_llm_score</code> (temp 0 + N회 median) 적용</li>
+<li>[ ] rubric anchoring 정의 (메트릭별 band 기준)</li>
+<li>[ ] reference anchor 이미지 주입 강화</li>
+<li>[ ] 이산 band + structured output 적용</li>
+</ul>
+<h3 id="phase-5-cv-anchor">Phase 5 — CV anchor<a class="headerlink" href="#phase-5-cv-anchor" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] 정량 점수 backbone을 CV로 전환, LLM은 보조/정성으로 재배치</li>
+<li>[ ] LLM 성분 가중치 재산정 (분산 전파 고려)</li>
+</ul>
+<h3 id="phase-6">Phase 6 — 캘리브레이션 운영<a class="headerlink" href="#phase-6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] ICC 기반 SEM/MDC 정교화 (선택)</li>
+<li>[ ] 모델/프롬프트 버전 변경 시 자동 재측정 훅</li>
+</ul>
+<hr />
+<h2 id="7">7. 참고 문서<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>src/llm/llm_generation.py</code>, <code>src/llm/llm_prompt_builder.py</code>, <code>src/llm/llm_parsing.py</code></li>
+<li><code>src/llm/LLM_PROMPT_TEMPLATE.md</code></li>
+<li><code>src/db/skin_analysis_db.py</code></li>
+<li><code>src/gui/compare_dialog.py</code></li>
+<li><code>docs/guides/LLM_PROMPT_TEMPLATE.md</code> - LLM 프롬프트 가이드</li>
+</ul>
+<hr />
+<h2 id="_1">변경 이력<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>문서 버전</th>
+<th>날짜</th>
+<th>변경 내용</th>
+<th>작성자</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0.0</td>
+<td>2026-06-09</td>
+<td>초기 버전 작성</td>
+<td>Claude</td>
+</tr>
+<tr>
+<td>1.1.0</td>
+<td>2026-06-09</td>
+<td>MULTI_COMPARISON_DESIGN.md 병합 - 비교 방식 디자인 포함</td>
+<td>Cascade</td>
+</tr>
+<tr>
+<td>1.2.0</td>
+<td>2026-06-09</td>
+<td>상세 설명 추가 - 수학적 배경, CV 파이프라인 예시, MDC 상세 설명, ICC 설명, 구현 고려사항, 판정 로직 상세 설명</td>
+<td>Cascade</td>
+</tr>
+</tbody>
+</table>
+        </article>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <button id="btnBackToTop" type="button" class="back-to-top" aria-label="Back to top">&#8593;</button>
+  <div id="lightbox" class="lightbox-overlay"><img id="lightboxImg" src="" alt="" /></div>
+
+  <script>
+    // Shared utilities (used by multiple script blocks)
+    function _showToast(msg) {
+      var el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(el._t);
+      el._t = setTimeout(function () { el.style.display = 'none'; }, 1200);
+    }
+    function _getAutoFold() {
+      try {
+        var v = localStorage.getItem('toc_autofold');
+        if (v === null) return true;
+        return v === '1';
+      } catch (e) { return true; }
+    }
+  </script>
+
+  <button id="btnThemeFab" type="button" class="theme-fab">Theme</button>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btnFab = document.getElementById('btnThemeFab');
+      var btnAutoFold = document.getElementById('btnAutoFold');
+      var btnAutoFoldMobile = document.getElementById('btnAutoFoldMobile');
+      if (!btnFab) return;
+
+      var getAutoFold = _getAutoFold;
+      var showToast = _showToast;
+
+      function setAutoFold(v) {
+        try { localStorage.setItem('toc_autofold', v ? '1' : '0'); } catch (e) {}
+        if (btnAutoFold) {
+          btnAutoFold.textContent = v ? 'AutoFold: On' : 'AutoFold: Off';
+        }
+        if (btnAutoFoldMobile) {
+          btnAutoFoldMobile.textContent = v ? 'AutoFold: On' : 'AutoFold: Off';
+        }
+      }
+
+      function renderMermaid(mode) {
+        try {
+          if (!window.mermaid) return;
+
+          var theme = (mode === 'light') ? 'default' : 'dark';
+          window.mermaid.initialize({ startOnLoad: false, theme: theme });
+
+          var nodes = document.querySelectorAll('.mermaid');
+          for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            if (!n.dataset.src) n.dataset.src = n.textContent || '';
+          }
+
+          function toErrString(err) {
+            try {
+              if (!err) return 'unknown error';
+              if (typeof err === 'string') return err;
+              if (err.message) return String(err.message);
+              return JSON.stringify(err);
+            } catch (e) {
+              return 'unknown error';
+            }
+          }
+
+          function replaceWithError(node, src, errStr) {
+            var wrap = document.createElement('div');
+            wrap.className = 'mermaid-error';
+
+            var title = document.createElement('div');
+            title.className = 'mermaid-error-title';
+            title.textContent = 'Mermaid parse failed';
+            wrap.appendChild(title);
+
+            var pre = document.createElement('pre');
+            pre.className = 'mermaid-fallback';
+            pre.textContent = src || '';
+            wrap.appendChild(pre);
+
+            var details = document.createElement('details');
+            details.open = true;
+            var summary = document.createElement('summary');
+            summary.textContent = 'Show error';
+            details.appendChild(summary);
+
+            var msg = document.createElement('pre');
+            msg.className = 'mermaid-error-msg';
+            msg.textContent = errStr || '';
+            details.appendChild(msg);
+            wrap.appendChild(details);
+
+            node.parentNode.replaceChild(wrap, node);
+
+            try {
+              console.error('[Mermaid parse failed]', errStr);
+              console.error('[Mermaid source]', src);
+            } catch (e) {}
+          }
+
+          // Render node-by-node so we can show per-diagram errors.
+          (async function () {
+            for (var k = 0; k < nodes.length; k++) {
+              var el = nodes[k];
+              var src = el.dataset.src || '';
+
+              try {
+                // Validate
+                if (window.mermaid.parse) {
+                  var parsed = window.mermaid.parse(src);
+                  if (parsed && typeof parsed.then === 'function') {
+                    await parsed;
+                  }
+                }
+
+                // Render
+                if (window.mermaid.render) {
+                  var id = 'mmd-' + k + '-' + Date.now();
+                  var out = window.mermaid.render(id, src);
+                  if (out && typeof out.then === 'function') {
+                    out = await out;
+                  }
+
+                  var svg = '';
+                  if (typeof out === 'string') svg = out;
+                  else if (out && out.svg) svg = out.svg;
+                  else svg = '';
+
+                  if (!svg) throw new Error('mermaid.render produced empty output');
+                  el.innerHTML = svg;
+                } else {
+                  // Fallback to init API if render API is not available
+                  el.textContent = src;
+                  el.removeAttribute('data-processed');
+                  window.mermaid.init(undefined, [el]);
+                }
+              } catch (err) {
+                replaceWithError(el, src, toErrString(err));
+              }
+            }
+          })();
+        } catch (e2) {}
+      }
+
+      function apply(mode) {
+        root.dataset.theme = mode;
+        if (mode === 'light') {
+          document.body.classList.remove('doc-bg');
+        } else {
+          document.body.classList.add('doc-bg');
+        }
+        if (btnFab) btnFab.textContent = (mode === 'light') ? 'Theme: Light' : 'Theme: Dark';
+        renderMermaid(mode);
+        setAutoFold(getAutoFold());
+      }
+
+      var saved = null;
+      try { saved = localStorage.getItem('doc_theme'); } catch (e) {}
+      var mode = saved;
+      if (!mode) {
+        try {
+          mode = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        } catch (e) {
+          mode = 'dark';
+        }
+      }
+      apply(mode);
+
+      function toggleTheme() {
+        mode = (mode === 'dark') ? 'light' : 'dark';
+        try { localStorage.setItem('doc_theme', mode); } catch (e) {}
+        apply(mode);
+        showToast(mode === 'light' ? 'Light mode' : 'Dark mode');
+      }
+
+      if (btnFab) btnFab.addEventListener('click', toggleTheme);
+
+      if (btnAutoFold) {
+        setAutoFold(getAutoFold());
+        btnAutoFold.addEventListener('click', function () {
+          var next = !getAutoFold();
+          setAutoFold(next);
+          showToast(next ? 'AutoFold On' : 'AutoFold Off');
+        });
+      }
+
+      if (btnAutoFoldMobile) {
+        setAutoFold(getAutoFold());
+        btnAutoFoldMobile.addEventListener('click', function () {
+          var next = !getAutoFold();
+          setAutoFold(next);
+          showToast(next ? 'AutoFold On' : 'AutoFold Off');
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btnSearch = document.getElementById('btnSearch');
+      var overlay = document.getElementById('searchOverlay');
+      var input = document.getElementById('searchInput');
+      var countEl = document.getElementById('searchCount');
+      var btnPrev = document.getElementById('btnSearchPrev');
+      var btnNext = document.getElementById('btnSearchNext');
+      var btnClose = document.getElementById('btnSearchClose');
+      var article = document.querySelector('article');
+      if (!overlay || !input || !article) return;
+
+      var marks = [];
+      var hitMarks = [];
+      var activeHit = -1;
+      var isComposing = false;
+      var applyTimer = null;
+
+      function isEditableTarget(t) {
+        if (!t) return false;
+        var tag = (t.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+        if (t.isContentEditable) return true;
+        return false;
+      }
+
+      function setOpen(v) {
+        overlay.dataset.open = v ? '1' : '0';
+        overlay.setAttribute('aria-hidden', v ? 'false' : 'true');
+        if (v) {
+          try { input.focus(); input.select(); } catch (e) {}
+        }
+      }
+
+      function clearMarks() {
+        try {
+          for (var i = 0; i < marks.length; i++) {
+            var m = marks[i];
+            if (!m || !m.parentNode) continue;
+            var txt = document.createTextNode(m.textContent || '');
+            m.parentNode.replaceChild(txt, m);
+          }
+          marks = [];
+          hitMarks = [];
+          activeHit = -1;
+          if (countEl) countEl.textContent = '0 / 0';
+        } catch (e) {}
+      }
+
+      function normalizeQuery(q) {
+        var s = String(q || '').trim();
+        try {
+          if (s && s.normalize) s = s.normalize('NFC');
+        } catch (e) {}
+        return s;
+      }
+
+      function collectTextNodes() {
+        var walker = document.createTreeWalker(
+          article,
+          NodeFilter.SHOW_TEXT,
+          {
+            acceptNode: function (node) {
+              try {
+                if (!node || !node.parentNode) return NodeFilter.FILTER_REJECT;
+                var s = String(node.nodeValue || '');
+                if (!s || !s.trim()) return NodeFilter.FILTER_REJECT;
+                var p = node.parentNode;
+                var tag = (p.tagName || '').toLowerCase();
+                if (tag === 'script' || tag === 'style') return NodeFilter.FILTER_REJECT;
+                if (tag === 'code' || tag === 'pre') return NodeFilter.FILTER_REJECT;
+                if (p.closest && p.closest('pre, code, .mermaid, .highlight')) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+              } catch (e) {
+                return NodeFilter.FILTER_REJECT;
+              }
+            }
+          },
+          false
+        );
+        var nodes = [];
+        var n = null;
+        while ((n = walker.nextNode())) nodes.push(n);
+        return nodes;
+      }
+
+      function highlight(q) {
+        clearMarks();
+        q = normalizeQuery(q);
+        if (!q) return;
+
+        var qLower = q.toLowerCase();
+        var nodes = collectTextNodes();
+        if (!nodes || nodes.length === 0) return;
+
+        // Search across the whole article text so matches spanning multiple text nodes
+        // still work (common in HTML due to inline elements).
+        var full = '';
+        var meta = [];
+        var off = 0;
+        for (var i = 0; i < nodes.length; i++) {
+          var t = String(nodes[i].nodeValue || '');
+          meta.push({ node: nodes[i], start: off, len: t.length });
+          full += t;
+          off += t.length;
+        }
+        try { if (full && full.normalize) full = full.normalize('NFC'); } catch (e) {}
+        var fullLower = full.toLowerCase();
+
+        var hits = [];
+        var pos = 0;
+        while (true) {
+          var at = fullLower.indexOf(qLower, pos);
+          if (at < 0) break;
+          hits.push({ start: at, end: at + q.length });
+          pos = at + q.length;
+        }
+        if (hits.length === 0) {
+          if (countEl) countEl.textContent = '0 / 0';
+          return;
+        }
+
+        hitMarks = [];
+        for (var z = 0; z < hits.length; z++) hitMarks.push([]);
+
+        function wrapInNode(node, a, b, hitIndex) {
+          try {
+            // Split into [0..a)[a..b)[b..]
+            var mid = node;
+            if (a > 0) mid = node.splitText(a);
+            var after = mid;
+            if ((b - a) < mid.nodeValue.length) after = mid.splitText(b - a);
+            var m = document.createElement('mark');
+            m.className = 'search-mark';
+            m.textContent = mid.nodeValue;
+            mid.parentNode.replaceChild(m, mid);
+            marks.push(m);
+            try {
+              if (typeof hitIndex === 'number' && hitIndex >= 0) {
+                m.dataset.hitIndex = String(hitIndex);
+                if (hitMarks[hitIndex]) hitMarks[hitIndex].push(m);
+              }
+            } catch (e2) {}
+          } catch (e) {}
+        }
+
+        // Apply from end to start so Text.splitText offsets remain valid.
+        for (var h = hits.length - 1; h >= 0; h--) {
+          var s = hits[h].start;
+          var e = hits[h].end;
+          for (var j = meta.length - 1; j >= 0; j--) {
+            var item = meta[j];
+            var ns = item.start;
+            var ne = item.start + item.len;
+            if (e <= ns || s >= ne) continue;
+            var localStart = Math.max(0, s - ns);
+            var localEnd = Math.min(item.len, e - ns);
+            if (localEnd > localStart) {
+              wrapInNode(item.node, localStart, localEnd, h);
+            }
+          }
+        }
+
+        // Wrapping is applied in reverse order; sort marks back into document order
+        // so navigation starts from the top.
+        try {
+          marks.sort(function (a, b) {
+            if (a === b) return 0;
+            var pos = a.compareDocumentPosition(b);
+            if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+            if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+            return 0;
+          });
+        } catch (e) {}
+
+        // Sort segments inside each hit to keep active styling consistent.
+        try {
+          for (var hh = 0; hh < hitMarks.length; hh++) {
+            hitMarks[hh].sort(function (a, b) {
+              if (a === b) return 0;
+              var pos = a.compareDocumentPosition(b);
+              if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+              if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+              return 0;
+            });
+          }
+        } catch (e2) {}
+
+        if (hits.length > 0) {
+          setActive(0);
+        } else {
+          if (countEl) countEl.textContent = '0 / 0';
+        }
+      }
+
+      function setActive(idx) {
+        if (!hitMarks || hitMarks.length === 0) return;
+        if (idx < 0) idx = hitMarks.length - 1;
+        if (idx >= hitMarks.length) idx = 0;
+
+        try {
+          if (activeHit >= 0 && hitMarks[activeHit] && hitMarks[activeHit].length) {
+            for (var i = 0; i < hitMarks[activeHit].length; i++) {
+              hitMarks[activeHit][i].classList.remove('search-active');
+            }
+          }
+        } catch (e) {}
+
+        activeHit = idx;
+        var arr = hitMarks[activeHit] || [];
+        for (var j = 0; j < arr.length; j++) {
+          try { arr[j].classList.add('search-active'); } catch (e2) {}
+        }
+        var el = arr.length ? arr[0] : null;
+        if (el) {
+          try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e3) { try { el.scrollIntoView(true); } catch (e4) {} }
+        }
+        if (countEl) countEl.textContent = String(activeHit + 1) + ' / ' + String(hitMarks.length);
+      }
+
+      function next() { if (hitMarks.length) setActive(activeHit + 1); }
+      function prev() { if (hitMarks.length) setActive(activeHit - 1); }
+
+      function closeAndClear() {
+        setOpen(false);
+        input.value = '';
+        clearMarks();
+      }
+
+      if (btnSearch) {
+        btnSearch.addEventListener('click', function () {
+          setOpen(true);
+        });
+      }
+      if (btnClose) btnClose.addEventListener('click', closeAndClear);
+      if (btnNext) btnNext.addEventListener('click', next);
+      if (btnPrev) btnPrev.addEventListener('click', prev);
+
+      function scheduleApply() {
+        try { if (applyTimer) clearTimeout(applyTimer); } catch (e) {}
+        applyTimer = setTimeout(function () {
+          try {
+            // Defer again to ensure input.value is updated (IME / composition timing).
+            if (window.requestAnimationFrame) {
+              window.requestAnimationFrame(function () {
+                setTimeout(function () { highlight(input.value); }, 0);
+              });
+            } else {
+              setTimeout(function () { highlight(input.value); }, 0);
+            }
+          } catch (e2) {
+            highlight(input.value);
+          }
+        }, 0);
+      }
+
+      input.addEventListener('compositionstart', function () {
+        isComposing = true;
+        scheduleApply();
+      });
+      input.addEventListener('compositionupdate', function () {
+        // Update while composing so multi-char Korean queries are searchable immediately.
+        scheduleApply();
+      });
+      input.addEventListener('compositionend', function () {
+        isComposing = false;
+        scheduleApply();
+      });
+
+      input.addEventListener('beforeinput', function () {
+        scheduleApply();
+      });
+
+      input.addEventListener('input', function (e) {
+        // Do not block while composing: Chrome IME may keep isComposing true until commit.
+        scheduleApply();
+      });
+
+      input.addEventListener('keyup', function (e) {
+        if (!e) return;
+        if (e.key === 'Enter' || e.key === 'Escape') return;
+        scheduleApply();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (!e) return;
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (e.shiftKey) prev();
+          else next();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          closeAndClear();
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!e) return;
+        if (isEditableTarget(e.target) && e.target !== input) return;
+
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+          e.preventDefault();
+          setOpen(true);
+          return;
+        }
+        if (!e.ctrlKey && !e.metaKey && e.key === '/' && e.target !== input) {
+          e.preventDefault();
+          setOpen(true);
+          return;
+        }
+        if (e.key === 'Escape' && overlay.dataset.open === '1') {
+          e.preventDefault();
+          closeAndClear();
+          return;
+        }
+        if (overlay.dataset.open === '1') {
+          if (e.key === 'F3') {
+            e.preventDefault();
+            if (e.shiftKey) prev();
+            else next();
+          }
+        }
+      });
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btnToc = document.getElementById('btnToc');
+      var drawer = document.getElementById('tocDrawer');
+      var backdrop = document.getElementById('tocBackdrop');
+      var btnClose = document.getElementById('btnTocClose');
+
+      function openDrawer() {
+        if (!drawer) return;
+        drawer.classList.remove('drawer-hidden');
+      }
+      function closeDrawer() {
+        if (!drawer) return;
+        drawer.classList.add('drawer-hidden');
+      }
+
+      if (btnToc) btnToc.addEventListener('click', openDrawer);
+      if (btnClose) btnClose.addEventListener('click', closeDrawer);
+      if (backdrop) backdrop.addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', function (e) {
+        if (e && e.key === 'Escape') closeDrawer();
+      });
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btnFold = document.getElementById('btnFold');
+
+      function getFoldMinLinesDefault() {
+        return 35;
+      }
+
+      function getFoldMinLines() {
+        try {
+          var v = localStorage.getItem('doc_collapse_min_lines');
+          if (v === null || v === undefined || v === '') return getFoldMinLinesDefault();
+          var n = parseInt(v, 10);
+          if (!isFinite(n) || n < 0) return getFoldMinLinesDefault();
+          return n;
+        } catch (e) {
+          return getFoldMinLinesDefault();
+        }
+      }
+
+      function setFoldMinLines(n) {
+        try { localStorage.setItem('doc_collapse_min_lines', String(n)); } catch (e) {}
+        if (btnFold) btnFold.textContent = (n <= 0) ? 'Fold: Off' : ('Fold: ' + n);
+      }
+
+      function isExpanded(codeId) {
+        try { return localStorage.getItem('code_expanded_' + codeId) === '1'; } catch (e) { return false; }
+      }
+
+      function setExpanded(codeId, v) {
+        try { localStorage.setItem('code_expanded_' + codeId, v ? '1' : '0'); } catch (e) {}
+      }
+
+      function getCodeText(pre) {
+        var code = pre.querySelector('code');
+        if (code) return code.textContent || '';
+        return pre.textContent || '';
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        // Fallback: execCommand
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        ta.style.left = '-1000px';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+      }
+
+      var showToast = _showToast;
+
+      function addCodeUX(pre) {
+        if (!pre) return;
+        // Mermaid blocks are rendered separately
+        if (pre.classList.contains('mermaid') || pre.classList.contains('mermaid-fallback')) return;
+        if (pre.dataset && pre.dataset.copyBound === '1') return;
+        pre.dataset.copyBound = '1';
+
+        var block = pre;
+        try {
+          var hl = pre.closest ? pre.closest('.highlight') : null;
+          if (hl) block = hl;
+        } catch (e) {}
+
+        var wrapper = block.parentElement;
+        if (!wrapper || !wrapper.classList || !wrapper.classList.contains('codewrap')) {
+          wrapper = document.createElement('div');
+          wrapper.className = 'codewrap';
+          block.parentNode.insertBefore(wrapper, block);
+          wrapper.appendChild(block);
+        }
+
+        // Stable id per page render (used for persistence)
+        var codeId = '';
+        try {
+          if (!wrapper.dataset.codeId) wrapper.dataset.codeId = String(addCodeUX._idx++);
+          codeId = wrapper.dataset.codeId;
+        } catch (e) {
+          codeId = String(addCodeUX._idx++);
+        }
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        btn.addEventListener('click', async function () {
+          var text = getCodeText(pre);
+          try {
+            await copyText(text);
+            showToast('Copied');
+          } catch (e) {
+            showToast('Copy failed');
+          }
+        });
+
+        wrapper.appendChild(btn);
+
+        // Language label
+        try {
+          var codeEl = pre.querySelector('code');
+          if (codeEl) {
+            var cls = codeEl.className || '';
+            var m = cls.match(/language-(\S+)/);
+            if (m && m[1]) {
+              var lang = m[1].toLowerCase();
+              if (lang !== 'text' && lang !== 'nohighlight') {
+                var lbl = document.createElement('span');
+                lbl.className = 'lang-label';
+                lbl.textContent = lang;
+                wrapper.appendChild(lbl);
+              }
+            }
+          }
+        } catch (e) {}
+
+        // Collapse long code blocks
+        function applyFold() {
+          var minLines = getFoldMinLines();
+          var text = getCodeText(pre);
+          var lines = text.split(/\r?\n/);
+          var count = lines.length;
+          var shouldFold = (minLines > 0) && (count >= minLines);
+
+          var exp = wrapper.querySelector('.expand-btn');
+          if (!shouldFold) {
+            wrapper.classList.remove('collapsed');
+            if (exp && exp.parentNode) exp.parentNode.removeChild(exp);
+            return;
+          }
+
+          if (!exp) {
+            exp = document.createElement('button');
+            exp.type = 'button';
+            exp.className = 'expand-btn';
+            exp.textContent = 'Expand';
+            exp.addEventListener('click', function () {
+              var isCollapsed = wrapper.classList.contains('collapsed');
+              if (isCollapsed) {
+                wrapper.classList.remove('collapsed');
+                exp.textContent = 'Collapse';
+                setExpanded(codeId, true);
+              } else {
+                wrapper.classList.add('collapsed');
+                exp.textContent = 'Expand';
+                setExpanded(codeId, false);
+              }
+            });
+            wrapper.appendChild(exp);
+          }
+
+          // Restore persisted state
+          if (isExpanded(codeId)) {
+            wrapper.classList.remove('collapsed');
+            exp.textContent = 'Collapse';
+          } else {
+            wrapper.classList.add('collapsed');
+            exp.textContent = 'Expand';
+          }
+        }
+
+        applyFold();
+        wrapper._applyFold = applyFold;
+      }
+
+      addCodeUX._idx = 0;
+
+      var pres = document.querySelectorAll('article pre');
+      for (var i = 0; i < pres.length; i++) {
+        addCodeUX(pres[i]);
+      }
+
+      function applyFoldAll() {
+        try {
+          var wraps = document.querySelectorAll('.codewrap');
+          for (var i = 0; i < wraps.length; i++) {
+            var w = wraps[i];
+            if (w && w._applyFold) w._applyFold();
+          }
+        } catch (e) {}
+      }
+
+      // Fold button behavior
+      if (btnFold) {
+        var cur = getFoldMinLines();
+        setFoldMinLines(cur);
+        btnFold.addEventListener('click', function () {
+          var steps = [0, 20, 35, 60];
+          var v = getFoldMinLines();
+          var idx = 0;
+          for (var i = 0; i < steps.length; i++) {
+            if (steps[i] === v) { idx = i; break; }
+          }
+          var next = steps[(idx + 1) % steps.length];
+          setFoldMinLines(next);
+          applyFoldAll();
+        });
+      }
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      function enhanceToc(tocId, storageKey) {
+        var toc = document.getElementById(tocId);
+        if (!toc) return;
+
+        var links = toc.querySelectorAll('a[href^="#"]');
+        if (!links || links.length === 0) return;
+
+        // Build sections based on heading level inferred from href targets.
+        // python-markdown TOC renders nested <ul>, but link ordering is still linear.
+        var items = [];
+        for (var i = 0; i < links.length; i++) items.push(links[i]);
+
+        // Determine level via closest LI nesting depth, fallback to text indent.
+        function levelOf(a) {
+          var li = a.closest('li');
+          var lvl = 1;
+          while (li) {
+            var parentUl = li.parentElement;
+            if (!parentUl || parentUl.tagName !== 'UL') break;
+            var parentLi = parentUl.closest('li');
+            if (!parentLi) break;
+            lvl += 1;
+            li = parentLi;
+          }
+          // toc_depth starts at 2-4, so treat lvl==1 as H2.
+          return lvl;
+        }
+
+        var root = document.createElement('div');
+        var currentSection = null;
+        var sectionIdx = -1;
+
+        // load collapsed state
+        var collapsed = {};
+        try {
+          var raw = localStorage.getItem(storageKey);
+          if (raw) collapsed = JSON.parse(raw) || {};
+        } catch (e) {}
+
+        function save() {
+          try { localStorage.setItem(storageKey, JSON.stringify(collapsed)); } catch (e) {}
+        }
+
+        for (var k = 0; k < items.length; k++) {
+          var a = items[k];
+          var lvl = levelOf(a);
+
+          if (lvl === 1) {
+            sectionIdx += 1;
+            currentSection = document.createElement('div');
+            currentSection.className = 'toc-section';
+            currentSection.dataset.sectionIndex = String(sectionIdx);
+
+            var header = document.createElement('div');
+            header.className = 'toc-section-header';
+
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'toc-toggle';
+            btn.textContent = (collapsed[sectionIdx] ? '▸' : '▾');
+
+            var children = document.createElement('div');
+            children.className = 'toc-children';
+
+            if (collapsed[sectionIdx]) currentSection.classList.add('toc-collapsed');
+
+            btn.addEventListener('click', function (ev) {
+              var sec = ev.currentTarget._sec;
+              var idx = Number(sec.dataset.sectionIndex);
+              var isCollapsed = sec.classList.contains('toc-collapsed');
+              if (isCollapsed) {
+                sec.classList.remove('toc-collapsed');
+                collapsed[idx] = false;
+                ev.currentTarget.textContent = '▾';
+              } else {
+                sec.classList.add('toc-collapsed');
+                collapsed[idx] = true;
+                ev.currentTarget.textContent = '▸';
+              }
+              save();
+            });
+            btn._sec = currentSection;
+
+            header.appendChild(btn);
+            header.appendChild(a.cloneNode(true));
+            currentSection.appendChild(header);
+            currentSection.appendChild(children);
+            root.appendChild(currentSection);
+          } else {
+            if (!currentSection) {
+              // No H2 encountered yet; create a dummy section.
+              currentSection = document.createElement('div');
+              currentSection.className = 'toc-section';
+              currentSection.dataset.sectionIndex = '0';
+              var children0 = document.createElement('div');
+              children0.className = 'toc-children';
+              currentSection.appendChild(children0);
+              root.appendChild(currentSection);
+            }
+            var ch = currentSection.querySelector('.toc-children');
+            var itemWrap = document.createElement('div');
+            // visually indent: lvl 2->H3, lvl3->H4
+            itemWrap.style.marginLeft = (lvl === 2 ? '0.25rem' : '1.0rem');
+            itemWrap.appendChild(a.cloneNode(true));
+            ch.appendChild(itemWrap);
+          }
+        }
+
+        // replace content
+        toc.innerHTML = '';
+        toc.appendChild(root);
+      }
+
+      enhanceToc('toc', 'toc_collapsed_desktop');
+      enhanceToc('tocMobile', 'toc_collapsed_mobile');
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Tag ASCII/box-drawing diagrams so we can apply a stricter font stack.
+      (function () {
+        try {
+          var boxRe = /[┌┐└┘├┤┬┴┼│─═╔╗╚╝╠╣╦╩╬┃━]/;
+          var pres = document.querySelectorAll('article pre, .highlight pre');
+          for (var i = 0; i < pres.length; i++) {
+            var pre = pres[i];
+            var text = (pre.textContent || '');
+            if (boxRe.test(text)) {
+              pre.classList.add('ascii-diagram');
+              var code = pre.querySelector('code');
+              if (code) code.classList.add('ascii-diagram');
+            }
+          }
+        } catch (e) {}
+      })();
+
+      function attachSearch(inputId, tocId) {
+        var input = document.getElementById(inputId);
+        var toc = document.getElementById(tocId);
+        if (!input || !toc) return;
+
+        var isSyncing = false;
+        function syncSearchValue(v) {
+          if (isSyncing) return;
+          isSyncing = true;
+          try {
+            var otherId = (inputId === 'tocSearch') ? 'tocSearchMobile' : 'tocSearch';
+            var other = document.getElementById(otherId);
+            if (other && other.value !== v) {
+              other.value = v;
+            }
+          } catch (e) {}
+          isSyncing = false;
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function escapeRegex(s) {
+          return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function normalize(s) {
+          return String(s || '').toLowerCase().trim();
+        }
+
+        function apply() {
+          var q = normalize(input.value);
+          syncSearchValue(input.value);
+          var links = toc.querySelectorAll('a[href^="#"]');
+          for (var i = 0; i < links.length; i++) {
+            var a = links[i];
+            if (!a.dataset.origText) {
+              a.dataset.origText = a.textContent || '';
+            }
+            var orig = a.dataset.origText;
+            var text = normalize(orig);
+            var match = (!q || text.indexOf(q) >= 0);
+            a.style.display = match ? '' : 'none';
+
+            if (!q) {
+              a.innerHTML = escapeHtml(orig);
+            } else if (match) {
+              var re = new RegExp('(' + escapeRegex(q) + ')', 'ig');
+              a.innerHTML = escapeHtml(orig).replace(re, '<mark class="toc-mark">$1</mark>');
+            }
+          }
+
+          // When searching, expand all sections so matches are visible.
+          try {
+            var sections = toc.querySelectorAll('.toc-section');
+            for (var j = 0; j < sections.length; j++) {
+              if (q) sections[j].classList.remove('toc-collapsed');
+            }
+          } catch (e) {}
+        }
+
+        input.addEventListener('input', apply);
+        apply();
+      }
+
+      attachSearch('tocSearch', 'toc');
+      attachSearch('tocSearchMobile', 'tocMobile');
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var toc = document.getElementById('toc');
+      var tocMobile = document.getElementById('tocMobile');
+      if (!toc && !tocMobile) return;
+
+      var getAutoFold = _getAutoFold;
+
+      function collectLinks(container) {
+        if (!container) return [];
+        var list = container.querySelectorAll('a[href^="#"]');
+        return list ? Array.prototype.slice.call(list) : [];
+      }
+
+      var tocLinks = collectLinks(toc);
+      var tocLinksMobile = collectLinks(tocMobile);
+      var allLinks = tocLinks.concat(tocLinksMobile);
+      if (!allLinks || allLinks.length === 0) return;
+
+      var linkById = {};
+      for (var i = 0; i < allLinks.length; i++) {
+        var href = allLinks[i].getAttribute('href') || '';
+        if (href.charAt(0) === '#') {
+          var id = href.slice(1);
+          if (!linkById[id]) linkById[id] = [];
+          linkById[id].push(allLinks[i]);
+        }
+      }
+
+      var headings = document.querySelectorAll('article h1, article h2, article h3, article h4');
+      if (!headings || headings.length === 0) return;
+
+      function setActive(id) {
+        for (var j = 0; j < allLinks.length; j++) {
+          allLinks[j].classList.remove('toc-active');
+        }
+        var arr = linkById[id];
+        if (arr && arr.length) {
+          for (var x = 0; x < arr.length; x++) {
+            arr[x].classList.add('toc-active');
+            try {
+              var sec = arr[x].closest('.toc-section');
+              if (sec) sec.classList.remove('toc-collapsed');
+            } catch (e) {}
+          }
+
+          // Auto-collapse non-active sections (only if not searching)
+          try {
+            var q1 = '';
+            var q2 = '';
+            var s1 = document.getElementById('tocSearch');
+            var s2 = document.getElementById('tocSearchMobile');
+            if (s1) q1 = String(s1.value || '').trim();
+            if (s2) q2 = String(s2.value || '').trim();
+            var isSearching = (q1.length > 0) || (q2.length > 0);
+
+            if (getAutoFold() && !isSearching) {
+              function collapseOthers(container, activeLink) {
+                if (!container || !activeLink) return;
+                var activeSec = activeLink.closest('.toc-section');
+                var secs = container.querySelectorAll('.toc-section');
+                for (var i = 0; i < secs.length; i++) {
+                  if (secs[i] === activeSec) secs[i].classList.remove('toc-collapsed');
+                  else secs[i].classList.add('toc-collapsed');
+                }
+              }
+
+              collapseOthers(toc, arr[0]);
+              if (tocMobile && arr.length > 1) {
+                collapseOthers(tocMobile, arr[arr.length - 1]);
+              } else {
+                collapseOthers(tocMobile, arr[0]);
+              }
+            }
+          } catch (e) {}
+
+          try {
+            var a = arr[0];
+            var container = toc || tocMobile;
+            if (container) {
+              var top = a.offsetTop - container.clientHeight / 2;
+              if (top < 0) top = 0;
+              container.scrollTop = top;
+            }
+          } catch (e) {}
+        }
+      }
+
+      var currentId = '';
+
+      if (typeof IntersectionObserver !== 'undefined') {
+        var observer = new IntersectionObserver(function (entries) {
+          var best = null;
+          for (var k = 0; k < entries.length; k++) {
+            var ent = entries[k];
+            if (ent.isIntersecting) {
+              if (!best || ent.intersectionRatio > best.intersectionRatio) {
+                best = ent;
+              }
+            }
+          }
+          if (best && best.target && best.target.id && best.target.id !== currentId) {
+            currentId = best.target.id;
+            setActive(currentId);
+          }
+        }, { rootMargin: '-20% 0px -70% 0px', threshold: [0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1] });
+
+        for (var h = 0; h < headings.length; h++) {
+          if (headings[h].id) observer.observe(headings[h]);
+        }
+      } else {
+        function onScroll() {
+          var bestId = '';
+          var bestTop = -Infinity;
+          for (var h2 = 0; h2 < headings.length; h2++) {
+            var el = headings[h2];
+            if (!el.id) continue;
+            var rect = el.getBoundingClientRect();
+            if (rect.top <= 120 && rect.top > bestTop) {
+              bestTop = rect.top;
+              bestId = el.id;
+            }
+          }
+          if (bestId && bestId !== currentId) {
+            currentId = bestId;
+            setActive(currentId);
+          }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
+
+      if (location.hash && location.hash.length > 1) {
+        var initId = location.hash.slice(1);
+        if (linkById[initId]) {
+          currentId = initId;
+          setActive(currentId);
+        }
+      }
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // A-1: Back to Top button
+      var btnTop = document.getElementById('btnBackToTop');
+      if (btnTop) {
+        window.addEventListener('scroll', function () {
+          if (window.scrollY > 200) {
+            btnTop.style.display = 'flex';
+          } else {
+            btnTop.style.display = 'none';
+          }
+        }, { passive: true });
+        btnTop.addEventListener('click', function () {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // A-2: Lightbox for images
+      var lightbox = document.getElementById('lightbox');
+      var lightboxImg = document.getElementById('lightboxImg');
+      if (lightbox && lightboxImg) {
+        document.querySelectorAll('article img').forEach(function (img) {
+          img.addEventListener('click', function () {
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt || '';
+            lightbox.style.display = 'flex';
+          });
+        });
+        lightbox.addEventListener('click', function () {
+          lightbox.style.display = 'none';
+          lightboxImg.src = '';
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+            lightbox.style.display = 'none';
+            lightboxImg.src = '';
+          }
+        });
+      }
+
+      // A-3: TOC progress indicator
+      (function () {
+        var toc = document.getElementById('toc');
+        var tocMobile = document.getElementById('tocMobile');
+        if (!toc && !tocMobile) return;
+
+        var headings = document.querySelectorAll('article h2, article h3, article h4');
+        var total = headings.length;
+        if (total === 0) return;
+
+        function addProgress(container) {
+          if (!container) return null;
+          var el = document.createElement('div');
+          el.className = 'toc-progress';
+          el.textContent = '0 / ' + total;
+          container.parentNode.insertBefore(el, container);
+          return el;
+        }
+
+        var progEl = addProgress(toc);
+        var progElMobile = addProgress(tocMobile);
+
+        function updateProgress() {
+          var idx = 0;
+          for (var i = 0; i < headings.length; i++) {
+            var rect = headings[i].getBoundingClientRect();
+            if (rect.top <= 150) idx = i + 1;
+          }
+          var text = idx + ' / ' + total;
+          if (progEl) progEl.textContent = text;
+          if (progElMobile) progElMobile.textContent = text;
+        }
+
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        updateProgress();
+      })();
+
+      // A-4: Code block double-click to select all
+      document.querySelectorAll('article pre, .highlight pre').forEach(function (pre) {
+        pre.addEventListener('dblclick', function (e) {
+          // Don't interfere with button clicks
+          if (e.target.closest('button')) return;
+          try {
+            var sel = window.getSelection();
+            var range = document.createRange();
+            var code = pre.querySelector('code') || pre;
+            range.selectNodeContents(code);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          } catch (err) {}
+        });
+      });
+    });
+  </script>
+</body>
+</html>

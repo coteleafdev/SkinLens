@@ -1,0 +1,657 @@
+2026-06-09 21:27:51 [DEBUG] src.restoration.registry:c:\Project\SkinLens v1\src\restoration\registry.py:101: 복원 백엔드 등록: codeformer_v1 (별칭: ['codeformer', 'cf_v1'])
+2026-06-09 21:27:51 [DEBUG] src.restoration.registry:c:\Project\SkinLens v1\src\restoration\registry.py:101: 복원 백엔드 등록: restoreformer_v1 (별칭: ['restoreformer', 'rf_v1'])
+2026-06-09 21:27:52 [INFO] src.restoration.strategies.register_restorers:c:\Project\SkinLens v1\src\restoration\strategies\register_restorers.py:30: 모든 복원 백엔드 등록 완료: ['codeformer_v1', 'restoreformer_v1']
+2026-06-09 21:27:52 [INFO] src.config.config_manager:c:\Project\SkinLens v1\src\config\config_manager.py:68: ConfigManager 초기화: config_path=C:\Project\SkinLens v1\config\config.json (존재=True)
+2026-06-09 21:27:52 [DEBUG] src.config.config_manager:c:\Project\SkinLens v1\src\config\config_manager.py:180: config.secrets.json 로드 완료: 환경 변수 설정됨
+2026-06-09 21:27:52 [INFO] src.config.config_manager:c:\Project\SkinLens v1\src\config\config_manager.py:121: config.json 로드 완료: C:\Project\SkinLens v1\config\config.json (v1.0)
+2026-06-09 21:27:52 [DEBUG] src.scoring.config._config:c:\Project\SkinLens v1\src\scoring\config\_config.py:30: ConfigManager에서 설정 로드 성공
+2026-06-09 21:27:52 [DEBUG] src.config.config_manager:c:\Project\SkinLens v1\src\config\config_manager.py:104: config.json 캐시 사용 (mtime 변경 없음)
+2026-06-09 21:27:52 [DEBUG] src.scoring.config._config:c:\Project\SkinLens v1\src\scoring\config\_config.py:30: ConfigManager에서 설정 로드 성공
+2026-06-09 21:28:01 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [GUI 파이프라인] 동기 모드로 실행
+2026-06-09 21:28:01 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:981: 로그 파일 변경: C:\Project\SkinLens v1\logs\skinlens_gui_20260609_212751.log -> C:\Project\SkinLens v1\logs\skinlens_gui_기미_주근깨_검버섯_20260609_212801.log
+2026-06-09 21:28:01 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: === 명령 ===
+2026-06-09 21:28:01 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: "C:\Python\WPy64-31241\python-3.12.4.amd64\python.exe" "C:\Project\SkinLens v1\src\gui\skin_analysis_pipeline.py" --cli -i "C:/Project/SkinLens v1/assets/test_images/기미_주근깨_검버섯.jpg" --customer-id 기미_주근깨_검버섯 --out-dir "C:\Project\SkinLens v1\results" --save-json --restore-score-popup --restorer codeformer --cf-fidelity 0.7 --cf-upscale 1
+2026-06-09 21:28:02 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [CUDA] PyTorch CUDA: 사용 불가 (torch.cuda.is_available()==False). GPU가 있어도 CPU 전용 torch 이거나 드라이버/CUDA 버전이 맞지 않을 수 있습니다.
+2026-06-09 21:28:02 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: === 출력 ===
+2026-06-09 21:28:32 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: Face detection model: retinaface_resnet50
+2026-06-09 21:28:32 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: Background upsampling: False, Face upsampling: False
+2026-06-09 21:28:32 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: C:\Python\WPy64-31241\python-3.12.4.amd64\Lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+2026-06-09 21:28:32 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   warnings.warn(
+2026-06-09 21:28:32 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: C:\Python\WPy64-31241\python-3.12.4.amd64\Lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=None`.
+2026-06-09 21:28:32 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   warnings.warn(msg)
+2026-06-09 21:28:33 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [1/1] Processing: cf_input.png
+2026-06-09 21:28:33 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: 	detect 1 faces
+2026-06-09 21:28:36 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: All results are saved in C:\Users\goldr\AppData\Local\Temp\tmpa0_8r_za
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 칙칙함(RGP): 심각한 차이 발생 (자체=0.0, LLM=60.0, 차이=60.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 눈가 주름(RGP): 심각한 차이 발생 (자체=0.0, LLM=80.0, 차이=80.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 팔자 주름(RGP): 심각한 차이 발생 (자체=0.0, LLM=80.0, 차이=80.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 미세/깊은 주름(RGP): 심각한 차이 발생 (자체=0.0, LLM=85.0, 차이=85.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 턱선 흐림(RGP): 심각한 차이 발생 (자체=0.0, LLM=85.0, 차이=85.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 기미(RGP): 심각한 차이 발생 (자체=0.0, LLM=45.0, 차이=45.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 주근깨(RGP): 경고 수준 차이 발생 (자체=0.0, LLM=35.0, 차이=35.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 트러블 후 색소(RGP): 심각한 차이 발생 (자체=0.0, LLM=60.0, 차이=60.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 홍조(RGP): 심각한 차이 발생 (자체=0.0, LLM=75.0, 차이=75.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 염증 후 홍반(RGP): 심각한 차이 발생 (자체=0.0, LLM=85.0, 차이=85.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 모공 크기(RGP): 심각한 차이 발생 (자체=0.0, LLM=70.0, 차이=70.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 모공 처짐(RGP): 심각한 차이 발생 (자체=0.0, LLM=80.0, 차이=80.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 피부결(RGP): 심각한 차이 발생 (자체=0.0, LLM=70.0, 차이=70.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 피부 톤(RGP): 심각한 차이 발생 (자체=0.0, LLM=55.0, 차이=55.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 불균일 톤(RGP): 심각한 차이 발생 (자체=0.0, LLM=45.0, 차이=45.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 볼 처짐(RGP): 심각한 차이 발생 (자체=0.0, LLM=80.0, 차이=80.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 트러블(RGP): 심각한 차이 발생 (자체=0.0, LLM=90.0, 차이=90.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 피부 타입(RGP): 심각한 차이 발생 (자체=0.0, LLM=85.0, 차이=85.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 피부건강지수(RGP): 심각한 차이 발생 (자체=0.0, LLM=70.3, 차이=70.3)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 칙칙함(RGP): 경고 수준 차이 발생 (자체=60.4, LLM=85.0, 차이=24.6)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [점수 차이] 피부 톤(RGP): 경고 수준 차이 발생 (자체=49.0, LLM=80.0, 차이=31.0)
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [JSON 출력]
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "input_image": "C:\\Project\\SkinLens v1\\assets\\test_images\\기미_주근깨_검버섯.jpg",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "restored_image": "C:\\Project\\SkinLens v1\\results\\기미_주근깨_검버섯\\01_restored_기미_주근깨_검버섯.png",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "output_dir": "C:\\Project\\SkinLens v1\\results",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "original_image_url": "file://C:\\Project\\SkinLens v1\\assets\\test_images\\기미_주근깨_검버섯.jpg",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "restored_image_url": "file://C:\\Project\\SkinLens v1\\results\\기미_주근깨_검버섯\\01_restored_기미_주근깨_검버섯.png",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "metadata": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "analyzers": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pigmentation": "pigmentation_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "redness": "redness_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore": "pore_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "wrinkle": "wrinkle_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "tone_elasticity": "tone_elasticity_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "acne": "acne_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "_note": "[REFACTOR PHASE 1] 분석기 알고리즘 선택. 레지스트리에 등록된 이름 사용."
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "restorer": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "name": "codeformer_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "config": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "repo": null,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "fidelity": 0.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "upscale": 1,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "bg_upsampler": "none"
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       }
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "llm": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "name": "gemini_v1",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "model": "models/gemini-2.5-pro",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "config": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "model": "models/gemini-2.5-pro",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "provider": "gemini",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "timeout_sec": 600,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "max_retries": 3
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       }
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     }
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "customer_info": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "customer_id": "기미_주근깨_검버섯",
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "gender": null,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "age": null,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "race": null,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "region": null
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "execution_time": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "total_sec": 128.62,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "llm_sec": 63.61
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   "analysis_result": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "overall_score": 75,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "overall_score_report": 75,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "perceived_age": 32,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "measurements": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "melasma_score": 69.6,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "freckle_score": 61.5,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "redness_score": 80.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "post_inflammatory_erythema_score": 71.8,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "acne_score": 82.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "post_acne_pigment_score": 67.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore_size_score": 76.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore_sagging_score": 68.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "eye_wrinkle_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "nasolabial_wrinkle_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "fine_deep_wrinkle_score": 80.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "roughness_score": 74.6,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin_tone_score": 49.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "dullness_score": 60.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "uneven_tone_score": 63.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "jawline_blur_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "cheek_sagging_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin_type_score": 88.2
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "measurements_report": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "melasma_score": 69.6,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "freckle_score": 61.5,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "redness_score": 80.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "post_inflammatory_erythema_score": 71.8,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "acne_score": 82.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "post_acne_pigment_score": 67.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore_size_score": 76.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore_sagging_score": 68.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "eye_wrinkle_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "nasolabial_wrinkle_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "fine_deep_wrinkle_score": 80.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "roughness_score": 74.6,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin_tone_score": 49.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "dullness_score": 60.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "uneven_tone_score": 63.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "jawline_blur_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "cheek_sagging_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin_type_score": 88.2
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     },
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "overall_score_adjusted": 74.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "measurements_adjusted": {
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "melasma_score": 69.6,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "freckle_score": 61.5,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "redness_score": 80.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "post_inflammatory_erythema_score": 71.8,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "acne_score": 82.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "post_acne_pigment_score": 67.7,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore_size_score": 76.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pore_sagging_score": 68.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "eye_wrinkle_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "nasolabial_wrinkle_score": 78.0,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "fine_deep_wrinkle_score": 80.4,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "roughness_score": 74.6,
+2026-06-09 21:30:11 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin_tone_score": 49.0,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "dullness_score": 60.4,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "uneven_tone_score": 63.7,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "jawline_blur_score": 78.0,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "cheek_sagging_score": 78.0,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin_type_score": 88.2
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "llm_report": {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "original": {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "overall_opinion": "고객님의 피부는 주름이나 탄력 등 구조적인 노화 지표는 양호한 편이나, 얼굴 전반에 넓고 짙게 분포한 기미와 주근깨가 가장 시급한 개선 과제입니다. 이러한 색소 침착 문제로 인해 실제 피부결이나 탄력에 비해 피부 톤이 매우 어둡고 칙칙하며, 전체적인 인상이 피곤해 보일 수 있습니다. 복원 이미지에서 확인되듯, 색소 문제만 개선되어도 훨씬 맑고 건강해 보이는 피부를 되찾을 수 있습니다. 따라서 현재는 다른 어떤 관리보다 자외선 차단과 미백 기능성 케어에 집중하는 것이 가장 효과적일 것으로 판단됩니다.",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "overall_score": 70,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "perceived_age": 38,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "recommendation": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "외출 시 SPF 50 이상의 자외선 차단제를 2~3시간 간격으로 덧발라 색소 침착의 악화와 재발을 철저히 방지하십시오.",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "비타민 C, 나이아신아마이드, 글루타치온 등 미백 기능성 성분이 함유된 세럼이나 앰플을 사용하여 멜라닌 생성을 억제하고 피부 톤을 밝게 관리하십시오.",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "주 1~2회 순한 필링 성분(AHA, PHA)을 이용해 묵은 각질을 제거하면 색소 배출을 돕고 칙칙한 피부결 개선에 도움이 됩니다."
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "product_recommendations": {},
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "matched_products": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_id": "P001",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_name": "꼬드리브 트러블 케어 세럼",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "트러블 케어",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key_ingredients": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "나이아신아마이드",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "살리실산",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "티트리 오일"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "efficacy": "여드름 억제, 모공 관리, 피부 진정",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_skin_types": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "oily",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "combination",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "acne_prone"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_concerns": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "여드름",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "모공",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "트러블"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_prescription_items": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "M14"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_score": 0.43999999999999995,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_reason": "처방 항목 매칭: M14 (0.6%), 피부 타입 매칭: oily"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_id": "P005",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_name": "꼬드리브 모공 토너",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "모공 케어",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key_ingredients": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "BHA",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "AHA",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "하이드로진산"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "efficacy": "모공 축소, 각질 제거, 피부결 개선",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_skin_types": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "oily",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "combination"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_concerns": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "모공",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "거칠기",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "블랙헤드"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_prescription_items": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "M09",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "M10"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_score": 0.3,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_reason": "피부 타입 매칭: oily"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           }
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         ],
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "metric_opinions": [
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "dullness_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "칙칙함",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "tone",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 60,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "피부 표면의 색소 침착으로 인해 빛이 고르게 반사되지 않아 안색이 전반적으로 칙칙해 보입니다. [산출근거: 짙은 색소 침착이 피부의 맑은 빛을 가려 전반적으로 피부가 칙칙하고 피곤해 보여 '집중케어 추천' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "60~70점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "eye_wrinkle_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "눈가 주름",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "wrinkle",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "눈 밑에 자리 잡은 얕은 잔주름은 피부 건조나 표정 습관으로 인해 발생한 초기 단계의 주름입니다. [산출근거: 눈 밑 피부에 얕은 깊이의 미세한 잔주름이 여러 줄 관찰되어 '우수' 등급으로 평가되었습니다. 깊은 주름으로 발전하지 않도록 관리가 필요합니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "nasolabial_wrinkle_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "팔자 주름",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "wrinkle",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "팔자 부위에 옅은 주름선이 나타나기 시작했으며, 피부 탄력 저하의 초기 신호일 수 있습니다. [산출근거: 코 옆에서 입가로 이어지는 팔자 부위에 옅은 주름선이 시작되고 있습니다. 아직 깊지 않아 '우수' 등급에 해당합니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "fine_deep_wrinkle_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "미세/깊은 주름",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "wrinkle",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "깊게 패인 주름 없이 미세한 잔주름 위주로 관리 상태가 양호하여 꾸준한 보습과 탄력 케어가 중요합니다. [산출근거: 얼굴 전반에 깊게 고정된 주름 없이, 표정 변화에 따라 생기는 잔주름 위주로 보여 '우수' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "jawline_blur_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "턱선 흐림",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "elasticity",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "턱선이 무너짐 없이 선명하게 유지되고 있어 얼굴 윤곽의 탄력은 우수한 편입니다. [산출근거: 턱선 경계가 비교적 명확하게 유지되어 탄력 저하가 심하지 않은 '우수' 등급 상태입니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "melasma_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "기미",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pigmentation",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 45,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "고객님의 피부는 광대와 턱 주변에 넓게 퍼진 기미로 인해 집중적인 미백 관리가 필요한 상태입니다. [산출근거: 양쪽 광대뼈, 코, 턱 주변으로 넓은 범위에 걸쳐 갈색의 기미가 뚜렷하게 관찰되어 '개선 필요' 등급으로 평가되었습니다. 농도는 중간 정도이나 분포 범위가 넓어 집중 관리가 필요합니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "60점 미만"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "freckle_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "주근깨",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pigmentation",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 35,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "얼굴 전체에 걸쳐 수많은 주근깨가 빽빽하게 분포하여 피부 톤을 어둡고 불균일하게 만들고 있습니다. [산출근거: 얼굴 전체, 특히 코와 뺨 중앙을 중심으로 수많은 주근깨가 짙고 빽빽하게 분포하고 있습니다. 개수가 30개를 훨씬 초과하여 '개선 필요' 등급에 해당합니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "60점 미만"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "post_acne_pigment_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "트러블 후 색소",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pigmentation",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 60,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "기존 트러블로 인해 남은 갈색 색소 침착이 주근깨와 함께 섞여 피부를 얼룩덜룩하게 보이게 합니다. [산출근거: 주근깨 및 기미와 혼재되어 여드름 후 색소 침착으로 보이는 갈색 자국들이 얼굴 곳곳에 산재해 있어 '집중케어 추천' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "60~70점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "redness_score",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "홍조",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "redness",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 75,
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "양 볼을 중심으로 색소와 함께 경미한 홍조가 동반되어 피부 장벽 강화가 도움이 될 수 있습니다. [산출근거: 색소 침착과 함께 양 볼에 경미한 붉은 기운이 동반되어 관찰됩니다. 심하지는 않으나 피부가 다소 민감해져 있을 가능성이 있습니다.]",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "70~80점"
+2026-06-09 21:30:12 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "post_inflammatory_erythema_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "염증 후 홍반",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "redness",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "여드름으로 인한 붉은 자국은 거의 보이지 않아 이 부분의 피부 상태는 매우 양호합니다. [산출근거: 뚜렷한 염증 후 붉은 자국은 보이지 않으나, 다른 색소에 가려진 미세한 흔적이 있을 수 있어 '우수' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "pore_size_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "모공 크기",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pore",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 70,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "코와 그 주변 볼의 모공 크기는 평균적인 수준으로, 더 넓어지지 않도록 관리가 필요합니다. [산출근거: 코와 주변 볼 부위를 중심으로 평균적인 크기의 모공이 분포하고 있습니다. 크기가 크지는 않으나, 분포 범위가 있어 '집중케어 추천' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "70~80점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "pore_sagging_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "모공 처짐",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pore",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "모공이 대체로 동그란 형태를 유지하고 있어 모공 주변 피부의 탄력은 잘 유지되고 있습니다. [산출근거: 대부분의 모공이 원형을 유지하고 있어 처짐 현상은 심하지 않은 '우수' 등급 상태입니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "roughness_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "피부결",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "texture",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 70,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "다수의 색소 병변이 피부 표면에 자리 잡아 매끄럽지 않고 다소 거칠게 느껴지는 상태입니다. [산출근거: 다수의 색소 병변으로 인해 피부 표면이 다소 거칠고 균일하지 않게 느껴져 '양호' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "70~80점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "skin_tone_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "피부 톤",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "tone",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 55,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "얼굴 전체에 퍼진 기미와 주근깨가 본래 피부의 밝기를 가려 실제보다 어둡게 보입니다. [산출근거: 넓게 분포한 기미와 주근깨로 인해 본래의 피부 톤보다 상당히 어둡고 칙칙하게 보여 '개선 필요' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "60점 미만"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "uneven_tone_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "불균일 톤",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "tone",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 45,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "다양한 크기와 농도의 색소들이 혼재하여 피부 톤이 매우 불균일하므로 집중적인 톤 케어가 시급합니다. [산출근거: 기미와 주근깨가 얼굴 전체에 혼재하여 피부 톤이 매우 얼룩덜룩하고 불균일한 상태로, '개선 필요' 등급에 해당합니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "60점 미만"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "cheek_sagging_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "볼 처짐",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "elasticity",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "볼 부위 피부가 꺼지거나 처지는 현상 없이 탄탄하게 유지되어 양호한 상태입니다. [산출근거: 볼 부위의 피부가 전반적으로 탄탄하게 유지되고 있어 눈에 띄는 처짐은 관찰되지 않아 '우수' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "acne_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "트러블",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "trouble",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 90,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "현재 활발하게 진행 중인 염증성 여드름은 없어 트러블 관리는 매우 잘 되고 있습니다. [산출근거: 분석 영역 전반에 걸쳐 염증이나 농을 동반한 활성 여드름이 발견되지 않아 '매우 우수' 등급으로 평가되었습니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "90점 이상"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "skin_type_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "피부 타입",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "skin_type",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "피부의 유분과 수분 밸런스가 비교적 잘 유지되고 있어 피부 타입 자체는 건강한 상태입니다. [산출근거: T존에 약간의 유분기가 관찰되나 전반적인 유수분 밸런스는 양호한 편으로 '우수' 등급에 해당합니다.]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           }
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         ]
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "reference": {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "overall_opinion": "[reference_guided 모드: 복원 보고서는 별도 생성하지 않음]",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "overall_score": 81,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "perceived_age": 33,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "recommendation": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "product_recommendations": {},
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "matched_products": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_id": "P001",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_name": "꼬드리브 트러블 케어 세럼",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "트러블 케어",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key_ingredients": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "나이아신아마이드",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "살리실산",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "티트리 오일"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "efficacy": "여드름 억제, 모공 관리, 피부 진정",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_skin_types": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "oily",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "combination",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "acne_prone"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_concerns": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "여드름",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "모공",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "트러블"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_prescription_items": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "M14"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_score": 0.43999999999999995,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_reason": "처방 항목 매칭: M14 (0.6%), 피부 타입 매칭: oily"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_id": "P005",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "product_name": "꼬드리브 모공 토너",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "모공 케어",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key_ingredients": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "BHA",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "AHA",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "하이드로진산"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "efficacy": "모공 축소, 각질 제거, 피부결 개선",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_skin_types": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "oily",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "combination"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_concerns": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "모공",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "거칠기",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "블랙헤드"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "target_prescription_items": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "M09",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:               "M10"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_score": 0.3,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "match_reason": "피부 타입 매칭: oily"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           }
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         ],
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "metric_opinions": [
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "dullness_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "칙칙함",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "tone",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "피부가 생기 있고 맑아 보이며, 칙칙함이 거의 느껴지지 않습니다.",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "eye_wrinkle_score",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "눈가 주름",
+2026-06-09 21:30:13 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "wrinkle",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "눈 밑에 얕고 미세한 잔주름이 여러 개 관찰되나, 깊이가 깊지 않습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "nasolabial_wrinkle_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "팔자 주름",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "wrinkle",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "팔자 부위에 표정 변화에 따라 형성된 얕은 주름선이 확인됩니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "fine_deep_wrinkle_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "미세/깊은 주름",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "wrinkle",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "얼굴 전반에 걸쳐 깊게 고정된 주름은 관찰되지 않으며, 미세한 잔주름 위주입니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "jawline_blur_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "턱선 흐림",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "elasticity",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "턱선이 무너지지 않고 비교적 명확하게 유지되고 있습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "melasma_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "기미",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pigmentation",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "복원 이미지에서는 광대 주변의 매우 옅은 색소 흔적을 제외하면 뚜렷한 기미가 관찰되지 않습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "freckle_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "주근깨",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pigmentation",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 75,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "복원 후에도 뺨과 코 주변에 옅은 농도의 작은 주근깨가 소수 분포하고 있습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "70~80점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "post_acne_pigment_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "트러블 후 색소",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pigmentation",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "뺨과 턱 주변에 미세하고 옅은 색소 침착 흔적이 소수 관찰됩니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "redness_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "홍조",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "redness",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 90,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "분석 영역 전반에 걸쳐 뚜렷한 홍조나 붉은기가 관찰되지 않는 안정적인 상태입니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "90점 이상"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "post_inflammatory_erythema_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "염증 후 홍반",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "redness",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 90,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "여드름으로 인한 붉은 자국이 거의 보이지 않는 깨끗한 상태로 분석됩니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "90점 이상"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "pore_size_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "모공 크기",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pore",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 70,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "코와 나비존을 중심으로 보통 크기의 모공이 분포하고 있으나, 크기가 과도하게 크지 않습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "70~80점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "pore_sagging_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "모공 처짐",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "pore",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "모공이 대체로 원형을 유지하고 있으며, 일부에서만 경미한 타원형 변화가 관찰됩니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "roughness_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "피부결",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "texture",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "전반적으로 피부 표면이 매끄러운 편이나, 일부 영역에서 미세한 요철이 관찰됩니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "skin_tone_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "피부 톤",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "tone",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "피부 톤이 전반적으로 밝고 화사한 편에 속합니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "uneven_tone_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "불균일 톤",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "tone",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "약간의 색소 침착으로 인한 미세한 톤 차이를 제외하면 전반적으로 균일한 편입니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "cheek_sagging_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "볼 처짐",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "elasticity",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 80,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "볼 부위의 탄력이 잘 유지되고 있으며, 눈에 띄는 처짐은 보이지 않습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "acne_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "트러블",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "trouble",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 90,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "복원된 이미지에서 활성 염증을 동반한 여드름은 전혀 관찰되지 않습니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "90점 이상"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "key": "skin_type_score",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "display_name": "피부 타입",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "category": "skin_type",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "score": 85,
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "opinion": "",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "reason": "T존의 약간의 유분감을 제외하면 전반적인 유수분 밸런스가 양호한 상태로 보입니다.",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:             "grade": "80~90점"
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           }
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         ]
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       }
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     },
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "llm_model": "models/gemini-2.5-pro",
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "llm_stats": {},
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     "prescription": {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "base": {
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "percentage": 95.9
+2026-06-09 21:30:14 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       },
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "skin": {},
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "care": {},
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "pcr": {},
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       "assessment": {
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "M08": {
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "percentage": 1.6,
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "name": "미백케어믹스"
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         },
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "M14": {
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "percentage": 0.8,
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "name": "홍조케어믹스"
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         },
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "M12": {
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "percentage": 1.1,
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "name": "모공케어믹스"
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         },
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         "M13": {
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "percentage": 0.6,
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:           "name": "피부결케어믹스"
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:         }
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:       }
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:     }
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941:   }
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: }
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: === 종료 코드: 0 (ExitStatus.NormalExit) ===
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [진행] 측정항목 비교 다이얼로그 표시
+2026-06-09 21:30:15 [DEBUG] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:1123: JSON 파일 경로 전달: C:\Project\SkinLens v1\results\기미_주근깨_검버섯\00_input_기미_주근깨_검버섯.json
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [DEBUG] JSON 파일 경로 전달: C:\Project\SkinLens v1\results\기미_주근깨_검버섯\00_input_기미_주근깨_검버섯.json
+2026-06-09 21:30:15 [DEBUG] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:1132: proc_args = ['-B', 'c:\\Project\\SkinLens v1\\src\\gui\\skin_analysis_pipeline.py', '--compare', 'C:\\Project\\SkinLens v1\\assets\\test_images\\기미_주근깨_검버섯.jpg', 'C:\\Project\\SkinLens v1\\results\\기미_주근깨_검버섯\\01_restored_기미_주근깨_검버섯.png', '--llm-json', 'C:\\Project\\SkinLens v1\\results\\기미_주근깨_검버섯\\00_input_기미_주근깨_검버섯.json']
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [DEBUG] 실행 인자: ['-B', 'c:\\Project\\SkinLens v1\\src\\gui\\skin_analysis_pipeline.py', '--compare', 'C:\\Project\\SkinLens v1\\assets\\test_images\\기미_주근깨_검버섯.jpg', 'C:\\Project\\SkinLens v1\\results\\기미_주근깨_검버섯\\01_restored_기미_주근깨_검버섯.png', '--llm-json', 'C:\\Project\\SkinLens v1\\results\\기미_주근깨_검버섯\\00_input_기미_주근깨_검버섯.json']
+2026-06-09 21:30:15 [DEBUG] src.config.config_manager:c:\Project\SkinLens v1\src\config\config_manager.py:104: config.json 캐시 사용 (mtime 변경 없음)
+2026-06-09 21:30:15 [DEBUG] src.scoring.config._config:c:\Project\SkinLens v1\src\scoring\config\_config.py:30: ConfigManager에서 설정 로드 성공
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [18비교] 서브프로세스 시작: skin_analysis_pipeline.py
+2026-06-09 21:30:15 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [18비교] 인자: -B c:\Project\SkinLens v1\src\gui\skin_analysis_pipeline.py --compare C:\Project\SkinLens v1\assets\test_images\기미_주근깨_검버섯.jpg C:\Project\SkinLens v1\results\기미_주근깨_검버섯\01_restored_기미_주근깨_검버섯.png --llm-json C:\Project\SkinLens v1\results\기미_주근깨_검버섯\00_input_기미_주근깨_검버섯.json
+2026-06-09 21:33:42 [DEBUG] src.config.config_manager:c:\Project\SkinLens v1\src\config\config_manager.py:104: config.json 캐시 사용 (mtime 변경 없음)
+2026-06-09 21:33:42 [DEBUG] src.scoring.config._config:c:\Project\SkinLens v1\src\scoring\config\_config.py:30: ConfigManager에서 설정 로드 성공
+2026-06-09 21:33:42 [INFO] src.gui.skin_analysis_gui:c:\Project\SkinLens v1\src\gui\skin_analysis_gui.py:941: [18비교] 종료 code=0 status=ExitStatus.NormalExit

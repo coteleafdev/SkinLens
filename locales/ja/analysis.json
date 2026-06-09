@@ -1,0 +1,20 @@
+{
+  "analysis_result": "分析結果",
+  "overall_score": "総合スコア",
+  "skin_type": "肌質",
+  "recommendations": "推奨事項",
+  "oily": "脂性肌",
+  "dry": "乾燥肌",
+  "combination": "混合肌",
+  "sensitive": "敏感肌",
+  "unknown": "不明",
+  "hydration": "水分",
+  "oiliness": "皮脂",
+  "pore_size": "毛穴サイズ",
+  "redness": "赤み",
+  "inflammation": "炎症",
+  "wrinkles": "しわ",
+  "elasticity": "弾力",
+  "texture": "肌質",
+  "tone": "肌色"
+}
