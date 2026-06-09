@@ -27,6 +27,8 @@ results/*.db
 results/*.json
 results/*.png
 results/*.jpg
+results/*.html
+results/*.xlsx
 results/api_jobs/
 results/exports/*.xlsx
 results/exports/*.csv

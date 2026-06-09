@@ -688,10 +688,17 @@ class SkinMeasurementCompareDialog(QDialog):
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         default_name = f"skin_analysis_report_{timestamp}.xlsx"
+        
+        # results 폴더를 기본 저장 위치로 설정
+        from pathlib import Path
+        results_dir = Path("results")
+        results_dir.mkdir(parents=True, exist_ok=True)
+        default_path = str(results_dir / default_name)
+        
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "엑셀 파일 저장",
-            default_name,
+            default_path,
             "Excel Files (*.xlsx);;All Files (*)",
         )
         if not file_path:
@@ -1029,10 +1036,17 @@ class SkinMeasurementCompareDialog(QDialog):
         """테이블 데이터를 HTML 파일로 내보냅니다."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         default_name = f"skin_analysis_report_{timestamp}.html"
+        
+        # results 폴더를 기본 저장 위치로 설정
+        from pathlib import Path
+        results_dir = Path("results")
+        results_dir.mkdir(parents=True, exist_ok=True)
+        default_path = str(results_dir / default_name)
+        
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "HTML 파일 저장",
-            default_name,
+            default_path,
             "HTML Files (*.html);;All Files (*)",
         )
         if not file_path:
