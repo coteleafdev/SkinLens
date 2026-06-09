@@ -842,6 +842,32 @@ class SkinMeasurementCompareDialog(QDialog):
                         if metric.reason:
                             append_with_font_local([f"[근거: {metric.reason}"], small_font)
                         append_with_font_local([])  # 빈 행
+                    else:
+                        # 소견이 없는 항목도 표시
+                        key_to_display_name = {
+                            "melasma_score": "기미·잡티",
+                            "freckle_score": "주근깨",
+                            "redness_score": "홍조",
+                            "post_inflammatory_erythema_score": "염증후 홍반",
+                            "acne_score": "여드름",
+                            "post_acne_pigment_score": "여드름 흔적",
+                            "pore_size_score": "모공 크기",
+                            "pore_sagging_score": "모공 처짐",
+                            "eye_wrinkle_score": "눈가 주름",
+                            "nasolabial_wrinkle_score": "팔자 주름",
+                            "fine_deep_wrinkle_score": "미세/깊은 주름",
+                            "roughness_score": "거칠기",
+                            "skin_tone_score": "피부 톤",
+                            "dullness_score": "칙칙함",
+                            "uneven_tone_score": "톤 불균형",
+                            "jawline_blur_score": "턱선 블러",
+                            "cheek_sagging_score": "볼 처짐",
+                            "skin_type_score": "피부 타입",
+                        }
+                        display_name = key_to_display_name.get(key, key)
+                        append_with_font_local([f"{display_name} (-점 / -)"], small_font)
+                        append_with_font_local(["-"], small_font)
+                        append_with_font_local([])  # 빈 행
 
             # 기준 이미지 산출근거는 고객용 보고서에서 제외
             # dual 모드와 reference_guided 모드 모두 기준 이미지 종합 소견 제외

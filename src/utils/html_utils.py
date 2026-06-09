@@ -510,12 +510,20 @@ def generate_html_report(
     if metric_opinions:
         for metric_key in metric_order:
             display_name = key_to_display_name.get(metric_key, metric_key)
-            if display_name in metric_opinions and metric_opinions[display_name]:
-                opinion = metric_opinions[display_name]
+            opinion = metric_opinions.get(display_name, "")
+            if opinion:
                 metric_opinions_section += f"""
                 <div class="metric-item">
                     <div class="metric-name">{display_name}</div>
                     <div class="metric-opinion">{opinion}</div>
+                </div>
+                """
+            else:
+                # 소견이 없는 항목도 표시
+                metric_opinions_section += f"""
+                <div class="metric-item">
+                    <div class="metric-name">{display_name}</div>
+                    <div class="metric-opinion">-</div>
                 </div>
                 """
     else:
