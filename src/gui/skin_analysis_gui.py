@@ -721,14 +721,16 @@ class SkinAnalysisWindow(QMainWindow):
         mid: Optional[Path] = None
         out = Path(self.edit_out.text().strip() or ".")
         if out.is_dir():
-            stem = _safe_output_stem_gui(
+            # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
+            customer_id = self.edit_customer_id.text().strip()
+            folder_name = customer_id if customer_id else _safe_output_stem_gui(
                 self.edit_input.text().strip(),
                 self.chk_text2img.isChecked(),
             )
             # [FIX ⑤] pipeline_core.final_pipeline_artifact_path 와 동일 우선순위
             mid = first_existing_file(
-                out / f"01_restored_{stem}.png",        # 복원 결과
-                out / f"00_restored_{stem}.png",        # 복원 결과
+                out / f"01_restored_{folder_name}.png",        # 복원 결과
+                out / f"00_restored_{folder_name}.png",        # 복원 결과
                 out / "00_restored.png",
                 out / "01_restored.png",
             )
@@ -815,14 +817,16 @@ class SkinAnalysisWindow(QMainWindow):
             self._set_preview_image(self.lbl_rf, None, "산출 폴더 없음")
             return
 
-        stem = _safe_output_stem_gui(
+        # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
+        customer_id = self.edit_customer_id.text().strip()
+        folder_name = customer_id if customer_id else _safe_output_stem_gui(
             self.edit_input.text().strip(),
             self.chk_text2img.isChecked(),
         )
         # [FIX ⑤] pipeline_core.final_pipeline_artifact_path 와 동일 우선순위
         prf = first_existing_file(
-            out / f"01_restored_{stem}.png",        # 복원 결과
-            out / f"00_restored_{stem}.png",        # 복원 결과
+            out / f"01_restored_{folder_name}.png",        # 복원 결과
+            out / f"00_restored_{folder_name}.png",        # 복원 결과
             out / "00_restored.png",
             out / "01_restored.png",
         )
@@ -1054,9 +1058,11 @@ class SkinAnalysisWindow(QMainWindow):
             orig = Path(self.edit_input.text().strip()) if not self.chk_text2img.isChecked() else None
             if orig and orig.is_file():
                 out_dir = Path(self.edit_out.text().strip())
-                stem = orig.stem
+                # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
+                customer_id = self.edit_customer_id.text().strip()
+                folder_name = customer_id if customer_id else orig.stem
                 # 이미지별 폴더 구조로 경로 업데이트
-                image_folder = out_dir / stem
+                image_folder = out_dir / folder_name
                 if image_folder.is_dir():
                     # 산출 폴더를 하위 폴더로 업데이트
                     self.edit_out.setText(str(image_folder))
@@ -1070,15 +1076,17 @@ class SkinAnalysisWindow(QMainWindow):
                 if orig and orig.is_file():
                     # 산출 폴더에서 기준 이미지 찾기
                     out_dir = Path(self.edit_out.text().strip())
-                    stem = orig.stem
+                    # 고객 아이디 우선, 없으면 원본 이미지 파일명 사용
+                    customer_id = self.edit_customer_id.text().strip()
+                    folder_name = customer_id if customer_id else orig.stem
                     # 이미지별 폴더 구조로 경로 업데이트
-                    image_folder = out_dir / stem
+                    image_folder = out_dir / folder_name
                     # 기준 이미지 경로 우선순위 (skin_measurement_chart_dialog과 동일)
                     ideal_candidates = [
-                        image_folder / f"01_restored_{stem}.png",  # RESTORE_ONLY 모드 기본
-                        image_folder / f"00_restored_{stem}.png",
-                        out_dir / f"01_restored_{stem}.png",  # 하위 호환성
-                        out_dir / f"00_restored_{stem}.png",
+                        image_folder / f"01_restored_{folder_name}.png",  # RESTORE_ONLY 모드 기본
+                        image_folder / f"00_restored_{folder_name}.png",
+                        out_dir / f"01_restored_{folder_name}.png",  # 하위 호환성
+                        out_dir / f"00_restored_{folder_name}.png",
                         out_dir / "00_restored.png",
                         out_dir / "01_restored.png",
                     ]
