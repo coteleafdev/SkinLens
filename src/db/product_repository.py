@@ -476,6 +476,16 @@ class ProductRepository:
                 "target_concerns": ["주름", "탄력", "안티에이징"],
                 "target_prescription_items": ["M09", "M08"],
             },
+            {
+                "product_id": "P005",
+                "product_name": "PDRN 락토 콤플렉스 코튼 마스크팩",
+                "category": "마스크팩",
+                "key_ingredients": ["연어 DNA PDRN 10,000ppm", "100% 무표박 순면 시트", "락토바실러스 발효 여과물", "히알루론산 5종", "나이아신아마이드", "아데노신"],
+                "efficacy": "집중 재생 케어, 피부 자극 최소화, 유익균 공급, 수분 및 미백, 주름 개선",
+                "target_skin_types": ["all", "sensitive", "dry", "combination"],
+                "target_concerns": ["재생", "진정", "보습", "미백", "주름"],
+                "target_prescription_items": ["M01", "M06", "M07", "M09"],
+            },
         ]
 
         for product_data in sample_products:
@@ -550,6 +560,16 @@ def load_sample_products(repo: ProductRepository) -> None:
             "target_skin_types": ["mature", "dry", "combination"],
             "target_concerns": ["주름", "탄력", "안티에이징"],
             "target_prescription_items": ["M09", "M08"],
+        },
+        {
+            "product_id": "P005",
+            "product_name": "PDRN 락토 콤플렉스 코튼 마스크팩",
+            "category": "마스크팩",
+            "key_ingredients": ["연어 DNA PDRN 10,000ppm", "100% 무표박 순면 시트", "락토바실러스 발효 여과물", "히알루론산 5종", "나이아신아마이드", "아데노신"],
+            "efficacy": "집중 재생 케어, 피부 자극 최소화, 유익균 공급, 수분 및 미백, 주름 개선",
+            "target_skin_types": ["all", "sensitive", "dry", "combination"],
+            "target_concerns": ["재생", "진정", "보습", "미백", "주름"],
+            "target_prescription_items": ["M01", "M06", "M07", "M09"],
         },
     ]
     
