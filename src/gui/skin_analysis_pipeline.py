@@ -734,7 +734,7 @@ def _cli_body(args) -> int:
                         if args.save_json:
                             try:
                                 from src.db.skin_analysis_db import SkinAnalysisDB
-                                db = SkinAnalysisDB(db_path=str(args.out_dir / "skin_analysis.db"))
+                                db = SkinAnalysisDB(db_path="data/skin_analysis.db")
                                 db.save_analysis(
                                     original_path=str(image_folder / f"00_input_{input_stem}.png"),
                                     restored_path=str(final_p),

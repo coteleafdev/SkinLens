@@ -63,7 +63,7 @@ class SkinAnalysisDB(
     """피부 분석 결과를 관리하는 SQLite DB 클래스 (도메인 Mixin 합성).
 
     공개 API는 분해 전과 동일. 인스턴스 생성/사용법 변화 없음:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         db.save_analysis(...); db.get_recent_analyses(...)
     """
     pass

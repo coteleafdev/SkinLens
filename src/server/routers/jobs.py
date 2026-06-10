@@ -240,7 +240,7 @@ async def _run_job(job_id: str) -> None:
                     if "error" not in result:
                         try:
                             from src.db.skin_analysis_db import SkinAnalysisDB
-                            _db = SkinAnalysisDB(db_path=str(Path(meta["output_dir"]) / "skin_analysis.db"))
+                            _db = SkinAnalysisDB(db_path="data/skin_analysis.db")
                             _db.save_analysis(
                                 original_path=meta.get("input_image_path", ""),
                                 restored_path=result.get("restored_image", ""),
