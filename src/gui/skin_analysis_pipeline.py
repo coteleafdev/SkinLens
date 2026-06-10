@@ -778,6 +778,15 @@ def _cli_body(args) -> int:
                                 proc.start()
                                 log.info(f"[진행] 측정항목 비교 서브프로세스 시작: {' '.join(proc_args)}")
                     except Exception as e:
+                        import traceback
+                        error_detail = traceback.format_exc()
+                        log.error("=" * 60)
+                        log.error("점수 분석 실패")
+                        log.error("오류 타입: %s", type(e).__name__)
+                        log.error("오류 메시지: %s", str(e))
+                        log.error("상세 스택 트레이스:")
+                        log.error("%s", error_detail)
+                        log.error("=" * 60)
                         log.warning(f"[경고] 점수 분석 실패: {e}")
         except Exception as e:
             log.error(f"[오류] 파이프라인 실행 중 오류: {e}")

@@ -7,7 +7,11 @@
 """
 from __future__ import annotations
 
+import cv2
+import logging
 import numpy as np
+
+log = logging.getLogger(__name__)
 
 
 def clamp(v: float, lo: float = 0.0, hi: float = 100.0) -> float:
@@ -62,6 +66,17 @@ def strip_normalize_L(
     """수평 스트립별 중앙값을 빼서 조명 그라디언트 제거."""
     if not mask_bool.any():
         return L_ch.copy()
+    
+    # 배열 크기 검증
+    if L_ch.shape != mask_bool.shape:
+        log.warning(f"strip_normalize_L: 크기 불일치 L_ch={L_ch.shape}, mask={mask_bool.shape}")
+        # 마스크를 L_ch 크기에 맞게 리사이즈
+        if mask_bool.ndim == 2 and L_ch.ndim == 2:
+            mask_bool = cv2.resize(mask_bool.astype(np.uint8), (L_ch.shape[1], L_ch.shape[0]), 
+                                   interpolation=cv2.INTER_NEAREST).astype(bool)
+        else:
+            return L_ch.copy()
+    
     L_norm = L_ch.copy()
     ys, _ = np.where(mask_bool)
     y_min, y_max = int(ys.min()), int(ys.max())
@@ -70,6 +85,13 @@ def strip_normalize_L(
         y_e = min(y_s + sh, y_max + 1)
         strip_sk = mask_bool[y_s:y_e, :]
         if strip_sk.any():
-            smed = float(np.median(L_ch[y_s:y_e, :][strip_sk]))
-            L_norm[y_s:y_e, :] = L_ch[y_s:y_e, :] - smed
+            strip_L = L_ch[y_s:y_e, :]
+            # 크기 검증
+            if strip_L.shape != strip_sk.shape:
+                continue
+            # 안전한 인덱싱: np.where로 인덱스 추출 후 사용
+            strip_indices = np.where(strip_sk)
+            if len(strip_indices[0]) > 0:
+                smed = float(np.median(strip_L[strip_indices]))
+                L_norm[y_s:y_e, :] = L_ch[y_s:y_e, :] - smed
     return L_norm
