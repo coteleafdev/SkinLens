@@ -185,8 +185,8 @@ async def _run_job(job_id: str) -> None:
                 for fh in _open_handles:
                     try:
                         fh.close()
-                    except OSError:
-                        pass
+                    except OSError as e:
+                        log.warning(f"파일 핸들 닫기 실패: {e}")
         
             # 엔진 서버 Job ID 저장
             engine_job_id = engine_response["job_id"]
@@ -554,13 +554,13 @@ async def create_job(
     if survey:
         try:
             input_json["survey"] = json.loads(survey)
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            log.warning(f"설문조사 JSON 파싱 실패: {e}")
     if client_meta:
         try:
             input_json["client_meta"] = json.loads(client_meta)
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            log.warning(f"클라이언트 메타데이터 JSON 파싱 실패: {e}")
 
     # ── customer_id 검증 (보안: JWT의 customer_id와 일치 확인) ─────────
     if customer_id and current_customer:

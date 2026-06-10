@@ -370,8 +370,8 @@ def parse_measurement_weights(markdown: str) -> Dict[str, float]:
         if len(parts) == 2:
             try:
                 weights[parts[0].strip()] = float(parts[1].strip())
-            except ValueError:
-                pass
+            except ValueError as e:
+                log.warning(f"가중치 파싱 실패: {parts[0]}={parts[1]}, 오류: {e}")
     return weights
 
 
@@ -405,8 +405,8 @@ def parse_actual_ranges(markdown: str) -> Dict[str, Tuple[float, float]]:
             if len(values) == 2:
                 try:
                     ranges[parts[0].strip()] = (float(values[0].strip()), float(values[1].strip()))
-                except ValueError:
-                    pass
+                except ValueError as e:
+                    log.warning(f"범위 파싱 실패: {parts[0]}={values[0]}-{values[1]}, 오류: {e}")
     return ranges
 
 
@@ -440,8 +440,8 @@ def parse_score_mapping(markdown: str) -> Dict[str, Tuple[str, float]]:
             if len(vals) == 2:
                 try:
                     mapping[parts[0].strip()] = (vals[0].strip(), float(vals[1].strip()))
-                except ValueError:
-                    pass
+                except ValueError as e:
+                    log.warning(f"매핑 파싱 실패: {parts[0]}={vals[0]}:{vals[1]}, 오류: {e}")
     return mapping
 
 

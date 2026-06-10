@@ -358,8 +358,8 @@ async def create_order(request: CreateOrderRequest, db: SkinAnalysisDB = Depends
         for item in request.items:
             try:
                 db.add_stock(item.product_id, item.quantity)
-            except:
-                pass
+            except Exception as e:
+                log.warning(f"재고 추가 실패 (product_id={item.product_id}): {e}")
     
     _orders_db[order_id] = order
     
@@ -475,7 +475,8 @@ async def update_order_status(
     # 상태 업데이트
     try:
         db.update_order_status(order_id, status)
-    except AttributeError:
+    except AttributeError as e:
+        log.warning(f"주문 상태 DB 업데이트 실패 (메서드 없음): {order_id}, {e}")
         pass  # DB 메서드가 없는 경우 메모리 저장소만 업데이트
     
     _orders_db[order_id]["status"] = status
@@ -887,7 +888,8 @@ async def cancel_order(order_id: str, request: CancelOrderRequest, db: SkinAnaly
     # 주문 취소 처리
     try:
         db.update_order_status(order_id, "cancelled")
-    except AttributeError:
+    except AttributeError as e:
+        log.warning(f"주문 취소 DB 업데이트 실패 (메서드 없음): {order_id}, {e}")
         pass  # DB 메서드가 없는 경우 메모리 저장소만 업데이트
     
     _orders_db[order_id]["status"] = "cancelled"
@@ -903,7 +905,8 @@ async def cancel_order(order_id: str, request: CancelOrderRequest, db: SkinAnaly
             for item in _order_items_db.get(order_id, []):
                 db.add_stock(item["product_id"], item["quantity"])
             log.info(f"재고 복구 완료: {order_id}")
-        except AttributeError:
+        except AttributeError as e:
+            log.warning(f"재고 복구 실패 (메서드 없음): {order_id}, {e}")
             pass  # DB 메서드가 없는 경우 무시
     
     log.info(f"주문 취소: {order_id}, reason={request.reason}, refund_amount={refund_amount}")
@@ -1010,7 +1013,8 @@ async def payment_callback(request: PaymentCallbackRequest, db: SkinAnalysisDB =
         # 결제 성공
         try:
             db.update_order_status(request.order_id, "paid")
-        except AttributeError:
+        except AttributeError as e:
+            log.warning(f"결제 성공 DB 업데이트 실패 (메서드 없음): {request.order_id}, {e}")
             pass  # DB 메서드가 없는 경우 메모리 저장소만 업데이트
         
         _orders_db[request.order_id]["payment_status"] = "paid"
@@ -1165,7 +1169,8 @@ async def update_shipping_status(request: UpdateShippingStatusRequest, db: SkinA
                     message=f"주문 {request.order_id}의 배송이 시작되었습니다.",
                     data={"order_id": request.order_id, "tracking_number": request.tracking_number}
                 )
-            except AttributeError:
+            except AttributeError as e:
+                log.warning(f"배송 시작 알림 전송 실패 (메서드 없음): {request.order_id}, {e}")
                 pass
         elif request.shipping_status == "delivered":
             db.update_order_status(request.order_id, "delivered")
@@ -1179,10 +1184,12 @@ async def update_shipping_status(request: UpdateShippingStatusRequest, db: SkinA
                     message=f"주문 {request.order_id}이 배송 완료되었습니다.",
                     data={"order_id": request.order_id}
                 )
-            except AttributeError:
+            except AttributeError as e:
+                log.warning(f"배송 완료 알림 전송 실패 (메서드 없음): {request.order_id}, {e}")
                 pass
-    except AttributeError:
+    except AttributeError as e:
         # DB 메서드가 없는 경우 메모리 저장소만 업데이트
+        log.warning(f"배송 상태 DB 업데이트 실패 (메서드 없음): {order_id}, {e}")
         if request.shipping_status == "shipped":
             _orders_db[request.order_id]["status"] = "shipped"
         elif request.shipping_status == "delivered":
