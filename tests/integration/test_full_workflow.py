@@ -152,6 +152,105 @@ class TestFullWorkflow:
         data = response.json()
         assert "cpu_usage" in data or "memory_usage" in data
 
+    def test_custom_workflow(self, headers):
+        """커스텀 워크플로우 테스트: 전체 프로세스 통합"""
+        # 1. 고객 정보 등록
+        customer_data = {
+            "customer_id": "custom_workflow_test",
+            "name": "커스텀 워크플로우 테스트",
+            "email": "custom_workflow@example.com",
+            "phone": "010-5555-5555"
+        }
+        
+        response = requests.post(
+            f"{BASE_URL}/v1/customer",
+            json=customer_data,
+            headers=headers
+        )
+        assert response.status_code in [200, 201]
+        
+        # 2. 설문조사 등록
+        survey_data = {
+            "customer_id": "custom_workflow_test",
+            "skin_type": "normal",
+            "skin_concerns": ["dryness", "wrinkles"],
+            "sensitivity": "low",
+            "lifestyle": {
+                "sleep_hours": 7,
+                "water_intake": 2.0,
+                "stress_level": "medium"
+            }
+        }
+        
+        response = requests.post(
+            f"{BASE_URL}/v1/customer/survey",
+            json=survey_data,
+            headers=headers
+        )
+        assert response.status_code in [200, 201]
+        
+        # 3. 분석 작업 생성
+        image_path = Path("tests/fixtures/sample_image.jpg")
+        if not image_path.exists():
+            pytest.skip(f"테스트 이미지 없음: {image_path}")
+        
+        with open(image_path, "rb") as f:
+            files = {"image": ("sample.jpg", f, "image/jpeg")}
+            data = {
+                "customer_id": "custom_workflow_test",
+                "survey_id": "test_survey"
+            }
+            
+            response = requests.post(
+                f"{BASE_URL}/v1/analysis/jobs",
+                files=files,
+                data=data,
+                headers=headers
+            )
+        
+        assert response.status_code == 200
+        job_data = response.json()
+        job_id = job_data["job_id"]
+        
+        # 4. 작업 완료 대기
+        max_wait = 30  # 최대 30초 대기
+        wait_interval = 2  # 2초 간격
+        
+        for i in range(max_wait // wait_interval):
+            response = requests.get(
+                f"{BASE_URL}/v1/analysis/jobs/{job_id}",
+                headers=headers
+            )
+            assert response.status_code == 200
+            status_data = response.json()
+            status = status_data.get("status", "unknown")
+            
+            if status == "completed":
+                break
+            elif status == "failed":
+                pytest.fail(f"작업 실패: {status_data}")
+            
+            time.sleep(wait_interval)
+        else:
+            pytest.fail(f"작업 완료 대기 시간 초과: {max_wait}초")
+        
+        # 5. 결과 조회 및 검증
+        response = requests.get(
+            f"{BASE_URL}/v1/analysis/jobs/{job_id}/result",
+            headers=headers
+        )
+        assert response.status_code == 200
+        result = response.json()
+        
+        # 결과 필드 검증
+        assert "analysis_result" in result
+        assert "overall_score" in result["analysis_result"]
+        assert "measurements" in result["analysis_result"]
+        
+        # 점수 범위 검증
+        overall_score = result["analysis_result"]["overall_score"]
+        assert 0 <= overall_score <= 100
+
 
 def run_manual_test():
     """수동 테스트 실행 함수"""

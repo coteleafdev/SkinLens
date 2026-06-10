@@ -189,9 +189,13 @@ ConnectionError: Failed to establish connection
 
 ```python
 def test_custom_workflow(self, headers):
-    """커스텀 워크플로우 테스트"""
-    # 테스트 로직 작성
-    pass
+    """커스텀 워크플로우 테스트: 전체 프로세스 통합"""
+    # 1. 고객 정보 등록
+    # 2. 설문조사 등록
+    # 3. 분석 작업 생성
+    # 4. 작업 완료 대기
+    # 5. 결과 조회 및 검증
+    # 구현 완료됨 (2026-06-10)
 ```
 
 ### 다른 서버 URL 사용
