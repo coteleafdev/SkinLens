@@ -1,8 +1,8 @@
 # 테스트 가이드 (Testing Guide)
 
-> **문서 버전:** 1.3.0  
+> **문서 버전:** 1.4.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-01  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 ---
@@ -61,6 +61,7 @@ tests/
 ├── test_full_integration.py       # 전체 통합 테스트
 ├── test_health_api.py             # 헬스 체크 API 테스트
 ├── test_i18n.py                   # 국제화 테스트
+├── test_images_api.py             # 이미지 API 테스트
 ├── test_integration.py            # 통합 테스트
 ├── test_integration_api.py        # 통합 API 테스트
 ├── test_ip_filter.py              # IP 필터 테스트
@@ -105,6 +106,7 @@ tests/
 ├── test_supabase_sync.py          # Supabase 동기화 테스트
 ├── test_unit.py                   # 단위 테스트
 ├── test_upload.py                 # 업로드 테스트
+├── test_upload_api.py             # 업로드 API 테스트
 ├── test_utils.py                  # 유틸리티 테스트
 ├── test_versioning.py             # 버전 관리 테스트
 ├── test_websocket_management.py   # WebSocket 관리 테스트
@@ -120,14 +122,16 @@ tests/
 - **test_auth_api.py**: 인증 API (로그인, 토큰 갱신, 로그아웃, 비밀번호 변경/복구)
 - **test_admin_api.py**: 관리자 API
 - **test_customer_api.py**: 고객 API (프로필, 장치, 설문)
-- **test_app_features_api.py**: 앱 기능 API
+- **test_app_features_api.py**: 앱 기능 API (피부 일기, 목표, 업적, 구독, 챌린지, PCR)
 - **test_enhancements_api.py**: 향상 기능 API
+- **test_images_api.py**: 이미지 API (원본/복원 이미지, 메타데이터)
+- **test_integration_api.py**: 통합 API
 - **test_orders_api.py**: 주문 API
+- **test_upload_api.py**: 업로드 API (청크 업로드, 진행률)
 - **test_health_api.py**: 헬스 체크 API
 - **test_logs_api.py**: 로그 API
 - **test_stats_api.py**: 통계 API
 - **test_db_api.py**: DB API
-- **test_integration_api.py**: 통합 API
 
 #### 분석 및 점수 테스트
 - **test_analyzers.py**: 분석기 단위 테스트
@@ -1171,6 +1175,7 @@ tests/mobile/
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
+| 1.4.0 | 2026-06-10 | 이미지 API, 업로드 API, 앱 기능 API 테스트 추가; text2img 관련 테스트 제거 | Cascade |
 | 1.2.0 | 2026-06-01 | 모바일 앱 통합 테스트 섹션 추가 (섹션 11) | Cascade |
 | 1.1.0 | 2026-06-01 | 테스트 구조 갱신 (80개 테스트 파일, 8개 카테고리, 테스트 실행 명령어 추가) | Cascade |
 | 1.0.0 | 2026-05-31 | 초기 버전 (표준화 적용) | Cascade |
