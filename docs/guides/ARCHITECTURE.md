@@ -6,7 +6,7 @@
 > - [PROTOCOL.md](PROTOCOL.md) - 통신 프로토콜
 > - [../api/API_REFERENCE.md](../api/API_REFERENCE.md) - API 레퍼런스
 
-> **문서 버전:** 1.4.0  
+> **문서 버전:** 1.5.0  
 > **대상 프로젝트 버전:** 1.0.0  
 > **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
@@ -456,6 +456,20 @@ data/
 | `images.db` | 이미지 메타데이터 관리 | images (customer_id, image_type, file_path, file_hash, file_size) |
 | `execution_history.db` | 실행 이력 및 로그 | executions, logs, analysis_stats |
 
+### 4.2.1 DB 마이그레이션
+
+기존 `results/` 폴더의 DB 파일을 `data/` 폴더로 이동하려면 마이그레이션 스크립트를 사용하세요:
+
+```bash
+python scripts/migrate_db_to_data.py
+```
+
+이 스크립트는 다음 작업을 수행합니다:
+1. 기존 DB 파일 백업 (`data/backups/`)
+2. `results/` → `data/` 파일 이동
+3. DB 파일 검증
+4. 마이그레이션 결과 보고
+
 ### 4.3 로컬 SQLite DB
 
 **목적:**
@@ -853,6 +867,7 @@ pytest tests/test_server.py
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
+| 1.5.0 | 2026-06-10 | DB 마이그레이션 섹션 추가 (4.2.1), 마이그레이션 스크립트 사용법 문서화 | Cascade |
 | 1.4.0 | 2026-06-10 | 이미지 저장 모듈 추가 (src/storage/: local_db.py, supabase_storage.py), 디렉토리 구조 업데이트, 모듈별 기능 요약 업데이트 | Cascade |
 | 1.3.0 | 2026-06-01 | API 레퍼런스를 최상위 문서로 참조 추가 | Cascade |
 | 1.2.0 | 2026-06-01 | 테스트 구조 섹션 추가 (섹션 10), 섹션 번호 재정렬 | Cascade |
