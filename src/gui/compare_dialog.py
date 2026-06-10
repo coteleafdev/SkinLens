@@ -35,6 +35,7 @@ from src.utils.xlsx_utils import (
     auto_fit_columns,
 )
 from src.utils.html_utils import image_to_base64, generate_html_report
+from src.utils.docx_utils import generate_word_report, save_document, _DOCX_AVAILABLE
 
 from src.scoring.skin_scoring import get_measurement_categories
 from src.gui.dialog_utils import _numeric_value, _short_label
@@ -241,6 +242,11 @@ class SkinMeasurementCompareDialog(QDialog):
             btn_excel.setToolTip("openpyxl 라이브러리가 필요합니다 (pip install openpyxl)")
         btn_html = QPushButton("HTML 내보내기")
         btn_html.clicked.connect(self._export_to_html)
+        btn_word = QPushButton("Word 내보내기")
+        btn_word.clicked.connect(self._export_to_word)
+        if not _DOCX_AVAILABLE:
+            btn_word.setEnabled(False)
+            btn_word.setToolTip("python-docx 라이브러리가 필요합니다 (pip install python-docx)")
         btn_close = QPushButton("닫기")
         btn_close.clicked.connect(self.accept)
         
@@ -248,6 +254,7 @@ class SkinMeasurementCompareDialog(QDialog):
         bottom.addWidget(self.btn_llm)
         bottom.addWidget(btn_excel)
         bottom.addWidget(btn_html)
+        bottom.addWidget(btn_word)
         bottom.addStretch(1)
         bottom.addWidget(btn_close)
 
@@ -1184,6 +1191,106 @@ class SkinMeasurementCompareDialog(QDialog):
             log.error("%s", error_detail)
             log.error("=" * 60)
             error_msg = f"HTML 내보내기 실패:\n{str(e)}\n\n상세 로그를 확인하세요."
+            QMessageBox.critical(self, "오류", error_msg)
+
+    def _export_to_word(self) -> None:
+        """테이블 데이터를 Word 파일로 내보냅니다."""
+        if not _DOCX_AVAILABLE:
+            QMessageBox.warning(self, "오류", "python-docx 라이브러리가 필요합니다.\n설치: pip install python-docx")
+            return
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_name = f"skin_analysis_report_{timestamp}.docx"
+        
+        # results 폴더를 기본 저장 위치로 설정
+        from pathlib import Path
+        results_dir = Path("results")
+        results_dir.mkdir(parents=True, exist_ok=True)
+        default_path = str(results_dir / default_name)
+        
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Word 파일 저장",
+            default_path,
+            "Word Files (*.docx);;All Files (*)",
+        )
+        if not file_path:
+            return
+
+        try:
+            # 이미지 경로 가져오기
+            orig_image_path = self._orig_path
+            ref_image_path = self._ref_path
+            
+            # 측정 결과 추출
+            measurements = {}
+            for row in range(self.table.rowCount()):
+                item_name = self.table.item(row, 0)
+                name_text = item_name.text() if item_name else ""
+                
+                item_orig = self.table.item(row, 1)
+                orig_text = item_orig.text() if item_orig else ""
+                
+                try:
+                    measurements[name_text] = float(orig_text)
+                except (ValueError, TypeError):
+                    measurements[name_text] = orig_text
+            
+            # 종합 점수 추출
+            overall_score = 0.0
+            try:
+                overall_score = float(self._orig_result.get("overall_score", 0))
+            except (ValueError, TypeError):
+                pass
+            
+            # 인식 나이 추출
+            perceived_age = None
+            try:
+                perceived_age = int(self._orig_result.get("perceived_age", 0))
+            except (ValueError, TypeError):
+                pass
+            
+            # LLM 소견 추출
+            llm_report = None
+            if self._last_llm_report_orig:
+                llm_report = self._last_llm_report_orig.overall_opinion or ""
+            
+            # 처방전 추출
+            prescription = getattr(self, '_last_prescription', None)
+            
+            # Word 문서 생성
+            doc = generate_word_report(
+                title="피부 분석 보고서",
+                original_image_path=orig_image_path or "",
+                restored_image_path=ref_image_path or "",
+                measurements=measurements,
+                overall_score=overall_score,
+                perceived_age=perceived_age,
+                prescription=prescription,
+                llm_report=llm_report,
+            )
+            
+            if doc is None:
+                QMessageBox.warning(self, "오류", "Word 문서 생성 실패")
+                return
+            
+            # 파일 저장
+            if save_document(doc, file_path):
+                QMessageBox.information(self, "완료", f"Word 파일 저장 완료:\n{file_path}")
+                log.info("Word 내보내기 완료: %s", file_path)
+            else:
+                QMessageBox.warning(self, "오류", "Word 파일 저장 실패")
+            
+        except Exception as e:
+            error_detail = traceback.format_exc()
+            log.error("=" * 60)
+            log.error("Word 내보내기 실패")
+            log.error("오류 타입: %s", type(e).__name__)
+            log.error("오류 메시지: %s", str(e))
+            log.error("상세 스택 트레이스:")
+            log.error("%s", error_detail)
+            log.error("=" * 60)
+            error_msg = f"Word 내보내기 실패:\n{str(e)}\n\n상세 로그를 확인하세요."
             QMessageBox.critical(self, "오류", error_msg)
 
     def closeEvent(self, event: QCloseEvent) -> None:
