@@ -228,10 +228,11 @@ async def _run_job(job_id: str) -> None:
 
             # 결과 처리
             customer_id = meta.get("customer_id", Path(meta["input_image_path"]).stem)
+            # 이미지 URL은 메인 서버 API를 가리킴
             if "input_image" in result:
-                result["input_image_url"] = f"/v1/engine/images/{customer_id}/original"
+                result["input_image_url"] = f"/v1/images/{customer_id}/original"
             if "restored_image" in result:
-                result["restored_image_url"] = f"/v1/engine/images/{customer_id}/restored"
+                result["restored_image_url"] = f"/v1/images/{customer_id}/restored"
 
             artifacts = _canonicalize_artifacts(job_id, Path(meta["input_image_path"]).stem, result)
 
