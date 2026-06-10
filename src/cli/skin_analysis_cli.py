@@ -739,13 +739,10 @@ def run_analysis_pipeline(
     # URL 기반 이미지 경로 (서버 환경용)
     effective_base_url = base_url or SERVER_URL
     if effective_base_url:
-        # 입력 이미지 URL (파일명만 사용)
-        input_filename = input_image.name
-        result["input_image_url"] = f"{effective_base_url.rstrip('/')}/{input_filename}"
-        
-        # 복원 이미지 URL (파일명만 사용)
-        restored_filename = restored_image.name
-        result["restored_image_url"] = f"{effective_base_url.rstrip('/')}/{restored_filename}"
+        # 고객 ID 기반 API 엔드포인트
+        effective_customer_id = customer_id or input_image.stem
+        result["input_image_url"] = f"{effective_base_url.rstrip('/')}/v1/images/{effective_customer_id}/original"
+        result["restored_image_url"] = f"{effective_base_url.rstrip('/')}/v1/images/{effective_customer_id}/restored"
     
     # base64 인코딩 옵션 (기본 False)
     if include_base64:

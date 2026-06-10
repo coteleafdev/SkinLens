@@ -227,14 +227,11 @@ async def _run_job(job_id: str) -> None:
             log.info(f"[Engine] Job {job_id} analysis completed")
 
             # 결과 처리
+            customer_id = meta.get("customer_id", Path(meta["input_image_path"]).stem)
             if "input_image" in result:
-                result["input_image_url"] = (
-                    f"/v1/engine/analysis/jobs/{job_id}/artifacts/{Path(result['input_image']).name}"
-                )
+                result["input_image_url"] = f"/v1/engine/images/{customer_id}/original"
             if "restored_image" in result:
-                result["restored_image_url"] = (
-                    f"/v1/engine/analysis/jobs/{job_id}/artifacts/{Path(result['restored_image']).name}"
-                )
+                result["restored_image_url"] = f"/v1/engine/images/{customer_id}/restored"
 
             artifacts = _canonicalize_artifacts(job_id, Path(meta["input_image_path"]).stem, result)
 

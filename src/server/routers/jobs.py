@@ -224,14 +224,11 @@ async def _run_job(job_id: str) -> None:
                     await report_progress(job_id, "processing", 80, "결과 처리 중...")
                 
                     # 결과 저장
+                    customer_id = meta.get("customer_id", Path(meta["input_image_path"]).stem)
                     if "input_image" in result:
-                        result["input_image_url"] = (
-                            f"/v1/analysis/jobs/{job_id}/artifacts/{Path(result['input_image']).name}"
-                        )
+                        result["input_image_url"] = f"/v1/images/{customer_id}/original"
                     if "restored_image" in result:
-                        result["restored_image_url"] = (
-                            f"/v1/analysis/jobs/{job_id}/artifacts/{Path(result['restored_image']).name}"
-                        )
+                        result["restored_image_url"] = f"/v1/images/{customer_id}/restored"
                 
                     # 아티팩트 정규화
                     artifacts_local = _canonicalize_artifacts(job_id, Path(meta["input_image_path"]).stem, result)
