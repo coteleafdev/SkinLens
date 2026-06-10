@@ -167,7 +167,7 @@ class TestSafeOutputStem:
         """None 입력 테스트"""
         stem = safe_output_stem(None)
         
-        assert stem == "text2img"
+        assert stem == "image"
     
     def test_safe_output_stem_normal(self):
         """일반 파일명 테스트"""
@@ -437,15 +437,6 @@ class TestPilForImg2Img:
 class TestResolveInitImage:
     """초기 이미지 해결 테스트"""
     
-    def test_resolve_init_image_force_text2img(self):
-        """text2img 강제 테스트"""
-        result = resolve_init_image(
-            explicit=Path("test.jpg"),
-            force_text2img=True
-        )
-        
-        assert result is None
-    
     def test_resolve_init_image_explicit(self, tmp_path):
         """명시적 경로 테스트"""
         img = Image.new('RGB', (100, 100), color='white')
@@ -453,8 +444,7 @@ class TestResolveInitImage:
         img.save(input_path)
         
         result = resolve_init_image(
-            explicit=input_path,
-            force_text2img=False
+            explicit=input_path
         )
         
         assert result == input_path.resolve()
@@ -463,8 +453,7 @@ class TestResolveInitImage:
         """명시적 경로 없음 테스트"""
         with pytest.raises(FileNotFoundError):
             resolve_init_image(
-                explicit=tmp_path / "nonexistent.jpg",
-                force_text2img=False
+                explicit=tmp_path / "nonexistent.jpg"
             )
     
     def test_resolve_init_image_default(self, tmp_path):
@@ -478,8 +467,7 @@ class TestResolveInitImage:
         
         with patch('src.pipeline.pipeline_core._default_init_image_path', return_value=default_img):
             result = resolve_init_image(
-                explicit=None,
-                force_text2img=False
+                explicit=None
             )
             
             assert result == default_img.resolve()
