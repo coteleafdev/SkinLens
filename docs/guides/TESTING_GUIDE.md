@@ -198,7 +198,34 @@ tests/
 - **test_prescription_calculator.py**: 처방 계산기
 - **test_product_repository.py**: 제품 리포지토리
 
-### 1.2 테스트 실행
+### 1.2 테스트 실행 절차
+
+```mermaid
+flowchart TD
+    A[테스트 실행 절차] --> B{테스트 범위 선택}
+    B -->|전체 테스트| C[pytest tests/]
+    B -->|특정 파일| D[pytest tests/test_auth_api.py]
+    B -->|특정 클래스| E[pytest tests/test_auth_api.py::TestAuth]
+    B -->|특정 메서드| F[pytest tests/test_auth_api.py::TestAuth::test_login]
+    B -->|통합 테스트| G[pytest tests/integration/]
+    B -->|서버 테스트| H[pytest tests/test_server.py]
+    
+    C --> I[테스트 실행]
+    D --> I
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+    
+    I --> J{커버리지 확인?}
+    J -->|예| K[pytest tests/ --cov=src --cov-report=html]
+    J -->|아니오| L[결과 확인]
+    
+    K --> L
+    L --> M[테스트 완료]
+```
+
+### 1.3 테스트 실행 명령어
 
 ```bash
 # 전체 테스트 실행
