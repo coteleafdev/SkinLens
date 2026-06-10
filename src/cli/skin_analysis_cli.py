@@ -987,7 +987,7 @@ async def main_async(args) -> None:
         # DB에 분석 결과 저장 (로컬 SQLite + Supabase 자동 동기화)
         try:
             from src.db.skin_analysis_db import SkinAnalysisDB
-            db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+            db = SkinAnalysisDB(db_path="data/skin_analysis.db")
             db.save_analysis(
                 original_path=args.input,
                 restored_path=result.get("restored_image", ""),
@@ -1281,7 +1281,7 @@ def main():
         # DB에 분석 결과 저장 (로컬 SQLite + Supabase 자동 동기화)
         try:
             from src.db.skin_analysis_db import SkinAnalysisDB
-            db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+            db = SkinAnalysisDB(db_path="data/skin_analysis.db")
             db.save_analysis(
                 original_path=args.input,
                 restored_path=result.get("restored_image", ""),

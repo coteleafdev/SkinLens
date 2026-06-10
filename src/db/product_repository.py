@@ -18,14 +18,14 @@ log = logging.getLogger(__name__)
 class ProductRepository:
     """맞춤형 화장품 성분 정보를 관리하는 Repository 클래스"""
 
-    def __init__(self, db_path: str = "results/skin_analysis.db"):
+    def __init__(self, db_path: str = "data/skin_analysis.db"):
         """
         ProductRepository 초기화.
 
         Parameters
         ----------
         db_path : str
-            DB 파일 경로 (기본값: results/skin_analysis.db)
+            DB 파일 경로 (기본값: data/skin_analysis.db)
         """
         self.db_path = db_path
         self._conn = sqlite3.connect(self.db_path, check_same_thread=False)

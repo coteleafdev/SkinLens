@@ -250,7 +250,7 @@ async def get_my_preferences(
     user_role = current_customer.get("role", "customer")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         preferences = db.get_user_preferences(customer_id)
         if preferences is None:
             # 기본 설정 반환
@@ -283,7 +283,7 @@ async def set_my_language(
         raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         db.set_user_language(customer_id, language)
         return {"message": "Language updated successfully", "language": language}
     except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
@@ -304,7 +304,7 @@ async def set_my_timezone(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         db.set_user_timezone(customer_id, timezone)
         return {"message": "Timezone updated successfully", "timezone": timezone}
     except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
@@ -326,7 +326,7 @@ async def get_my_analyses(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         analyses = db.get_customer_analyses(customer_id)
         
         # 페이지네이션 적용
@@ -356,7 +356,7 @@ async def get_my_analysis_detail(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
         
         if analysis is None:
@@ -388,7 +388,7 @@ async def get_my_analysis_image(
         raise HTTPException(status_code=400, detail="Invalid image type. Must be 'original' or 'restored'")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
         
         if analysis is None:
@@ -432,7 +432,7 @@ async def compare_analyses(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         
         # 두 분석 결과 조회
         analysis_1 = db.get_customer_analysis_detail(customer_id, request_data.analysis_id_1)
@@ -511,7 +511,7 @@ async def get_my_recommendations(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         
         if analysis_id:
             recommendations = db.get_product_recommendations(customer_id, analysis_id, limit)
@@ -541,7 +541,7 @@ async def add_bookmark(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         
         # 분석 존재 확인
         analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
@@ -574,7 +574,7 @@ async def remove_bookmark(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         success = db.remove_bookmark(customer_id, analysis_id)
         
         if not success:
@@ -602,7 +602,7 @@ async def get_my_bookmarks(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         bookmarks = db.get_bookmarks(customer_id, limit, offset)
         
         return {
@@ -628,7 +628,7 @@ async def get_notification_settings(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         settings = db.get_notification_settings(customer_id)
         return settings
     except (sqlite3.Error, ValueError) as e:  # [FIX P2] 구체적 예외
@@ -649,7 +649,7 @@ async def update_notification_settings(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         
         # 제공된 필드만 업데이트
         success = db.update_notification_settings(
@@ -684,7 +684,7 @@ async def get_profile(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         user = db.get_user_by_customer_id(customer_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -715,7 +715,7 @@ async def update_profile(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         user = db.get_user_by_customer_id(customer_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -749,7 +749,7 @@ async def delete_account(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         
         # 사용자 비활성화
         db.deactivate_user(customer_id)
@@ -779,7 +779,7 @@ async def get_devices(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         devices = db.get_devices(customer_id)
         
         return {
@@ -804,7 +804,7 @@ async def register_device(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         success = db.register_device(
             customer_id=customer_id,
             device_token=device_data.device_token,
@@ -837,7 +837,7 @@ async def revoke_device(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         success = db.revoke_device(device_id, customer_id)
         
         if not success:
@@ -864,7 +864,7 @@ async def get_surveys(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         surveys = db.get_surveys(customer_id, limit, offset)
         
         return {
@@ -891,7 +891,7 @@ async def get_survey(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         survey = db.get_survey(survey_id)
         
         if not survey:
@@ -923,7 +923,7 @@ async def update_survey(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         survey = db.get_survey(survey_id)
         
         if not survey:
@@ -960,7 +960,7 @@ async def delete_survey(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         survey = db.get_survey(survey_id)
         
         if not survey:
@@ -998,7 +998,7 @@ async def download_analysis_image(
     customer_id = current_customer.get("sub")
     
     try:
-        db = SkinAnalysisDB(db_path="results/skin_analysis.db")
+        db = SkinAnalysisDB(db_path="data/skin_analysis.db")
         analysis = db.get_customer_analysis_detail(customer_id, analysis_id)
         
         if not analysis:

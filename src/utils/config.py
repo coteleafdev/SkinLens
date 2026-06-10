@@ -52,15 +52,15 @@ def get_db_path_from_env() -> str:
     server/, db/, cli/, telegram/ 등 전방위에서 사용하는 공통 유틸리티.
 
     Returns:
-        데이터베이스 파일 경로 (기본값: "execution_history.db")
+        데이터베이스 파일 경로 (기본값: "data/execution_history.db")
     """
-    return os.environ.get("EXECUTION_HISTORY_DB", "results/execution_history.db")
+    return os.environ.get("EXECUTION_HISTORY_DB", "data/execution_history.db")
 
 
 def get_skin_analysis_db_path_from_env() -> str:
     """환경변수에서 SkinAnalysisDB 경로 로드.
 
     Returns:
-        SkinAnalysisDB 파일 경로 (기본값: "results/skin_analysis.db")
+        SkinAnalysisDB 파일 경로 (기본값: "data/skin_analysis.db")
     """
-    return os.environ.get("SKIN_ANALYSIS_DB", "results/skin_analysis.db")
+    return os.environ.get("SKIN_ANALYSIS_DB", "data/skin_analysis.db")

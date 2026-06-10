@@ -104,8 +104,12 @@
   },
   "database": {
     "sqlite": {
-      "path": "execution_history.db",
+      "path": "data/execution_history.db",
       "_note": "로컬 SQLite DB 경로 (실행 이력, 로그, 통계). 환경 변수 EXECUTION_HISTORY_DB로 오버라이드 가능."
+    },
+    "skin_analysis_db": {
+      "path": "data/skin_analysis.db",
+      "_note": "피부 분석 DB 경로. 환경 변수 SKIN_ANALYSIS_DB로 오버라이드 가능."
     },
     "supabase": {
       "enabled": true,

@@ -27,7 +27,7 @@ router = APIRouter(prefix="/v1/app", tags=["app-features"])
 def get_db():
     """SkinAnalysisDB 인스턴스 반환"""
     config = load_config()
-    db_path = config.get("database", {}).get("sqlite_path", "results/skin_analysis.db")
+    db_path = config.get("database", {}).get("skin_analysis_db", {}).get("path", "data/skin_analysis.db")
     return SkinAnalysisDB(db_path=db_path)
 
 

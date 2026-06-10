@@ -66,7 +66,7 @@ def get_auth_db():
     db_path = os.environ.get("SKIN_ANALYSIS_DB")
     if not db_path:
         config = load_config()
-        db_path = config.get("database", {}).get("sqlite_path", "results/skin_analysis.db")
+        db_path = config.get("database", {}).get("skin_analysis_db", {}).get("path", "data/skin_analysis.db")
     return SkinAnalysisDB(db_path=db_path)
 
 
