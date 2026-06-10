@@ -286,7 +286,11 @@
     "target_score_increase_min": 14.0,
     "target_score_increase_max": 16.0,
     "max_score_limit": 90.0,
-    "min_score_increase_when_lower": 1.0
+    "min_score_increase_when_lower": 1.0,
+    "boost_enabled": false,
+    "target_score": 70.0,
+    "boost_threshold": 10.0,
+    "_note": "boost_enabled: 상향 조정 활성화 여부 (기본: false), target_score: 목표 점수 (기본: 70.0), boost_threshold: 상향 조정 임계값 (기본: 10.0)"
   },
   "score_offset": {
     "enabled": false,

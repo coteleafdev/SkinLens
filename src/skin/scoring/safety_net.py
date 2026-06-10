@@ -215,8 +215,30 @@ def apply_safety_net_logic(
     overall_raw, overall_display = _recompute()
 
     # ── Step 2: 목표 점수 미달 시 추가 상향 조정 ─────────────────────────
-    # [FIX] 상향 조정 비활성화하여 문제 격리
-    pass
+    # [REACTIVATED 2026-06-10] 설정 기반으로 상향 조정 로직 재활성화
+    # 안전장치 설정에서 boost_enabled가 true인 경우에만 실행
+    boost_enabled = safety_net_config.get("boost_enabled", False)
+    target_score = safety_net_config.get("target_score", 70.0)
+    boost_threshold = safety_net_config.get("boost_threshold", 10.0)
+    
+    if boost_enabled and overall_display < target_score:
+        # 목표 점수 미달 시 상향 조정
+        score_gap = target_score - overall_display
+        
+        # 차이가 임계값 이상인 경우에만 조정
+        if score_gap >= boost_threshold:
+            # 보수적인 상향 조정: 차이의 50%만 반영
+            boost_amount = score_gap * 0.5
+            overall_display = min(overall_display + boost_amount, target_score)
+            
+            # 조정된 점수로 raw 재계산
+            overall_raw = score_from_display_fn(overall_display)
+            
+            boost_keys.append("overall_score")
+            log.debug(
+                "[안전장치] 상향 조정: %.1f → %.1f (차이: %.1f, 조정량: %.1f)",
+                overall_display - boost_amount, overall_display, score_gap, boost_amount
+            )
 
     # ── Step 3: 결과 반영 ────────────────────────────────────────────────
     all_adjusted = list(dict.fromkeys(clamp_keys + boost_keys))
