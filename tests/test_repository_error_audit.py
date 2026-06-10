@@ -345,12 +345,84 @@ class TestErrorAuditRepository:
 
     def test_record_error_rollback_on_error(self, repository, db_path):
         """에러 발생 시 롤백 검증"""
-        # 현재 구현에서는 예외가 발생하지 않으므로 기본 동작만 확인
-        # 실제 롤백 테스트는 DB 트랜잭션 설정이 필요
-        pass
+        # 테스트를 위해 일시적으로 DB 연결을 모킹하여 에러 발생 시뮬레이션
+        import sqlite3
+        from unittest.mock import patch, MagicMock
+        
+        original_get_connection = repository._get_connection
+        
+        def mock_get_connection_with_error():
+            """첫 번째 호출은 정상, 두 번째 호출은 에러 발생"""
+            if not hasattr(mock_get_connection_with_error, 'call_count'):
+                mock_get_connection_with_error.call_count = 0
+            mock_get_connection_with_error.call_count += 1
+            
+            if mock_get_connection_with_error.call_count == 1:
+                # 첫 번째 호출: 정상 연결 반환
+                return original_get_connection()
+            else:
+                # 두 번째 호출: 에러 발생
+                raise sqlite3.OperationalError("Simulated DB error")
+        
+        # record_error 호출 전후의 레코드 수 확인
+        initial_errors = repository.get_errors(limit=100)
+        initial_count = len(initial_errors)
+        
+        # 모킹 적용
+        with patch.object(repository, '_get_connection', side_effect=mock_get_connection_with_error):
+            try:
+                repository.record_error(
+                    error_type="test_error",
+                    error_message="Test error message"
+                )
+                # 에러가 발생해야 함
+                assert False, "Expected an error to be raised"
+            except sqlite3.OperationalError as e:
+                # 에러가 발생했는지 확인
+                assert "Simulated DB error" in str(e)
+        
+        # 롤백이 되었는지 확인 (레코드 수가 변하지 않아야 함)
+        final_errors = repository.get_errors(limit=100)
+        final_count = len(final_errors)
+        
+        assert final_count == initial_count, "Rollback failed: record was inserted despite error"
 
     def test_record_audit_log_rollback_on_error(self, repository, db_path):
         """감사 로그 기록 실패 시 롤백 검증"""
-        # 현재 구현에서는 예외가 발생하지 않으므로 기본 동작만 확인
-        # 실제 롤백 테스트는 DB 트랜잭션 설정이 필요
-        pass
+        import sqlite3
+        from unittest.mock import patch
+        
+        original_get_connection = repository._get_connection
+        
+        def mock_get_connection_with_error():
+            """감사 로그 기록 시 에러 발생 시뮬레이션"""
+            if not hasattr(mock_get_connection_with_error, 'call_count'):
+                mock_get_connection_with_error.call_count = 0
+            mock_get_connection_with_error.call_count += 1
+            
+            if mock_get_connection_with_error.call_count == 1:
+                return original_get_connection()
+            else:
+                raise sqlite3.OperationalError("Simulated audit log error")
+        
+        # 감사 로그 기록 전후의 레코드 수 확인
+        initial_logs = repository.get_audit_logs(limit=100)
+        initial_count = len(initial_logs)
+        
+        # 모킹 적용
+        with patch.object(repository, '_get_connection', side_effect=mock_get_connection_with_error):
+            try:
+                repository.record_audit_log(
+                    action="test_action",
+                    user_id="test_user",
+                    details="Test details"
+                )
+                assert False, "Expected an error to be raised"
+            except sqlite3.OperationalError as e:
+                assert "Simulated audit log error" in str(e)
+        
+        # 롤백 확인
+        final_logs = repository.get_audit_logs(limit=100)
+        final_count = len(final_logs)
+        
+        assert final_count == initial_count, "Rollback failed: audit log was inserted despite error"

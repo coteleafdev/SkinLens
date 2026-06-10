@@ -344,9 +344,44 @@ class TestExecutionStatsRepository:
 
     def test_log_execution_rollback_on_error(self, repository, db_path):
         """에러 발생 시 롤백 검증"""
-        # 현재 구현에서는 예외가 발생하지 않으므로 기본 동작만 확인
-        # 실제 롤백 테스트는 DB 트랜잭션 설정이 필요
-        pass
+        import sqlite3
+        from unittest.mock import patch
+        
+        original_get_connection = repository._get_connection
+        
+        def mock_get_connection_with_error():
+            """실행 이력 기록 시 에러 발생 시뮬레이션"""
+            if not hasattr(mock_get_connection_with_error, 'call_count'):
+                mock_get_connection_with_error.call_count = 0
+            mock_get_connection_with_error.call_count += 1
+            
+            if mock_get_connection_with_error.call_count == 1:
+                return original_get_connection()
+            else:
+                raise sqlite3.OperationalError("Simulated execution stats error")
+        
+        # 기록 전후의 레코드 수 확인
+        initial_executions = repository.get_recent_executions(limit=100)
+        initial_count = len(initial_executions)
+        
+        # 모킹 적용
+        with patch.object(repository, '_get_connection', side_effect=mock_get_connection_with_error):
+            try:
+                repository.log_execution(
+                    input_path="/path/to/test.jpg",
+                    output_dir="/path/to/output",
+                    result={"analysis_result": {}, "pipeline_mode": "analyze_only"},
+                    execution_time=2.0
+                )
+                assert False, "Expected an error to be raised"
+            except sqlite3.OperationalError as e:
+                assert "Simulated execution stats error" in str(e)
+        
+        # 롤백 확인
+        final_executions = repository.get_recent_executions(limit=100)
+        final_count = len(final_executions)
+        
+        assert final_count == initial_count, "Rollback failed: execution record was inserted despite error"
 
     def test_get_statistics_ordering(self, repository):
         """일별 실행 수 정렬 검증"""

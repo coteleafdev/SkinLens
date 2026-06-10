@@ -240,9 +240,46 @@ class TestImageMetadataRepository:
 
     def test_record_image_metadata_rollback_on_error(self, repository, db_path):
         """에러 발생 시 롤백 검증"""
-        # 현재 구현에서는 예외가 발생하지 않으므로 기본 동작만 확인
-        # 실제 롤백 테스트는 DB 트랜잭션 설정이 필요
-        pass
+        import sqlite3
+        from unittest.mock import patch
+        
+        original_get_connection = repository._get_connection
+        
+        def mock_get_connection_with_error():
+            """이미지 메타데이터 기록 시 에러 발생 시뮬레이션"""
+            if not hasattr(mock_get_connection_with_error, 'call_count'):
+                mock_get_connection_with_error.call_count = 0
+            mock_get_connection_with_error.call_count += 1
+            
+            if mock_get_connection_with_error.call_count == 1:
+                return original_get_connection()
+            else:
+                raise sqlite3.OperationalError("Simulated image metadata error")
+        
+        # 기록 전후의 레코드 수 확인
+        initial_metadata = repository.get_image_metadata()
+        initial_count = len(initial_metadata)
+        
+        # 모킹 적용
+        with patch.object(repository, '_get_connection', side_effect=mock_get_connection_with_error):
+            try:
+                repository.record_image_metadata(
+                    analysis_id=999,
+                    image_type="test",
+                    file_size_bytes=1024,
+                    width=1920,
+                    height=1080,
+                    format="JPEG"
+                )
+                assert False, "Expected an error to be raised"
+            except sqlite3.OperationalError as e:
+                assert "Simulated image metadata error" in str(e)
+        
+        # 롤백 확인
+        final_metadata = repository.get_image_metadata()
+        final_count = len(final_metadata)
+        
+        assert final_count == initial_count, "Rollback failed: image metadata was inserted despite error"
 
     def test_record_multiple_image_types(self, repository):
         """여러 이미지 타입 기록"""

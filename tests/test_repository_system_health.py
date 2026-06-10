@@ -235,9 +235,42 @@ class TestSystemHealthRepository:
 
     def test_record_system_health_rollback_on_error(self, repository, db_path):
         """에러 발생 시 롤백 검증"""
-        # 현재 구현에서는 예외가 발생하지 않으므로 기본 동작만 확인
-        # 실제 롤백 테스트는 DB 트랜잭션 설정이 필요
-        pass
+        import sqlite3
+        from unittest.mock import patch
+        
+        original_get_connection = repository._get_connection
+        
+        def mock_get_connection_with_error():
+            """시스템 헬스 기록 시 에러 발생 시뮬레이션"""
+            if not hasattr(mock_get_connection_with_error, 'call_count'):
+                mock_get_connection_with_error.call_count = 0
+            mock_get_connection_with_error.call_count += 1
+            
+            if mock_get_connection_with_error.call_count == 1:
+                return original_get_connection()
+            else:
+                raise sqlite3.OperationalError("Simulated system health error")
+        
+        # 기록 전후의 레코드 수 확인
+        initial_health = repository.get_system_health(hours=24, limit=100)
+        initial_count = len(initial_health)
+        
+        # 모킹 적용
+        with patch.object(repository, '_get_connection', side_effect=mock_get_connection_with_error):
+            try:
+                repository.record_system_health(
+                    cpu_usage_percent=50.0,
+                    memory_usage_percent=70.0
+                )
+                assert False, "Expected an error to be raised"
+            except sqlite3.OperationalError as e:
+                assert "Simulated system health error" in str(e)
+        
+        # 롤백 확인
+        final_health = repository.get_system_health(hours=24, limit=100)
+        final_count = len(final_health)
+        
+        assert final_count == initial_count, "Rollback failed: system health record was inserted despite error"
 
     def test_record_multiple_health_records(self, repository):
         """여러 헬스 레코드 기록"""
