@@ -224,9 +224,32 @@ def analyze_pigmentation(
             freckle_count += 1
     freckle_score = _count_to_score(freckle_count, bp_freckle_count)
 
-    # TODO: PIH (Post-Inflammatory Hyperpigmentation) calculation not implemented
-    # Returning default score for now
-    pih_score = 100.0
+    # PIH (Post-Inflammatory Hyperpigmentation) 계산
+    # strip-norm + a 강한 픽셀 감지
+    lab = cv2.cvtColor(face, cv2.COLOR_BGR2LAB)
+    L_ch, a_ch, b_ch = cv2.split(lab)
+    
+    # strip normalize 적용
+    L_norm = _strip_normalize_L(L_ch, skin_mask)
+    
+    # PIH 영역 마스크 (a 채널에서 강한 픽셀 감지)
+    # a 채널: 녹색(-) ~ 빨간색(+), PIH는 빨간색/갈색 반점
+    pig_mask = make_pigment_mask(skin_mask, face.shape[0], face.shape[1])
+    
+    # a 채널 임계값 (기본값: 130, 범위 0-255)
+    a_threshold = 130
+    pih_mask = (a_ch > a_threshold) & (pig_mask > 0)
+    
+    # PIH 영역 비율 계산
+    pih_area = pih_mask.sum()
+    total_skin_area = pig_mask.sum()
+    
+    if total_skin_area > 0:
+        pih_ratio = pih_area / total_skin_area
+    else:
+        pih_ratio = 0.0
+    
+    pih_score = _area_to_score(pih_ratio, bp_pih)
 
     return {
         "melasma_score": round(_clamp(melasma_score), 1),

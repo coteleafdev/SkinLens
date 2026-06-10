@@ -206,10 +206,44 @@ def analyze_texture(
         coarseness = float(np.mean(lbp_vars))
         roughness_score = _area_to_score(coarseness, bp_roughness)
 
-    # TODO: dead_skin_score and smoothness_score calculation not implemented
-    # Returning default scores for now
-    dead_skin_score = 100.0
-    smoothness_score = 100.0
+    # (2) 각질 (dead skin) 계산
+    # HSV 채널 분석: 낮은 채도(S) + 높은 명도(V) = 각질 가능성
+    # 텍스처 불규칙성: 엣지 강도 분석
+    sobel_x = cv2.Sobel(gray_enh, cv2.CV_64F, 1, 0, ksize=3)
+    sobel_y = cv2.Sobel(gray_enh, cv2.CV_64F, 0, 1, ksize=3)
+    edge_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+    
+    # 각질 영역 마스크 (낮은 채도 + 높은 명도 + 높은 엣지)
+    saturation_threshold = 40  # 낮은 채도
+    value_threshold = 180     # 높은 명도
+    edge_threshold = 30       # 높은 엣지
+    
+    dead_skin_mask = (S_ch < saturation_threshold) & (V_ch > value_threshold) & (edge_magnitude > edge_threshold)
+    
+    # 각질 영역 비율
+    total_skin_pixels = skin_mask.sum() if skin_mask is not None else (gray_enh.shape[0] * gray_enh.shape[1])
+    dead_skin_area = dead_skin_mask.sum()
+    
+    if total_skin_pixels > 0:
+        dead_skin_ratio = dead_skin_area / total_skin_pixels
+    else:
+        dead_skin_ratio = 0.0
+    
+    # 각질 점수 (비율이 높을수록 점수 낮음)
+    # 브레이크포인트: 0%→100, 5%→70, 10%→40, 20%→0
+    bp_dead_skin = [(0.0, 100), (0.05, 70), (0.10, 40), (0.20, 0)]
+    dead_skin_score = _area_to_score(dead_skin_ratio, bp_dead_skin)
+
+    # (3) 매끄러움 (smoothness) 계산
+    # 거칠기의 역수 + 그라디언트 매그니튜드 분석
+    # 낮은 그라디언트 = 매끄러운 피부
+    gradient_mean = float(np.mean(edge_magnitude))
+    
+    # 그라디언트 평균 기반 매끄러움 점수
+    # 낮은 그라디언트 = 높은 점수
+    # 브레이크포인트: 0→100, 20→90, 50→70, 100→40, 200→0
+    bp_smoothness = [(0.0, 100), (20.0, 90), (50.0, 70), (100.0, 40), (200.0, 0)]
+    smoothness_score = _area_to_score(gradient_mean, bp_smoothness)
 
     return {
         "roughness_score": round(_clamp(roughness_score), 1),
