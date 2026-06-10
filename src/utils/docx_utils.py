@@ -79,6 +79,9 @@ def add_paragraph(
         return
     
     paragraph = doc.add_paragraph(text)
+    # 빈 단락인 경우 스타일 적용 건너뜀
+    if not text or not paragraph.runs:
+        return
     run = paragraph.runs[0]
     
     if bold:
@@ -193,6 +196,11 @@ def generate_word_report(
     perceived_age: Optional[int] = None,
     prescription: Optional[Dict[str, Any]] = None,
     llm_report: Optional[str] = None,
+    llm_metric_opinions: Optional[List[Dict[str, Any]]] = None,
+    llm_recommendations: Optional[List[str]] = None,
+    llm_products: Optional[List[Dict[str, Any]]] = None,
+    active_mixes: Optional[Dict[str, Any]] = None,
+    ref_measurements: Optional[Dict[str, Any]] = None,
 ) -> Optional[Document]:
     """피부 분석 보고서를 Word 문서로 생성합니다.
     
@@ -200,11 +208,16 @@ def generate_word_report(
         title: 보고서 제목
         original_image_path: 원본 이미지 경로
         restored_image_path: 복원 이미지 경로
-        measurements: 측정 결과 딕셔너리
+        measurements: 측정 결과 딕셔너리 (원본)
         overall_score: 종합 점수
         perceived_age: 인식 나이 (선택)
         prescription: 처방전 정보 (선택)
         llm_report: LLM 소견 (선택)
+        llm_metric_opinions: LLM 측정 항목별 의견 (선택)
+        llm_recommendations: LLM 추천 사항 (선택)
+        llm_products: LLM 추천 제품 (선택)
+        active_mixes: 활성 믹스 정보 (선택)
+        ref_measurements: 측정 결과 딕셔너리 (기준/복원) (선택)
     
     Returns:
         Document 객체 (실패 시 None)
@@ -228,23 +241,47 @@ def generate_word_report(
     # 이미지 섹션
     add_heading(doc, "이미지 비교", level=2)
     
-    # 원본 이미지
-    add_paragraph(doc, "원본 이미지:", bold=True)
+    # 이미지 테이블 생성 (가로 배치)
+    table = doc.add_table(rows=1, cols=2)
+    table.autofit = False
+    table.columns[0].width = Inches(3.0)
+    table.columns[1].width = Inches(3.0)
+    
+    # 원본 이미지 셀
+    cell_orig = table.cell(0, 0)
+    cell_orig_paragraph = cell_orig.paragraphs[0]
+    cell_orig_paragraph.add_run("원본 이미지").bold = True
+    cell_orig_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
     if Path(original_image_path).exists():
-        add_image(doc, original_image_path, width=4.0)
+        cell_orig_paragraph = cell_orig.add_paragraph()
+        cell_orig_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = cell_orig_paragraph.add_run()
+        try:
+            run.add_picture(str(original_image_path), width=Inches(3.0))
+        except Exception:
+            cell_orig.add_paragraph("이미지 로드 실패").italic = True
     else:
-        add_paragraph(doc, "이미지를 찾을 수 없습니다.", italic=True)
+        cell_orig.add_paragraph("이미지를 찾을 수 없습니다.").italic = True
+    
+    # 복원 이미지 셀
+    cell_restored = table.cell(0, 1)
+    cell_restored_paragraph = cell_restored.paragraphs[0]
+    cell_restored_paragraph.add_run("복원 이미지").bold = True
+    cell_restored_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
+    if Path(restored_image_path).exists():
+        cell_restored_paragraph = cell_restored.add_paragraph()
+        cell_restored_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = cell_restored_paragraph.add_run()
+        try:
+            run.add_picture(str(restored_image_path), width=Inches(3.0))
+        except Exception:
+            cell_restored.add_paragraph("이미지 로드 실패").italic = True
+    else:
+        cell_restored.add_paragraph("이미지를 찾을 수 없습니다.").italic = True
     
     add_paragraph(doc, "")  # 빈 줄
-    
-    # 복원 이미지
-    add_paragraph(doc, "복원 이미지:", bold=True)
-    if Path(restored_image_path).exists():
-        add_image(doc, restored_image_path, width=4.0)
-    else:
-        add_paragraph(doc, "이미지를 찾을 수 없습니다.", italic=True)
-    
-    add_page_break(doc)
     
     # 종합 점수 섹션
     add_heading(doc, "종합 점수", level=2)
@@ -255,36 +292,194 @@ def generate_word_report(
     
     add_paragraph(doc, "")  # 빈 줄
     
+    # 점수등급 기준 섹션
+    add_heading(doc, "점수등급 기준", level=2)
+    
+    grade_criteria = [
+        ("90 이상", "매우 우수"),
+        ("80~90", "우수"),
+        ("70~80", "양호"),
+        ("60~70", "집중케어 추천"),
+        ("60 미만", "개선필요"),
+    ]
+    
+    grade_table_data = [[range_str, grade] for range_str, grade in grade_criteria]
+    add_table(doc, grade_table_data, headers=["점수 범위", "등급"])
+    
+    add_paragraph(doc, "")  # 빈 줄
+    
     # 측정 결과 섹션
-    add_heading(doc, "측정 결과", level=2)
+    add_heading(doc, "AI 측정 점수", level=2)
     
     table_data = []
+    measurement_keys = []
     for key, value in measurements.items():
+        measurement_keys.append(key)
         if isinstance(value, (int, float)):
-            table_data.append([key, f"{value:.1f}"])
+            orig_score = f"{value:.1f}"
         else:
-            table_data.append([key, str(value)])
+            orig_score = str(value)
+        
+        # 기준/복원 점수
+        ref_score = ""
+        if ref_measurements and key in ref_measurements:
+            ref_value = ref_measurements[key]
+            if isinstance(ref_value, (int, float)):
+                ref_score = f"{ref_value:.1f}"
+            else:
+                ref_score = str(ref_value)
+        
+        table_data.append([key, orig_score, ref_score])
     
     if table_data:
-        add_table(doc, table_data, headers=["항목", "값"])
+        add_table(doc, table_data, headers=["항목명", "AI 측정 점수 (원본)", "AI 측정 점수 (기준)"])
     else:
         add_paragraph(doc, "측정 결과가 없습니다.", italic=True)
-    
-    # 처방전 섹션
-    if prescription:
-        add_page_break(doc)
-        add_heading(doc, "처방전", level=2)
-        
-        if isinstance(prescription, dict):
-            for key, value in prescription.items():
-                add_paragraph(doc, f"{key}: {value}", bold=True)
-        else:
-            add_paragraph(doc, str(prescription))
     
     # LLM 소견 섹션
     if llm_report:
         add_page_break(doc)
         add_heading(doc, "LLM 소견", level=2)
         add_paragraph(doc, llm_report)
+    
+    # LLM 측정 항목별 의견 섹션
+    if llm_metric_opinions:
+        add_page_break(doc)
+        add_heading(doc, "측정 항목별 의견", level=2)
+        
+        # 측정 결과 테이블의 순서대로 정렬
+        sorted_metrics = []
+        for metric in llm_metric_opinions:
+            # 객체인 경우 속성 접근, 딕셔너리인 경우 get 사용
+            if hasattr(metric, 'display_name'):
+                key = getattr(metric, 'key', '')
+                display_name = getattr(metric, 'display_name', '')
+            else:
+                key = metric.get("key", "")
+                display_name = metric.get("display_name", "")
+            
+            # 측정 결과 테이블의 키와 매칭
+            if key in measurement_keys:
+                sorted_metrics.append((measurement_keys.index(key), metric))
+            elif display_name in measurement_keys:
+                sorted_metrics.append((measurement_keys.index(display_name), metric))
+            else:
+                # 매칭되는 키가 없으면 마지막에 추가
+                sorted_metrics.append((len(measurement_keys), metric))
+        
+        # 인덱스 순서대로 정렬
+        sorted_metrics.sort(key=lambda x: x[0])
+        
+        for _, metric in sorted_metrics:
+            # 객체인 경우 속성 접근, 딕셔너리인 경우 get 사용
+            if hasattr(metric, 'display_name'):
+                display_name = getattr(metric, 'display_name', '')
+                score = getattr(metric, 'score', 0)
+                opinion = getattr(metric, 'opinion', '')
+                reason = getattr(metric, 'reason', '')
+                grade = getattr(metric, 'grade', '')
+            else:
+                display_name = metric.get("display_name", metric.get("key", ""))
+                score = metric.get("score", 0)
+                opinion = metric.get("opinion", "")
+                reason = metric.get("reason", "")
+                grade = metric.get("grade", "")
+            
+            add_paragraph(doc, f"{display_name} ({score}점)", bold=True)
+            if grade:
+                add_paragraph(doc, f"등급: {grade}", font_size=9)
+            if opinion:
+                add_paragraph(doc, f"의견: {opinion}")
+            if reason:
+                add_paragraph(doc, f"이유: {reason}")
+            add_paragraph(doc, "")  # 빈 줄
+    
+    # LLM 추천 사항 섹션
+    if llm_recommendations:
+        add_page_break(doc)
+        add_heading(doc, "추천 사항", level=2)
+        
+        for i, recommendation in enumerate(llm_recommendations, 1):
+            add_paragraph(doc, f"{i}. {recommendation}")
+    
+    # LLM 추천 제품 섹션
+    if llm_products:
+        add_page_break(doc)
+        add_heading(doc, "추천 제품", level=2)
+        
+        for product in llm_products:
+            # 객체인 경우 속성 접근, 딕셔너리인 경우 get 사용
+            if hasattr(product, 'product_name'):
+                product_name = getattr(product, 'product_name', '')
+                category = getattr(product, 'category', '')
+                efficacy = getattr(product, 'efficacy', '')
+                key_ingredients = getattr(product, 'key_ingredients', [])
+            else:
+                product_name = product.get("product_name", "")
+                category = product.get("category", "")
+                efficacy = product.get("efficacy", "")
+                key_ingredients = product.get("key_ingredients", [])
+            
+            add_paragraph(doc, f"제품명: {product_name}", bold=True)
+            add_paragraph(doc, f"카테고리: {category}")
+            add_paragraph(doc, f"효능: {efficacy}")
+            
+            if key_ingredients:
+                add_paragraph(doc, f"주요 성분: {', '.join(key_ingredients)}")
+            
+            add_paragraph(doc, "")  # 빈 줄
+    
+    # 처방전 섹션 (제일 마지막)
+    add_page_break(doc)
+    add_heading(doc, "처방전 (Prescription)", level=2)
+    # 처방전 섹션은 비워둠 (상세 테이블에 표시되므로)
+    
+    # 활성 믹스 테이블 (M01-M13)
+    add_heading(doc, "활성 믹스 (M01-M13)", level=2)
+    
+    # 테이블 데이터 생성 (M01-M13 모두 표시)
+    table_data = []
+    if active_mixes:
+        for mix_code in sorted(active_mixes.keys()):
+            if mix_code.startswith("M") and mix_code != "_note":
+                mix_info = active_mixes[mix_code]
+                name = mix_info.get("name", "")
+                category = mix_info.get("category", "")
+                description = mix_info.get("description", "")
+                ingredients = ", ".join(mix_info.get("ingredients", []))
+                
+                # 처방전에서 배합비 추출
+                percentage = ""
+                if isinstance(prescription, dict):
+                    # assessment에서 배합비 추출
+                    if "assessment" in prescription:
+                        assessment = prescription.get("assessment", {})
+                        if mix_code in assessment:
+                            mix_data = assessment[mix_code]
+                            if isinstance(mix_data, dict):
+                                percentage = f"{mix_data.get('percentage', 0)}%"
+                            else:
+                                percentage = f"{mix_data}%"
+                    # M01(베이스믹스)인 경우 base 섹션에서도 배합비 추출
+                    if mix_code == "M01" and "base" in prescription:
+                        base_data = prescription.get("base", {})
+                        if isinstance(base_data, dict):
+                            percentage = f"{base_data.get('percentage', 0)}%"
+                        else:
+                            percentage = f"{base_data}%"
+                
+                table_data.append([
+                    mix_code,
+                    name,
+                    category,
+                    description,
+                    ingredients,
+                    percentage
+                ])
+    
+    if table_data:
+        add_table(doc, table_data, headers=["코드", "이름", "카테고리", "설명", "주요 성분", "배합비"])
+    else:
+        add_paragraph(doc, "활성 믹스 정보가 없습니다.", italic=True)
     
     return doc

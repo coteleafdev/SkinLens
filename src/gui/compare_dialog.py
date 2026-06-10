@@ -1224,6 +1224,7 @@ class SkinMeasurementCompareDialog(QDialog):
             
             # 측정 결과 추출
             measurements = {}
+            ref_measurements = {}
             for row in range(self.table.rowCount()):
                 item_name = self.table.item(row, 0)
                 name_text = item_name.text() if item_name else ""
@@ -1231,10 +1232,18 @@ class SkinMeasurementCompareDialog(QDialog):
                 item_orig = self.table.item(row, 1)
                 orig_text = item_orig.text() if item_orig else ""
                 
+                item_ref = self.table.item(row, 2)
+                ref_text = item_ref.text() if item_ref else ""
+                
                 try:
                     measurements[name_text] = float(orig_text)
                 except (ValueError, TypeError):
                     measurements[name_text] = orig_text
+                
+                try:
+                    ref_measurements[name_text] = float(ref_text)
+                except (ValueError, TypeError):
+                    ref_measurements[name_text] = ref_text
             
             # 종합 점수 추출
             overall_score = 0.0
@@ -1255,8 +1264,37 @@ class SkinMeasurementCompareDialog(QDialog):
             if self._last_llm_report_orig:
                 llm_report = self._last_llm_report_orig.overall_opinion or ""
             
+            # LLM 측정 항목별 의견 추출
+            llm_metric_opinions = None
+            if self._last_llm_report_orig and hasattr(self._last_llm_report_orig, 'metric_opinions'):
+                llm_metric_opinions = self._last_llm_report_orig.metric_opinions
+            
+            # LLM 추천 사항 추출
+            llm_recommendations = None
+            if self._last_llm_report_orig and hasattr(self._last_llm_report_orig, 'recommendation'):
+                llm_recommendations = self._last_llm_report_orig.recommendation
+            
+            # LLM 추천 제품 추출
+            llm_products = None
+            if self._last_llm_report_orig and hasattr(self._last_llm_report_orig, 'matched_products'):
+                llm_products = self._last_llm_report_orig.matched_products
+            
             # 처방전 추출
             prescription = getattr(self, '_last_prescription', None)
+            
+            # 활성 믹스 추출 (HTML과 동일한 방식)
+            active_mixes = None
+            try:
+                from src.utils.config import load_config as _load_config
+                config = _load_config()
+                measurement_settings = config.get("prescription", {})
+                mixes_config = measurement_settings.get("mix_codes", {})
+                
+                # 활성 믹스 (M01-M13)
+                active_mixes = {k: v for k, v in mixes_config.items() if k.startswith("M") and k != "_note"}
+                log.info(f"Word 내보내기 - active_mixes loaded: {len(active_mixes)} items")
+            except Exception as e:
+                log.warning(f"Word 내보내기 - 활성 믹스 로드 실패: {e}")
             
             # Word 문서 생성
             doc = generate_word_report(
@@ -1268,6 +1306,11 @@ class SkinMeasurementCompareDialog(QDialog):
                 perceived_age=perceived_age,
                 prescription=prescription,
                 llm_report=llm_report,
+                llm_metric_opinions=llm_metric_opinions,
+                llm_recommendations=llm_recommendations,
+                llm_products=llm_products,
+                active_mixes=active_mixes,
+                ref_measurements=ref_measurements,
             )
             
             if doc is None:
