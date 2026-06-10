@@ -6,9 +6,9 @@
 > - [ARCHITECTURE.md](ARCHITECTURE.md) - 아키텍처
 > - [../api/API_REFERENCE.md](../api/API_REFERENCE.md) - API 레퍼런스
 
-> **문서 버전:** 2.1.0  
+> **문서 버전:** 2.2.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-01  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 ---
@@ -421,8 +421,8 @@ Authorization: Bearer {jwt_token}
     }
   },
   "artifacts": {
-    "restored_image": "https://web-server.com/results/{job_id}/restored.png",
-    "input_image": "https://web-server.com/results/{job_id}/input.png"
+    "restored_image": "/v1/images/{customer_id}/restored",
+    "input_image": "/v1/images/{customer_id}/original"
   },
   "finished_at": "2026-06-01T00:05:00Z"
 }
@@ -1640,6 +1640,13 @@ async def connect_to_websocket(job_id: str, token: str):
 - `docs/api/API_REFERENCE.md`: API 상세 명세
 - `docs/guides/DEPLOYMENT_GUIDE.md`: 배포 가이드
 - `docs/guides/MONITORING_GUIDE.md`: 모니터링 가이드
+
+### 19.4 변경 이력
+
+| 문서 버전 | 날짜 | 변경 내용 | 작성자 |
+|-----------|------|----------|--------|
+| 2.2.0 | 2026-06-10 | 이미지 URL 형식을 고객 ID 기반 API 엔드포인트로 변경 (/v1/images/{customer_id}/original) | Cascade |
+| 2.1.0 | 2026-06-01 | 초기 버전 | Cascade |
 
 ### 19.3 용어 사전
 

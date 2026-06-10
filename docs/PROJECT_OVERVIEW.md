@@ -1,8 +1,8 @@
 # 프로젝트 개요 (Project Overview)
 
-> **문서 버전:** 1.3.0  
+> **문서 버전:** 1.4.0  
 > **대상 프로젝트 버전:** 1.0.0  
-> **마지막 업데이트:** 2026-06-03  
+> **마지막 업데이트:** 2026-06-10  
 > **상태:** 활성
 
 ## 문서 목적
@@ -442,10 +442,14 @@ SkinLens v1.0/
 │   ├── ops/                    # 운영 가이드
 │   ├── project/                # 프로젝트 관리
 │   └── user/                   # 사용자 가이드
+├── data/                        # 데이터 파일 (git 제외)
+│   ├── skin_analysis.db        # 피부 분석 DB
+│   ├── images.db               # 이미지 메타데이터 DB
+│   ├── execution_history.db    # 실행 기록 DB
+│   └── backups/                # 백업 파일
+│       └── execution_history_*.db
 ├── results/                    # 결과 파일 (git 제외)
 │   ├── 이미지명/               # 분석 결과별 폴더
-│   ├── skin_analysis.db        # 통합 DB (서버 + 로컬)
-│   ├── execution_history.db    # 실행 기록 DB
 │   ├── api_jobs/               # 서버 API 작업
 │   ├── exports/                # 엑셀/CSV 내보내기
 │   ├── images/                 # 입력 이미지 저장소
@@ -535,7 +539,7 @@ uvicorn src.server.server:app --host 0.0.0.0 --port 8000
 
 ### 7.1 실행 이력
 
-- `EXECUTION_HISTORY_DB`: 실행 이력 데이터베이스 경로 (기본: execution_history.db)
+- `EXECUTION_HISTORY_DB`: 실행 이력 데이터베이스 경로 (기본: data/execution_history.db)
 
 ### 7.2 API 서버
 
@@ -829,6 +833,7 @@ chmod +x deploy.sh
 
 | 문서 버전 | 날짜 | 변경 내용 | 작성자 |
 |-----------|------|----------|--------|
+| 1.4.0 | 2026-06-10 | DB 파일을 data/ 폴더로 통합 (skin_analysis.db, images.db, execution_history.db), 환경변수 경로 업데이트 | Cascade |
 | 1.3.0 | 2026-06-03 | 시뮬레이션 파일 통합 관리 (simulation/ 디렉토리), TESTING_AND_SIMULATION_GUIDE.md 추가, 전체 테스트 절차 다이어그램 추가, 상세 절차 순서 수정 (단위테스트 → 엔진서버테스트 → 서버테스트 → Docker 시뮬레이션) | Cascade |
 | 1.2.0 | 2026-06-01 | PCR 검사 요청 및 결과 기능 추가 (3.6), 기성품 구매 기능 추가 (3.7), DB 스키마 버전 39→40, 섹션 번호 재정렬 (3.8-3.12) | Cascade |
 | 1.1.0 | 2026-06-01 | 주문 관리 기능 섹션 추가 (3.10), DB 스키마 버전 32→39, 문서 목록에 ORDER_MANAGEMENT_GUIDE.md 추가 | Cascade |
