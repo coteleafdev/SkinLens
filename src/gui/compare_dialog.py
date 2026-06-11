@@ -1222,40 +1222,44 @@ class SkinMeasurementCompareDialog(QDialog):
             orig_image_path = self._orig_path
             ref_image_path = self._ref_path
             
-            # 측정 결과 추출
+            # 측정 결과 추출 (LLM 측정 점수 사용)
             measurements = {}
             ref_measurements = {}
             for row in range(self.table.rowCount()):
                 item_name = self.table.item(row, 0)
                 name_text = item_name.text() if item_name else ""
                 
-                item_orig = self.table.item(row, 1)
-                orig_text = item_orig.text() if item_orig else ""
+                # 원본 LLM AI 점수 (col 3)
+                item_llm_orig = self.table.item(row, 3)
+                llm_orig_text = item_llm_orig.text() if item_llm_orig else ""
                 
-                item_ref = self.table.item(row, 2)
-                ref_text = item_ref.text() if item_ref else ""
-                
-                try:
-                    measurements[name_text] = float(orig_text)
-                except (ValueError, TypeError):
-                    measurements[name_text] = orig_text
+                # 기준 LLM AI 점수 (col 4)
+                item_llm_ref = self.table.item(row, 4)
+                llm_ref_text = item_llm_ref.text() if item_llm_ref else ""
                 
                 try:
-                    ref_measurements[name_text] = float(ref_text)
+                    measurements[name_text] = float(llm_orig_text)
                 except (ValueError, TypeError):
-                    ref_measurements[name_text] = ref_text
+                    measurements[name_text] = llm_orig_text
+                
+                try:
+                    ref_measurements[name_text] = float(llm_ref_text)
+                except (ValueError, TypeError):
+                    ref_measurements[name_text] = llm_ref_text
             
-            # 종합 점수 추출
+            # 종합 점수 추출 (LLM 측정 피부건강지수 사용)
             overall_score = 0.0
             try:
-                overall_score = float(self._orig_result.get("overall_score", 0))
+                if self._last_llm_report_orig and hasattr(self._last_llm_report_orig, 'overall_score'):
+                    overall_score = float(self._last_llm_report_orig.overall_score)
             except (ValueError, TypeError):
                 pass
             
-            # 인식 나이 추출
+            # 인식 나이 추출 (LLM 측정 인식 나이 사용)
             perceived_age = None
             try:
-                perceived_age = int(self._orig_result.get("perceived_age", 0))
+                if self._last_llm_report_orig and hasattr(self._last_llm_report_orig, 'perceived_age'):
+                    perceived_age = int(self._last_llm_report_orig.perceived_age)
             except (ValueError, TypeError):
                 pass
             

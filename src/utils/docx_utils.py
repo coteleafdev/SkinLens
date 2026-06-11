@@ -117,7 +117,17 @@ def add_table(
         table_data = data
     
     table = doc.add_table(rows=len(table_data), cols=len(table_data[0]))
-    table.style = style
+    
+    # 템플릿 사용 시 스타일이 없으면 기본 스타일 사용
+    try:
+        table.style = style
+    except KeyError:
+        # 스타일이 없으면 기본 스타일 사용
+        try:
+            table.style = "Light Grid"
+        except KeyError:
+            # 기본 스타일도 없으면 스타일 설정 안 함
+            pass
     
     for i, row_data in enumerate(table_data):
         row = table.rows[i]
