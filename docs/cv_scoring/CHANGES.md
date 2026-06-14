@@ -120,12 +120,12 @@ melasma→pore_size 누설 폭 약 93% 감소(Δ 55→4), clean baseline·단조
 
 ## I. 종합점수를 직교 합성으로 라우팅 (코드 — 독립성 핵심)
 
-- **문제**: 고객 `overall_score` 가 레이어B 18항목 평탄 가중합(`_compute_overall_score_report`)
+- **문제**: 고객 `overall_score` 가 레이어B 21항목 평탄 가중합(`_compute_overall_score_report`)
   으로 산출돼, (a) 상관 항목 클러스터 중복 가중, (b) acne 단일 가중(0.283)에 의한 focal_lesion
   과대 가중(실효 0.329 vs 설계 0.140), (c) 표시 카테고리(직교 10)와 종합 기반 불일치.
 - **수정(`skin_scoring.py`)**: 종합점수를 이미 구축된 **직교 10 카테고리 합성**
   (`_compute_overall_score`+WEIGHTS, m3 기반)으로 라우팅. 차원당 1회 가중 + 표시=종합 일치.
-  레이어B 18항목은 표시/LLM 호환(measurements_report)으로 유지, `overall_score_legacy_v18`
+  레이어B 21항목은 표시/LLM 호환(measurements_report)으로 유지, `overall_score_legacy_v21`
   필드로 기존 값 보존(롤백/비교용).
 - **효과(동일 입력 비교)**:
   | 시나리오 | 직교(신규) | 레이어B(기존) |
@@ -136,9 +136,9 @@ melasma→pore_size 누설 폭 약 93% 감소(Δ 55→4), clean baseline·단조
   | 색소 20 | 66.8 | 73.0 |
   acne 단일 악화의 과대 페널티(-11.5) 해소, 상관 주름 3항목의 1차원 통합, 설계 가중 복원.
 - **주의(필수)**: 고객 종합점수 산출 방식의 근본 변경 → **점수 분포가 달라지므로 임상
-  재보정·검증 후 배포**. 롤백은 `overall_score_legacy_v18` 사용 또는 본 패치 hunk 되돌림.
+  재보정·검증 후 배포**. 롤백은 `overall_score_legacy_v21` 사용 또는 본 패치 hunk 되돌림.
 
 ## 검증 (최종)
-- 합성 하니스: L2 단조 18항목 + L5 폴백 도메인 + 골든 회귀 전부 통과 (83 passed, 1 skipped).
+- 합성 하니스: L2 단조 21항목 + L5 폴백 도메인 + 골든 회귀 전부 통과 (83 passed, 1 skipped).
 - 기존 analyzer 통합 테스트 8개 회귀 없음.
 - 운영 코드 패치 6파일 + config 3개 브레이크포인트(A,C) — pore_sagging(D)은 테스트 측만 변경.

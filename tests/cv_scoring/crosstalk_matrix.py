@@ -1,6 +1,6 @@
 """tests/cv_scoring/crosstalk_matrix.py — 측정항목 독립성 진단 (교차간섭 행렬).
 
-한 항목용 결함만 주입했을 때 *다른* 18개 항목 점수가 얼마나 변하는지(Δ) 측정한다.
+한 항목용 결함만 주입했을 때 *다른* 전 항목 점수가 얼마나 변하는지(Δ) 측정한다.
 - 대각 성분(주입=영향): 의도된 타깃 반응 (커야 정상).
 - 비대각 성분: 교차간섭 = 점수 산출이 겹치는 정도 (작아야 독립적).
 
@@ -14,14 +14,14 @@ from __future__ import annotations
 import numpy as np
 
 from tests.cv_scoring import synth_faces as S
-from tests.cv_scoring.test_cv_scoring_synthetic import RUNNERS, VERIFIED_MONOTONIC, ALL_18
+from tests.cv_scoring.test_cv_scoring_synthetic import RUNNERS, VERIFIED_MONOTONIC, ALL_METRICS
 
 
 def all_scores(face) -> dict:
-    """18개 점수를 분석기당 1회 호출로 산출."""
+    """전 항목 점수를 분석기당 1회 호출로 산출."""
     cache = {}
     out = {}
-    for m in ALL_18:
+    for m in ALL_METRICS:
         fn = RUNNERS[m]; key = fn.__name__
         if key not in cache:
             cache[key] = fn(face)
@@ -35,7 +35,7 @@ def compute_matrix(severity_index: int = -1) -> dict:
     rows = {}
     for inj, (injector, sevs) in VERIFIED_MONOTONIC.items():
         sc = all_scores(injector(sevs[severity_index]))
-        rows[inj] = {m: round(sc[m] - clean[m], 1) for m in ALL_18}
+        rows[inj] = {m: round(sc[m] - clean[m], 1) for m in ALL_METRICS}
     return rows
 
 
@@ -57,7 +57,7 @@ def _short(m: str) -> str:
 
 if __name__ == "__main__":  # pragma: no cover
     rows = compute_matrix()
-    cols = ALL_18
+    cols = ALL_METRICS
     print("CROSS-TALK Δ (주입↓ 영향→) : 대각=타깃, 비대각=교차간섭\n")
     print("inject\\affect".ljust(14) + " ".join(_short(c)[:7].rjust(7) for c in cols))
     for inj in VERIFIED_MONOTONIC:

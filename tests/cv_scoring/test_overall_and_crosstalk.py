@@ -1,6 +1,6 @@
 """tests/cv_scoring/test_overall_and_crosstalk.py — L9~L11 보강 하니스.
 
-기존 test_cv_scoring_synthetic.py(L1~L8)는 18개 *분석기 함수*를 잠근다.
+기존 test_cv_scoring_synthetic.py(L1~L8)는 *분석기 함수* 전체를 잠근다.
 이 모듈은 그 위 단계, 즉 점수 분포를 실제로 바꾸는 부분을 추가로 잠근다:
 
 L9.  [§I] 종합점수 직교 라우팅 + 이중가중 제거 회귀.
@@ -29,11 +29,11 @@ from pathlib import Path
 import pytest
 
 from tests.cv_scoring import synth_faces as S
-from tests.cv_scoring.test_cv_scoring_synthetic import ALL_18
+from tests.cv_scoring.test_cv_scoring_synthetic import ALL_METRICS
 
 
-# 18개 분석기 서브점수 키 (레이어 B 입력 = legacy measurements 키)
-_SUB18 = list(ALL_18)
+# 분석기 서브점수 키 전체 (레이어 B 입력 = legacy measurements 키)
+_SUB_METRICS = list(ALL_METRICS)
 
 
 def _legacy_result(val: float = 90.0, **override) -> dict:
@@ -42,7 +42,7 @@ def _legacy_result(val: float = 90.0, **override) -> dict:
     measurements 는 표시(10~90) 공간 값으로 채운다(_legacy_to_current 가 내부에서
     역변환). focal_lesion 은 직교 신호이므로 별도 키로 직접 전달된다.
     """
-    m = {k: float(val) for k in _SUB18}
+    m = {k: float(val) for k in _SUB_METRICS}
     m["focal_lesion"] = float(override.pop("focal_lesion", 90.0))
     m["skin_type_label"] = "중성"
     m.update(override)
@@ -257,4 +257,10 @@ class TestL11b_CrosstalkSnapshotRegression:
                 diffs.append(f"{k}: 누락(스냅샷={sv})")
             elif abs(cv - sv) > _CROSSTALK_TOL:
                 diffs.append(f"{k}: {cv:+.1f} vs 스냅 {sv:+.1f}")
+        # 항목/주입기 확장 시 신규 쌍이 스냅샷에 없으면 조용히 미검증되는 것을 방지
+        extra = sorted(set(current) - set(snap))
+        if extra:
+            diffs.append(
+                f"신규 미잠금 쌍 {len(extra)}개 — 스냅샷 갱신 후 리뷰 필요 "
+                f"(CV_CROSSTALK_UPDATE=1): {extra[:10]}")
         assert not diffs, ("교차간섭 회귀 감지(리뷰 필요):\n  " + "\n  ".join(diffs[:40]))

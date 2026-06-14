@@ -1,6 +1,7 @@
 {
   "clean::melasma_score": 100.0,
   "clean::freckle_score": 100.0,
+  "clean::pih_score": 0.0,
   "clean::redness_score": 99.4,
   "clean::post_inflammatory_erythema_score": 100.0,
   "clean::acne_score": 100.0,
@@ -11,6 +12,8 @@
   "clean::nasolabial_wrinkle_score": 97.8,
   "clean::fine_deep_wrinkle_score": 100.0,
   "clean::roughness_score": 73.6,
+  "clean::dead_skin_score": 100.0,
+  "clean::smoothness_score": 94.2,
   "clean::skin_tone_score": 85.8,
   "clean::dullness_score": 49.2,
   "clean::uneven_tone_score": 99.6,
@@ -34,5 +37,6 @@
   "defect::skin_tone_score": 60.7,
   "defect::cheek_sagging_score": 81.8,
   "defect::pore_sagging_score": 46.6,
-  "defect::fine_deep_wrinkle_score": 49.5
+  "defect::fine_deep_wrinkle_score": 49.5,
+  "defect::smoothness_score": 37.2
 }

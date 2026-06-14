@@ -123,7 +123,7 @@ skin_scoring.py: SkinAnalyzer → self._layer_b.build(...) → overall_v18
 ## 권장
 - ✅ **[구현 완료 2026-06-10]** 종합점수를 직교 10 카테고리 합성으로 라우팅(`skin_scoring.py`,
   CHANGES §I). 동일 입력 비교: acne만 20 → 직교 74.5 vs 기존 63.0(과대 페널티 해소).
-  레이어B 18항목은 표시 전용 유지, overall_score_legacy_v18 로 롤백 가능.
+  레이어B 21항목은 표시 전용 유지, overall_score_legacy_v21 로 롤백 가능.
 - 부수 효과: acne 과대 가중 해소. **단 종합점수 분포가 달라지므로 임상 재보정·검증 필요.**
 - 대안(소폭): 라이브 경로를 유지하되 measurement_weights 를 직교 차원 합이 설계와 맞도록
   재정규화(특히 acne 가중 하향). 구조 변경 최소, 그러나 중복 가중 근본 해소는 아님.
