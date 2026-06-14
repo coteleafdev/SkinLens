@@ -159,24 +159,23 @@
 
 ### 피부 평가 항목 → 믹스 코드 매핑
 
-**참고**: 18개 고객님 표현용 측정항목 → 14개 처방 항목(A01-A14) 매핑입니다.
+**참고**: 18개 고객님 표현용 측정항목 → 13개 처방 항목(M01-M13) 매핑입니다.
 
 | 18개 측정항목 | 처방 항목 | 믹스 코드 | 설명 |
 |------------|---------|---------|------|
-| dullness_score | radiance | A01 | 광채 |
-| eye_wrinkle_score, nasolabial_wrinkle_score, fine_deep_wrinkle_score | wrinkle | A02 | 주름 |
-| - | dark_circle_v2 | A03 | 다크서클 (현재 미사용) |
-| - | oiliness | A04 | 유분 (현재 미사용) |
-| jawline_blur_score | firmness | A05 | 탄력 |
-| melasma_score, freckle_score, post_acne_pigment_score | age_spot | A06 | 색소침착 |
-| redness_score, post_inflammatory_erythema_score | redness | A07 | 홍조 |
-| - | droopy_lower_eyelid | A08 | 하안검 처짐 (현재 미사용) |
-| pore_size_score, pore_sagging_score | pore | A09 | 모공 |
-| roughness_score | texture | A10 | 피부결 |
-| - | eye_bag | A11 | 눈밑 지방 (현재 미사용) |
-| - | droopy_upper_eyelid | A12 | 상안검 처짐 (현재 미사용) |
-| - | moisture | A13 | 수분 (현재 미사용) |
-| acne_score | acne | A14 | 여드름 |
+| dullness_score | radiance | M01 | 광채 |
+| eye_wrinkle_score, nasolabial_wrinkle_score, fine_deep_wrinkle_score | wrinkle | M02 | 주름 |
+| - | dark_circle_v2 | M03 | 다크서클 (현재 미사용) |
+| - | oiliness | M04 | 유분 (현재 미사용) |
+| jawline_blur_score | firmness | M05 | 탄력 |
+| melasma_score, freckle_score, post_acne_pigment_score | age_spot | M06 | 색소침착 |
+| redness_score, post_inflammatory_erythema_score | redness | M07 | 홍조 |
+| - | droopy_lower_eyelid | M08 | 하안검 처짐 (현재 미사용) |
+| pore_size_score, pore_sagging_score | pore | M09 | 모공 |
+| roughness_score | texture | M10 | 피부결 |
+| - | eye_bag | M11 | 눈밑 지방 (현재 미사용) |
+| - | droopy_upper_eyelid | M12 | 상안검 처짐 (현재 미사용) |
+| acne_score | acne | M13 | 여드름 |
 
 **매핑 규칙**:
 - 하나의 처방 항목에 여러 측정항목이 매핑될 수 있음 (예: age_spot ← melasma_score, freckle_score, post_acne_pigment_score)

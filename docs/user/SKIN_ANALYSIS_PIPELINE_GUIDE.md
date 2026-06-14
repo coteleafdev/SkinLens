@@ -15,7 +15,7 @@
 
 - **skin_scoring 통합**: 피부 분석 시스템이 v1.0으로 업그레이드되어 이중구조 출력 지원
   - **레이어A (10개 직교 항목)**: 엔진 정확도용 신호 분해 출력
-  - **레이어B (17개 보고서 항목)**: 고객 보고서용 역매핑 출력
+  - **레이어B (18개 보고서 항목)**: 고객 보고서용 역매핑 출력
 - **GUI/CLI 통합**: 단일 파일에서 GUI(PySide6)와 CLI 모두 지원
 - **복원 백엔드 선택**: RestoreFormer++와 CodeFormer 중 선택 가능
 - **점수 팝업**: 파이프라인 완료 후 원본 vs 결과 점수 비교 팝업 지원
@@ -37,7 +37,7 @@
 
 - **비교 프로세스 고아 방지**: 메인 창 종료 시 `--compare` 서브프로세스도 `kill()` 처리
 - **파이프라인 로그 순서 보장**: 메인 프로세스에 `MergedChannels` 적용 — RF++/CF stderr 출력이 로그창 순서대로 표시
-- **`--no-analyzer-score-tune` 체크박스 추가**: 복원 후 17항목 점수 자동 튜닝을 GUI에서도 끄고 켤 수 있음
+- **`--no-analyzer-score-tune` 체크박스 추가**: 복원 후 18항목 점수 자동 튜닝을 GUI에서도 끄고 켤 수 있음
 - **로그 멀티라인 분리**: 버퍼 단위 수신 시 개행 포함 데이터가 단일 단락으로 뭉치던 문제 해결
 - **비교 프로세스 슬롯 분리**: `finished` 튜플 람다 → `_on_compare_finished` 전용 메서드로 분리
 
@@ -45,12 +45,12 @@
 
 - **듀얼 이미지 Gemini AI 통합**: `gemini_skin_report.py`에 듀얼 이미지 모드 구현
   - 원본/복원 이미지를 한 번의 API 호출로 Gemini에 전송
-  - 두 이미지에 대한 별도의 17개 항목별 소견 생성
+  - 두 이미지에 대한 별도의 18개 항목별 소견 생성
   - Max Output Tokens: 단일 모드 8192 → 듀얼 모드 16384
 - **GUI 듀얼 Gemini 점수 열 추가**: 피부분석 비교창에 원본/복원 Gemini 측정 점수 열 분리 표시
 - **엑셀 보고서 듀얼 Gemini 점수 및 소견 처리**:
   - 원본 이미지 라벨 위치: 1C → 1B
-  - 【원본 이미지 17개 항목별 소견】/【복원 이미지 17개 항목별 소견】 앞 공백행 추가
+  - 【원본 이미지 18개 항목별 소견】/【복원 이미지 18개 항목별 소견】 앞 공백행 추가
   - gemini_text 파싱 시 소견 섹션 구분 처리
 - **전체 처리시간 로그 추가**: 실행부터 표시까지의 소요시간 로그 출력
 - **파이프라인 끝 점수 팝업 비활성화**: GUI 체크박스 숨김 및 기능 비활성화
@@ -115,12 +115,12 @@ markdown>=3.5.0
 
 - `skin_scoring.py` — 피부 분석 시스템 v1.0
   - 레이어A: 10개 직교 항목 (엔진 출력)
-  - 레이어B: 17개 보고서 항목 (표시 출력)
+  - 레이어B: 18개 보고서 항목 (표시 출력)
   - 이중구조 출력 지원
 
 **GUI 모듈** (GUI 실행 시만 필요):
 - `skin_analysis_gui.py` — 메인 GUI 윈도우
-- `skin_measurement_chart_dialog.py` — 17항목 비교 다이얼로그
+- `skin_measurement_chart_dialog.py` — 18항목 비교 다이얼로그
 - `analyzer_compare_gui.py` — 점수 비교 GUI
 
 ### 2.3 외부 폴더 의존성
@@ -450,7 +450,7 @@ orig_result  = analyzer.analyze_all(
 )
 ```
 
-### 7.2 레이어B (17개 보고서 항목)
+### 7.2 레이어B (18개 보고서 항목)
 
 **항목:**
 - 색소: `melasma_score`, `lentigo_score`, `pigment_mark_score`
@@ -468,7 +468,7 @@ orig_result  = analyzer.analyze_all(
 **접근:**
 ```python
 result = analyzer.analyze_all("face.jpg")
-measurements_b  = result["measurements_v17"]      # 레이어B — 17개 보고서
+measurements_b  = result["measurements_v18"]      # 레이어B — 18개 보고서
 overall_score_b = result["overall_score_report"]  # 레이어B 종합
 ```
 
@@ -484,9 +484,9 @@ result   = analyzer.analyze_all("face.jpg")
 print(f"엔진 종합 점수: {result['overall_score']}")
 print(f"엔진 측정: {result['measurements']}")
 
-# 레이어B (17개 보고서)
+# 레이어B (18개 보고서)
 print(f"보고서 종합 점수: {result['overall_score_report']}")
-print(f"보고서 측정: {result['measurements_v17']}")
+print(f"보고서 측정: {result['measurements_v18']}")
 
 # dullness_score 복원 방식 확인
 print("dullness 복원:", "직접" if "dullness_score" in result.get("raw_measurements", {}) else "tone근사")
