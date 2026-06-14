@@ -23,16 +23,10 @@ from src.skin.core.scoring_utils import (
     count_to_score,
     strip_normalize_L,
 )
+from src.utils.config import load_config
+from src.utils.cv_utils import blob_log_cv
 
 log = logging.getLogger(__name__)
-
-# ── 지연 import (skimage 선택적 의존) ───────────────────────────
-try:
-    from skimage.feature import blob_log
-    _SKIMAGE_OK = True
-except ImportError:
-    blob_log = None
-    _SKIMAGE_OK = False
 
 
 # 헬퍼 함수는 scoring_utils에서 import
@@ -40,6 +34,24 @@ _clamp = clamp
 _strip_normalize_L = strip_normalize_L
 _area_to_score = area_to_score
 _count_to_score = count_to_score
+
+
+def _get_cv_analyzer_params(analyzer: str, metric: str) -> Dict:
+    """config.json에서 CV 분석기 파라미터 로드.
+
+    Args:
+        analyzer: 분석기 이름 (예: 'pigmentation', 'pore', 'wrinkle')
+        metric: 메트릭 이름 (예: 'melasma', 'freckle', 'blob_detection')
+
+    Returns:
+        파라미터 딕셔너리. config 누락 시 빈 딕셔너리 반환.
+    """
+    try:
+        config = load_config()
+        return config.get("cv_analyzers", {}).get(analyzer, {}).get(metric, {})
+    except Exception as e:
+        log.warning(f"CV analyzer params load failed for {analyzer}.{metric}: {e}")
+        return {}
 
 
 def make_pigment_mask(smask: np.ndarray, fh: int, fw: int) -> np.ndarray:
@@ -67,10 +79,7 @@ _BP_FRECKLE_COUNT = [
     (0, 100), (3, 90), (8, 78), (18, 60),
     (35, 40), (60, 20), (100, 0),
 ]
-_BP_PIH = [
-    (0.0, 100), (0.004, 90), (0.012, 74), (0.025, 54),
-    (0.050, 32), (0.085, 10), (0.130, 0),
-]
+_BP_PIH = []  # config.json에서 로드
 
 
 def analyze_pigmentation(
@@ -95,11 +104,45 @@ def analyze_pigmentation(
     Returns:
         {"melasma_score": float, "freckle_score": float, "pih_score": float}
     """
+    # Config에서 파라미터 로드
+    melasma_params = _get_cv_analyzer_params("pigmentation", "melasma")
+    freckle_config = _get_cv_analyzer_params("pigmentation", "freckle")
+    lentigo_config = _get_cv_analyzer_params("pigmentation", "lentigo")
+    pih_config = _get_cv_analyzer_params("pigmentation", "pih")
+
+    # 기본값 설정 (config 누락 시)
+    melasma_l_threshold_std = melasma_params.get("l_threshold_std", -2.2)
+    melasma_l_threshold_cap = melasma_params.get("l_threshold_cap", [4.0, 15.0])
+    melasma_b_threshold_std = melasma_params.get("b_threshold_std", 0.3)
+    melasma_morph_close = melasma_params.get("morph_close", 7)
+    melasma_morph_open = melasma_params.get("morph_open", 5)
+
+    freckle_threshold = freckle_config.get("threshold", 0.08)
+    freckle_min_sigma = freckle_config.get("min_sigma", 1.0)
+    freckle_max_sigma = freckle_config.get("max_sigma", 5.0)
+    freckle_overlap = freckle_config.get("overlap", 0.4)
+    freckle_l_threshold = freckle_config.get("l_threshold", -10)
+
+    lentigo_min_sigma = lentigo_config.get("min_sigma", 3.0)
+    lentigo_max_sigma = lentigo_config.get("max_sigma", 14.0)
+    lentigo_num_sigma = lentigo_config.get("num_sigma", 6)
+    lentigo_threshold = lentigo_config.get("threshold", 0.07)
+    lentigo_overlap = lentigo_config.get("overlap", 0.3)
+
+    pih_a_threshold = pih_config.get("a_threshold", 130)
+    bp_pih_config = pih_config.get("bp_pih", [])
+
+    # 브레이크포인트 기본값
     bp_melasma       = bp_melasma       or _BP_MELASMA
     bp_freckle_count = bp_freckle_count or _BP_FRECKLE_COUNT
-    bp_pih           = bp_pih           or _BP_PIH
-    freckle_params   = freckle_params   or {
-        "threshold": 0.08, "min_sigma": 1.0, "max_sigma": 5.0, "overlap": 0.4
+    bp_pih           = bp_pih           or bp_pih_config or _BP_PIH
+
+    # freckle_params는 config에서 로드한 값 사용
+    freckle_params = freckle_params or {
+        "threshold": freckle_threshold,
+        "min_sigma": freckle_min_sigma,
+        "max_sigma": freckle_max_sigma,
+        "overlap": freckle_overlap
     }
 
     lab   = cv2.cvtColor(face, cv2.COLOR_BGR2LAB)
@@ -142,11 +185,11 @@ def analyze_pigmentation(
     # ── (1) 기미 melasma ─────────────────────────────────────────
     _L_norm_mel = _strip_normalize_L(L_ch, pig_bool)
     _std_Lnorm_pig = float(np.std(_L_norm_mel[pig_bool])) if pig_bool.any() else 10.0
-    _std_L_capped  = float(np.clip(_ref_std_L, 4.0, 15.0))
-    _L_mel_thresh_new = min(-2.2 * _std_L_capped, -12.0)
+    _std_L_capped  = float(np.clip(_ref_std_L, melasma_l_threshold_cap[0], melasma_l_threshold_cap[1]))
+    _L_mel_thresh_new = min(melasma_l_threshold_std * _std_L_capped, -12.0)
 
     _std_b_mel_rel  = float(np.clip(pig_std_b, 2.0, 6.0))
-    _b_mel_thresh_rel = pig_base_b + 0.3 * _std_b_mel_rel
+    _b_mel_thresh_rel = pig_base_b + melasma_b_threshold_std * _std_b_mel_rel
 
     melasma_mask = (
         (_L_norm_mel < _L_mel_thresh_new) &
@@ -155,8 +198,8 @@ def analyze_pigmentation(
     ).astype(np.uint8) * 255
     # [FIX 2026-05-24] 형태학적 팽창 과도 문제 수정 - (15,15) → (7,7)
     # 얼굴 폭 300px에서 15px 커널은 5% 폭 브리징 허용 → 인접 병변 합쳐짐
-    melasma_mask = cv2.morphologyEx(melasma_mask, cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8))
-    melasma_mask = cv2.morphologyEx(melasma_mask, cv2.MORPH_OPEN,  np.ones((5, 5),  np.uint8))
+    melasma_mask = cv2.morphologyEx(melasma_mask, cv2.MORPH_CLOSE, np.ones((melasma_morph_close, melasma_morph_close), np.uint8))
+    melasma_mask = cv2.morphologyEx(melasma_mask, cv2.MORPH_OPEN,  np.ones((melasma_morph_open, melasma_morph_open),  np.uint8))
     melasma_cov  = float(np.count_nonzero(melasma_mask)) / float(pig_px)
     melasma_score = _area_to_score(melasma_cov, bp_melasma)
 
@@ -173,12 +216,12 @@ def analyze_pigmentation(
     gray_inv_lg = np.uint8(255) - gray
     lentigo_count = 0
     blobs_lg = np.empty((0, 3))
-    if _SKIMAGE_OK and blob_log is not None:
-        try:
-            blobs_lg = blob_log(gray_inv_lg, min_sigma=3, max_sigma=14, num_sigma=6, threshold=0.07, overlap=0.3)
-        except Exception as e:
-            log.debug("blob_log 실패 (lentigo), 폴백 사용: %s", e)
-            blobs_lg = np.empty((0, 3))
+    try:
+        blobs_lg = blob_log_cv(gray_inv_lg, min_sigma=lentigo_min_sigma, max_sigma=lentigo_max_sigma,
+                              num_sigma=lentigo_num_sigma, threshold=lentigo_threshold, overlap=lentigo_overlap)
+    except Exception as e:
+        log.debug("blob_log_cv 실패 (lentigo), 폴백 사용: %s", e)
+        blobs_lg = np.empty((0, 3))
     for blob in blobs_lg:
         by, bx, br = int(blob[0]), int(blob[1]), max(1, int(blob[2] * 1.414))
         y0, y1 = max(0, by - br), min(face.shape[0], by + br)
@@ -192,19 +235,18 @@ def analyze_pigmentation(
 
     # ── (2) 주근깨 freckle ───────────────────────────────────────
     blobs_sm = np.empty((0, 3))
-    if _SKIMAGE_OK and blob_log is not None:
-        try:
-            blobs_sm = blob_log(
-                gray_inv_lg,
-                min_sigma=freckle_params["min_sigma"],
-                max_sigma=freckle_params["max_sigma"],
-                num_sigma=6,
-                threshold=freckle_params["threshold"],
-                overlap=freckle_params["overlap"],
-            )
-        except Exception as e:
-            log.debug("blob_log 실패 (freckle), 폴백 사용: %s", e)
-            blobs_sm = np.empty((0, 3))
+    try:
+        blobs_sm = blob_log_cv(
+            gray_inv_lg,
+            min_sigma=freckle_params["min_sigma"],
+            max_sigma=freckle_params["max_sigma"],
+            num_sigma=6,
+            threshold=freckle_params["threshold"],
+            overlap=freckle_params["overlap"],
+        )
+    except Exception as e:
+        log.debug("blob_log_cv 실패 (freckle), 폴백 사용: %s", e)
+        blobs_sm = np.empty((0, 3))
 
     lentigo_centers = {(int(b[0]), int(b[1]), max(1, int(b[2] * 1.414))) for b in blobs_lg}
     freckle_count = 0
@@ -220,7 +262,7 @@ def analyze_pigmentation(
         roi_sk = skin_mask[y0:y1, x0:x1]
         if roi_L.size == 0 or roi_sk.sum() == 0:
             continue
-        if roi_L.mean() < pig_base_L - 10:
+        if roi_L.mean() < pig_base_L + freckle_l_threshold:
             freckle_count += 1
     freckle_score = _count_to_score(freckle_count, bp_freckle_count)
 
@@ -237,8 +279,7 @@ def analyze_pigmentation(
     pig_mask = make_pigment_mask(skin_mask, face.shape[0], face.shape[1])
     
     # a 채널 임계값 (기본값: 130, 범위 0-255)
-    a_threshold = 130
-    pih_mask = (a_ch > a_threshold) & (pig_mask > 0)
+    pih_mask = (a_ch > pih_a_threshold) & (pig_mask > 0)
     
     # PIH 영역 비율 계산
     pih_area = pih_mask.sum()

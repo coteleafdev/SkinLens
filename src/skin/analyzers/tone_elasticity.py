@@ -23,15 +23,10 @@ from src.skin.core.scoring_utils import (
     safe_region,
     strip_normalize_L,
 )
+from src.utils.config import load_config
+from src.utils.cv_utils import local_binary_pattern_cv
 
 log = logging.getLogger(__name__)
-
-try:
-    from skimage.feature import local_binary_pattern
-    _SKIMAGE_OK = True
-except ImportError:
-    local_binary_pattern = None
-    _SKIMAGE_OK = False
 
 
 # 헬퍼 함수는 scoring_utils에서 import
@@ -39,6 +34,24 @@ _clamp = clamp
 _area_to_score = area_to_score
 _safe_region = safe_region
 _strip_normalize_L = strip_normalize_L
+
+
+def _get_cv_analyzer_params(analyzer: str, metric: str) -> Dict:
+    """config.json에서 CV 분석기 파라미터 로드.
+
+    Args:
+        analyzer: 분석기 이름 (예: 'pigmentation', 'pore', 'wrinkle')
+        metric: 메트릭 이름 (예: 'melasma', 'freckle', 'blob_detection')
+
+    Returns:
+        파라미터 딕셔너리. config 누락 시 빈 딕셔너리 반환.
+    """
+    try:
+        config = load_config()
+        return config.get("cv_analyzers", {}).get(analyzer, {}).get(metric, {})
+    except Exception as e:
+        log.warning(f"CV analyzer params load failed for {analyzer}.{metric}: {e}")
+        return {}
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -51,6 +64,17 @@ def analyze_tone(
     skin_mask: np.ndarray,
 ) -> Dict[str, float]:
     """피부톤·칙칙함·얼룩톤 3항목 분석."""
+    # Config에서 파라미터 로드
+    dullness_config = _get_cv_analyzer_params("tone", "dullness")
+    uneven_config = _get_cv_analyzer_params("tone", "uneven_tone")
+
+    # 기본값 설정 (config 누락 시)
+    dullness_l_norm_weight = dullness_config.get("l_norm_weight", 0.20)
+    dullness_s_norm_weight = dullness_config.get("s_norm_weight", 0.50)
+    dullness_radiance_weight = dullness_config.get("radiance_weight", 0.30)
+
+    uneven_block_size = uneven_config.get("block_size", 10)
+
     lab  = cv2.cvtColor(face, cv2.COLOR_BGR2LAB)
     L_ch = lab[:, :, 0].astype(float)
     b_ch = lab[:, :, 2].astype(float)
@@ -70,16 +94,21 @@ def analyze_tone(
     skin_tone_score = _clamp((ITA + 55.0) / 125.0 * 100.0)
 
     # (2) 칙칙함
-    # 개선 (2026-05-22): ITA(L_mean)와의 신호 중복 감소
-    #   - 이전: L_norm 0.50, S_norm 0.40, radiance 0.10 (L_mean 의존도 높음)
-    #   - 개선: L_norm 0.20, S_norm 0.50, radiance 0.30 (채도/하이라이트 강화)
-    L_norm = _clamp(L_mean / 155.0 * 100.0)
-    S_mean = float(np.mean(S_ch[sk])) if sk.any() else float(np.mean(S_ch))
-    S_norm = _clamp(S_mean / 90.0 * 100.0)
+    # [FIX ORTHOGONAL-C 2026-06-10] skin_tone(ITA=mean L*) 와 직교화.
+    #   이전 HSV 채도(S)는 휘도와 결합돼 있어(L*↓ 시 S↑) skin_tone 과 교차간섭했다.
+    #   대신 LAB 크로마 C*=√(a*²+b*²) 사용 — L* 과 직교축이라 순수 휘도 변화에 불변
+    #   (검증: L*-1.0 주입 시 HSV_S 73→89 출렁임 vs LAB C* 20.4 불변).
+    #   칙칙함 = 채색도(C*) 부족 + 광채(하이라이트) 부족. 절대 밝기는 skin_tone 전담.
+    a_ch_t = lab[:, :, 1].astype(float) - 128.0
+    b_ch_t = lab[:, :, 2].astype(float) - 128.0
+    chroma = np.sqrt(a_ch_t ** 2 + b_ch_t ** 2)
+    C_mean = float(np.mean(chroma[sk])) if sk.any() else float(np.mean(chroma))
+    C_norm = _clamp(C_mean / 29.0 * 100.0)           # 건강 피부 C*≈20→~70
     highlight_mask  = ((V_ch > 228) & (S_ch < 38) & sk)
     highlight_ratio = float(np.count_nonzero(highlight_mask)) / max(np.count_nonzero(sk), 1)
     radiance     = _clamp(highlight_ratio * 1000.0)
-    dullness_score = _clamp(L_norm * 0.20 + S_norm * 0.50 + radiance * 0.30)
+    chroma_weight = 1.0 - dullness_radiance_weight
+    dullness_score = _clamp(C_norm * chroma_weight + radiance * dullness_radiance_weight)
 
     # (3) 얼룩톤 (strip-norm L_std + block_std + 비대칭)
     if sk.any():
@@ -90,7 +119,7 @@ def analyze_tone(
         x_min, x_max = int(xs.min()), int(xs.max())
         L_roi  = L_ch[y_min:y_max + 1, x_min:x_max + 1]
         sk_roi = skin_mask[y_min:y_max + 1, x_min:x_max + 1].astype(float)
-        bsz = 10
+        bsz = uneven_block_size
         h_b, w_b = L_roi.shape
         h_blocks  = h_b // bsz; w_blocks = w_b // bsz
         if h_blocks > 0 and w_blocks > 0:
@@ -154,6 +183,13 @@ def analyze_elasticity(
     bp_jawline: Optional[list] = None,
 ) -> Dict[str, float]:
     """볼 처짐·턱선 흐림·눈가 탄력 3항목 분석."""
+    # Config에서 파라미터 로드
+    sagging_config = _get_cv_analyzer_params("elasticity", "cheek_sagging")
+
+    # 기본값 설정 (config 누락 시)
+    sagging_width_ratio_weight = sagging_config.get("width_ratio_weight", 0.5)
+    sagging_brightness_diff_weight = sagging_config.get("brightness_diff_weight", 0.5)
+
     _BP_JAWLINE = bp_jawline or [
         (0.0, 0), (5.0, 20), (12.0, 40), (20.0, 60),
         (30.0, 80), (40.0, 90), (55.0, 100),
@@ -184,7 +220,10 @@ def analyze_elasticity(
     upper_bright = float(np.mean(gray_face[int(fh * 0.30):int(fh * 0.50), :]))
     lower_bright = float(np.mean(gray_face[int(fh * 0.60):int(fh * 0.80), :]))
     bright_diff  = max(0.0, upper_bright - lower_bright)
-    cheek_sagging_score = _clamp(100.0 - sagging_idx * 1.5 - bright_diff * 0.4)
+    # Normalize weights to maintain original behavior when config weights are 0.5/0.5
+    sagging_weight = sagging_width_ratio_weight * 3.0
+    bright_weight = sagging_brightness_diff_weight * 0.8
+    cheek_sagging_score = _clamp(100.0 - sagging_idx * sagging_weight - bright_diff * bright_weight)
 
     # (2) 턱선 흐림
     chin = _safe_region(regions.get("chin", np.zeros((10, 10, 3), np.uint8)))
@@ -212,6 +251,7 @@ def analyze_sebum(
     face: np.ndarray,
     regions: Dict[str, np.ndarray],
     skin_mask: np.ndarray,
+    dry_mode: str = "relative",
 ) -> Dict[str, float]:
     """피부타입 분석 (skin_type 분류 포함).
 
@@ -221,13 +261,41 @@ def analyze_sebum(
       sebum_score      T+U 복합 피지 점수
       skin_type_label  피부 타입 한국어 라벨 (지성/건성/복합성/중성)
       skin_type_score  피부 타입 균형 점수 (높을수록 균형 = 중성에 가까움)
+
+    dry_mode
+    --------
+    "relative" (기본, 직교화):
+        건조 판정을 피부 채도 베이스라인(전체 skin_mask 의 median S) 상대값으로 한다.
+        dry_thr = max(0, base_S − DRY_MARGIN). 전역 채도 변화(dullness·화이트밸런스)는
+        U-zone S 와 base_S 를 함께 끌어내려 상대 격차가 불변 → 건조 오탐이 없다.
+        국소(U-zone 한정) 건조만 base_S 아래로 떨어져 검출된다.
+        → dullness(전역 크로마) ↔ skin_type(T/U 국소 불균형) 직교 보장.
+    "absolute" (레거시, 롤백용):
+        고정 임계 S < 28. 전역 채도 변화에 취약(dullness sev↑ 시 skin_type 누설).
     """
+    # Config에서 파라미터 로드
+    oily_config = _get_cv_analyzer_params("skin_type", "oily")
+    dry_config = _get_cv_analyzer_params("skin_type", "dry")
+    skin_type_config = _get_cv_analyzer_params("skin_type", "skin_type")
+
+    # 기본값 설정 (config 누락 시)
+    oily_v_threshold = oily_config.get("v_threshold", 210)
+    oily_s_threshold = oily_config.get("s_threshold", 40)
+
+    dry_s_threshold = dry_config.get("s_threshold", 28)
+    dry_v_threshold = dry_config.get("v_threshold", 215)
+    dry_s_threshold_dead = dry_config.get("s_threshold_dead", 35)
+
+    skin_type_balance_threshold = skin_type_config.get("balance_threshold", 55)
+    skin_type_balance_mean_weight = skin_type_config.get("balance_mean_weight", 0.6)
+    skin_type_balance_diff_weight = skin_type_config.get("balance_diff_weight", 0.5)
+
     def _shine_ratio(region: np.ndarray) -> float:
         if min(region.shape[:2]) < 4:
             return 0.0
         hsv_r = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
         V = hsv_r[:, :, 2]; S = hsv_r[:, :, 1]
-        return np.sum((V > 210) & (S < 40)) / max(region.shape[0] * region.shape[1], 1)
+        return np.sum((V > oily_v_threshold) & (S < oily_s_threshold)) / max(region.shape[0] * region.shape[1], 1)
 
     t_zone = _safe_region(regions.get("t_zone", np.zeros((10, 10, 3), np.uint8)))
     t_shine = _shine_ratio(t_zone)
@@ -235,13 +303,31 @@ def analyze_sebum(
         [(0.0, 100), (0.005, 90), (0.015, 75), (0.030, 55),
          (0.050, 35), (0.080, 10), (0.100, 0)])
 
+    # [§F2 직교화 2026-06-12] 건조 임계: 전역 채도 불변(dullness 누설 제거).
+    #   base_S = 전체 피부 median S. relative: dry_thr = max(0, base_S − 45)
+    #   (clean base_S≈73 → thr≈28 로 legacy 와 동치, 전역 desat 시 thr 동반 하강).
+    _DRY_MARGIN = 45.0
+    _DRY_ABS    = dry_s_threshold
+    if dry_mode not in ("relative", "absolute"):
+        dry_mode = "relative"
+    if dry_mode == "relative":
+        _sk = skin_mask > 0
+        if np.count_nonzero(_sk) >= 16:
+            _S_all = cv2.cvtColor(face, cv2.COLOR_BGR2HSV)[:, :, 1][_sk]
+            _base_S = float(np.median(_S_all))
+        else:
+            _base_S = 73.0
+        _dry_thr = max(0.0, _base_S - _DRY_MARGIN)
+    else:
+        _dry_thr = _DRY_ABS
+
     u_zone = _safe_region(regions.get("u_zone", np.zeros((10, 10, 3), np.uint8)))
     if min(u_zone.shape[:2]) >= 4:
         hsv_u = cv2.cvtColor(u_zone, cv2.COLOR_BGR2HSV)
         S_u = hsv_u[:, :, 1]; V_u = hsv_u[:, :, 2]
         _total_u_px = max(u_zone.shape[0] * u_zone.shape[1], 1)
-        dry_pixel_ratio = float(np.sum(S_u < 28)) / _total_u_px
-        _flake_bin_u = ((V_u > 215) & (S_u < 35)).astype(np.uint8)
+        dry_pixel_ratio = float(np.sum(S_u < _dry_thr)) / _total_u_px
+        _flake_bin_u = ((V_u > dry_v_threshold) & (S_u < dry_s_threshold_dead)).astype(np.uint8)
         try:
             import skimage.measure as _skm
             _labeled_u = _skm.label(_flake_bin_u)
@@ -289,7 +375,7 @@ def analyze_sebum(
     #   - 이전 공식: 100 - diff*0.5 만으로는 두 케이스 구분 불가
     _mean = (_oily_raw + _dry_raw) / 2.0
     _diff = abs(_oily_raw - _dry_raw)
-    skin_type_score = _clamp(_mean * 0.6 + (100.0 - _diff * 0.5) * 0.4)
+    skin_type_score = _clamp(_mean * skin_type_balance_mean_weight + (100.0 - _diff * skin_type_balance_diff_weight) * (1.0 - skin_type_balance_mean_weight))
 
     return {
         "oily_score":       round(_oily_raw, 1),
@@ -343,13 +429,28 @@ def analyze_acne_marks(
     Returns:
         {"acne_score": float, "post_acne_pigment_score": float}
     """
+    # Config에서 파라미터 로드
+    acne_config = _get_cv_analyzer_params("acne", "acne")
+    pap_config = _get_cv_analyzer_params("acne", "pap")
+
+    # 기본값 설정 (config 누락 시)
+    acne_s_threshold = acne_config.get("s_threshold", 60)
+    acne_a_sigma = acne_config.get("a_sigma", 2.2)
+    acne_b_sigma = acne_config.get("b_sigma", 0.5)
+    acne_v_threshold = acne_config.get("v_threshold", 210)
+
+    pap_a_sigma = pap_config.get("a_sigma", 1.8)
+
     # config 브레이크포인트 로드 (단일 경로 보장)
+    # [FIX 2026-06-10] bp_acne/bp_pap 는 density_ratio·pap_area/acne_skin_px(면적 비율, 실수)에
+    #   _area_to_score 로 사용된다. _get_metric_bp_count 는 임계를 int 캐스팅해 작은 실수 임계를
+    #   0 으로 뭉개므로(이진화), 면적용 _get_metric_bp(float)로 로드한다.
     if bp_acne is None or bp_pap is None:
-        from src.scoring._breakpoints import _get_metric_bp_count
+        from src.scoring._breakpoints import _get_metric_bp
         if bp_acne is None:
-            bp_acne = _get_metric_bp_count("acne_score")
+            bp_acne = _get_metric_bp("acne_score")
         if bp_pap is None:
-            bp_pap = _get_metric_bp_count("post_acne_pigment_score")
+            bp_pap = _get_metric_bp("post_acne_pigment_score")
 
     hsv  = cv2.cvtColor(face, cv2.COLOR_BGR2HSV)
     lab  = cv2.cvtColor(face, cv2.COLOR_BGR2LAB)
@@ -376,9 +477,9 @@ def analyze_acne_marks(
 
     # ── 1차 필터: HSV 빨간 범위 (S≥60으로 상향) ─────────────────
     # [FIX] S 하한 40→60: H=0~10 범위의 정상 피부 배경(~63%) 제거
-    lower_r1 = np.array([0,   60, 40], dtype=np.uint8)
+    lower_r1 = np.array([0,   acne_s_threshold, 40], dtype=np.uint8)
     upper_r1 = np.array([10, 255, 255], dtype=np.uint8)
-    lower_r2 = np.array([165, 60, 40], dtype=np.uint8)
+    lower_r2 = np.array([165, acne_s_threshold, 40], dtype=np.uint8)
     upper_r2 = np.array([180, 255, 255], dtype=np.uint8)
     acne_mask = cv2.bitwise_or(
         cv2.inRange(hsv, lower_r1, upper_r1),
@@ -387,7 +488,7 @@ def analyze_acne_marks(
 
     # ── 2차 필터: LAB a* 홍반 확증 (임계 1.5σ → 2.2σ) ──────────
     # [FIX] 더 높은 임계로 뚜렷한 홍반만 선별, 정상 홍조 제거
-    a_acne     = (a_ch > base_a + 2.2 * std_a).astype(np.uint8) * 255
+    a_acne     = (a_ch > base_a + acne_a_sigma * std_a).astype(np.uint8) * 255
     # [FIX] 팽창 커널 9×9 → 5×5: 과팽창으로 인접 정상 영역 흡수 방지
     a_acne_dil = cv2.dilate(a_acne, np.ones((5, 5), np.uint8))
     acne_mask  = cv2.bitwise_and(acne_mask, a_acne_dil)
@@ -396,14 +497,14 @@ def analyze_acne_marks(
     # [FIX 신규] 여드름 홍반: a*↑ b*≈기준
     #           주근깨·PIH: a*↑ b*↑ (갈색 계열)
     #           b* < base_b + 0.5σ 조건으로 주근깨 제거
-    _b_freckle_thresh = base_b + 0.5 * std_b
+    _b_freckle_thresh = base_b + acne_b_sigma * std_b
     b_not_freckle = (b_ch < _b_freckle_thresh).astype(np.uint8) * 255
     acne_mask = cv2.bitwise_and(acne_mask, b_not_freckle)
 
     # ── 4차 필터: HSV V (밝기) 상한 (정상 피부 홍조 제거) ────────
     # [FIX 신규] V ≥ 210인 밝은 픽셀은 정상 피부 홍조
     #           실제 여드름은 국소 염증으로 V < 210 범위에 분포
-    v_filter  = (v_ch < 210).astype(np.uint8) * 255
+    v_filter  = (v_ch < acne_v_threshold).astype(np.uint8) * 255
     acne_mask = cv2.bitwise_and(acne_mask, v_filter)
 
     # ── ROI 마스크 적용 + 모폴로지 정제 ─────────────────────────
@@ -450,7 +551,7 @@ def analyze_acne_marks(
     # [FIX] PAP_A_FLOOR: 142 고정 → max(142, base_a+5)
     #       황색계·갈색 피부에서 정상 base_a가 140 이상일 경우 위양성 방지
     _PAP_A_FLOOR: float = max(142.0, base_a + 5.0)
-    pap_thresh   = max(base_a + 1.8 * float(std_a), _PAP_A_FLOOR)
+    pap_thresh   = max(base_a + pap_a_sigma * float(std_a), _PAP_A_FLOOR)
     intense_mask = ((a_ch > pap_thresh) & sk).astype(np.uint8) * 255
     intense_mask[acne_mask > 0] = 0          # 활성 여드름 영역 제외
     intense_mask = cv2.morphologyEx(intense_mask, cv2.MORPH_OPEN, kernel3)
@@ -492,11 +593,8 @@ def analyze_perceived_age(
     """
     gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
     age  = 30.0  # 베이스 나이 상향 (20 → 30)
-    if _SKIMAGE_OK and local_binary_pattern is not None:
-        lbp = local_binary_pattern(gray, 8, 1, method="uniform")
-        texture_roughness = float(np.var(lbp))
-    else:
-        texture_roughness = 0.0
+    lbp = local_binary_pattern_cv(gray, 8, 1, method="uniform")
+    texture_roughness = float(np.var(lbp))
     lab = cv2.cvtColor(face, cv2.COLOR_BGR2LAB)
     pigment_variance = float(np.std(lab[:, :, 0].astype(float)))
     age += max(0.0, (100.0 - eye_wrinkle_score) / 100.0 * 30.0) * 0.45  # 0.25 → 0.45

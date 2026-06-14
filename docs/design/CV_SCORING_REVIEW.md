@@ -1,18 +1,26 @@
 # CV 점수 측정 로직 상세 리뷰
 
-> **문서 버전:** 1.0.0
+> **문서 버전:** 2.0.0
 > **대상 프로젝트:** SkinLens v1
 > **작성일:** 2026-06-09
-> **상태:** 리뷰 완료
+> **최신화:** 2026-06-10
+> **상태:** 최신화 완료
 > **목적:** LLM_SCORE_VARIABILITY_SOLUTION.md의 CV anchor 역할 수행 가능성 검증
 
 ---
 
 ## 0. 요약
 
-현재 CV 파이프라인은 **결정론적 알고리즘**을 기반으로 28개 서브점수를 측정하며, 이를 10개 직교 출력으로 조합합니다. CV anchor 역할 수행이 가능하나, **재현성 검증**과 **파라미터 튜닝**이 필요합니다.
+현재 CV 파이프라인은 **결정론적 알고리즘**을 기반으로 28개 서브점수를 측정하며, 이를 10개 직교 출력으로 조합합니다. CV anchor 역할 수행이 가능하며, **2026-06-10**에 주요 개선사항이 적용되었습니다.
 
-**주요 문제점:**
+**주요 개선사항 (2026-06-10):**
+- Config 브레이크포인트 도메인 불일치 해소 (acne, eye/nasolabial 주름)
+- 직교화 완료 (PIE-redness, 톤 그룹, 모공-melasma)
+- 종합점수 라우팅 변경 (레이어B 18항목 → 직교 10 카테고리)
+- 8계층 테스트 하니스 구축 (18항목 전부 단조성 검증 완료)
+- Config 메타데이터 동기화
+
+**남은 문제점:**
 - 3개 항목 미구현 (PIH, dead_skin_score, smoothness_score)
 - skimage 의존성 (blob_log, LBP)
 - 하드코딩된 파라미터
@@ -471,18 +479,18 @@
 
 1. **미구현 항목**: PIH, dead_skin_score, smoothness_score (기본값 100점)
 2. **skimage 의존성**: blob_log, LBP, measure.label 등 (선택적 의존이지만 실패 시 폴백 부족)
-3. **하드코딩된 파라미터**: 임계값, 가중치, 브레이크포인트
+3. **하드코딩된 파라미터**: 임계값, 가중치, 브레이크포인트 (일부는 config로 외부화 필요)
 4. **환경 변수 민감성**: 조명, 노이즈에 대한 강건성 검증 필요
-5. **재현성 검증 부족**: 동일 이미지 → 동일 점수 검증 필요
+5. **재현성 검증 부족**: 동일 이미지 → 동일 점수 검증 필요 (테스트 하니스로 부분 해결)
 
 ### 11.3 권장 개선 방향
 
 1. **MDC 측정**: 각 메트릭별 σ, ICC, MDC 측정
-2. **파라미터 외부화**: config 파일로 이동
+2. **파라미터 외부화**: config 파일로 이동 (일부 브레이크포인트는 이미 완료)
 3. **미구현 항목 구현**: PIH, dead_skin_score, smoothness_score
 4. **환경 변수 강건성**: 조명/노이즈 변화에 대한 테스트
 5. **skimage 대안**: pure OpenCV 구현 고려
-6. **재현성 검증**: 동일 이미지 N회 측정으로 σ 확인
+6. **재현성 검증**: 동일 이미지 N회 측정으로 σ 확인 (테스트 하니스로 부분 완료)
 
 ---
 
@@ -571,9 +579,77 @@
 
 ---
 
+## 14. 2026-06-10 주요 개선사항
+
+### 14.1 Config 브레이크포인트 도메인 불일치 해소
+
+#### A. fine_deep_wrinkle_score — 단위 도메인 분리
+- **문제**: magnitude(0~500) 도메인이 ratio(0~1)로 설정되어 항상 ~100 포화
+- **해결**: ratio 전용 `bp_fine_deep` 파라미터 추가, config를 ratio(0~1)로 교정
+- **효과**: 항상 ~100 포화 → 100→49.5 단조 응답
+
+#### B. acne_score / post_acne_pigment_score — int 캐스팅 버그 수정
+- **문제**: 폴백이 면적 비율 bp를 `_get_metric_bp_count()`(int 캐스팅)로 로드하여 이진(100/0) 붕괴
+- **해결**: 폴백 로더를 `_get_metric_bp_count` → `_get_metric_bp`(float)로 변경
+- **효과**: 이진(100/0) → graduated(100→64.7→…→44.6) 단조 응답
+
+#### C. eye_wrinkle_score / nasolabial_wrinkle_score — 도메인 교정
+- **문제**: 측정은 raw Sobel magnitude(수십)인데 config가 ratio(0~0.6/0~0.78)로 폴백에서 0 붕괴
+- **해결**: config를 내부 기본값과 동일한 magnitude(0~115)로 교정
+- **효과**: 폴백 경로 clean eye/nasolabial 0/0 → 97.7/96.9 정상 응답
+
+### 14.2 직교화 완료
+
+#### A. PIE 직교화 — redness와의 표시 중첩 해소
+- **문제**: PIE가 `a*>절대임계` 픽셀 면적을 측정해 광역/국소 홍조에도 발생 → redness와 이중 감점
+- **해결**: PIE를 'diffuse 배경 제거 후 focal 잔여'로 직교화 (`a_resid = a* - GaussianBlur(a*, σ=25)`)
+- **효과**: redness 주입 → PIE Δ -60 → +0.0, PIE 주입 → redness Δ -32 → -1.9
+
+#### B. 톤 그룹 직교화 — dullness를 skin_tone과 분리
+- **문제**: dullness가 mean L* 항을 포함해 skin_tone(ITA)과 중복, HSV 채도는 휘도와 결합
+- **해결**: dullness의 채도 성분을 LAB 크로마 C*=√(a*²+b*²)로 교체 (L* 직교축)
+- **효과**: 순수 L*↓ → dullness 변동 0.0 (완전 직교), 탈채도 타깃 반응 유지
+
+#### C. 모공-melasma 독립성 — 크로마 게이트 + 폴백 절벽 제거
+- **문제**: 반전 명도 LoG 검출기가 모공(무채색 함몰)과 melasma(유채색 갈색) 구분 불가 (r=0.92)
+- **해결**: 크로마 인식 게이트 + 연속 블렌드 + 텍스처 폴백 재보정
+- **효과**: melasma→pore_size 누설 Δ 55→4 (93% 감소), clean baseline·단조성 유지
+
+### 14.3 종합점수 라우팅 변경
+
+#### 레이어B 18항목 → 직교 10 카테고리 합성
+- **문제**: 고객 overall_score가 레이어B 18항목 평탄 가중합으로 산출되어 상관 항목 중복 가중
+- **해결**: 종합점수를 직교 10 카테고리 합성으로 라우팅, 레이어B 18항목은 표시 전용 유지
+- **효과**: acne 단일 악화 시 과대 페널티(-11.5) 해소, 상관 주름 3항목 1차원 통합
+
+### 14.4 테스트 하니스 구축
+
+#### 8계층 테스트 하니스 (test_cv_scoring_synthetic.py)
+- **L1**: 순수 매핑 함수 (area_to_score, count_to_score 단조성)
+- **L2**: 단조성 (18항목 전부 VERIFIED)
+- **L3**: 불변식 (결정론, 범위[0,100], 오탐 방지)
+- **L4**: 골든/회귀 스냅샷
+- **L5**: 폴백 경로 브레이크포인트 도메인 일관성
+- **L6**: 측정 독립성 (redness-PIE 직교성)
+- **L7**: 톤 그룹 직교성 (휘도-dullness 직교)
+- **L8**: 모공-melasma 독립성
+
+### 14.5 Config 메타데이터 동기화
+
+- `orthogonal_categories.source_measurements`를 실제 composition_function과 일치
+- `pigmentation_cov`: [melasma, freckle, post_acne_pigment] → [melasma_score]
+- `spot_density`: [] → [freckle_score]
+- `tone_score`: [skin_tone, dullness, uneven] → [skin_tone_score, uneven_tone_score]
+
+---
+
 ## 참고 문서
 
 - `LLM_SCORE_VARIABILITY_SOLUTION.md` - LLM 점수 변동성 해결 방안
+- `docs/cv_scoring/SYNTH_INJECTOR_GUIDE.md` - 합성 이미지 주입기 사용 가이드
+- `docs/cv_scoring/INDEPENDENCE_AUDIT.md` - 측정항목 점수 독립성 감사
+- `docs/cv_scoring/CHANGES.md` - CV 점수 폴백 경로 정리 변경 요약
+- `docs/cv_scoring/H_PORE_RECALIBRATION_DESIGN.md` - 모공 검출 재보정 설계
 - `src/skin/analyzers/pigmentation.py` - 색소 분석 구현
 - `src/skin/analyzers/wrinkle_texture.py` - 주름/텍스처/복원 품질 분석 구현
 - `src/skin/analyzers/tone_elasticity.py` - 톤/탄력/피부타입/트러블 분석 구현

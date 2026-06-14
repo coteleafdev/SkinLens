@@ -55,12 +55,11 @@ except ImportError:
     cv2 = None
 
 try:
-    from skimage.feature import blob_log, graycomatrix, graycoprops, local_binary_pattern
-    from skimage.filters import gabor
+    from src.utils.cv_utils import blob_log_cv, graycomatrix_cv, graycoprops_cv, local_binary_pattern_cv
     SKIMAGE_AVAILABLE = True
 except ImportError:
     SKIMAGE_AVAILABLE = False
-    blob_log = graycomatrix = graycoprops = local_binary_pattern = gabor = None
+    blob_log_cv = graycomatrix_cv = graycoprops_cv = local_binary_pattern_cv = None
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
@@ -356,6 +355,23 @@ class SkinAnalyzer:
                 log.debug("  [레이어A] %-25s %.1f (내부 0~100)", k, v)
 
         m3_raw_for_b = dict(m3)
+
+        # [FIX ORTHOGONAL-E 2026-06-10] 종합점수를 직교 10 카테고리 합성으로 라우팅.
+        #   기존: 레이어B 18항목 평탄 가중합(overall_v18) → 상관 항목 중복 가중 +
+        #   acne 단일 가중(0.283)에 의한 focal_lesion 과대 가중(실효 0.329 vs 설계 0.140).
+        #   또한 표시 카테고리(m3 = 직교 10개)와 overall(18 합산)의 산출 기반이 불일치였다.
+        #   직교 합성을 overall 로 사용 → 차원당 1회 가중 + '표시=종합' 기반 일치.
+        #   레이어B 18항목은 표시/LLM 호환용으로 유지(measurements_report), v18 은 롤백/비교용.
+        overall_ortho_raw = _compute_overall_score(m3_raw_for_b, debug=debug)
+        overall_ortho = _map_score_display_10_90(overall_ortho_raw)
+        try:
+            from src.skin.core.config_parser import get_improvement_threshold, get_min_score
+            if overall_ortho < get_improvement_threshold():
+                overall_ortho = get_min_score()
+        except Exception:
+            pass
+        overall_ortho = round(float(overall_ortho), 1)
+
         _apply_measurements_display_10_90(m3)
         filtered_a = {k: m3.get(k) for k in OUTPUT_KEYS}
         # skin_type_label 추가 (OUTPUT_KEYS에 없으므로 별도 추가)
@@ -366,11 +382,13 @@ class SkinAnalyzer:
             m2_raw, m3_raw_for_b, raw_measurements=_raw_meas, debug=debug
         )
         if debug:
-            log.debug("[레이어B → overall] %.1f", overall_v18)
+            log.debug("[종합] 직교 %.1f (raw %.1f)  |  레이어B(legacy) %.1f",
+                      overall_ortho, overall_ortho_raw, overall_v18)
 
         return {
-            "overall_score":        overall_v18,
-            "overall_score_report": overall_v18,
+            "overall_score":            overall_ortho,
+            "overall_score_report":     overall_ortho,
+            "overall_score_legacy_v18": overall_v18,
             "perceived_age":        legacy_result.get("perceived_age", 0.0),
             "measurements":         filtered_a,
             "measurements_report":  m18_display,

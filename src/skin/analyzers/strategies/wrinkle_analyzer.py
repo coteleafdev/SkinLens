@@ -56,6 +56,7 @@ class WrinkleAnalyzerV1(BaseAnalyzer):
         clahe_preprocessed = self.get_config("clahe_preprocessed", False)
         bp_eye = self.get_config("bp_eye")
         bp_nasolabial = self.get_config("bp_nasolabial")
+        bp_fine_deep = self.get_config("bp_fine_deep")
         
         # 기존 함수 호출
         return analyze_wrinkles(
@@ -65,6 +66,7 @@ class WrinkleAnalyzerV1(BaseAnalyzer):
             skin_mask=skin_mask,
             bp_eye=bp_eye,
             bp_nasolabial=bp_nasolabial,
+            bp_fine_deep=bp_fine_deep,
         )
     
     @property

@@ -26,21 +26,34 @@ from src.skin.core.scoring_utils import (
     clamp,
     safe_region,
 )
+from src.utils.config import load_config
+from src.utils.cv_utils import graycomatrix_cv, graycoprops_cv, local_binary_pattern_cv
 
 log = logging.getLogger(__name__)
-
-try:
-    from skimage.feature import graycomatrix, graycoprops, local_binary_pattern
-    _SKIMAGE_OK = True
-except ImportError:
-    graycomatrix = graycoprops = local_binary_pattern = None
-    _SKIMAGE_OK = False
 
 
 # 헬퍼 함수는 scoring_utils에서 import
 _clamp = clamp
 _area_to_score = area_to_score
 _safe_region = safe_region
+
+
+def _get_cv_analyzer_params(analyzer: str, metric: str) -> Dict:
+    """config.json에서 CV 분석기 파라미터 로드.
+
+    Args:
+        analyzer: 분석기 이름 (예: 'pigmentation', 'pore', 'wrinkle')
+        metric: 메트릭 이름 (예: 'melasma', 'freckle', 'blob_detection')
+
+    Returns:
+        파라미터 딕셔너리. config 누락 시 빈 딕셔너리 반환.
+    """
+    try:
+        config = load_config()
+        return config.get("cv_analyzers", {}).get(analyzer, {}).get(metric, {})
+    except Exception as e:
+        log.warning(f"CV analyzer params load failed for {analyzer}.{metric}: {e}")
+        return {}
 
 
 def _sobel_components(gray_raw: np.ndarray):
@@ -65,20 +78,50 @@ def analyze_wrinkles(
     skin_mask: Optional[np.ndarray] = None,
     bp_eye: Optional[list] = None,
     bp_nasolabial: Optional[list] = None,
+    bp_fine_deep: Optional[list] = None,
 ) -> Dict[str, float]:
     """주름 4항목 분석.
 
     Returns:
         {eye_wrinkle_score, glabella_wrinkle_score,
          nasolabial_wrinkle_score, fine_deep_wrinkle_score}
+
+    [FIX 2026-06-10] fine_deep_wrinkle_score 의 deep/fine_score 는 forehead local_std
+    '비율(0~1)' 을 점수화한다. 이전에는 eye/nasolabial 과 동일한 bp_eye/bp_nasolabial
+    (Sobel magnitude 도메인)을 재사용해 단위가 어긋나 항상 ~100 으로 포화됐다.
+    이제 ratio 도메인 전용 bp_fine_deep 을 사용한다.
     """
+    # Config에서 파라미터 로드
+    eye_config = _get_cv_analyzer_params("wrinkle", "eye_wrinkle")
+    glabella_config = _get_cv_analyzer_params("wrinkle", "glabella_wrinkle")
+    fine_deep_config = _get_cv_analyzer_params("wrinkle", "fine_deep_wrinkle")
+
+    # 기본값 설정 (config 누락 시)
+    eye_vertical_weight = eye_config.get("vertical_weight", 0.65)
+    eye_magnitude_weight = eye_config.get("magnitude_weight", 0.35)
+
+    glabella_horizontal_weight = glabella_config.get("horizontal_weight", 0.65)
+    glabella_magnitude_weight = glabella_config.get("magnitude_weight", 0.35)
+
+    fine_threshold = fine_deep_config.get("fine_threshold", 8.0)
+    deep_threshold = fine_deep_config.get("deep_threshold", 20.0)
+    fine_weight = fine_deep_config.get("fine_weight", 0.4)
+    deep_weight = fine_deep_config.get("deep_weight", 0.6)
+    window_size = fine_deep_config.get("window_size", 9)
+
     _BP = (
         [(0, 100), (28, 90), (55, 75), (95, 55), (145, 30), (210, 0)]
         if clahe_preprocessed
         else [(0, 100), (14, 90), (28, 75), (50, 55), (78, 30), (115, 0)]
     )
-    bp_eye       = bp_eye       or _BP
+    # fine_deep 전용 ratio 도메인 기본 브레이크포인트 (0~1 비율)
+    _BP_FINE_DEEP = [
+        (0.0, 100.0), (0.02, 90.0), (0.06, 75.0), (0.12, 55.0),
+        (0.25, 35.0), (0.45, 12.0), (0.70, 0.0),
+    ]
+    bp_eye        = bp_eye       or _BP
     bp_nasolabial = bp_nasolabial or _BP
+    bp_fine_deep  = bp_fine_deep or _BP_FINE_DEEP
 
     # (1) 눈가 주름
     eye_scores: List[float] = []
@@ -92,7 +135,7 @@ def analyze_wrinkles(
             inner = reg
         gray_e = cv2.cvtColor(inner, cv2.COLOR_BGR2GRAY)
         mag, _, sy_m = _sobel_components(gray_e)
-        eye_scores.append(_area_to_score(sy_m * 0.65 + mag * 0.35, bp_eye))
+        eye_scores.append(_area_to_score(sy_m * eye_vertical_weight + mag * eye_magnitude_weight, bp_eye))
     eye_wrinkle_score = float(np.mean(eye_scores)) if eye_scores else 65.0
 
     # (2) 미간 주름
@@ -100,7 +143,7 @@ def analyze_wrinkles(
     if min(glabella.shape[:2]) >= 8:
         gray_gl = cv2.cvtColor(glabella, cv2.COLOR_BGR2GRAY)
         mag, sx_m, _ = _sobel_components(gray_gl)
-        glabella_wrinkle_score = _area_to_score(sx_m * 0.65 + mag * 0.35, _BP)
+        glabella_wrinkle_score = _area_to_score(sx_m * glabella_horizontal_weight + mag * glabella_magnitude_weight, _BP)
     else:
         glabella_wrinkle_score = 65.0
 
@@ -141,20 +184,19 @@ def analyze_wrinkles(
     roi_manager = ROIManager.get_instance()
     forehead = roi_manager.get_forehead_roi(face)
     gray_forehead = cv2.cvtColor(forehead, cv2.COLOR_BGR2GRAY).astype(float)
-    
-    win = 9
-    mean_sq   = cv2.boxFilter(gray_forehead ** 2, -1, (win, win))
-    mean_v    = cv2.boxFilter(gray_forehead,       -1, (win, win))
+
+    mean_sq   = cv2.boxFilter(gray_forehead ** 2, -1, (window_size, window_size))
+    mean_v    = cv2.boxFilter(gray_forehead,       -1, (window_size, window_size))
     local_std = np.sqrt(np.maximum(mean_sq - mean_v ** 2, 0.0))
     if clahe_preprocessed:
-        _thr_fine_lo, _thr_fine_hi, _thr_deep = 32, 80, 80
+        _thr_fine_lo, _thr_fine_hi, _thr_deep = fine_threshold * 4, deep_threshold * 4, deep_threshold * 4
     else:
-        _thr_fine_lo, _thr_fine_hi, _thr_deep = 8, 20, 20
+        _thr_fine_lo, _thr_fine_hi, _thr_deep = fine_threshold, deep_threshold, deep_threshold
     deep_ratio = float(np.mean(local_std > _thr_deep))
     fine_ratio = float(np.mean((local_std > _thr_fine_lo) & (local_std <= _thr_fine_hi)))
-    deep_score = _area_to_score(deep_ratio, bp_eye)
-    fine_score = _area_to_score(fine_ratio, bp_nasolabial)
-    fine_deep_score = 0.60 * deep_score + 0.40 * fine_score
+    deep_score = _area_to_score(deep_ratio, bp_fine_deep)
+    fine_score = _area_to_score(fine_ratio, bp_fine_deep)
+    fine_deep_score = deep_weight * deep_score + fine_weight * fine_score
 
     return {
         "eye_wrinkle_score":        round(_clamp(eye_wrinkle_score), 1),
@@ -171,6 +213,12 @@ def analyze_wrinkles(
 _BP_ROUGHNESS = [
     (0, 100), (10, 90), (35, 75), (80, 55), (180, 30), (400, 0),
 ]
+_BP_DEAD_SKIN = [
+    (0.0, 100), (0.05, 70), (0.10, 40), (0.20, 0),
+]
+_BP_SMOOTHNESS = [
+    (0.0, 100), (20.0, 90), (50.0, 70), (100.0, 40), (200.0, 0),
+]
 
 
 def analyze_texture(
@@ -181,13 +229,32 @@ def analyze_texture(
     clahe_clip: float = 2.0,
     clahe_tile: tuple = (8, 8),
     bp_roughness: Optional[list] = None,
+    bp_dead_skin: Optional[list] = None,
+    bp_smoothness: Optional[list] = None,
 ) -> Dict[str, float]:
     """텍스처 3항목 분석.
 
     Returns:
         {roughness_score, dead_skin_score, smoothness_score}
     """
+    # Config에서 파라미터 로드
+    roughness_config = _get_cv_analyzer_params("texture", "roughness")
+    dead_skin_config = _get_cv_analyzer_params("texture", "dead_skin")
+    smoothness_config = _get_cv_analyzer_params("texture", "smoothness")
+
+    # 기본값 설정 (config 누락 시)
+    lbp_radius = roughness_config.get("lbp_radius", [1, 2, 3])
+    
+    saturation_threshold = dead_skin_config.get("saturation_threshold", 40)
+    value_threshold = dead_skin_config.get("value_threshold", 180)
+    edge_threshold = dead_skin_config.get("edge_threshold", 30)
+    bp_dead_skin_config = dead_skin_config.get("bp_dead_skin", [])
+    
+    bp_smoothness_config = smoothness_config.get("bp_smoothness", [])
+
     bp_roughness = bp_roughness or _BP_ROUGHNESS
+    bp_dead_skin = bp_dead_skin or bp_dead_skin_config or _BP_DEAD_SKIN
+    bp_smoothness = bp_smoothness or bp_smoothness_config or _BP_SMOOTHNESS
 
     clahe      = cv2.createCLAHE(clipLimit=clahe_clip, tileGridSize=clahe_tile)
     gray_face  = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
@@ -198,13 +265,12 @@ def analyze_texture(
 
     # (1) 거칠기 (LBP 분산)
     roughness_score = 65.0
-    if _SKIMAGE_OK and local_binary_pattern is not None:
-        lbp_vars: List[float] = []
-        for radius in [1, 2, 3]:
-            lbp = local_binary_pattern(gray_enh, P=8 * radius, R=radius, method="uniform")
-            lbp_vars.append(float(np.var(lbp)))
-        coarseness = float(np.mean(lbp_vars))
-        roughness_score = _area_to_score(coarseness, bp_roughness)
+    lbp_vars: List[float] = []
+    for radius in lbp_radius:
+        lbp = local_binary_pattern_cv(gray_enh, P=8 * radius, R=radius, method="uniform")
+        lbp_vars.append(float(np.var(lbp)))
+    coarseness = float(np.mean(lbp_vars))
+    roughness_score = _area_to_score(coarseness, bp_roughness)
 
     # (2) 각질 (dead skin) 계산
     # HSV 채널 분석: 낮은 채도(S) + 높은 명도(V) = 각질 가능성
@@ -214,10 +280,6 @@ def analyze_texture(
     edge_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
     
     # 각질 영역 마스크 (낮은 채도 + 높은 명도 + 높은 엣지)
-    saturation_threshold = 40  # 낮은 채도
-    value_threshold = 180     # 높은 명도
-    edge_threshold = 30       # 높은 엣지
-    
     dead_skin_mask = (S_ch < saturation_threshold) & (V_ch > value_threshold) & (edge_magnitude > edge_threshold)
     
     # 각질 영역 비율
@@ -230,8 +292,6 @@ def analyze_texture(
         dead_skin_ratio = 0.0
     
     # 각질 점수 (비율이 높을수록 점수 낮음)
-    # 브레이크포인트: 0%→100, 5%→70, 10%→40, 20%→0
-    bp_dead_skin = [(0.0, 100), (0.05, 70), (0.10, 40), (0.20, 0)]
     dead_skin_score = _area_to_score(dead_skin_ratio, bp_dead_skin)
 
     # (3) 매끄러움 (smoothness) 계산
@@ -241,8 +301,6 @@ def analyze_texture(
     
     # 그라디언트 평균 기반 매끄러움 점수
     # 낮은 그라디언트 = 높은 점수
-    # 브레이크포인트: 0→100, 20→90, 50→70, 100→40, 200→0
-    bp_smoothness = [(0.0, 100), (20.0, 90), (50.0, 70), (100.0, 40), (200.0, 0)]
     smoothness_score = _area_to_score(gradient_mean, bp_smoothness)
 
     return {

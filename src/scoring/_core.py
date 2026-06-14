@@ -452,6 +452,7 @@ class _SkinAnalyzerCore:
                 clahe_preprocessed=clahe_preprocessed,
                 bp_eye=_get_metric_bp("eye_wrinkle_score"),
                 bp_nasolabial=_get_metric_bp("nasolabial_wrinkle_score"),
+                bp_fine_deep=_get_metric_bp("fine_deep_wrinkle_score"),
             )
         else:
             # [REFACTOR 2026-05-23] 측정항목별 분석기 버전 매핑 사용
@@ -470,6 +471,7 @@ class _SkinAnalyzerCore:
                     clahe_preprocessed=clahe_preprocessed,
                     bp_eye=_get_metric_bp("eye_wrinkle_score"),
                     bp_nasolabial=_get_metric_bp("nasolabial_wrinkle_score"),
+                    bp_fine_deep=_get_metric_bp("fine_deep_wrinkle_score"),
                 )
             except Exception as e:
                 log.warning(f"측정항목 기반 분석기 로드 실패, 기본 함수 사용: {e}")
@@ -479,6 +481,7 @@ class _SkinAnalyzerCore:
                     skin_mask=smask,
                     bp_eye=_get_metric_bp("eye_wrinkle_score"),
                     bp_nasolabial=_get_metric_bp("nasolabial_wrinkle_score"),
+                    bp_fine_deep=_get_metric_bp("fine_deep_wrinkle_score"),
                 )
 
         if debug: log.debug("[분석] Texture ...")
